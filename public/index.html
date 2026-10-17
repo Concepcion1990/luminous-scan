@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ScanStock — The Luminous Book Shop</title>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<style>
+  :root { --cream:#E8DFD4; --ink:#1a1a1a; --gold:#b08d3e; --soft:#f5f0e8; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { margin:0; font-family:-apple-system,Helvetica,Arial,sans-serif; background:var(--soft); color:var(--ink); }
+  header { background:var(--ink); color:var(--cream); padding:18px 16px; text-align:center; }
+  header h1 { margin:0; font-size:22px; letter-spacing:1px; }
+  header p { margin:4px 0 0; font-size:13px; color:var(--gold); font-style:italic; }
+  .mode { display:inline-block; margin-top:8px; font-size:11px; padding:3px 10px; border-radius:20px; background:#333; color:#fff; font-style:normal; }
+  .mode.shopify { background:#2a7a3a; }
+  main { padding:16px; max-width:520px; margin:0 auto; padding-bottom:40px; }
+  .card { background:#fff; border-radius:14px; padding:18px; margin-bottom:14px; box-shadow:0 2px 8px rgba(0,0,0,.07); }
+  .bigbtn { display:block; width:100%; padding:18px; font-size:19px; font-weight:700; border:none; border-radius:14px; cursor:pointer; margin-bottom:12px; }
+  .bigbtn.scan { background:var(--gold); color:#fff; }
+  .bigbtn.list { background:var(--ink); color:var(--cream); }
+  .bigbtn:active { transform:scale(.98); }
+  #reader { width:100%; border-radius:12px; overflow:hidden; display:none; margin-bottom:12px; }
+  #reader.active { display:block; }
+  input[type=text], input[type=number] { width:100%; padding:14px; font-size:17px; border:2px solid #ddd; border-radius:12px; margin-bottom:10px; }
+  .row { display:flex; gap:10px; align-items:center; }
+  .stepper { display:flex; align-items:center; gap:0; margin:12px 0; }
+  .stepper button { width:64px; height:64px; font-size:32px; border:none; border-radius:12px; background:var(--cream); cursor:pointer; }
+  .stepper button:active { transform:scale(.95); }
+  .stepper .qv { flex:1; text-align:center; font-size:34px; font-weight:800; }
+  .savebtn { background:#2a7a3a; color:#fff; }
+  .prod { border-bottom:1px solid #eee; padding:12px 0; }
+  .prod:last-child { border-bottom:none; }
+  .prod .t { font-weight:700; font-size:16px; }
+  .prod .m { font-size:13px; color:#777; margin-top:2px; }
+  .prod .q { float:right; font-size:15px; font-weight:700; background:var(--cream); padding:4px 12px; border-radius:20px; }
+  .hidden { display:none !important; }
+  .backlink { display:inline-block; margin-bottom:12px; color:var(--gold); font-weight:600; cursor:pointer; font-size:15px; }
+  h2 { font-size:18px; margin:0 0 10px; }
+  .hint { font-size:13px; color:#888; text-align:center; margin-top:8px; }
+  label { font-size:14px; font-weight:600; display:block; margin:10px 0 4px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>📦 ScanStock</h1>
+  <p>For the quiet moments that mean the most.</p>
+  <span class="mode" id="modeBadge">…</span>
+</header>
+<main>
+  <!-- HOME -->
+  <div id="view-home">
+    <div class="card">
+      <button class="bigbtn scan" onclick="startScan()">📷 Scan a barcode</button>
+      <div id="reader"></div>
+      <button class="bigbtn scan hidden" id="stopBtn" onclick="stopScan()" style="background:#a33">✕ Stop camera</button>
+      <div class="row">
+        <input type="text" id="manualCode" placeholder="…or type a SKU / barcode" style="margin-bottom:0">
+      </div>
+      <button class="bigbtn list" style="margin-top:10px" onclick="lookupManual()">🔎 Look it up</button>
+    </div>
+    <div class="card">
+      <button class="bigbtn list" onclick="showList()">📋 All my products</button>
+      <p class="hint">Point your camera at any UPC, SKU, or QR code.</p>
+    </div>
+  </div>
+
+  <!-- PRODUCT -->
+  <div id="view-product" class="hidden">
+    <span class="backlink" onclick="goHome()">← Back</span>
+    <div class="card">
+      <h2 id="pTitle">—</h2>
+      <div class="m" id="pMeta" style="color:#777;font-size:14px;margin-bottom:6px">—</div>
+      <label>Quantity on hand</label>
+      <div class="stepper">
+        <button onclick="bumpQty(-1)">−</button>
+        <div class="qv" id="pQty">0</div>
+        <button onclick="bumpQty(1)">+</button>
+      </div>
+      <label>Price ($)</label>
+      <input type="number" id="pPrice" step="0.01" min="0">
+      <button class="bigbtn scan savebtn" onclick="saveProduct()">💾 Save changes</button>
+      <p class="hint" id="saveMsg"></p>
+    </div>
+  </div>
+
+  <!-- LIST -->
+  <div id="view-list" class="hidden">
+    <span class="backlink" onclick="goHome()">← Back</span>
+    <div class="card" id="productList"><p class="hint">Loading…</p></div>
+  </div>
+</main>
+
+<script>
+let current = null, scanner = null, editingQty = 0;
+
+async function api(path, opts) {
+  const r = await fetch(path, opts);
+  const j = await r.json();
+  if (!r.ok) throw new Error(j.error || "Something went wrong");
+  return j;
+}
+async function init() {
+  try {
+    const s = await api("/api/status");
+    const b = document.getElementById("modeBadge");
+    b.textContent = s.mode === "shopify" ? "● Connected to your store" : "● Demo mode — try it out!";
+    b.classList.toggle("shopify", s.mode === "shopify");
+  } catch(e) { document.getElementById("modeBadge").textContent = "● Offline"; }
+}
+function show(id) {
+  ["view-home","view-product","view-list"].forEach(v => document.getElementById(v).classList.add("hidden"));
+  document.getElementById(id).classList.remove("hidden");
+  window.scrollTo(0,0);
+}
+function goHome() { stopScan(); show("view-home"); }
+
+async function startScan() {
+  const reader = document.getElementById("reader");
+  reader.classList.add("active");
+  document.getElementById("stopBtn").classList.remove("hidden");
+  scanner = new Html5Qrcode("reader");
+  try {
+    await scanner.start({ facingMode:"environment" }, { fps:10, qrbox:{width:250,height:250} },
+      (code) => { stopScan(); lookup(code); }, () => {});
+  } catch(e) { alert("Couldn't open the camera: " + e); stopScan(); }
+}
+async function stopScan() {
+  document.getElementById("reader").classList.remove("active");
+  document.getElementById("stopBtn").classList.add("hidden");
+  if (scanner) { try { await scanner.stop(); await scanner.clear(); } catch(e){} scanner = null; }
+}
+function lookupManual() {
+  const c = document.getElementById("manualCode").value.trim();
+  if (c) lookup(c);
+}
+async function lookup(code) {
+  try {
+    const p = await api("/api/lookup?code=" + encodeURIComponent(code));
+    if (!p) { alert("Hmm — no product found for “" + code + "”.\n\nCheck the code or add it to the product in Shopify first."); return; }
+    openProduct(p);
+  } catch(e) { alert(e.message); }
+}
+function openProduct(p) {
+  current = p; editingQty = p.qty;
+  document.getElementById("pTitle").textContent = p.title;
+  document.getElementById("pMeta").textContent = (p.sku ? "SKU: " + p.sku + "  •  " : "") + (p.barcode ? "Barcode: " + p.barcode : "");
+  document.getElementById("pQty").textContent = editingQty;
+  document.getElementById("pPrice").value = p.price.toFixed(2);
+  document.getElementById("saveMsg").textContent = "";
+  show("view-product");
+}
+function bumpQty(d) { editingQty = Math.max(0, editingQty + d); document.getElementById("pQty").textContent = editingQty; }
+async function saveProduct() {
+  const price = parseFloat(document.getElementById("pPrice").value);
+  const msg = document.getElementById("saveMsg");
+  try {
+    await api("/api/adjust", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ id: current.id, qty: editingQty }) });
+    if (!isNaN(price)) await api("/api/price", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ id: current.id, price }) });
+    current.qty = editingQty; if (!isNaN(price)) current.price = price;
+    msg.textContent = "✓ Saved!"; msg.style.color = "#2a7a3a";
+    setTimeout(() => showList(), 700);
+  } catch(e) { msg.textContent = "✕ " + e.message; msg.style.color = "#a33"; }
+}
+async function showList() {
+  show("view-list");
+  const box = document.getElementById("productList");
+  box.innerHTML = "<p class='hint'>Loading…</p>";
+  try {
+    const ps = await api("/api/products");
+    box.innerHTML = ps.map(p =>
+      `<div class="prod" onclick='openProduct(${JSON.stringify(p).replace(/'/g,"&#39;")})'>
+         <span class="q">${p.qty}</span>
+         <div class="t">${p.title}</div>
+         <div class="m">${p.sku ? "SKU: "+p.sku+" • " : ""}$${p.price.toFixed(2)}</div>
+       </div>`).join("") || "<p class='hint'>No products yet.</p>";
+  } catch(e) { box.innerHTML = "<p class='hint'>Couldn't load: " + e.message + "</p>"; }
+}
+init();
+</script>
+</body>
+</html>
