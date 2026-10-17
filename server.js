@@ -1,5 +1,5 @@
 /**
- * ScanStock — free barcode inventory for every Shopify store owner.
+ * Luminous Scan — free barcode inventory for every Shopify store owner.
  *
  * PUBLIC APP (Shopify App Store):
  *   1. Create the app in your Partner dashboard (she's on that screen now!)
@@ -221,4 +221,4 @@ app.post("/webhooks/app/uninstalled", express.raw({ type: "application/json" }),
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`ScanStock on :${PORT}`));
+app.listen(PORT, () => console.log(`Luminous Scan on :${PORT}`));
