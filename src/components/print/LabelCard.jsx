@@ -1,5 +1,6 @@
 import { Image } from '@/components/ui/image';
 import { formatMoney } from '@/lib/inventory';
+import { toLabel } from '@/lib/labelPayload';
 import BarcodeSvg from './BarcodeSvg';
 import QrSvg from './QrSvg';
 
@@ -74,9 +75,43 @@ function Name({ product, className = '' }) {
   return <p className={`truncate font-semibold leading-tight ${className}`}>{product.name}</p>;
 }
 
-export default function LabelCard({ template, product, business }) {
+/**
+ * One label in the browser-print preview.
+ *
+ * Takes a `product` — or a generic `label` payload ({ title, lines,
+ * code, codeType }, src/lib/labelPayload.js) for an aisle tag or a
+ * stock-room bin label. A generic label is viewed through the same
+ * templates: title as the name, the code as the big identifier and
+ * the barcode / QR, the detail lines as the small print. The 'bin'
+ * template is the natural fit for a location label. The label
+ * generators (ESC/POS, Bluetooth / USB, client + server PDF) speak
+ * the same payload, so a location label and a product label share
+ * one path end to end.
+ */
+export default function LabelCard({ template, product: productProp, label, business }) {
+  const generic = label ? toLabel(label) : null;
+  const product = generic
+    ? {
+        name: generic.title,
+        sku: generic.code,
+        barcode: generic.code,
+        upc: generic.code,
+        qr_code: generic.code,
+        price: null,
+        condition: generic.lines.join(' · '),
+        isbn: '',
+        author: '',
+        category: '',
+        unit: '',
+        notes: '',
+        photo_urls: [],
+      }
+    : productProp;
   const { barcode, qr } = labelCodes(product);
-  const price = formatMoney(product.price, business.currency);
+  const price =
+    product.price === null || product.price === undefined || product.price === ''
+      ? ''
+      : formatMoney(product.price, business.currency);
   const condition = product.condition || '';
 
   if (template === 'price') {

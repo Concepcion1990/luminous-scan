@@ -47,7 +47,7 @@ export function createApp() {
     res.json({
       status: 'ok',
       app: 'luminous-stockhaven-twin',
-      phase: 'T4',
+      phase: 'T5',
       uptime_seconds: Math.floor((Date.now() - startedAt) / 1000),
       database: db,
     });

@@ -1,5 +1,4 @@
-import { base44 } from '@/api/client';
-import { recordMovement } from '@/lib/inventory';
+import { apiRequest } from '@/api/client';
 
 export const PO_STATUS = {
   draft: { label: 'Draft', tone: 'muted' },
@@ -71,84 +70,51 @@ export function blankLine() {
 }
 
 /**
- * Receives an order: stock in at the chosen location, a ledger entry per line
- * carrying the PO number, supplier and unit cost, and the product's cost
- * replaced with what was actually paid.
+ * Receives an order through the server endpoint (T5): every line is
+ * checked before the first movement, then stock lands through the
+ * atomic movements path and the product's cost becomes what was
+ * actually paid — all in one transaction, so an order is never left
+ * half-received. `receipts` is an array aligned with the order's
+ * lines (one quantity per line).
  */
 export async function receiveOrder({ order, receipts, products, location, user, note }) {
   if (!['ordered', 'partial'].includes(order.status)) {
     throw new Error('This order is no longer open for receiving.');
   }
-
-  const productById = new Map(products.map((p) => [p.id, p]));
+  if (!location) throw new Error('Choose a receiving location.');
   const lines = order.lines || [];
-  const planned = [];
   let receivedNow = 0;
 
-  // Check every line before the first movement: a short or unknown line must
-  // fail before stock is added, or the order would be left half-received.
+  // Check every line before anything is sent: a short quantity must
+  // fail before stock is added, or the order would be left
+  // half-received. The server checks again — this is the fast,
+  // plain-language answer in the dialog.
   for (let i = 0; i < lines.length; i += 1) {
     const line = lines[i];
     const outstanding = openQty(line);
     const add = Math.max(0, Number(receipts[i]) || 0);
-    // Never receive more than is still due: a typed or double-submitted
-    // quantity must fail loudly instead of inflating stock.
     if (add > outstanding) {
       throw new Error(
         `Only ${outstanding} still due on ${line.product_name || line.sku || 'a line'} — adjust the quantity.`
       );
     }
     if (!add) continue;
-    let product = productById.get(line.product_id);
-    if (!product) {
-      product = await base44.entities.Product.get(line.product_id).catch(() => null);
-    }
-    if (!product) throw new Error(`${line.product_name || 'A line'} is no longer in the catalog.`);
-    planned.push({ line, product, add });
     receivedNow += add;
   }
 
   if (!receivedNow) throw new Error('Enter how many arrived on at least one line.');
 
-  const addByLine = new Map(planned.map((p) => [p.line, p.add]));
-
-  for (const { line, product, add } of planned) {
-    await recordMovement({
-      product,
-      location,
-      type: 'receive',
-      quantity: add,
-      note: [order.number, order.supplier_name, note].filter(Boolean).join(' · '),
-      reference: order.number,
-      supplierName: order.supplier_name,
-      unitCost: line.unit_cost,
-      user,
-      businessId: order.business_id || product.business_id || '',
-    });
-
-    if (Number(line.unit_cost) > 0) {
-      await base44.entities.Product.update(product.id, { cost: Number(line.unit_cost) });
-    }
-  }
-
-  const updated = lines.map((line) => {
-    const add = addByLine.get(line) || 0;
-    return add ? { ...line, qty_received: (Number(line.qty_received) || 0) + add } : line;
-  });
-
-  const complete = updated.every(
-    (l) => (Number(l.qty_received) || 0) >= (Number(l.qty_ordered) || 0)
+  const businessId = order.business_id || products?.[0]?.business_id || '';
+  const result = await apiRequest(
+    `/api/businesses/${businessId}/purchase-orders/${order.id}/receive`,
+    {
+      method: 'POST',
+      body: {
+        location_id: location.id,
+        receipts: lines.map((line, i) => Number(receipts[i]) || 0),
+        note: note || '',
+      },
+    },
   );
-  const status = complete ? 'received' : 'partial';
-
-  await base44.entities.PurchaseOrder.update(order.id, {
-    lines: updated,
-    status,
-    received_date: complete ? todayIso() : order.received_date || '',
-    received_by: user?.full_name || user?.email || order.received_by || '',
-    location_id: location.id,
-    location_name: location.name,
-  });
-
-  return { status, receivedNow };
+  return { status: result.status, receivedNow: result.receivedNow };
 }

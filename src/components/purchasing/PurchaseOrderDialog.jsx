@@ -49,15 +49,21 @@ export default function PurchaseOrderDialog({
   const [form, setForm] = useState(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  // Lines with no unit cost, named so the owner can confirm $0 is
+  // really what they mean (T5: a missing cost is never written
+  // silently as $0 — the server refuses it unless explicitly
+  // acknowledged; this is the first warning, before the server's).
+  const [zeroCost, setZeroCost] = useState(null);
 
   useEffect(() => {
     if (!open) return;
     setError('');
+    setZeroCost(null);
     if (order) {
       setForm({
         supplier_id: order.supplier_id || '',
         number: order.number || poNumber(),
-        status: order.status || 'ordered',
+        status: order.status || 'draft',
         order_date: order.order_date || todayIso(),
         expected_date: order.expected_date || '',
         location_id: order.location_id || locations[0]?.id || '',
@@ -70,7 +76,10 @@ export default function PurchaseOrderDialog({
       setForm({
         supplier_id: '',
         number: poNumber(),
-        status: 'ordered',
+        // New orders start as drafts — never silently ordered. The
+        // order is placed from the list (or by changing this to
+        // "On order" here) once it has actually gone to the supplier.
+        status: 'draft',
         order_date: todayIso(),
         expected_date: '',
         location_id: locations[0]?.id || '',
@@ -114,6 +123,16 @@ export default function PurchaseOrderDialog({
       return;
     }
 
+    // A missing cost is not a cost of zero: name the lines and ask
+    // once, before anything is written. Saving again confirms $0 is
+    // what was meant (and the server still refuses it unless the
+    // acknowledgement travels with the save).
+    const zeroLines = lines.filter((line) => !(Number(line.unit_cost) > 0));
+    if (zeroLines.length && !zeroCost) {
+      setZeroCost(zeroLines.map((line) => line.product_name || line.sku || 'a line'));
+      return;
+    }
+
     const receivedAlready = (order?.lines || []).reduce(
       (sum, line) => sum + (Number(line.qty_received) || 0),
       0
@@ -154,6 +173,7 @@ export default function PurchaseOrderDialog({
       tax: Number(form.tax) || 0,
       total: totals.total,
       note: form.note.trim(),
+      allow_zero_cost: Boolean(zeroCost),
     };
     try {
       const saved = order
@@ -174,7 +194,8 @@ export default function PurchaseOrderDialog({
         <DialogHeader>
           <DialogTitle>{order ? `Edit ${order.number}` : 'New purchase order'}</DialogTitle>
           <DialogDescription>
-            Costs entered here become each product's cost when you receive the order.
+            Costs entered here become each product's cost when you receive the order. New orders
+            start as drafts — place the order once it has actually gone to the supplier.
           </DialogDescription>
         </DialogHeader>
 
@@ -342,6 +363,13 @@ export default function PurchaseOrderDialog({
             />
           </div>
 
+          {zeroCost && (
+            <p className="rounded-lg border border-warn/30 bg-warn/10 px-3 py-2 text-sm">
+              These lines have no unit cost: {zeroCost.join(', ')}. A missing cost is not $0 — add
+              the cost, or save again to confirm $0 is what you mean.
+            </p>
+          )}
+
           {error && <p className="text-sm text-destructive">{error}</p>}
         </div>
 
@@ -350,7 +378,7 @@ export default function PurchaseOrderDialog({
             Cancel
           </Button>
           <Button onClick={save} disabled={saving}>
-            {saving ? 'Saving…' : order ? 'Save order' : 'Create order'}
+            {saving ? 'Saving…' : zeroCost ? 'Save anyway' : order ? 'Save order' : 'Create order'}
           </Button>
         </DialogFooter>
       </DialogContent>

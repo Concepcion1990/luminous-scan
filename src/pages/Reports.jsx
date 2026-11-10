@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { BarChart3, Download, FileSpreadsheet, Files, Loader2, Lock, TriangleAlert } from 'lucide-react';
+import { BarChart3, Download, FileDown, FileSpreadsheet, Files, Loader2, Lock, TriangleAlert } from 'lucide-react';
 import StatCard from '@/components/StatCard';
 import ReportControls from '@/components/reports/ReportControls';
 import ReportTable from '@/components/reports/ReportTable';
@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { downloadCsv, fileSlug, fileStamp, toCsv } from '@/lib/csv';
 import { formatMoney } from '@/lib/inventory';
+import { apiDownload } from '@/api/client';
 import {
   buildReport,
   loadReportSource,
@@ -120,6 +121,40 @@ export default function Reports() {
     });
   };
 
+  // This report as a server-built PDF (T5): the same rows the
+  // server report endpoint counted, so the PDF matches the page and
+  // the export. Business-only, enforced server-side.
+  const downloadPdf = async () => {
+    if (!report || !activeId) return;
+    const { from, to } = periodRange(filters.period, filters.from, filters.to);
+    const params = new URLSearchParams({
+      type: filters.reportId,
+      groupBy: filters.groupBy,
+      from: report.report.snapshot ? '' : from,
+      to: report.report.snapshot ? '' : to,
+      locationId: filters.locationId,
+      category: filters.category,
+    });
+    try {
+      const { blob, filename } = await apiDownload(
+        `/api/businesses/${activeId}/print/report?${params.toString()}`,
+      );
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = filename;
+      anchor.click();
+      URL.revokeObjectURL(url);
+      toast({ title: 'Report exported', description: `Saved as ${filename}` });
+    } catch {
+      toast({
+        title: 'Export failed',
+        description: 'Could not build the report PDF. Try again.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   // Every report in one workbook, one sheet each, keeping the filters on screen.
   const downloadAll = async () => {
     if (!source) return;
@@ -176,6 +211,10 @@ export default function Reports() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" onClick={downloadPdf} disabled={!report?.rows.length}>
+            <FileDown className="mr-1.5 h-4 w-4" />
+            Download PDF
+          </Button>
           <Button variant="outline" onClick={downloadExcel} disabled={!report?.rows.length}>
             <FileSpreadsheet className="mr-1.5 h-4 w-4" />
             Download Excel

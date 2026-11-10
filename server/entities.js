@@ -20,8 +20,11 @@
  *    bundle movement types refuse on Essentials.
  *
  * Filters use the Base44 language (server/query.js) evaluated over
- * the business's rows. Purchase orders and BOMs are T5: their reads
- * return empty, their writes refuse with t5_not_built.
+ * the business's rows. Purchase orders and BOMs are full T5 entities:
+ * created as draft (never silently ordered), $0 lines warned, not
+ * silently written, and status moves only through the guarded
+ * transitions (the atomic receive/build endpoints live in
+ * server/business.js).
  */
 import crypto from 'node:crypto';
 import { matchesFilter, pageRows, FETCH_CAP } from './query.js';
@@ -44,8 +47,6 @@ import {
 } from './plans.js';
 import { createStaffMember, staffSeatCount } from './staff.js';
 import { assertNotInGrace } from './billing.js';
-
-export const T5_STUBS = new Set(['PurchaseOrder', 'Bom']);
 
 const DEFS = {
   Product: {
@@ -115,6 +116,29 @@ const DEFS = {
     // the specific 'supplier_business_only' error for writes.
     planGate: 'business',
     writePerm: 'suppliers.manage',
+  },
+  PurchaseOrder: {
+    table: 'purchase_orders',
+    json: ['lines'],
+    numeric: ['subtotal', 'shipping', 'tax', 'total'],
+    bool: [],
+    required: ['number', 'supplier_id'],
+    // Business-only (plan §2.11). Created as draft, never silently
+    // ordered — guardCreate forces status 'draft' whatever the
+    // browser sent — and $0 lines are refused unless the caller
+    // explicitly acknowledges them (allow_zero_cost).
+    planGate: 'business',
+    writePerm: 'purchasing.manage',
+  },
+  Bom: {
+    table: 'boms',
+    json: ['lines'],
+    numeric: [],
+    bool: ['active'],
+    required: ['product_id'],
+    // Business-only (plan §2.11): bundles & builds.
+    planGate: 'business',
+    writePerm: 'builds.manage',
   },
   AlertRule: {
     table: 'alert_rules',
@@ -194,6 +218,7 @@ export function toDbValues(def, values, { isCreate = false } = {}) {
   const out = {};
   for (const [key, value] of Object.entries(values || {})) {
     if (key === 'id' || key === 'created_date' || key === 'updated_date' || key === 'created_at' || key === 'updated_at') continue;
+    if (key === 'allow_zero_cost') continue; // acknowledgement flag, never a column
     if (key === 'business_id' && !isCreate) continue; // business never moves
     if (def.json.includes(key)) {
       out[key] = Array.isArray(value) ? JSON.stringify(value) : typeof value === 'string' ? value : JSON.stringify(value ?? []);
@@ -258,6 +283,98 @@ function err(status, code, message) {
   return Object.assign(new Error(message), { status, code });
 }
 
+/** A missing cost is not a cost of zero: a line with no unit cost at
+ * all (blank, missing, or an explicit 0 the browser wrote for a
+ * blank) must be named, never written silently. A recorded $0 the
+ * owner explicitly confirms is real and is kept. */
+function poZeroCostLines(lines) {
+  return (Array.isArray(lines) ? lines : []).filter(
+    (line) =>
+      line &&
+      (line.unit_cost === '' ||
+        line.unit_cost === null ||
+        line.unit_cost === undefined ||
+        Number(line.unit_cost) === 0),
+  );
+}
+
+function poTotalsFor(lines, shipping, tax) {
+  const subtotal = (Array.isArray(lines) ? lines : []).reduce(
+    (sum, line) => sum + (Number(line.qty_ordered) || 0) * (Number(line.unit_cost) || 0),
+    0,
+  );
+  return { subtotal, total: subtotal + (Number(shipping) || 0) + (Number(tax) || 0) };
+}
+
+async function assertProductsInBusiness(pool, businessId, productIds) {
+  for (const id of [...new Set((productIds || []).filter(Boolean))]) {
+    const found = (
+      await pool.query('SELECT id FROM products WHERE id = $1 AND business_id = $2', [id, businessId])
+    ).rows[0];
+    if (!found) throw err(400, 'invalid_reference', 'Every line must name a product in this business.');
+  }
+}
+
+function poZeroCostError(zero) {
+  return Object.assign(
+    err(
+      400,
+      'po_zero_cost_lines',
+      `These lines have no unit cost: ${zero.map((l) => l.product_name || l.sku || 'a line').join(', ')}. Add the cost, or save again to confirm $0 is what you mean.`,
+    ),
+    { zero_lines: zero.map((l) => l.product_name || l.sku || '') },
+  );
+}
+
+/** Shared line checks for a purchase order (create + update). */
+async function validatePoLines(pool, business, values, { allowZeroCost }) {
+  const lines = Array.isArray(values.lines) ? values.lines : [];
+  if (!lines.length) throw err(400, 'invalid_value', 'Add at least one order line.');
+  for (const line of lines) {
+    if (!(Number(line.qty_ordered) > 0)) {
+      throw err(400, 'invalid_quantity', 'Every order line needs a quantity greater than zero.');
+    }
+  }
+  await assertProductsInBusiness(pool, business.id, lines.map((l) => l.product_id));
+  const zero = poZeroCostLines(lines);
+  if (zero.length && !allowZeroCost) throw poZeroCostError(zero);
+  return lines;
+}
+
+/** Shared checks for a build list (create + update). */
+async function validateBom(pool, business, productId, kind, lines) {
+  if (!['bundle', 'recipe'].includes(kind || 'bundle')) {
+    throw err(400, 'invalid_value', 'A build list is a bundle or a recipe.');
+  }
+  const finished = (
+    await pool.query('SELECT id FROM products WHERE id = $1 AND business_id = $2', [productId, business.id])
+  ).rows[0];
+  if (!finished) throw err(400, 'invalid_reference', 'The built product must belong to this business.');
+  const list = Array.isArray(lines) ? lines : [];
+  if (!list.length) throw err(400, 'invalid_value', 'Add at least one component.');
+  for (const line of list) {
+    if (line.component_id === productId) {
+      throw err(400, 'invalid_value', 'A product cannot be a component of itself.');
+    }
+    if (!(Number(line.quantity) > 0)) {
+      throw err(400, 'invalid_quantity', 'Every component needs a quantity greater than zero.');
+    }
+  }
+  await assertProductsInBusiness(pool, business.id, list.map((l) => l.component_id));
+  return list;
+}
+
+/** Status moves a purchase order may make by direct edit. Receiving
+ * sets `partial` / `received` — never an edit — and a received or
+ * cancelled order is terminal. */
+const PO_EDIT_TRANSITIONS = {
+  draft: ['ordered', 'cancelled'],
+  ordered: ['cancelled'],
+  partial: ['cancelled'],
+  received: [],
+  cancelled: [],
+};
+
 /** Guard a product write against the plan's active-product cap. */
 export async function assertProductCap(pool, businessId, planKey, additionalActive) {
   const limits = limitsForPlan(planKey);
@@ -282,7 +399,6 @@ async function guardCreate(pool, def, name, access, values) {
     throw err(403, 'plan_gated', `This feature is part of the Business plan.`);
   }
   if (name === 'Entitlement') throw err(403, 'entitlement_read_only', 'Entitlements are managed by billing (T4).');
-  if (T5_STUBS.has(name)) throw err(403, 't5_not_built', 'Purchase orders and bundles are built in T5.');
   if (def.writePerm && !access.can(def.writePerm)) {
     throw err(403, 'forbidden', 'You do not have permission to do that here.');
   }
@@ -290,6 +406,31 @@ async function guardCreate(pool, def, name, access, values) {
     if (values[field] === undefined || values[field] === null || String(values[field]).trim() === '') {
       throw err(400, 'invalid_value', `Field ${field} is required.`);
     }
+  }
+  if (name === 'PurchaseOrder') {
+    // Never silently ordered: every order starts as a draft, whatever
+    // the browser asked for. It moves to `ordered` only through the
+    // guarded transition (update) — see guardUpdate.
+    values.status = 'draft';
+    const supplier = (
+      await pool.query('SELECT id FROM suppliers WHERE id = $1 AND business_id = $2', [
+        values.supplier_id,
+        business.id,
+      ])
+    ).rows[0];
+    if (!supplier) throw err(400, 'invalid_reference', 'The supplier must belong to this business.');
+    const lines = await validatePoLines(pool, business, values, {
+      allowZeroCost: values.allow_zero_cost === true,
+    });
+    const totals = poTotalsFor(lines, values.shipping, values.tax);
+    values.subtotal = totals.subtotal;
+    values.total = totals.total;
+    // Received quantities always start at zero on create.
+    values.lines = lines.map((line) => ({ ...line, qty_received: 0 }));
+  }
+  if (name === 'Bom') {
+    values.kind = values.kind || 'bundle';
+    await validateBom(pool, business, values.product_id, values.kind, values.lines);
   }
   if (name === 'Product') {
     await assertProductCap(pool, business.id, planKey, values.status === 'archived' ? 0 : 1);
@@ -330,9 +471,56 @@ async function guardUpdate(pool, def, name, access, row, patch) {
     throw err(403, 'plan_gated', 'This feature is part of the Business plan.');
   }
   if (name === 'Entitlement') throw err(403, 'entitlement_read_only', 'Entitlements are managed by billing (T4).');
-  if (T5_STUBS.has(name)) throw err(403, 't5_not_built', 'Purchase orders and bundles are built in T5.');
   if (def.writePerm && !access.can(def.writePerm)) {
     throw err(403, 'forbidden', 'You do not have permission to do that here.');
+  }
+  // Audit Finding 36: role edit has no plan check — a custom role left
+  // over from a downgrade could be edited on Essentials, bypassing
+  // the create guard. Custom roles are Business-only, full stop.
+  if (name === 'StaffRole' && planKey !== 'business') {
+    throw err(403, 'custom_roles_business_only', customRolesBusinessOnlyMessage());
+  }
+  if (name === 'PurchaseOrder') {
+    const current = row;
+    if (patch.status && patch.status !== current.status) {
+      if (['partial', 'received'].includes(patch.status)) {
+        throw err(400, 'invalid_po_status', 'Received progress is set by receiving stock, not by editing the order.');
+      }
+      if (!(PO_EDIT_TRANSITIONS[current.status] || []).includes(patch.status)) {
+        throw err(400, 'invalid_po_status', `A ${current.status} order cannot move to ${patch.status}.`);
+      }
+    }
+    if (Array.isArray(patch.lines)) {
+      const existing = Array.isArray(current.lines) ? current.lines : [];
+      const existingById = new Map(existing.map((l) => [l.product_id, l]));
+      for (const line of patch.lines) {
+        if (!(Number(line.qty_ordered) > 0)) {
+          throw err(400, 'invalid_quantity', 'Every order line needs a quantity greater than zero.');
+        }
+        const prev = existingById.get(line.product_id);
+        if (prev && Number(line.qty_received ?? 0) !== Number(prev.qty_received ?? 0)) {
+          throw err(400, 'po_receive_via_endpoint', 'Received quantities change only when stock is received, not by editing the order.');
+        }
+        if (Number(line.qty_ordered) < Number(line.qty_received ?? 0)) {
+          throw err(400, 'invalid_quantity', 'The ordered quantity cannot drop below what already arrived.');
+        }
+      }
+      await validatePoLines(pool, access.business, patch, {
+        allowZeroCost: patch.allow_zero_cost === true,
+      });
+      const totals = poTotalsFor(patch.lines, patch.shipping ?? current.shipping, patch.tax ?? current.tax);
+      patch.subtotal = totals.subtotal;
+      patch.total = totals.total;
+    }
+  }
+  if (name === 'Bom') {
+    await validateBom(
+      pool,
+      access.business,
+      patch.product_id ?? row.product_id,
+      patch.kind ?? row.kind,
+      patch.lines ?? row.lines,
+    );
   }
   if (name === 'StaffMember') {
     // A staff member may never raise their own permissions; only the
@@ -369,7 +557,6 @@ async function insertRow(pool, def, businessId, caller, values) {
 }
 
 export async function listEntities(pool, user, name, filter = {}, options = {}) {
-  if (T5_STUBS.has(name)) return { items: [], next_cursor: null, total: 0 };
   const def = entityDef(name);
   if (!def) throw err(404, 'unknown_entity', `Unknown entity ${name}.`);
   const wantedIds = businessIdsFromFilter(filter);
@@ -403,7 +590,6 @@ export async function countEntities(pool, user, name, filter = {}) {
 }
 
 export async function getEntity(pool, user, name, id) {
-  if (T5_STUBS.has(name)) throw err(404, 'not_found', 'Not found.');
   const def = entityDef(name);
   if (!def) throw err(404, 'unknown_entity', `Unknown entity ${name}.`);
   const { rows } = await pool.query(`SELECT * FROM ${def.table} WHERE id = $1 LIMIT 1`, [id]);
@@ -428,7 +614,6 @@ export async function getEntity(pool, user, name, id) {
 export async function createEntity(pool, user, name, values) {
   const def = entityDef(name);
   if (!def) throw err(404, 'unknown_entity', `Unknown entity ${name}.`);
-  if (T5_STUBS.has(name)) throw err(403, 't5_not_built', 'Purchase orders and bundles are built in T5.');
   const businessId = values?.business_id;
   if (!businessId) throw err(400, 'invalid_value', 'business_id is required.');
   const access = await resolveAccess(pool, user, businessId);
@@ -474,7 +659,6 @@ export async function bulkCreateEntities(pool, user, name, rows) {
 export async function updateEntity(pool, user, name, id, patch) {
   const def = entityDef(name);
   if (!def) throw err(404, 'unknown_entity', `Unknown entity ${name}.`);
-  if (T5_STUBS.has(name)) throw err(403, 't5_not_built', 'Purchase orders and bundles are built in T5.');
   const { rows } = await pool.query(`SELECT * FROM ${def.table} WHERE id = $1 LIMIT 1`, [id]);
   const row = rows[0];
   if (!row) throw err(404, 'not_found', 'Not found.');
@@ -502,7 +686,6 @@ export async function updateEntity(pool, user, name, id, patch) {
 export async function deleteEntity(pool, user, name, id) {
   const def = entityDef(name);
   if (!def) throw err(404, 'unknown_entity', `Unknown entity ${name}.`);
-  if (T5_STUBS.has(name)) throw err(403, 't5_not_built', 'Purchase orders and bundles are built in T5.');
   const { rows } = await pool.query(`SELECT * FROM ${def.table} WHERE id = $1 LIMIT 1`, [id]);
   const row = rows[0];
   if (!row) throw err(404, 'not_found', 'Not found.');
@@ -515,6 +698,9 @@ export async function deleteEntity(pool, user, name, id) {
     if (!access.isOwner) throw err(403, 'forbidden', 'Only the business owner can remove a staff member.');
   } else if (name === 'Entitlement') {
     throw err(403, 'entitlement_read_only', 'Entitlements are managed by billing (T4).');
+  } else if (name === 'StaffRole' && access.planKey !== 'business') {
+    // Audit Finding 36: role delete has no plan check either.
+    throw err(403, 'custom_roles_business_only', customRolesBusinessOnlyMessage());
   } else if (def.planGate && !featureAllowed(access.planKey, def.planGate)) {
     throw err(403, 'plan_gated', 'This feature is part of the Business plan.');
   } else if (def.writePerm && !access.can(def.writePerm)) {

@@ -11,11 +11,12 @@
     "lint:fix": "eslint . --fix",
     "preview": "vite preview",
     "start": "node server.js",
-    "test": "npm run test:t1 && npm run test:t2 && npm run test:t3 && npm run test:t4",
+    "test": "npm run test:t1 && npm run test:t2 && npm run test:t3 && npm run test:t4 && npm run test:t5",
     "test:t1": "node --test src/lib/stockhavenSubscriptionPolicy.test.js src/lib/stockhavenTermsOfService.test.js src/lib/stockhavenPrivacyPolicy.test.js src/lib/trademarkNotice.test.js src/lib/aboutFounder.test.js",
     "test:t2": "node --test tests/t2/*.test.js",
     "test:t3": "node --test tests/t3/*.test.js src/lib/xlsx.test.js",
-    "test:t4": "node --test tests/t4/*.test.js"
+    "test:t4": "node --test tests/t4/*.test.js",
+    "test:t5": "node --test tests/t5/*.test.js src/lib/bluetoothPrint.test.js src/lib/usbPrint.test.js"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^17.0.0",

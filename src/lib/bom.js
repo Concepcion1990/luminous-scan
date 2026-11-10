@@ -1,6 +1,5 @@
-import { base44 } from '@/api/client';
+import { base44, apiRequest } from '@/api/client';
 import { scoped } from '@/lib/scoped';
-import { recordMovement } from '@/lib/inventory';
 
 /** A bundle is a kit of existing items; a recipe is what a made item consumes. */
 export const BUILD_KINDS = {
@@ -92,9 +91,11 @@ export async function listBuildableProducts(businessId = '') {
 }
 
 /**
- * Consumes every component at the location, then puts the finished product on
- * the same shelf. Component stock is checked up front so a build either has
- * everything it needs or writes nothing at all.
+ * Consumes every component at the location, then puts the finished
+ * product on the same shelf — through the server build endpoint
+ * (T5), which checks the stock and writes the consume + produce
+ * movements in one transaction. A build either has everything it
+ * needs or writes nothing at all.
  */
 export async function assembleBom({ bom, product, location, quantity, user, businessId = '' }) {
   const qty = Math.max(1, Math.floor(Number(quantity) || 0));
@@ -127,38 +128,11 @@ export async function assembleBom({ bom, product, location, quantity, user, busi
     }
   });
 
-  const reference = buildNumber();
-
-  for (const line of lines) {
-    await recordMovement({
-      product: {
-        id: line.component_id,
-        name: line.component_name,
-        sku: line.sku || '',
-        business_id: businessId,
-      },
-      location,
-      type: 'consume',
-      quantity: (Number(line.quantity) || 0) * qty,
-      note: `Build ${qty} × ${finished.name}`,
-      reference,
-      user,
-      businessId,
-    });
-  }
-
-  const { next } = await recordMovement({
-    product: finished,
-    location,
-    type: 'produce',
-    quantity: qty,
-    note: `Built from ${lines.length} part${lines.length === 1 ? '' : 's'}`,
-    reference,
-    user,
-    businessId,
-  });
-
-  return { reference, next };
+  const result = await apiRequest(
+    `/api/businesses/${businessId}/boms/${bom.id}/build`,
+    { method: 'POST', body: { location_id: location.id, quantity: qty } },
+  );
+  return { reference: result.reference, next: result.next };
 }
 
 /** How many finished units of this build list sit on one shelf right now. */
@@ -172,8 +146,9 @@ export function bundleOnHand(bom, levels, locationId) {
 }
 
 /**
- * Takes finished units apart: the bundle leaves the shelf and every component
- * comes back to it in the same proportions it was built with.
+ * Takes finished units apart through the server endpoint (T5): the
+ * bundle leaves the shelf and every component comes back to it in
+ * the same proportions it was built with, in one transaction.
  */
 export async function disassembleBom({ bom, product, location, quantity, user, businessId = '' }) {
   const qty = Math.max(1, Math.floor(Number(quantity) || 0));
@@ -191,36 +166,9 @@ export async function disassembleBom({ bom, product, location, quantity, user, b
     throw new Error(`Only ${onHand} × ${product.name} at ${location.name}.`);
   }
 
-  const reference = buildNumber('TEARDOWN');
-
-  await recordMovement({
-    product,
-    location,
-    type: 'disassemble',
-    quantity: qty,
-    note: 'Taken apart for parts',
-    reference,
-    user,
-    businessId,
-  });
-
-  for (const line of lines) {
-    await recordMovement({
-      product: {
-        id: line.component_id,
-        name: line.component_name,
-        sku: line.sku || '',
-        business_id: businessId,
-      },
-      location,
-      type: 'recovered',
-      quantity: (Number(line.quantity) || 0) * qty,
-      note: `From ${qty} × ${product.name}`,
-      reference,
-      user,
-      businessId,
-    });
-  }
-
-  return { reference, remaining: onHand - qty };
+  const result = await apiRequest(
+    `/api/businesses/${businessId}/boms/${bom.id}/disassemble`,
+    { method: 'POST', body: { location_id: location.id, quantity: qty } },
+  );
+  return { reference: result.reference, remaining: result.remaining };
 }

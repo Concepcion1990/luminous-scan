@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { base44 } from '@/api/client';
-import { Link, useLocation } from 'react-router-dom';
-import { ArrowRight, Check, MapPin, PackageSearch, Plus, RotateCcw, TriangleAlert } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { ArrowRight, Check, MapPin, PackageSearch, Plus, Printer, RotateCcw, TriangleAlert } from 'lucide-react';
 import BarcodeScanner from '@/components/scan/BarcodeScanner';
 import ExternalCodePanel from '@/components/scan/ExternalCodePanel';
 import MatchPicker from '@/components/scan/MatchPicker';
@@ -328,6 +328,17 @@ export default function Scan() {
 
   const idle = !product && !notFound && !external && matches.length === 0;
 
+  const navigate = useNavigate();
+  // Walmart scanner item 5 (T5): print a shelf tag for the scanned item.
+  // Labels print on both plans, so there is no plan check here — the
+  // label machinery takes the product straight to the print page
+  // preselected. A plain synchronous navigate: no pending state, so
+  // there is nothing that can stick (owner's quality bar).
+  const printShelfTag = () => {
+    if (!product) return;
+    navigate('/print', { state: { product } });
+  };
+
   return (
     <PullToRefresh
       className="space-y-5"
@@ -457,6 +468,9 @@ export default function Scan() {
                       {[product.sku, product.upc, product.isbn].filter(Boolean).join(' · ')}
                     </p>
                   </div>
+                  <Button variant="outline" size="sm" onClick={printShelfTag} className="shrink-0">
+                    <Printer className="mr-1.5 h-3.5 w-3.5" /> Print shelf tag
+                  </Button>
                   <Button variant="ghost" size="sm" onClick={reset} className="shrink-0">
                     <RotateCcw className="mr-1.5 h-3.5 w-3.5" /> Scan next
                   </Button>

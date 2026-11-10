@@ -162,7 +162,7 @@ export default function CustomerDoc({ order, business, mode = 'invoice' }) {
         {packing
           ? 'Tick each line as it goes in the box, then mark the order shipped so stock leaves once.'
           : receipt
-            ? 'Payment is recorded by hand in Luminous ScanHaven. This receipt does not itself charge a card.'
+            ? 'Payment is recorded by hand. This receipt does not itself charge a card.'
             : 'Amounts are as entered on the order. Payment is tracked by hand, not collected by this document.'}
       </p>
     </div>

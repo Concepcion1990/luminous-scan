@@ -2,9 +2,16 @@ import { useState } from 'react';
 import { Download, FileSpreadsheet, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
-import { exportDataset } from '@/lib/exportData';
+import { apiDownload } from '@/api/client';
 
-/** One dataset card: builds the file on demand in CSV or Excel, then reports what went into it. */
+/**
+ * One dataset card: downloads the file the SERVER builds for this
+ * business (T5 rewire — the file used to be built in the browser
+ * from entity reads, which left the Essentials export ban enforced
+ * only by hiding the button). The server enforces Business-only,
+ * the 20,000-row cap and the blank-money rule; this card only
+ * fetches the finished file and reports what came back.
+ */
 export default function ExportCard({ dataset, businessId, businessName, profile }) {
   const { toast } = useToast();
   const [busy, setBusy] = useState('');
@@ -14,20 +21,27 @@ export default function ExportCard({ dataset, businessId, businessName, profile 
     if (!businessId || busy) return;
     setBusy(format);
     try {
-      const { count, filename } = await exportDataset(
-        dataset,
-        { businessId, businessName, profile },
-        format
+      const { blob, filename, truncated, rows } = await apiDownload(
+        `/api/businesses/${businessId}/export/${dataset.id}?format=${format}`,
       );
-      setDone({ count, filename });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = filename;
+      anchor.click();
+      URL.revokeObjectURL(url);
+      setDone({ count: rows, filename });
       toast({
         title: `${dataset.title} exported`,
-        description: `${count} row${count === 1 ? '' : 's'} saved as ${filename}`,
+        description:
+          rows != null
+            ? `${rows} row${rows === 1 ? '' : 's'} saved as ${filename}${truncated ? ' — stopped at 20,000 rows' : ''}`
+            : `Saved as ${filename}${truncated ? ' — stopped at 20,000 rows' : ''}`,
       });
     } catch {
       toast({
         title: 'Export failed',
-        description: `Could not read ${dataset.title.toLowerCase()}. Try again.`,
+        description: `Could not build ${dataset.title.toLowerCase()}. Try again.`,
         variant: 'destructive',
       });
     } finally {
@@ -68,7 +82,7 @@ export default function ExportCard({ dataset, businessId, businessName, profile 
             </Button>
           )}
         </div>
-        {done && (
+        {done && done.count != null && (
           <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
             {done.count} rows
           </span>

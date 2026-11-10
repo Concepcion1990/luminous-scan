@@ -121,8 +121,35 @@ const ENTITY_NAMES = [
   'Supplier',
 ];
 
-export const base44 = {
-  entities: Object.fromEntries(
+/**
+ * T5: plain JSON / file calls to the twin's own API (same session
+ * cookie as `request`). Used by the business flows (PO receive,
+ * builds), the server-export rewire and the print PDFs — none of
+ * these go through `base44.functions.invoke`.
+ */
+export async function apiRequest(path, { method = 'GET', body } = {}) {
+  return request(path, { method, body });
+}
+
+export async function apiDownload(path) {
+  const response = await fetch(path, { method: 'GET', credentials: 'same-origin' });
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    const error = new Error(data.message || data.error || `Download failed (${response.status})`);
+    error.status = response.status;
+    error.data = data;
+    throw error;
+  }
+  return {
+    blob: await response.blob(),
+    filename:
+      response.headers.get('Content-Disposition')?.match(/filename="([^"]+)"/)?.[1] || 'download',
+    truncated: response.headers.get('X-Export-Truncated') === '1',
+    rows: Number(response.headers.get('X-Export-Rows') || 0) || null,
+  };
+}
+
+export const base44 = {  entities: Object.fromEntries(
     ENTITY_NAMES.map((name) => [name, name === 'Business' ? businessEntityClient() : entityClient(name)]),
   ),
 

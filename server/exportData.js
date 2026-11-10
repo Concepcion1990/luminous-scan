@@ -207,6 +207,45 @@ export const EXPORTS = {
     },
   },
 
+  'purchase-orders': {
+    title: 'Purchase orders',
+    async build(pool, businessId) {
+      const { rows: orders, truncated } = await allRows(pool, 'PurchaseOrder', businessId);
+      const rows = orders.flatMap((order) => {
+        const lines = order.lines?.length ? order.lines : [null];
+        return lines.map((line) => ({ order, line }));
+      });
+      const columns = [
+        code('PO number', (r) => r.order.number),
+        { label: 'Status', value: (r) => r.order.status || '' },
+        { label: 'Supplier', value: (r) => r.order.supplier_name || '' },
+        { label: 'Order date', value: (r) => r.order.order_date || '' },
+        { label: 'Expected', value: (r) => r.order.expected_date || '' },
+        { label: 'Received on', value: (r) => r.order.received_date || '' },
+        { label: 'Receiving location', value: (r) => r.order.location_name || '' },
+        code('Product SKU', (r) => r.line?.sku),
+        { label: 'Product', value: (r) => r.line?.product_name || '' },
+        { label: 'Product ID', value: (r) => r.line?.product_id || '', text: true },
+        { label: 'Qty ordered', value: (r) => r.line?.qty_ordered ?? '' },
+        { label: 'Qty received', value: (r) => r.line?.qty_received ?? '' },
+        { label: 'Unit cost', value: (r) => r.line?.unit_cost ?? '' },
+        {
+          label: 'Line total',
+          value: (r) =>
+            r.line ? Number((r.line.qty_ordered || 0) * (r.line.unit_cost || 0)).toFixed(2) : '',
+        },
+        { label: 'Order subtotal', value: (r) => r.order.subtotal ?? '' },
+        { label: 'Shipping', value: (r) => r.order.shipping ?? '' },
+        { label: 'Tax', value: (r) => r.order.tax ?? '' },
+        { label: 'Order total', value: (r) => r.order.total ?? '' },
+        { label: 'Note', value: (r) => r.order.note || '' },
+        { label: 'Received by', value: (r) => r.order.received_by || '' },
+        { label: 'Created', value: (r) => iso(r.order.created_date) },
+      ];
+      return { columns, rows, truncated };
+    },
+  },
+
   locations: {
     title: 'Locations',
     async build(pool, businessId) {

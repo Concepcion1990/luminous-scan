@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { base44 } from '@/api/client';
+import { base44, apiRequest } from '@/api/client';
 import { Link } from 'react-router-dom';
 import { Check, ClipboardList, Pencil, Plus } from 'lucide-react';
 import PurchaseOrderDialog from '@/components/purchasing/PurchaseOrderDialog';
@@ -47,6 +47,23 @@ export default function Purchasing() {
   const [editing, setEditing] = useState(null);
   const [receiving, setReceiving] = useState(null);
   const [flash, setFlash] = useState('');
+  const [error, setError] = useState('');
+
+  // A draft becomes "on order" only when it has actually gone to
+  // the supplier — the server moves it, never a direct status edit.
+  const placeOrder = async (order) => {
+    setError('');
+    try {
+      const { order: placed } = await apiRequest(
+        `/api/businesses/${activeId}/purchase-orders/${order.id}/order`,
+        { method: 'POST' },
+      );
+      setReload((r) => r + 1);
+      setFlash(`${placed.number} is on order now.`);
+    } catch (err) {
+      setError(err?.message || 'Could not place this order.');
+    }
+  };
 
   useEffect(() => {
     (async () => {
@@ -101,6 +118,12 @@ export default function Purchasing() {
           </Button>
         </div>
       </div>
+
+      {error && (
+        <div className="rounded-lg border border-destructive/30 bg-destructive/8 p-3 text-sm text-destructive">
+          {error}
+        </div>
+      )}
 
       {flash && (
         <div className="flex items-start gap-2 rounded-lg border border-ok/30 bg-ok/8 p-3 text-sm">
@@ -202,6 +225,11 @@ export default function Purchasing() {
               </div>
 
               <div className="mt-3 flex flex-wrap gap-2">
+                {order.status === 'draft' && (
+                  <Button size="sm" onClick={() => placeOrder(order)}>
+                    Place order
+                  </Button>
+                )}
                 {canReceive && (
                   <Button size="sm" onClick={() => setReceiving(order)}>
                     Receive

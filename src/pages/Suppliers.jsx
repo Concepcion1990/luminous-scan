@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
-import { base44 } from '@/api/client';
+import { base44, apiDownload } from '@/api/client';
 import { Link } from 'react-router-dom';
-import { ClipboardList, Mail, Pencil, Phone, Plus } from 'lucide-react';
+import { ClipboardList, FileDown, Mail, Pencil, Phone, Plus } from 'lucide-react';
 import SupplierFormDialog from '@/components/suppliers/SupplierFormDialog';
 import PlanGate from '@/components/plan/PlanGate';
 import { useBusiness } from '@/hooks/useBusiness';
 import useEntitlements from '@/hooks/useEntitlements';
 import { scoped } from '@/lib/scoped';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/use-toast';
 
 export default function Suppliers() {
   const { activeId } = useBusiness();
@@ -16,12 +17,40 @@ export default function Suppliers() {
   // entitlement is still loading the plan is unknown, so nothing is locked
   // yet — the same fail-open-while-loading shape PlanGate itself uses.
   const { can, isLoading: entitlementLoading } = useEntitlements();
+  const { toast } = useToast();
   const [suppliers, setSuppliers] = useState([]);
   const [openOrders, setOpenOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [reload, setReload] = useState(0);
+  const [docBusy, setDocBusy] = useState('');
+
+  // Supplier profile sheet (T5 server PDF): contact details plus
+  // open orders. Business-only, like every supplier document.
+  const downloadDoc = async (supplier) => {
+    if (docBusy) return;
+    setDocBusy(supplier.id);
+    try {
+      const { blob, filename } = await apiDownload(
+        `/api/businesses/${activeId}/print/supplier-doc?supplier_id=${supplier.id}`,
+      );
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = filename;
+      anchor.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      toast({
+        title: 'Could not build that document',
+        description: 'Try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setDocBusy('');
+    }
+  };
 
   useEffect(() => {
     (async () => {
@@ -127,6 +156,17 @@ export default function Suppliers() {
                   {own.length}
                 </span>
               </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-3 w-full"
+                onClick={() => downloadDoc(supplier)}
+                disabled={docBusy === supplier.id}
+              >
+                <FileDown className="mr-1.5 h-3.5 w-3.5" />
+                {docBusy === supplier.id ? 'Building…' : 'Supplier sheet (PDF)'}
+              </Button>
             </div>
           );
         })}

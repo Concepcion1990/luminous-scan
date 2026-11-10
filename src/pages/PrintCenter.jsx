@@ -1,12 +1,19 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowRight, Lock, Printer, X } from 'lucide-react';
-import { base44 } from '@/api/client';
+import { Link, useLocation } from 'react-router-dom';
+import { ArrowRight, Bluetooth, Download, FileDown, Lock, Printer, Usb, X } from 'lucide-react';
+import { base44, apiDownload } from '@/api/client';
 import { useBusiness } from '@/hooks/useBusiness';
 import useEntitlements from '@/hooks/useEntitlements';
 import { listProducts } from '@/lib/inventory';
 import { isSupplierPrintTemplate } from '@/lib/plans';
 import { scoped } from '@/lib/scoped';
+import {
+  bluetoothAvailable,
+  BLUETOOTH_UNAVAILABLE_COPY,
+  printLabelsViaBluetooth,
+} from '@/lib/bluetoothPrint';
+import { usbAvailable, USB_UNAVAILABLE_COPY, printLabelsViaUsb } from '@/lib/usbPrint';
+import { downloadLabelsPdf } from '@/lib/labelsPdf';
 import LabelCard, { TEMPLATES } from '@/components/print/LabelCard';
 import CountSheet from '@/components/print/CountSheet';
 import PickList from '@/components/print/PickList';
@@ -23,6 +30,7 @@ import { Label } from '@/components/ui/label';
 
 export default function PrintCenter() {
   const { profile, activeId } = useBusiness();
+  const location = useLocation();
   // Supplier print styles are Business-only: the two options stay hidden
   // while the plan is still loading, so a Business account never briefly
   // loses them the way the limits did. Once Essentials is confirmed, they
@@ -51,11 +59,32 @@ export default function PrintCenter() {
   const [customerOrderId, setCustomerOrderId] = useState('');
   const [returnRecords, setReturnRecords] = useState([]);
   const [returnId, setReturnId] = useState('');
+  // Direct printing (T5): Bluetooth / USB send label bytes straight
+  // to the printer — no internet, no server round-trip. Availability
+  // is a browser fact, not a plan fact: labels print on both plans.
+  const [canBluetooth] = useState(() => bluetoothAvailable());
+  const [canUsb] = useState(() => usbAvailable());
+  const [directBusy, setDirectBusy] = useState('');
+  const [directStatus, setDirectStatus] = useState('');
+  const [pdfBusy, setPdfBusy] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebounced(search), 300);
     return () => clearTimeout(timer);
   }, [search]);
+
+  // Shelf-tag hook (T5, Walmart scanner item 5): the scanner offers
+  // "Print shelf tag" for the scanned item and lands here with the
+  // product in navigation state. Preselect it so the tag is one tap
+  // away. Labels print on both plans, so no plan check here — the
+  // plan gates only the document templates, handled elsewhere here.
+  useEffect(() => {
+    const incoming = location.state?.product;
+    if (!incoming?.id) return;
+    setSelected((list) =>
+      list.some((entry) => entry.id === incoming.id) ? list : [incoming, ...list],
+    );
+  }, [location.state]);
 
   useEffect(() => {
     let cancelled = false;
@@ -165,6 +194,79 @@ export default function PrintCenter() {
 
   const blank = supplierBlocked || nothingPicked;
 
+  // The server PDF for what is on screen (online path). Labels are
+  // both plans; the document PDFs are Business-only and the server
+  // refuses them on Essentials whatever the connection. Count
+  // sheets, pick lists, product sheets and return documents have no
+  // server PDF — they print through the browser only.
+  const isLabelStyle = !isDocument && !pickedDoc;
+  const serverPdfPath = () => {
+    if (!activeId) return null;
+    if (isLabelStyle && selected.length) {
+      return `/api/businesses/${activeId}/print/labels?product_ids=${selected.map((p) => p.id).join(',')}&copies=${copies}`;
+    }
+    if (template === 'po' && order) return `/api/businesses/${activeId}/print/po?po_id=${order.id}&mode=po`;
+    if (template === 'packing' && order) return `/api/businesses/${activeId}/print/po?po_id=${order.id}&mode=packing`;
+    if (isCustomerDoc && customerOrder) {
+      return `/api/businesses/${activeId}/print/packing-slip?order_id=${customerOrder.id}`;
+    }
+    return null;
+  };
+
+  const downloadServerPdf = async () => {
+    const path = serverPdfPath();
+    if (!path || pdfBusy) return;
+    setPdfBusy(true);
+    try {
+      const { blob, filename } = await apiDownload(path);
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = filename;
+      anchor.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      setDirectStatus('That PDF could not be built. Try the Print button instead.');
+    } finally {
+      setPdfBusy(false);
+    }
+  };
+
+  // Direct-to-printer label sends. The bytes are generated
+  // client-side from the selected products; the browser picker
+  // chooses the printer. Failures land in plain words with the
+  // browser-print fallback — never a silent nothing.
+  const printDirect = async (kind) => {
+    if (!selected.length || directBusy) return;
+    setDirectBusy(kind);
+    setDirectStatus('');
+    try {
+      const result =
+        kind === 'bluetooth'
+          ? await printLabelsViaBluetooth(selected, { copies })
+          : await printLabelsViaUsb(selected, { copies });
+      setDirectStatus(`Sent ${result.bytes} bytes to ${result.deviceName}.`);
+    } catch (error) {
+      setDirectStatus(error?.message || 'That did not print — use the Print button instead.');
+    } finally {
+      setDirectBusy('');
+    }
+  };
+
+  const downloadLabels = () => {
+    if (!selected.length) return;
+    try {
+      downloadLabelsPdf(selected, {
+        copies,
+        businessName: profile.name,
+        filename: `${profile.name || 'business'}-labels.pdf`,
+      });
+      setDirectStatus('Labels PDF downloaded — it prints without an internet connection.');
+    } catch {
+      setDirectStatus('That PDF could not be built. Try the Print button instead.');
+    }
+  };
+
   const summaryTitle = isOrder
     ? order
       ? `${order.number} · ${(order.lines || []).length} line${(order.lines || []).length === 1 ? '' : 's'}`
@@ -209,9 +311,16 @@ export default function PrintCenter() {
               : 'Scannable labels, stock sheets, pick lists, customer invoices, receipts and return documents.'}
           </p>
         </div>
-        <Button onClick={() => window.print()} disabled={blank}>
-          <Printer className="mr-1.5 h-4 w-4" /> Print
-        </Button>
+        <div className="flex gap-2">
+          {serverPdfPath() && (
+            <Button variant="outline" onClick={downloadServerPdf} disabled={blank || pdfBusy}>
+              <FileDown className="mr-1.5 h-4 w-4" /> {pdfBusy ? 'Building…' : 'PDF'}
+            </Button>
+          )}
+          <Button onClick={() => window.print()} disabled={blank}>
+            <Printer className="mr-1.5 h-4 w-4" /> Print
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[340px_minmax(0,1fr)]">
@@ -305,6 +414,48 @@ export default function PrintCenter() {
             </div>
           </div>
           )}
+
+          {isLabelStyle && selected.length > 0 && (
+            <div className="rounded-xl border border-border bg-card p-4">
+              <Label className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                Print straight to the printer
+              </Label>
+              <p className="mt-1 text-[11px] text-muted-foreground">
+                Labels print on both plans, and these send straight to the printer — no internet
+                needed once this page is loaded.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {canBluetooth ? (
+                  <Button
+                    size="sm"
+                    onClick={() => printDirect('bluetooth')}
+                    disabled={Boolean(directBusy)}
+                  >
+                    <Bluetooth className="mr-1.5 h-4 w-4" />
+                    {directBusy === 'bluetooth' ? 'Sending…' : 'Bluetooth'}
+                  </Button>
+                ) : (
+                  <p className="text-[11px] leading-relaxed text-muted-foreground">
+                    {BLUETOOTH_UNAVAILABLE_COPY}
+                  </p>
+                )}
+                {canUsb ? (
+                  <Button size="sm" onClick={() => printDirect('usb')} disabled={Boolean(directBusy)}>
+                    <Usb className="mr-1.5 h-4 w-4" />
+                    {directBusy === 'usb' ? 'Sending…' : 'USB'}
+                  </Button>
+                ) : (
+                  <p className="text-[11px] leading-relaxed text-muted-foreground">
+                    {USB_UNAVAILABLE_COPY}
+                  </p>
+                )}
+                <Button size="sm" variant="outline" onClick={downloadLabels}>
+                  <Download className="mr-1.5 h-4 w-4" /> Labels PDF
+                </Button>
+              </div>
+              {directStatus && <p className="mt-2 text-[11px] text-muted-foreground">{directStatus}</p>}
+            </div>
+          )}
         </div>
 
         <div className="rounded-xl border border-border bg-card print:border-0">
@@ -389,6 +540,58 @@ export default function PrintCenter() {
             )}
           </div>
         </div>
+      </div>
+
+      <div className="rounded-xl border border-border bg-card p-4 text-xs leading-relaxed text-muted-foreground no-print sm:p-5">
+        <p className="flex items-center gap-1.5 font-medium text-foreground">
+          <Printer className="h-3.5 w-3.5" /> How to reach your printer
+        </p>
+        <p className="mt-2">
+          This app connects to printers you already own — it is not a printer itself. There are four
+          ways to reach one, and labels print on both plans over any of them. Packing slips, purchase
+          orders, supplier documents and reports are Business-only, whatever the connection.
+        </p>
+        <p className="mt-2">
+          <span className="font-medium text-foreground">Bluetooth.</span> From this page, on desktop
+          Chrome or Edge and on Android Chrome: pick your label printer and the labels go straight to
+          it. It does not work in iOS Safari — on an iPhone, Bluetooth printing comes with the mobile
+          app instead. A printer that only speaks Zebra ZPL or Brother&apos;s own language will not
+          understand the labels this page sends; that is checked against real printers before it is
+          called working.
+        </p>
+        <p className="mt-2">
+          <span className="font-medium text-foreground">Wi-Fi.</span> Install the printer on your
+          shop&apos;s Wi-Fi, then use the Print button — it prints through the printer installed on
+          this computer, over the shop network. On an iPhone, AirPrint is built in: an AirPrint
+          printer on the same Wi-Fi just appears in the print sheet, no cord and no app needed, and
+          the app needs no AirPrint-specific code. The printer must support AirPrint (most new ones
+          do) and the phone and printer must be on the same Wi-Fi.
+        </p>
+        <p className="mt-2">
+          <span className="font-medium text-foreground">Ethernet.</span> Wire the printer to your
+          shop network with an Ethernet cord, install it on the computer, and print through the
+          Print button. Ethernet is a desktop and computer path — iPhones do not use Ethernet cords.
+        </p>
+        <p className="mt-2">
+          <span className="font-medium text-foreground">USB.</span> Plug the printer into the
+          computer with its cord and use the Print button — it prints through the printer installed
+          there. On an Android phone with a USB OTG cable, the USB button above talks straight to
+          the printer. iPhones cannot print over USB directly — no WebUSB there — so use Wi-Fi /
+          AirPrint, or Bluetooth from the mobile app.
+        </p>
+        <p className="mt-2">
+          <span className="font-medium text-foreground">Cords still serve iPhones, one step
+          removed.</span> A USB printer plugged into the shop computer, or an Ethernet printer wired
+          to the network, shows up on your iPhone over the shop Wi-Fi (AirPrint / shared printer) —
+          the cords put the printer on the network solidly, and the phone reaches it wirelessly.
+        </p>
+        <p className="mt-2">
+          <span className="font-medium text-foreground">If the internet drops,</span> the labels and
+          documents already on this page still print — the Print button, the Labels PDF, Bluetooth
+          and USB need no connection. What does need the internet is loading the page and its
+          products in the first place. Full offline mode (working in the app with no connection at
+          all) is a separate, bigger build and is not claimed here.
+        </p>
       </div>
     </div>
   );

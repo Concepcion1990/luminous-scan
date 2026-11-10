@@ -54,6 +54,26 @@ import { buildWorkbookBuffer } from './xlsxExport.js';
 import { EXPORTS, buildValuation, truncatedFilename, EXPORT_ROW_CAP } from './exportData.js';
 import { createStaffMember } from './staff.js';
 import { assertNotInGrace } from './billing.js';
+import {
+  orderPurchaseOrder,
+  cancelPurchaseOrder,
+  receivePurchaseOrder,
+  buildBom,
+  disassembleBom,
+} from './business.js';
+import {
+  loadReportSource,
+  buildServerReport,
+  buildPurchasingSummary,
+  reportDefinition,
+} from './reports.js';
+import {
+  buildLabelsPdf,
+  buildPackingSlipPdf,
+  buildPoPdf,
+  buildSupplierDocPdf,
+  buildReportPdf,
+} from './printPdf.js';
 
 function err(status, code, message) {
   return Object.assign(new Error(message), { status, code });
@@ -475,6 +495,10 @@ export function createShopRouter({ getPool: getPoolFn }) {
       const filename = `${fileSlug(access.business.name)}-inventory-workbook-${fileStamp()}.xlsx`;
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
       res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.setHeader(
+        'X-Export-Rows',
+        String(sheets.reduce((sum, sheet) => sum + sheet.rows.length, 0)),
+      );
       return res.send(buffer);
     }
     const def = EXPORTS[dataset];
@@ -482,6 +506,7 @@ export function createShopRouter({ getPool: getPoolFn }) {
     const built = await def.build(pool(), req.params.bid);
     const base = `${fileSlug(access.business.name)}-${dataset}-${fileStamp()}`;
     const filename = `${truncatedFilename(base, built.truncated)}.${format}`;
+    res.setHeader('X-Export-Rows', String(built.rows.length));
     if (format === 'xlsx') {
       const buffer = await buildWorkbookBuffer([{ name: def.title, columns: built.columns, rows: built.rows }]);
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
@@ -646,6 +671,190 @@ export function createShopRouter({ getPool: getPoolFn }) {
     const access = await accessOr403(pool(), req.user, req.params.bid);
     if (!featureAllowed(access.planKey, 'alerts')) throw err(403, 'plan_gated', 'Low-stock alerts are part of the Business plan.');
     return res.json(await evaluateAlerts(pool(), req.params.bid));
+  }));
+
+  // ---- Purchase orders + builds (T5 business flows) ---------------------
+  // Status moves and stock changes run through server/business.js in
+  // one transaction each — never through a direct entity edit.
+  router.post('/businesses/:bid/purchase-orders/:id/order', asyncHandler(async (req, res) => {
+    const order = await orderPurchaseOrder(pool(), req.user, req.params.bid, req.params.id);
+    return res.json({ order });
+  }));
+
+  router.post('/businesses/:bid/purchase-orders/:id/cancel', asyncHandler(async (req, res) => {
+    const order = await cancelPurchaseOrder(pool(), req.user, req.params.bid, req.params.id);
+    return res.json({ order });
+  }));
+
+  router.post('/businesses/:bid/purchase-orders/:id/receive', asyncHandler(async (req, res) => {
+    const result = await receivePurchaseOrder(pool(), req.user, req.params.bid, req.params.id, req.body || {});
+    return res.json(result);
+  }));
+
+  router.post('/businesses/:bid/boms/:id/build', asyncHandler(async (req, res) => {
+    const result = await buildBom(pool(), req.user, req.params.bid, req.params.id, req.body || {});
+    return res.json(result);
+  }));
+
+  router.post('/businesses/:bid/boms/:id/disassemble', asyncHandler(async (req, res) => {
+    const result = await disassembleBom(pool(), req.user, req.params.bid, req.params.id, req.body || {});
+    return res.json(result);
+  }));
+
+  // ---- Reports (T5, Business only, server-built) ------------------------
+  router.get('/businesses/:bid/reports', asyncHandler(async (req, res) => {
+    const access = await accessOr403(pool(), req.user, req.params.bid);
+    await assertNotInGrace(pool(), req.params.bid);
+    if (!featureAllowed(access.planKey, 'reports')) {
+      throw err(403, 'plan_gated', 'Advanced reports are part of the Business plan.');
+    }
+    const source = await loadReportSource(pool(), req.params.bid);
+    const report = buildServerReport({
+      reportId: String(req.query.type || 'stock'),
+      groupBy: String(req.query.groupBy || ''),
+      source,
+      from: String(req.query.from || ''),
+      to: String(req.query.to || ''),
+      locationId: String(req.query.locationId || ''),
+      category: String(req.query.category || ''),
+    });
+    return res.json(report);
+  }));
+
+  router.get('/businesses/:bid/reports/purchasing', asyncHandler(async (req, res) => {
+    const access = await accessOr403(pool(), req.user, req.params.bid);
+    await assertNotInGrace(pool(), req.params.bid);
+    if (!featureAllowed(access.planKey, 'purchasing')) {
+      throw err(403, 'plan_gated', 'Purchasing summaries are part of the Business plan.');
+    }
+    return res.json(await buildPurchasingSummary(pool(), req.params.bid));
+  }));
+
+  // ---- Print PDFs (T5) ---------------------------------------------------
+  // Labels print on BOTH plans — the connection (Bluetooth, Wi-Fi,
+  // Ethernet, USB) is how you reach the printer, and label printing
+  // is not plan-gated. Documents (packing slips, purchase orders,
+  // supplier docs, reports) are export-gated: Business only, enforced
+  // here server-side whatever the connection. Nothing prints from
+  // grace (read-only: see products only, no export).
+  function pdfResponse(res, buffer, filename) {
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-Length', String(buffer.length));
+    return res.send(buffer);
+  }
+
+  router.get('/businesses/:bid/print/labels', asyncHandler(async (req, res) => {
+    const access = await accessOr403(pool(), req.user, req.params.bid);
+    await assertNotInGrace(pool(), req.params.bid);
+    const ids = String(req.query.product_ids || '')
+      .split(',')
+      .map((id) => id.trim())
+      .filter(Boolean)
+      .slice(0, 50);
+    if (!ids.length) throw err(400, 'invalid_value', 'Choose at least one product to print.');
+    const placeholders = ids.map((_, i) => `$${i + 2}`).join(', ');
+    const { rows } = await pool().query(
+      // One placeholder per id (not = ANY($2::text[])): the array form
+      // does not bind under pg-mem, and this form works on real Postgres too.
+      `SELECT * FROM products WHERE business_id = $1 AND id IN (${placeholders})`,
+      [req.params.bid, ...ids],
+    );
+    if (!rows.length) throw err(404, 'not_found', 'No products found for those labels.');
+    const buffer = buildLabelsPdf(rows, {
+      copies: req.query.copies,
+      businessName: access.business.name,
+    });
+    return pdfResponse(res, buffer, `${fileSlug(access.business.name)}-labels-${fileStamp()}.pdf`);
+  }));
+
+  router.get('/businesses/:bid/print/packing-slip', asyncHandler(async (req, res) => {
+    const access = await accessOr403(pool(), req.user, req.params.bid);
+    await assertNotInGrace(pool(), req.params.bid);
+    if (!featureAllowed(access.planKey, 'exports')) {
+      throw err(403, 'documents_business_only', 'Packing slips are part of the Business plan.');
+    }
+    const { rows } = await pool().query(
+      'SELECT * FROM orders WHERE id = $1 AND business_id = $2 LIMIT 1',
+      [req.query.order_id, req.params.bid],
+    );
+    if (!rows[0]) throw err(404, 'not_found', 'Order not found.');
+    const order = publicRow(entityDef('Order'), rows[0]);
+    return pdfResponse(
+      res,
+      buildPackingSlipPdf(order, access.business),
+      `${fileSlug(access.business.name)}-packing-slip-${fileStamp()}.pdf`,
+    );
+  }));
+
+  router.get('/businesses/:bid/print/po', asyncHandler(async (req, res) => {
+    const access = await accessOr403(pool(), req.user, req.params.bid);
+    await assertNotInGrace(pool(), req.params.bid);
+    if (!featureAllowed(access.planKey, 'exports')) {
+      throw err(403, 'documents_business_only', 'Purchase-order documents are part of the Business plan.');
+    }
+    const { rows } = await pool().query(
+      'SELECT * FROM purchase_orders WHERE id = $1 AND business_id = $2 LIMIT 1',
+      [req.query.po_id, req.params.bid],
+    );
+    if (!rows[0]) throw err(404, 'not_found', 'Purchase order not found.');
+    const order = publicRow(entityDef('PurchaseOrder'), rows[0]);
+    const mode = req.query.mode === 'packing' ? 'packing' : 'po';
+    return pdfResponse(
+      res,
+      buildPoPdf(order, access.business, { mode }),
+      `${fileSlug(access.business.name)}-po-${fileStamp()}.pdf`,
+    );
+  }));
+
+  router.get('/businesses/:bid/print/supplier-doc', asyncHandler(async (req, res) => {
+    const access = await accessOr403(pool(), req.user, req.params.bid);
+    await assertNotInGrace(pool(), req.params.bid);
+    if (!featureAllowed(access.planKey, 'exports')) {
+      throw err(403, 'documents_business_only', 'Supplier documents are part of the Business plan.');
+    }
+    const { rows } = await pool().query(
+      'SELECT * FROM suppliers WHERE id = $1 AND business_id = $2 LIMIT 1',
+      [req.query.supplier_id, req.params.bid],
+    );
+    if (!rows[0]) throw err(404, 'not_found', 'Supplier not found.');
+    const supplier = publicRow(entityDef('Supplier'), rows[0]);
+    const { rows: poRows } = await pool().query(
+      "SELECT * FROM purchase_orders WHERE business_id = $1 AND supplier_id = $2 AND status IN ('ordered', 'partial') ORDER BY created_at DESC",
+      [req.params.bid, supplier.id],
+    );
+    const openOrders = poRows.map((row) => publicRow(entityDef('PurchaseOrder'), row));
+    return pdfResponse(
+      res,
+      buildSupplierDocPdf(supplier, access.business, openOrders),
+      `${fileSlug(access.business.name)}-supplier-${fileStamp()}.pdf`,
+    );
+  }));
+
+  router.get('/businesses/:bid/print/report', asyncHandler(async (req, res) => {
+    const access = await accessOr403(pool(), req.user, req.params.bid);
+    await assertNotInGrace(pool(), req.params.bid);
+    if (!featureAllowed(access.planKey, 'reports')) {
+      throw err(403, 'plan_gated', 'Reports are part of the Business plan.');
+    }
+    const source = await loadReportSource(pool(), req.params.bid);
+    const report = buildServerReport({
+      reportId: String(req.query.type || 'stock'),
+      groupBy: String(req.query.groupBy || ''),
+      source,
+      from: String(req.query.from || ''),
+      to: String(req.query.to || ''),
+      locationId: String(req.query.locationId || ''),
+      category: String(req.query.category || ''),
+    });
+    return pdfResponse(
+      res,
+      buildReportPdf(report, access.business, {
+        from: String(req.query.from || ''),
+        to: String(req.query.to || ''),
+      }),
+      `${fileSlug(access.business.name)}-report-${fileStamp()}.pdf`,
+    );
   }));
 
   // ---- Cross-business move / merge (Q-5) ----------------------------------
