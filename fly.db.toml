@@ -1,0 +1,34 @@
+# Self-run Postgres for the Luminous Stockhaven twin (T0 decision:
+# Postgres SELF-RUN, ~$8/mo for the database: 1 GB machine $6.70 +
+# 10 GB volume $1.50 — NOT Fly.io Managed Postgres at $38/mo).
+#
+# SCAFFOLDING ONLY — NOT YET PROVISIONED. Provisioning is BLOCKED in
+# T1: it needs a Fly.io API token (flyctl has no auth in this session).
+# Do NOT run `fly deploy` against this file until the token exists.
+#
+# How it is provisioned (once unblocked):
+#   fly apps create scanstock-luminous-db
+#   fly volumes create stockhaven_pgdata --size 10 --region dfw --app scanstock-luminous-db
+#   fly secrets set POSTGRES_PASSWORD=<generated> --app scanstock-luminous-db
+#   fly deploy --config fly.db.toml --app scanstock-luminous-db
+#   fly secrets set DATABASE_URL="postgres://stockhaven:<password>@scanstock-luminous-db.internal:5432/stockhaven" --app scanstock-luminous
+# The password is generated at provision time and lives ONLY in Fly
+# secrets — never in this file, never in the repo, never in chat.
+app = "scanstock-luminous-db"
+primary_region = "dfw"
+
+[build]
+  image = "postgres:16"
+
+[env]
+  POSTGRES_DB = "stockhaven"
+  POSTGRES_USER = "stockhaven"
+
+[[mounts]]
+  source = "stockhaven_pgdata"
+  destination = "/var/lib/postgresql/data"
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 512
