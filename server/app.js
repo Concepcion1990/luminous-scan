@@ -15,6 +15,8 @@
  *                         dashboard, alerts, cross-business move, staff.
  *   POST /api/billing/*       Stripe billing (T4).
  *   POST /webhooks/stripe      Stripe webhook (raw body, HMAC verified).
+ *   GET  /api/csrf-token       fresh CSRF token for the signed-in session (T6.1);
+ *                              every mutating /api call sends it as X-CSRF-Token.
  *   GET  /*               the Vite build (dist/) with an SPA fallback.
  *
  * Unknown API paths fail closed with 404 — never a fake success.
@@ -27,6 +29,8 @@ import { createAuthRouter } from './authRoutes.js';
 import { createShopRouter } from './shopRoutes.js';
 import { createT6Router } from './t6Routes.js';
 import { createBillingRouter, stripeWebhookHandler } from './billingRoutes.js';
+import { issueCsrfToken, requireCsrf } from './csrf.js';
+import { requireAuth } from './sessions.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DIST_DIR = path.resolve(__dirname, '..', 'dist');
@@ -56,6 +60,17 @@ export function createApp() {
     });
   });
 
+  // T6.1 CSRF: enforcement sits AHEAD of every router, so all
+  // mutating /api routes are covered in one place (auth, billing,
+  // shop/entities, T6 sync + cross-store). The middleware itself
+  // skips safe methods, the pre-auth endpoints, and requests with
+  // no live session.
+  app.use('/api', requireCsrf(getPool()));
+  // The token endpoint (signed in only — the token is bound to the
+  // caller's session). A GET, so the middleware passes it through.
+  app.get('/api/csrf-token', requireAuth(getPool()), (req, res) => {
+    res.json({ csrf_token: issueCsrfToken(req.sessionId) });
+  });
   app.use('/api', createAuthRouter({ getPool }));
   // Billing BEFORE shop: the shop router applies requireAuth to every
   // request that reaches it, and the wipe-sweep job endpoint is

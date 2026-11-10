@@ -21,6 +21,7 @@ export const en = {
   'nav.categories': 'Categories',
   'nav.locations': 'Locations',
   'nav.movements': 'Movements',
+  'nav.crossStoreInbox': 'Cross-store inbox',
   'nav.counts': 'Stock counts',
   'nav.bundles': 'Bundles & builds',
   'nav.orders': 'Orders',

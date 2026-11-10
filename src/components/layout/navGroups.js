@@ -23,6 +23,7 @@ import {
   FileUp,
   Users,
   CreditCard,
+  Inbox,
 } from 'lucide-react';
 
 /**
@@ -52,6 +53,7 @@ export const NAV_GROUPS = [
       { to: '/categories', label: 'Categories', labelKey: 'nav.categories', icon: Tags, perm: 'categories.manage' },
       { to: '/locations', label: 'Locations', labelKey: 'nav.locations', icon: MapPin, perm: 'locations.manage' },
       { to: '/movements', label: 'Movements', labelKey: 'nav.movements', icon: ArrowLeftRight, perm: 'scan.use' },
+      { to: '/cross-store-inbox', label: 'Cross-store inbox', labelKey: 'nav.crossStoreInbox', icon: Inbox, feature: 'crossStore' },
       { to: '/counts', label: 'Stock counts', labelKey: 'nav.counts', icon: ClipboardCheck, perm: 'counts.run' },
       { to: '/materials', label: 'Bundles & builds', labelKey: 'nav.bundles', icon: Boxes, perm: 'builds.manage', feature: 'builds' },
     ],

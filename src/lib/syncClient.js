@@ -28,14 +28,26 @@
  *   - A 401/403 (signed out, or the workspace went read-only) stops
  *     the flush immediately — retrying auth failures is pointless.
  */
+import { csrfHeadersFor } from './csrf.js';
+
 export const SYNC_MAX_ATTEMPTS = 5;
 
-/** Same-origin JSON fetch (same shape as apiRequest, without the alias). */
+/**
+ * Same-origin JSON fetch (same shape as apiRequest, without the alias).
+ *
+ * T6.1 CSRF — the flush-time token: a fresh token is fetched HERE,
+ * at send time, and sent as the X-CSRF-Token header. The queued
+ * changes themselves never carry a token (see applyQueuedChanges
+ * below: only idempotency_key, kind and payload travel), so a change
+ * queued offline still applies after reconnect, whatever token
+ * rotation happened in between.
+ */
 export async function defaultSend(path, { method = 'GET', body } = {}) {
+  const csrfHeaders = await csrfHeadersFor(path, method);
   const response = await fetch(path, {
     method,
     credentials: 'same-origin',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...csrfHeaders },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
   const data = await response.json().catch(() => ({}));

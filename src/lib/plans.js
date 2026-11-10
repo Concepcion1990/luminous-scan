@@ -59,6 +59,7 @@ export const FEATURES = {
   purchasing: 'Purchasing',
   builds: 'Bundles & builds',
   supplierPrint: 'Supplier purchasing documents',
+  crossStore: 'Cross-store requests',
 };
 
 /**

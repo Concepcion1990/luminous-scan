@@ -8,6 +8,8 @@
  *   GET  /api/businesses/:bid/cross-store/availability?product_id=
  *   POST /api/businesses/:bid/cross-store/requests
  *   GET  /api/businesses/:bid/cross-store/requests   inbox + outgoing
+ *        (T6.2: serves the cross-store inbox page; rows carry the
+ *        asking and target store names so the page can name them)
  *   PATCH /api/businesses/:bid/cross-store/requests/:id
  *   POST /api/businesses/:bid/logo           store-logo upload (data URL)
  *
@@ -261,12 +263,20 @@ export function createT6Router({ getPool: getPoolFn }) {
   }));
 
   // Inbox for the target store's staff + outgoing for the asking store.
+  // The joined names let the inbox say WHICH store asked (or was
+  // asked) without a second round trip per row; the request rows
+  // themselves carry no business names.
   router.get('/businesses/:bid/cross-store/requests', asyncHandler(async (req, res) => {
     await accessOr403(pool(), req.user, req.params.bid);
     const { rows } = await pool().query(
-      `SELECT * FROM cross_store_requests
-        WHERE business_id = $1 OR target_business_id = $1
-        ORDER BY created_at DESC LIMIT 100`,
+      `SELECT r.*,
+              src.name AS business_name,
+              tgt.name AS target_business_name
+         FROM cross_store_requests r
+         LEFT JOIN businesses src ON src.id = r.business_id
+         LEFT JOIN businesses tgt ON tgt.id = r.target_business_id
+        WHERE r.business_id = $1 OR r.target_business_id = $1
+        ORDER BY r.created_at DESC LIMIT 100`,
       [req.params.bid],
     );
     return res.json({

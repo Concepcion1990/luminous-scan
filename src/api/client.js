@@ -11,6 +11,11 @@
  * The billing APIs are real in T4 (Stripe checkout, reconcile,
  * cancel, plan changes, status, readiness, publisher gate).
  *
+ * T6.1 CSRF: every mutating call fetches a fresh token at send time
+ * (src/lib/csrf.js) and sends it as X-CSRF-Token. The pre-auth
+ * endpoints (register / verify / login / password reset) carry no
+ * session yet and are exempt server-side, so they skip the fetch.
+ *
  * Google sign-in is NOT available on the twin (owner's decision,
  * Nov 9 — email + password only; see twin-t2-report.md). `loginWith-
  * Provider` and the authMfa Google helpers reject with that message.
@@ -20,14 +25,17 @@
  * service, no token.
  */
 
+import { csrfHeadersFor } from '../lib/csrf.js';
+
 const notImplemented = (area) =>
   new Error(`${area} is not yet implemented (T2/T3) — the twin skeleton serves public pages only.`);
 
 async function request(path, { method = 'GET', body } = {}) {
+  const csrfHeaders = await csrfHeadersFor(path, method);
   const response = await fetch(path, {
     method,
     credentials: 'same-origin',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...csrfHeaders },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
   const data = await response.json().catch(() => ({}));

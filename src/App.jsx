@@ -37,6 +37,7 @@ import Staff from '@/pages/Staff';
 import Orders from '@/pages/Orders';
 import Returns from '@/pages/Returns';
 import Counts from '@/pages/Counts';
+import CrossStoreInbox from '@/pages/CrossStoreInbox';
 import Purchasing from '@/pages/Purchasing';
 import Suppliers from '@/pages/Suppliers';
 import Welcome from '@/pages/Welcome';
@@ -126,6 +127,14 @@ const AuthenticatedApp = () => {
           <Route path="/listings" element={<Listings />} />
           <Route path="/locations" element={<Locations />} />
           <Route path="/movements" element={<Movements />} />
+          <Route
+            path="/cross-store-inbox"
+            element={
+              <PlanGate feature="crossStore">
+                <CrossStoreInbox />
+              </PlanGate>
+            }
+          />
           <Route
             path="/valuation"
             element={

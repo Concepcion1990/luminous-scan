@@ -69,9 +69,24 @@ export async function close() {
 }
 
 /** Minimal fetch wrapper with a cookie jar slot. Returns { status, json, text, setCookie }. */
-export async function req(path, { method = 'GET', body, cookie, headers = {} } = {}) {
+export async function req(path, { method = 'GET', body, cookie, csrf = true, headers = {} } = {}) {
   const allHeaders = { 'Content-Type': 'application/json', ...headers };
   if (cookie) allHeaders.Cookie = cookie;
+  // T6.1 CSRF: a mutating request sent with a session cookie fetches
+  // a fresh token first (GET /api/csrf-token, same cookie) and sends
+  // it as X-CSRF-Token — the same flush-time shape the app client
+  // uses. Pass `csrf: false` to send without one (the negative
+  // tests), or pass an explicit `X-CSRF-Token` header to use a
+  // chosen token. Requests without a cookie never fetch.
+  if (csrf && cookie && method !== 'GET' && !allHeaders['X-CSRF-Token']) {
+    const tokenRes = await fetch(`${base}/api/csrf-token`, {
+      headers: { Cookie: cookie },
+    });
+    if (tokenRes.ok) {
+      const tokenData = await tokenRes.json().catch(() => ({}));
+      if (tokenData.csrf_token) allHeaders['X-CSRF-Token'] = tokenData.csrf_token;
+    }
+  }
   const res = await fetch(`${base}${path}`, {
     method,
     headers: allHeaders,
