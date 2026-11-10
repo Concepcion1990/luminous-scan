@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { en } from './locales/en.js';
 import {
   createUpgradeDryRunFixture,
   runUpgradeDryRun,
@@ -61,12 +62,18 @@ test('code never contacts customer providers, Base44 or storage — Stripe is th
   assert.doesNotMatch(source, /fictional_wix_fixture/);
   assert.doesNotMatch(source, /fetch\s*\(|base44\.(?:functions|entities)|Deno\.env|localStorage|sessionStorage|stripe\.|WIX_CHECKOUT_/);
   assert.doesNotMatch(component, /base44\.(?:functions|entities)|fetch\s*\(|localStorage|sessionStorage/);
-  assert.match(component, /fictional records/i);
-  assert.match(component, /no charge/i);
-  assert.match(component, /Stripe subscription changes/);
+  // T6.3: the panel copy moved into en.js (billing.dryRun.*) and renders
+  // through t() — assert the panel references the keys and the English
+  // values still say the words.
+  assert.match(component, /t\('billing\.dryRun\.body'\)/);
+  assert.match(en['billing.dryRun.body'], /fictional records/i);
+  assert.match(component, /t\('billing\.dryRun\.runButton'\)/);
+  assert.match(en['billing.dryRun.runButton'], /no charge/i);
+  assert.match(component, /t\('billing\.dryRun\.limitations'\)/);
+  assert.match(en['billing.dryRun.limitations'], /Stripe subscription changes/);
   assert.deepEqual(DEMO_UPGRADE_PRICES, {essentialsCents:1499,businessCents:2999});
 });
-test('only owner screens display the practice panel; upgrades are disabled while payments switch to Stripe', () => {
+test('only owner screens display the practice panel; the Wix upgrade flow stays gone', () => {
   const settings = read('src/pages/Settings.jsx');
   const upgrade = read('src/pages/Upgrade.jsx');
   // Owner-only gating, via the canShowPrivateBillingDiagnostics flag.
@@ -76,12 +83,16 @@ test('only owner screens display the practice panel; upgrades are disabled while
   assert.ok(upgrade.includes('<UpgradeDryRunPanel />'));
   // The Wix upgrade flow is gone: no invoke of the deleted
   // upgrade-to-business function, no Confirm Upgrade handler, and no
-  // create-checkout call. The Upgrade to Business button is disabled
-  // with the Stripe switching explanation instead.
+  // create-checkout call. (T6.3: the old "Upgrades will be available
+  // once Stripe payments are live." assertion is removed — Stripe
+  // payments ARE live now, so that switching copy no longer exists
+  // anywhere in the app; git grep on the pre-T6.3 tree shows it only
+  // in this test file itself. The Upgrade to Business button renders
+  // through t() instead.)
   assert.doesNotMatch(upgrade, /invoke\('upgrade-to-business'/);
   assert.doesNotMatch(upgrade, /confirmUpgrade/);
   assert.doesNotMatch(upgrade, /invoke\('create-checkout'/);
   assert.doesNotMatch(upgrade, /invoke\('apply-upgrade-plan-flip'/);
-  assert.match(upgrade, /Upgrades will be available once Stripe payments are live\./);
-  assert.match(upgrade, /Upgrade to Business/);
+  assert.match(upgrade, /t\('upgrade\.upgradeToBusiness'\)/);
+  assert.equal(en['upgrade.upgradeToBusiness'], 'Upgrade to Business');
 });

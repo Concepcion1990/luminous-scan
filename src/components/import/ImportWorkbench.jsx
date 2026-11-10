@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { base44 } from '@/api/client';
 import { Loader2, RotateCcw, TriangleAlert, Upload } from 'lucide-react';
+import { t } from '@/lib/i18n';
 import { IMPORT_FIELDS, guessField, parseCsv } from '@/lib/csvImport';
 import { evaluateRows, existingKeys } from '@/lib/importProducts';
 import { downloadCsv, toCsv } from '@/lib/csv';
@@ -88,7 +89,7 @@ export default function ImportWorkbench({ businessId }) {
       if (/\.(csv|txt)$/i.test(file.name)) {
         const parsed = parseCsv(await file.text());
         if (!parsed.headers.length) {
-          setError('That file has no rows to read. Check the first row holds your column names.');
+          setError(t('import.noRowsInFile'));
           return;
         }
         parsedSheets = [{ name: 'CSV', ...parsed, warnings: [] }];
@@ -108,7 +109,7 @@ export default function ImportWorkbench({ businessId }) {
       setLocations(locationPage.items ?? []);
       loadSheet(parsedSheets[0]);
     } catch (err) {
-      setError(err?.message || 'That file could not be read.');
+      setError(err?.message || t('import.fileUnreadable'));
     }
   };
 
@@ -245,7 +246,7 @@ export default function ImportWorkbench({ businessId }) {
       setMapping([]);
       setDryRun(null);
     } catch (err) {
-      setError(err?.message || 'Could not finish the import.');
+      setError(err?.message || t('import.importFailed'));
     } finally {
       setBusy(false);
     }
@@ -254,15 +255,13 @@ export default function ImportWorkbench({ businessId }) {
   if (!table) {
     return (
       <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
-        <p className="text-sm font-semibold">Choose a spreadsheet</p>
+        <p className="text-sm font-semibold">{t('import.chooseSpreadsheet')}</p>
         <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-          CSV or a real Excel workbook (.xlsx). The first row of the worksheet you pick holds your column
-          names. You will choose a worksheet, match columns, preview the rows and run a dry run before
-          anything is saved.
+          {t('import.chooseSpreadsheetIntro')}
         </p>
         <div className="mt-4 flex flex-wrap items-center gap-2">
           <label className="inline-flex cursor-pointer items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">
-            <Upload className="h-4 w-4" /> Choose CSV or Excel file
+            <Upload className="h-4 w-4" /> {t('import.chooseFile')}
             <input
               type="file"
               accept=".csv,.txt,.xlsx,.xlsm,.xls,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
@@ -271,10 +270,10 @@ export default function ImportWorkbench({ businessId }) {
             />
           </label>
           <Button variant="outline" onClick={downloadTemplate}>
-            CSV template
+            {t('import.csvTemplate')}
           </Button>
           <Button variant="outline" onClick={downloadTemplateXlsx}>
-            Excel template
+            {t('import.excelTemplate')}
           </Button>
         </div>
 
@@ -287,13 +286,23 @@ export default function ImportWorkbench({ businessId }) {
         {result && (
           <div className="mt-3 rounded-lg border border-ok/30 bg-ok/10 p-3 text-sm">
             <p className="font-medium">
-              Imported {result.created} product{result.created === 1 ? '' : 's'}
-              {result.stockRows > 0 ? `, ${result.stockRows} with opening stock` : ''}.
+              {result.stockRows > 0
+                ? t('import.importedResultStock', {
+                    created: result.created,
+                    s: result.created === 1 ? '' : 's',
+                    stockRows: result.stockRows,
+                  })
+                : t('import.importedResult', {
+                    created: result.created,
+                    s: result.created === 1 ? '' : 's',
+                  })}
             </p>
             {result.skipped > 0 && (
               <p className="mt-1 text-xs text-muted-foreground">
-                {result.skipped} row{result.skipped === 1 ? '' : 's'} were skipped — fix them in the file and
-                import again; products already created are left alone.
+                {t('import.skippedRowsNote', {
+                  skipped: result.skipped,
+                  s: result.skipped === 1 ? '' : 's',
+                })}
               </p>
             )}
           </div>
@@ -307,11 +316,16 @@ export default function ImportWorkbench({ businessId }) {
       <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="numeric text-xs text-muted-foreground">
-            {fileName} · {table.rows.length} row{table.rows.length === 1 ? '' : 's'} ·{' '}
-            {table.headers.length} column{table.headers.length === 1 ? '' : 's'}
+            {t('import.fileSummary', {
+              file: fileName,
+              rows: table.rows.length,
+              rs: table.rows.length === 1 ? '' : 's',
+              columns: table.headers.length,
+              cs: table.headers.length === 1 ? '' : 's',
+            })}
           </p>
           <Button variant="ghost" size="sm" onClick={reset}>
-            <RotateCcw className="mr-1.5 h-3.5 w-3.5" /> Start over
+            <RotateCcw className="mr-1.5 h-3.5 w-3.5" /> {t('import.startOver')}
           </Button>
         </div>
 
@@ -319,16 +333,16 @@ export default function ImportWorkbench({ businessId }) {
           {sheets.length > 1 && (
             <div className="grid gap-2">
               <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                Worksheet
+                {t('import.worksheet')}
               </p>
               <Select value={sheetName} onValueChange={chooseSheet}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Choose a worksheet" />
+                  <SelectValue placeholder={t('import.chooseWorksheet')} />
                 </SelectTrigger>
                 <SelectContent>
                   {sheets.map((sheet) => (
                     <SelectItem key={sheet.name} value={sheet.name}>
-                      {sheet.name} · {sheet.rows.length} rows
+                      {t('import.sheetRows', { name: sheet.name, rows: sheet.rows.length })}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -339,7 +353,7 @@ export default function ImportWorkbench({ businessId }) {
           {warnings.length > 0 && (
             <div className="rounded-lg border border-warn/30 bg-warn/10 p-3 text-xs">
               <p className="flex items-center gap-1.5 font-medium text-foreground">
-                <TriangleAlert className="h-3.5 w-3.5 text-warn" /> Codes this workbook has already changed
+                <TriangleAlert className="h-3.5 w-3.5 text-warn" /> {t('import.codesChanged')}
               </p>
               <ul className="mt-1.5 space-y-1 text-muted-foreground">
                 {warnings.map((warning) => (
@@ -356,7 +370,7 @@ export default function ImportWorkbench({ businessId }) {
           {stockMapped && (
             <div className="grid gap-2">
               <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                Put opening stock here (optional)
+                {t('import.openingStockHere')}
               </p>
               <Select
                 value={locationId || NO_LOCATION}
@@ -366,10 +380,10 @@ export default function ImportWorkbench({ businessId }) {
                 }}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Do not add stock" />
+                  <SelectValue placeholder={t('import.noStock')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={NO_LOCATION}>Do not add stock</SelectItem>
+                  <SelectItem value={NO_LOCATION}>{t('import.noStock')}</SelectItem>
                   {locations.map((location) => (
                     <SelectItem key={location.id} value={location.id}>
                       {location.name}
@@ -393,7 +407,7 @@ export default function ImportWorkbench({ businessId }) {
               onClick={runCheck}
               disabled={!hasName || !table.rows.length || busy}
             >
-              {needsCheck ? 'Run dry run' : 'Re-run dry run'}
+              {needsCheck ? t('import.runDryRun') : t('import.rerunDryRun')}
             </Button>
             <Button
               onClick={runImport}
@@ -401,13 +415,16 @@ export default function ImportWorkbench({ businessId }) {
             >
               {busy ? (
                 <>
-                  <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> Importing…
+                  <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> {t('import.importing')}
                 </>
               ) : (
-                `Import ${report.ready} product${report.ready === 1 ? '' : 's'}`
+                t('import.importProducts', {
+                  count: report.ready,
+                  s: report.ready === 1 ? '' : 's',
+                })
               )}
             </Button>
-            {!businessId && <span className="text-xs text-muted-foreground">Create a business first.</span>}
+            {!businessId && <span className="text-xs text-muted-foreground">{t('import.createBusinessFirstShort')}</span>}
           </div>
 
           {error && (

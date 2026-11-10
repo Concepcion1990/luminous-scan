@@ -11,6 +11,8 @@ import PullToRefresh from '@/components/mobile/PullToRefresh';
 import { localTimeZoneName } from '@/lib/dates';
 import MovementRow from '@/components/movements/MovementRow';
 import ResponsiveSelect from '@/components/ui/ResponsiveSelect';
+import { t } from '@/lib/i18n';
+
 
 const ADJUSTMENT_TYPES = ['returned', 'damaged', 'lost', 'found', 'write_off', 'correction'];
 
@@ -100,27 +102,27 @@ export default function Movements() {
   // The filter offers every type the plan can record. The four bundle types
   // sit last, exactly as before, but only on Business.
   const typeOptions = [
-    { value: 'all', label: 'All movements' },
-    { value: 'receive', label: 'Received' },
-    { value: 'sale', label: 'Sold' },
-    { value: 'count', label: 'Counts' },
-    { value: 'transfer', label: 'Transfers out' },
-    { value: 'transfer_in', label: 'Transfers in' },
-    { value: 'adjust', label: 'Adjustments (all)' },
-    { value: 'returned', label: 'Returned' },
-    { value: 'damaged', label: 'Damaged' },
-    { value: 'lost', label: 'Lost' },
-    { value: 'found', label: 'Found' },
-    { value: 'write_off', label: 'Written off' },
-    { value: 'correction', label: 'Corrections' },
-    { value: 'reserved', label: 'Held' },
-    { value: 'released', label: 'Released' },
+    { value: 'all', label: t('movements.filterAll') },
+    { value: 'receive', label: t('movements.typeReceived') },
+    { value: 'sale', label: t('movements.typeSold') },
+    { value: 'count', label: t('movements.typeCounts') },
+    { value: 'transfer', label: t('movements.typeTransfersOut') },
+    { value: 'transfer_in', label: t('movements.typeTransfersIn') },
+    { value: 'adjust', label: t('movements.typeAdjustments') },
+    { value: 'returned', label: t('movements.typeReturned') },
+    { value: 'damaged', label: t('movements.typeDamaged') },
+    { value: 'lost', label: t('movements.typeLost') },
+    { value: 'found', label: t('movements.typeFound') },
+    { value: 'write_off', label: t('movements.typeWrittenOff') },
+    { value: 'correction', label: t('movements.typeCorrections') },
+    { value: 'reserved', label: t('movements.typeHeld') },
+    { value: 'released', label: t('movements.typeReleased') },
     ...(showBundleTypes
       ? [
-          { value: 'consume', label: 'Consumed (builds)' },
-          { value: 'produce', label: 'Built' },
-          { value: 'disassemble', label: 'Taken apart' },
-          { value: 'recovered', label: 'Parts recovered' },
+          { value: 'consume', label: t('movements.typeConsumed') },
+          { value: 'produce', label: t('movements.typeBuilt') },
+          { value: 'disassemble', label: t('movements.typeTakenApart') },
+          { value: 'recovered', label: t('movements.typePartsRecovered') },
         ]
       : []),
   ];
@@ -135,11 +137,15 @@ export default function Movements() {
       const { next } = await reverseMovement(movement, user, activeId || '');
       setPendingId('');
       setFlash(
-        `Reversed · ${movement.product_name} now ${next} at ${movement.location_name}. The original entry stays in the ledger.`
+        t('movements.reversedFlash', {
+          name: movement.product_name,
+          qty: next,
+          location: movement.location_name,
+        })
       );
       await load();
     } catch (err) {
-      setError(err?.message || 'Could not reverse this movement.');
+      setError(err?.message || t('movements.reverseFailed'));
     } finally {
       setBusyId('');
     }
@@ -148,31 +154,30 @@ export default function Movements() {
   return (
     <PullToRefresh className="space-y-5" onRefresh={refresh} disabled={Boolean(busyId)}>
       <div>
-        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Ledger</p>
-        <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">Movements</h1>
+        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">{t('movements.eyebrow')}</p>
+        <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">{t('movements.title')}</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Every scan, count and transfer, in the order it happened · times shown in{' '}
-          {localTimeZoneName() || 'your local time'}.
+          {t('movements.subtitle', { tz: localTimeZoneName() || t('movements.localTime') })}
         </p>
       </div>
 
       <div className="flex flex-wrap gap-2">
         <ResponsiveSelect
-          title="Choose movement type"
-          ariaLabel="Filter movements by type"
+          title={t('movements.typeTitle')}
+          ariaLabel={t('movements.typeAria')}
           value={type}
           onValueChange={setType}
           className="w-[170px] bg-card"
           options={typeOptions}
         />
         <ResponsiveSelect
-          title="Choose a location"
-          ariaLabel="Filter movements by location"
+          title={t('movements.locationTitle')}
+          ariaLabel={t('movements.locationAria')}
           value={locationId}
           onValueChange={setLocationId}
           className="w-[200px] bg-card"
           options={[
-            { value: 'all', label: 'All locations' },
+            { value: 'all', label: t('movements.allLocations') },
             ...locations.map((l) => ({ value: l.id, label: l.name })),
           ]}
         />
@@ -190,12 +195,12 @@ export default function Movements() {
       )}
 
       <div className="overflow-hidden rounded-xl border border-border bg-card">
-        {loading && <p className="px-4 py-10 text-center text-sm text-muted-foreground">Loading ledger…</p>}
+        {loading && <p className="px-4 py-10 text-center text-sm text-muted-foreground">{t('movements.loading')}</p>}
 
         {!loading && movements.length === 0 && (
           <div className="px-4 py-14 text-center">
-            <p className="text-sm font-medium">No movements yet</p>
-            <p className="mt-1 text-xs text-muted-foreground">Scan an item to record your first one.</p>
+            <p className="text-sm font-medium">{t('movements.emptyTitle')}</p>
+            <p className="mt-1 text-xs text-muted-foreground">{t('movements.emptyHint')}</p>
           </div>
         )}
 
@@ -224,8 +229,8 @@ export default function Movements() {
           <div className="border-t border-border px-4 py-3 text-center">
             <p className="text-xs text-muted-foreground">
               {hasMore
-                ? `Showing the ${movements.length} most recent movements`
-                : `Showing all ${movements.length} movement${movements.length === 1 ? '' : 's'} in this view`}
+                ? t('movements.showingRecent', { count: movements.length })
+                : t('movements.showingAll', { count: movements.length, plural: movements.length === 1 ? '' : 's' })}
             </p>
             {hasMore && (
               <Button
@@ -235,7 +240,7 @@ export default function Movements() {
                 onClick={loadMore}
                 disabled={loadingMore}
               >
-                {loadingMore ? 'Loading…' : 'Load more'}
+                {loadingMore ? t('movements.loadingMore') : t('movements.loadMore')}
               </Button>
             )}
           </div>

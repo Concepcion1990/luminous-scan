@@ -8,6 +8,8 @@ import { copyGroupKey } from '@/lib/copies';
 import { scoped, withBusiness } from '@/lib/scoped';
 import { createProducts } from '@/lib/entitlements';
 import { Image } from '@/components/ui/image';
+import { t } from '@/lib/i18n';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -78,6 +80,22 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
   const [suppliers, setSuppliers] = useState([]);
   const [error, setError] = useState('');
   const fileRef = useRef(null);
+
+  const CONDITION_LABELS = {
+    New: t('products.conditionNew'),
+    'Like new': t('products.conditionLikeNew'),
+    'Very good': t('products.conditionVeryGood'),
+    Good: t('products.conditionGood'),
+    Acceptable: t('products.conditionAcceptable'),
+  };
+
+  const UNIT_LABELS = {
+    each: t('productForm.unitEach'),
+    case: t('productForm.unitCase'),
+    pair: t('productForm.unitPair'),
+    pack: t('productForm.unitPack'),
+    kg: t('productForm.unitKg'),
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -170,7 +188,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
       }
       setForm((f) => ({ ...f, photo_urls: [...f.photo_urls, ...urls].slice(0, 6) }));
     } catch {
-      setError('Could not upload that photo. Try a smaller image.');
+      setError(t('productForm.uploadFailed'));
     } finally {
       setUploading(false);
     }
@@ -178,7 +196,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
 
   const handleSave = async () => {
     if (!form.name.trim() || !form.sku.trim()) {
-      setError('A product name and SKU are required.');
+      setError(t('productForm.nameSkuRequired'));
       return;
     }
     setSaving(true);
@@ -236,7 +254,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
       onSaved?.(saved);
       onOpenChange(false);
     } catch (err) {
-      setError(err?.message || 'Could not save this product.');
+      setError(err?.message || t('productForm.saveFailed'));
     } finally {
       setSaving(false);
     }
@@ -246,25 +264,25 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{product ? 'Edit product' : 'New product'}</DialogTitle>
+          <DialogTitle>{product ? t('productForm.editTitle') : t('productForm.newTitle')}</DialogTitle>
           <DialogDescription>
-            Codes are matched on every scan — UPC, ISBN, barcode and QR all point to this product.
+            {t('productForm.description')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4">
           <div className="grid gap-2">
-            <Label htmlFor="name">Product name</Label>
+            <Label htmlFor="name">{t('productForm.nameLabel')}</Label>
             <Input id="name" value={form.name} onChange={set('name')} placeholder="The Quiet Year — paperback" />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="grid gap-2">
-              <Label htmlFor="sku">SKU</Label>
+              <Label htmlFor="sku">{t('productForm.skuLabel')}</Label>
               <Input id="sku" value={form.sku} onChange={set('sku')} placeholder="BK-QUIET-01" className="font-mono" />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="category">Category</Label>
+              <Label htmlFor="category">{t('productForm.categoryLabel')}</Label>
               <Input
                 id="category"
                 list="category-options"
@@ -282,7 +300,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
 
           <div className="grid grid-cols-2 gap-3">
             <div className="grid gap-2">
-              <Label htmlFor="isbn">ISBN-10 / ISBN-13</Label>
+              <Label htmlFor="isbn">{t('productForm.isbnLabel')}</Label>
               <Input
                 id="isbn"
                 value={form.isbn}
@@ -292,41 +310,41 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="author">Author</Label>
+              <Label htmlFor="author">{t('productForm.authorLabel')}</Label>
               <Input id="author" value={form.author} onChange={set('author')} placeholder="Ada Mercer" />
             </div>
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="upc">UPC / EAN</Label>
+            <Label htmlFor="upc">{t('productForm.upcLabel')}</Label>
             <Input id="upc" value={form.upc} onChange={set('upc')} placeholder="081234567890" className="font-mono" />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="grid gap-2">
-              <Label htmlFor="barcode">Barcode</Label>
+              <Label htmlFor="barcode">{t('productForm.barcodeLabel')}</Label>
               <Input id="barcode" value={form.barcode} onChange={set('barcode')} className="font-mono" />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="qr">QR code value</Label>
+              <Label htmlFor="qr">{t('productForm.qrLabel')}</Label>
               <Input id="qr" value={form.qr_code} onChange={set('qr_code')} className="font-mono" />
             </div>
           </div>
 
           <div className="grid gap-2">
-            <Label>Condition</Label>
+            <Label>{t('productForm.conditionLabel')}</Label>
             <Select
               value={form.condition || 'unset'}
               onValueChange={(value) => setForm((f) => ({ ...f, condition: value === 'unset' ? '' : value }))}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Not set" />
+                <SelectValue placeholder={t('productForm.notSet')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="unset">Not set</SelectItem>
+                <SelectItem value="unset">{t('productForm.notSet')}</SelectItem>
                 {CONDITIONS.map((condition) => (
                   <SelectItem key={condition} value={condition}>
-                    {condition}
+                    {CONDITION_LABELS[condition]}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -334,7 +352,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
           </div>
 
           <div className="grid gap-2">
-            <Label>Photos</Label>
+            <Label>{t('productForm.photosLabel')}</Label>
             <div className="flex flex-wrap gap-2">
               {form.photo_urls.map((url, index) => (
                 <div
@@ -344,7 +362,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
                   <Image src={url} alt="" fittingType="fill" className="h-full w-full object-cover" />
                   {index === 0 && (
                     <span className="absolute bottom-0 left-0 bg-background/90 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wide text-muted-foreground">
-                      Cover
+                      {t('productForm.coverBadge')}
                     </span>
                   )}
                   <button
@@ -353,7 +371,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
                       setForm((f) => ({ ...f, photo_urls: f.photo_urls.filter((item) => item !== url) }))
                     }
                     className="absolute right-0.5 top-0.5 grid h-5 w-5 place-items-center rounded-full bg-background/90 text-foreground shadow"
-                    aria-label="Remove photo"
+                    aria-label={t('productForm.removePhotoAria')}
                   >
                     <X className="h-3 w-3" />
                   </button>
@@ -387,22 +405,21 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
               }}
             />
             <p className="text-xs text-muted-foreground">
-              Up to 6 photos, used on the product sheet. Images are stored publicly — anyone with the link
-              can open them.
+              {t('productForm.photosHint')}
             </p>
           </div>
 
           <div className="grid grid-cols-3 gap-3">
             <div className="grid gap-2">
-              <Label htmlFor="cost">Unit cost</Label>
+              <Label htmlFor="cost">{t('productForm.costLabel')}</Label>
               <Input id="cost" type="number" inputMode="decimal" value={form.cost} onChange={set('cost')} />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="price">Price</Label>
+              <Label htmlFor="price">{t('productForm.priceLabel')}</Label>
               <Input id="price" type="number" inputMode="decimal" value={form.price} onChange={set('price')} />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="reorder">Reorder at</Label>
+              <Label htmlFor="reorder">{t('productForm.reorderLabel')}</Label>
               <Input
                 id="reorder"
                 type="number"
@@ -414,7 +431,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
           </div>
 
           <div className="grid gap-2">
-            <Label>Unit of measure</Label>
+            <Label>{t('productForm.unitLabel')}</Label>
             <Select value={form.unit} onValueChange={set('unit')}>
               <SelectTrigger>
                 <SelectValue />
@@ -422,7 +439,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
               <SelectContent>
                 {['each', 'case', 'pair', 'pack', 'kg'].map((u) => (
                   <SelectItem key={u} value={u}>
-                    {u}
+                    {UNIT_LABELS[u]}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -430,16 +447,16 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
           </div>
 
           <div className="grid gap-2">
-            <Label>Preferred supplier</Label>
+            <Label>{t('productForm.supplierLabel')}</Label>
             <Select
               value={form.supplier_id || 'none'}
               onValueChange={(v) => setForm((f) => ({ ...f, supplier_id: v === 'none' ? '' : v }))}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Not set" />
+                <SelectValue placeholder={t('productForm.notSet')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">Not set</SelectItem>
+                <SelectItem value="none">{t('productForm.notSet')}</SelectItem>
                 {suppliers.map((s) => (
                   <SelectItem key={s.id} value={s.id}>
                     {s.name}
@@ -448,14 +465,14 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground">
-              Used by the dashboard's reorder suggestions to build purchase orders.
+              {t('productForm.supplierHint')}
             </p>
           </div>
 
           <ProductDetailsFields form={form} set={set} setForm={setForm} vocabulary={vocabulary} />
 
           <div className="grid gap-2">
-            <Label htmlFor="notes">Notes</Label>
+            <Label htmlFor="notes">{t('productForm.notesLabel')}</Label>
             <Textarea id="notes" value={form.notes} onChange={set('notes')} rows={3} />
           </div>
 
@@ -464,10 +481,10 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t('productForm.cancel')}
           </Button>
           <Button onClick={handleSave} disabled={saving || uploading}>
-            {saving ? 'Saving…' : product ? 'Save changes' : 'Create product'}
+            {saving ? t('productForm.saving') : product ? t('productForm.saveChanges') : t('productForm.createProduct')}
           </Button>
         </DialogFooter>
       </DialogContent>

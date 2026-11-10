@@ -11,11 +11,12 @@ import { STOCKHAVEN_SUBSCRIPTION_POLICY as policy } from '@/lib/stockhavenSubscr
 import { STOCKHAVEN_TERMS_OF_SERVICE as terms } from '@/lib/stockhavenTermsOfService';
 import { useAuth } from '@/lib/AuthContext';
 import useEntitlements from '@/hooks/useEntitlements';
+import { t } from '@/lib/i18n';
 
 function Cell({ value }) {
-  if (value === true) return <Check className="mx-auto h-4 w-4 text-ok" aria-label="Included" />;
+  if (value === true) return <Check className="mx-auto h-4 w-4 text-ok" aria-label={t('plans.included')} />;
   if (value === false) {
-    return <Minus className="mx-auto h-4 w-4 text-muted-foreground/40" aria-label="Not included" />;
+    return <Minus className="mx-auto h-4 w-4 text-muted-foreground/40" aria-label={t('plans.notIncluded')} />;
   }
   return <span className="text-[11px] leading-snug text-muted-foreground sm:text-xs">{value}</span>;
 }
@@ -38,8 +39,8 @@ export default function Plans() {
   // hardcoded here, so this line cannot go stale when a policy bumps.
   const policyEffectiveLine =
     terms.effectiveDate === policy.effectiveDate
-      ? `The Terms of Service and the Subscription, Cancellation & Refund Policy are effective ${terms.effectiveDate}.`
-      : `The Terms of Service is effective ${terms.effectiveDate}, and the Subscription, Cancellation & Refund Policy is effective ${policy.effectiveDate}.`;
+      ? t('plans.policyEffectiveBoth', { date: terms.effectiveDate })
+      : t('plans.policyEffectiveSplit', { termsDate: terms.effectiveDate, policyDate: policy.effectiveDate });
 
   return (
     <div className="min-h-screen bg-background">
@@ -50,23 +51,18 @@ export default function Plans() {
             to="/welcome"
             className="font-mono text-[10px] uppercase tracking-[0.14em] text-primary-foreground/70 hover:text-primary-foreground"
           >
-            Back to welcome
+            {t('plans.backToWelcome')}
           </Link>
         </div>
       </header>
 
       <main className="mx-auto max-w-5xl px-4 py-8 sm:px-8 sm:py-12">
         <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-          Plans &amp; features
+          {t('plans.eyebrow')}
         </p>
-        <h1 className="mt-2 text-2xl font-semibold sm:text-3xl">Compare StockHaven plans</h1>
+        <h1 className="mt-2 text-2xl font-semibold sm:text-3xl">{t('plans.title')}</h1>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-          One account, whichever plan you choose — Business covers up to five businesses. Prices are monthly in US dollars,
-          and eligible new website customers can receive one seven-day trial across Essentials
-          and Business. Upgrading an existing Essentials subscription to Business does not
-          restart the trial or create another free trial. Website plan prices are
-          before applicable taxes, if any. Your exact charge will be shown before you
-          authorize a subscription.
+          {t('plans.intro')}
         </p>
 
         <div className="mt-5">
@@ -82,26 +78,26 @@ export default function Plans() {
               action={
                 option.available === false ? (
                   <Button className="w-full" variant="outline" disabled>
-                    Available at mobile launch
+                    {t('plans.availableAtLaunch')}
                   </Button>
                 ) : isCurrentPlan(option.key) ? (
                   <>
                     <p className="mb-2 text-center">
                       <span className="rounded-full bg-primary/10 px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-primary">
-                        Your plan
+                        {t('plans.yourPlan')}
                       </span>
                     </p>
                     <Button className="w-full" variant="outline" disabled>
-                      Current plan
+                      {t('plans.currentPlan')}
                     </Button>
                   </>
                 ) : changeThroughUpgrade ? (
                   <Button className="w-full" asChild>
-                    <Link to="/upgrade">Change plan</Link>
+                    <Link to="/upgrade">{t('plans.changePlan')}</Link>
                   </Button>
                 ) : (
                   <Button className="w-full" asChild>
-                    <Link to={`/subscribe?plan=${option.key}`}>Subscribe</Link>
+                    <Link to={`/subscribe?plan=${option.key}`}>{t('plans.subscribe')}</Link>
                   </Button>
                 )
               }
@@ -114,24 +110,24 @@ export default function Plans() {
             <thead>
               <tr className="border-b border-border bg-secondary/60">
                 <th className="px-4 py-3 font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-                  Feature
+                  {t('plans.featureHeader')}
                 </th>
                 <th className="px-3 py-3 text-center text-xs font-semibold">
                   Mobile
                   <span className="mt-0.5 block font-mono text-[10px] font-normal text-muted-foreground">
-                    {formatPrice(MOBILE_PLAN.price)}/mo
+                    {formatPrice(MOBILE_PLAN.price)}{t('plans.perMonthShort')}
                   </span>
                 </th>
                 <th className="px-3 py-3 text-center text-xs font-semibold">
                   Essentials
                   <span className="mt-0.5 block font-mono text-[10px] font-normal text-muted-foreground">
-                    {formatPrice(PLANS.essentials.price)}/mo
+                    {formatPrice(PLANS.essentials.price)}{t('plans.perMonthShort')}
                   </span>
                 </th>
                 <th className="px-3 py-3 text-center text-xs font-semibold">
                   Business
                   <span className="mt-0.5 block font-mono text-[10px] font-normal text-muted-foreground">
-                    {formatPrice(PLANS.business.price)}/mo
+                    {formatPrice(PLANS.business.price)}{t('plans.perMonthShort')}
                   </span>
                 </th>
               </tr>
@@ -157,53 +153,43 @@ export default function Plans() {
 
         <div className="mt-4 space-y-2 text-xs leading-relaxed text-muted-foreground">
           <p>
-            Both website plans include the mobile companion, so a website subscriber never pays the
-            monthly mobile fee as well.
+            {t('plans.mobileIncludedNote')}
           </p>
           <p>
-            Essentials is $14.99/month plus applicable taxes, if any. Business is
-            $29.99/month plus applicable taxes, if any. Any required tax is determined
-            during provider checkout and must appear in the final total before payment.
-            This comparison page is not a tax quote or payment authorization.
+            {t('plans.priceNote')}
           </p>
           <p>
-            The mobile-only plan is $4.99/month at its intended U.S. base price.
-            The App Store or Google Play shows the actual local subscription price
-            and any applicable taxes before purchase. Its product, site and staff
-            allowances are set at launch, separately from the website tiers.
+            {t('plans.mobilePriceNote')}
           </p>
           <p>
-            A website plan change must be confirmed by the billing provider. The new price,
-            effective date and any proration will be explained before the change is authorized.
-            An upgrade should not create a second subscription.
+            {t('plans.planChangeNote')}
           </p>
           <p>
-            Prices, charges and trials are handled by the provider you subscribe through — the App
-            Store, Google Play, the website or Shopify — never by this page.
+            {t('plans.providerNote')}
           </p>
         </div>
 
         <p className="mt-5 text-sm leading-relaxed text-muted-foreground">
-          Before subscribing, please review the{' '}
+          {t('plans.reviewBefore')}{' '}
           <Link to="/terms-of-service" className="font-medium text-primary underline underline-offset-4">
-            Luminous StockHaven Terms of Service
+            {t('plans.termsLink')}
           </Link>
-          , the{' '}
+          {t('plans.reviewJoin1')}{' '}
           <Link to="/subscription-policy" className="font-medium text-primary underline underline-offset-4">
-            Subscription, Cancellation &amp; Refund Policy
+            {t('plans.policyLink')}
           </Link>{' '}
-          and the{' '}
+          {t('plans.reviewJoin2')}{' '}
           <Link to="/privacy-policy" className="font-medium text-primary underline underline-offset-4">
-            Privacy Policy
+            {t('plans.privacyLink')}
           </Link>
-          . {policyEffectiveLine}
+          {t('plans.reviewPeriod')} {policyEffectiveLine}
         </p>
 
         <TrademarkNotice />
 
         <p className="mt-3 text-center text-sm">
           <Link to="/about" className="font-medium text-primary underline underline-offset-4">
-            About Luminous StockHaven
+            {t('auth.aboutLink')}
           </Link>
         </p>
 
@@ -211,15 +197,15 @@ export default function Plans() {
           {isAuthenticated ? (
             <Button variant="outline" onClick={() => logout()}>
               <LogOut className="mr-1.5 h-4 w-4" aria-hidden="true" />
-              Log out
+              {t('plans.logOut')}
             </Button>
           ) : (
             <Button asChild>
-              <Link to="/login">Sign in or create an account</Link>
+              <Link to="/login">{t('plans.signInOrCreate')}</Link>
             </Button>
           )}
           <Button variant="outline" asChild>
-            <Link to="/welcome">Back to welcome</Link>
+            <Link to="/welcome">{t('plans.backToWelcome')}</Link>
           </Button>
         </div>
 

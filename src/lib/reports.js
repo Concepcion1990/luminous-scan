@@ -3,58 +3,59 @@ import { scoped } from '@/lib/scoped';
 import { descendantIds, locationPath } from '@/lib/locations';
 import { MOVEMENT_TYPES } from '@/lib/inventory';
 import { fetchMovements } from '@/lib/movementHistory';
+import { t } from './i18n.js';
 
 /** How a report's rows can be grouped. */
 export const GROUPINGS = {
-  product: 'Product',
-  category: 'Category',
-  location: 'Location',
-  type: 'Movement type',
-  supplier: 'Supplier',
-  user: 'Recorded by',
+  get product() { return t('reportsLib.grouping.product'); },
+  get category() { return t('reportsLib.grouping.category'); },
+  get location() { return t('reportsLib.grouping.location'); },
+  get type() { return t('reportsLib.grouping.type'); },
+  get supplier() { return t('reportsLib.grouping.supplier'); },
+  get user() { return t('reportsLib.grouping.user'); },
 };
 
 export const REPORT_TYPES = [
   {
     id: 'stock',
-    label: 'Stock on hand',
-    hint: 'What each place, category or product holds right now, valued at cost.',
-    valueLabel: 'Cost value',
+    get label() { return t('reportsLib.type.stock.label'); },
+    get hint() { return t('reportsLib.type.stock.hint'); },
+    get valueLabel() { return t('reportsLib.type.stock.valueLabel'); },
     snapshot: true,
     defaultGroup: 'location',
     groups: ['location', 'category', 'product', 'supplier'],
   },
   {
     id: 'movements',
-    label: 'Movement activity',
-    hint: 'Every stock change in the period, counted by type.',
-    valueLabel: 'Cost moved',
+    get label() { return t('reportsLib.type.movements.label'); },
+    get hint() { return t('reportsLib.type.movements.hint'); },
+    get valueLabel() { return t('reportsLib.type.movements.valueLabel'); },
     defaultGroup: 'type',
     groups: ['type', 'location', 'category', 'product', 'user'],
   },
   {
     id: 'sales',
-    label: 'Units sold',
-    hint: 'Stock taken out by sales, valued at each product’s retail price.',
-    valueLabel: 'Sale value',
+    get label() { return t('reportsLib.type.sales.label'); },
+    get hint() { return t('reportsLib.type.sales.hint'); },
+    get valueLabel() { return t('reportsLib.type.sales.valueLabel'); },
     defaultGroup: 'product',
     groups: ['product', 'category', 'location', 'user'],
     types: ['sale'],
   },
   {
     id: 'receipts',
-    label: 'Receipts',
-    hint: 'What arrived in the period, at the cost recorded when it landed.',
-    valueLabel: 'Cost received',
+    get label() { return t('reportsLib.type.receipts.label'); },
+    get hint() { return t('reportsLib.type.receipts.hint'); },
+    get valueLabel() { return t('reportsLib.type.receipts.valueLabel'); },
     defaultGroup: 'supplier',
     groups: ['supplier', 'product', 'category', 'location'],
     types: ['receive'],
   },
   {
     id: 'losses',
-    label: 'Losses & corrections',
-    hint: 'Damaged, lost, written-off and corrected stock, at cost.',
-    valueLabel: 'Value affected',
+    get label() { return t('reportsLib.type.losses.label'); },
+    get hint() { return t('reportsLib.type.losses.hint'); },
+    get valueLabel() { return t('reportsLib.type.losses.valueLabel'); },
     defaultGroup: 'type',
     groups: ['type', 'product', 'category', 'location', 'user'],
     types: ['damaged', 'lost', 'write_off', 'correction', 'count'],
@@ -62,12 +63,12 @@ export const REPORT_TYPES = [
 ];
 
 export const PERIODS = [
-  { id: '7', label: 'Last 7 days', days: 7 },
-  { id: '30', label: 'Last 30 days', days: 30 },
-  { id: '90', label: 'Last 90 days', days: 90 },
-  { id: '365', label: 'Last 12 months', days: 365 },
-  { id: 'all', label: 'All time', days: 0 },
-  { id: 'custom', label: 'Custom dates', days: 0 },
+  { id: '7', get label() { return t('reportsLib.period.last7'); }, days: 7 },
+  { id: '30', get label() { return t('reportsLib.period.last30'); }, days: 30 },
+  { id: '90', get label() { return t('reportsLib.period.last90'); }, days: 90 },
+  { id: '365', get label() { return t('reportsLib.period.last365'); }, days: 365 },
+  { id: 'all', get label() { return t('reportsLib.period.all'); }, days: 0 },
+  { id: 'custom', get label() { return t('reportsLib.period.custom'); }, days: 0 },
 ];
 
 const isoDay = (date) =>

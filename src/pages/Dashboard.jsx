@@ -17,6 +17,7 @@ import useEntitlements from '@/hooks/useEntitlements';
 import { trialLabel, trialWarningDetails } from '@/lib/entitlements';
 import { trialInAppNotice } from '@/lib/trialNotices';
 import { displayLimit } from '@/lib/plans';
+import { t } from '@/lib/i18n';
 import PullToRefresh from '@/components/mobile/PullToRefresh';
 
 /**
@@ -33,12 +34,12 @@ function LockedStatCard({ label, hint }) {
       </p>
       <div className="mt-2 flex items-center gap-2">
         <Lock className="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
-        <span className="text-sm font-medium text-muted-foreground">Business</span>
+        <span className="text-sm font-medium text-muted-foreground">{t('dashboard.businessPlan')}</span>
       </div>
       <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
         {hint}{' '}
         <Link to="/upgrade" className="font-medium text-primary underline underline-offset-2">
-          See Business
+          {t('dashboard.seeBusiness')}
         </Link>
       </p>
     </div>
@@ -49,19 +50,18 @@ function LockedStatCard({ label, hint }) {
 function LockedAttentionPanel() {
   return (
     <section className="flex flex-col overflow-hidden rounded-xl border border-border bg-card">
-      <PanelHeading>Needs attention</PanelHeading>
+      <PanelHeading>{t('dashboard.needsAttention')}</PanelHeading>
       <div className="flex flex-1 flex-col items-start justify-center gap-2 px-4 py-6 sm:px-5">
         <Lock className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-        <p className="text-sm font-medium">Low-stock alerts are a Business feature</p>
+        <p className="text-sm font-medium">{t('dashboard.attentionLockedTitle')}</p>
         <p className="text-xs leading-relaxed text-muted-foreground">
-          Business watches every reorder point and flags what needs attention, instead of
-          leaving it to a manual check.
+          {t('dashboard.attentionLockedBody')}
         </p>
         <Link
           to="/upgrade"
           className="text-xs font-medium text-primary underline underline-offset-2"
         >
-          See what Business includes
+          {t('dashboard.seeWhatBusinessIncludes')}
         </Link>
       </div>
     </section>
@@ -150,13 +150,14 @@ export default function Dashboard() {
           <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
             {profile.name} · {format(new Date(), 'EEEE, d MMMM')}
           </p>
-          <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">Inventory overview</h1>
+          <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">{t('dashboard.title')}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {stats && stats.perLocation.length > 0
-              ? `Live positions across ${stats.perLocation.length} location${
-                  stats.perLocation.length === 1 ? '' : 's'
-                } · every movement lands here.`
-              : 'Set up your locations and products to start tracking.'}
+              ? t('dashboard.livePositions', {
+                  count: stats.perLocation.length,
+                  s: stats.perLocation.length === 1 ? '' : 's',
+                })
+              : t('dashboard.emptySubtitle')}
           </p>
           {trialChip && (
             <p className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2 py-0.5 text-[11px] text-muted-foreground">
@@ -171,21 +172,21 @@ export default function Dashboard() {
               className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
             >
               <ScanLine className="h-4 w-4" />
-              Scan an item
+              {t('dashboard.scanItem')}
             </Link>
             <Link
               to="/products"
               className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-medium transition-colors hover:bg-muted"
             >
               <Plus className="h-4 w-4" />
-              New product
+              {t('dashboard.newProduct')}
             </Link>
           </div>
           {atProductLimit && (
             <p className="text-xs text-muted-foreground">
-              Products {stats.activeSkus} of {productLimit} —{' '}
+              {t('dashboard.productLimit', { count: stats.activeSkus, limit: productLimit })}{' '}
               <Link to="/upgrade" className="font-medium text-primary underline underline-offset-2">
-                Upgrade for unlimited products
+                {t('dashboard.upgradeUnlimited')}
               </Link>
             </p>
           )}
@@ -199,21 +200,21 @@ export default function Dashboard() {
             <p className="text-sm font-semibold">
               {isPrelaunch
                 ? (trialNoticeStage === 'one-day'
-                  ? 'Your seven-day pre-launch preview check-in is within 24 hours'
-                  : 'Your seven-day pre-launch preview check-in is within 3 days')
+                  ? t('dashboard.prelaunchOneDay')
+                  : t('dashboard.prelaunchThreeDays'))
                 : inAppNotice.message}
             </p>
             <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
               {isPrelaunch
-                ? 'This is an informational seven-day preview reminder. Complimentary access continues, and no payment is scheduled.'
-                : 'Check your plan and cancellation options. This is an in-app trial reminder, not confirmation of a scheduled payment.'}
+                ? t('dashboard.prelaunchBody')
+                : t('dashboard.trialReminderBody')}
             </p>
           </div>
           <Link
             to="/settings"
             className="inline-flex min-h-10 items-center rounded-md border border-border bg-card px-3 text-xs font-semibold underline underline-offset-2"
           >
-            View subscription settings
+            {t('dashboard.viewSubscriptionSettings')}
           </Link>
         </div>
       )}
@@ -227,8 +228,8 @@ export default function Dashboard() {
       ) : (
         <>
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <StatCard label="Units on hand" value={stats.totalUnits.toLocaleString()} hint="Across all locations" />
-            <StatCard label="Active SKUs" value={stats.activeSkus.toLocaleString()} hint="Tracked products" />
+            <StatCard label={t('dashboard.unitsOnHand')} value={stats.totalUnits.toLocaleString()} hint={t('dashboard.acrossAllLocations')} />
+            <StatCard label={t('dashboard.activeSkus')} value={stats.activeSkus.toLocaleString()} hint={t('dashboard.trackedProducts')} />
             {entitlementLoading ? (
               <>
                 <div className="h-[104px] animate-pulse rounded-xl border border-border bg-card" />
@@ -238,24 +239,24 @@ export default function Dashboard() {
               <>
                 {showAlerts ? (
                   <StatCard
-                    label="Low stock"
+                    label={t('dashboard.lowStock')}
                     value={stats.low.length}
-                    unit="alerts"
+                    unit={t('dashboard.alertsUnit')}
                     tone={stats.low.length > 0 ? 'warn' : 'default'}
-                    hint="At or below reorder point"
+                    hint={t('dashboard.atOrBelowReorder')}
                   />
                 ) : (
-                  <LockedStatCard label="Low stock" hint="Low-stock alerts are a Business feature." />
+                  <LockedStatCard label={t('dashboard.lowStock')} hint={t('dashboard.lowStockLockedHint')} />
                 )}
                 {showValuation ? (
                   <StatCard
-                    label="Stock value"
+                    label={t('dashboard.stockValue')}
                     value={formatMoney(stats.stockValue, profile.currency)}
                     tone="ok"
-                    hint="At current cost"
+                    hint={t('dashboard.atCurrentCost')}
                   />
                 ) : (
-                  <LockedStatCard label="Stock value" hint="Stock valuation is a Business feature." />
+                  <LockedStatCard label={t('dashboard.stockValue')} hint={t('dashboard.stockValueLockedHint')} />
                 )}
               </>
             )}

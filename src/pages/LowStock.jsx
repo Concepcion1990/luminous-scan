@@ -5,6 +5,7 @@ import PlanGate from '@/components/plan/PlanGate';
 import { loadInventory, summarize } from '@/lib/inventory';
 import { useBusiness } from '@/hooks/useBusiness';
 import useEntitlements from '@/hooks/useEntitlements';
+import { t } from '@/lib/i18n';
 
 export default function LowStock() {
   const { profile, activeId } = useBusiness();
@@ -26,24 +27,23 @@ export default function LowStock() {
     <div className="space-y-5">
       <div>
         <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-          Reorder suggestions
+          {t('dashboard.reorderSuggestions')}
         </p>
-        <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">Low stock</h1>
+        <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">{t('dashboard.lowStock')}</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Every product at or below its reorder point, by location — turn them into a purchase order in
-          one tap.
+          {t('lowStock.intro')}
         </p>
         <p className="mt-2 text-xs text-muted-foreground">
           <Link to="/products" className="underline underline-offset-2 hover:text-foreground">
-            Set reorder points
+            {t('lowStock.setReorderPoints')}
           </Link>{' '}
-          on a product so it shows up here.
+          {t('lowStock.setReorderPointsSuffix')}
         </p>
       </div>
 
       {low === null ? (
         <div className="rounded-xl border border-border bg-card px-4 py-10 text-center text-sm text-muted-foreground">
-          Loading suggestions…
+          {t('lowStock.loading')}
         </div>
       ) : (
         <ReorderPanel items={low} currency={profile.currency} businessId={activeId} />

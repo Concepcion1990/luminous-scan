@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ArrowUpRight } from 'lucide-react';
 import PanelHeading from '@/components/dashboard/PanelHeading';
+import { t } from '@/lib/i18n';
 
 /** Units held per location, with a bar scaled to the fullest place. */
 export default function LocationStockPanel({ perLocation = [] }) {
@@ -14,16 +15,16 @@ export default function LocationStockPanel({ perLocation = [] }) {
             to="/locations"
             className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground"
           >
-            Manage <ArrowUpRight className="h-3 w-3" />
+            {t('dashboard.manage')} <ArrowUpRight className="h-3 w-3" />
           </Link>
         }
       >
-        Stock by location
+        {t('dashboard.stockByLocation')}
       </PanelHeading>
       <div className="divide-y divide-border">
         {perLocation.length === 0 && (
           <p className="px-4 py-10 text-center text-sm text-muted-foreground">
-            No locations yet — add a store or warehouse.
+            {t('dashboard.noLocationsYet')}
           </p>
         )}
         {perLocation.map((row) => (
@@ -45,8 +46,8 @@ export default function LocationStockPanel({ perLocation = [] }) {
                 />
               </div>
               <span className="font-mono text-[10px] text-muted-foreground">
-                {row.skus} SKUs
-                {row.low > 0 && <span className="ml-2 text-warn">{row.low} low</span>}
+                {t('dashboard.skusCount', { count: row.skus })}
+                {row.low > 0 && <span className="ml-2 text-warn">{t('dashboard.lowCount', { count: row.low })}</span>}
               </span>
             </div>
           </div>

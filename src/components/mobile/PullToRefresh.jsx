@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Loader2, RefreshCw } from 'lucide-react';
+import { t } from '@/lib/i18n';
 
 const MOBILE_QUERY = '(max-width: 1023px)';
 const TRIGGER_DISTANCE = 56;
@@ -104,7 +105,7 @@ export default function PullToRefresh({ children, className = '', onRefresh, dis
     Promise.resolve()
       .then(() => refreshRef.current?.())
       .catch(() => {
-        if (mounted.current) setError('Could not refresh. Pull down to try again.');
+        if (mounted.current) setError(t('layout.refresh.failed'));
       })
       .finally(() => {
         busy.current = false;
@@ -134,7 +135,7 @@ export default function PullToRefresh({ children, className = '', onRefresh, dis
             ) : (
               <RefreshCw className="h-4 w-4" aria-hidden="true" />
             )}
-            {error || (refreshing ? 'Refreshing…' : distance >= TRIGGER_DISTANCE ? 'Release to refresh' : 'Pull to refresh')}
+            {error || (refreshing ? t('layout.refresh.refreshing') : distance >= TRIGGER_DISTANCE ? t('layout.refresh.release') : t('layout.refresh.pull'))}
           </span>
         </div>
       )}

@@ -2,6 +2,7 @@ import { Pencil, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { conditionLabel, reasonLabel, RETURN_STATUS } from '@/lib/returns';
 import { money } from '@/lib/purchasing';
+import { t } from '@/lib/i18n';
 
 const PILL = {
   muted: 'bg-muted text-muted-foreground',
@@ -25,11 +26,11 @@ export default function ReturnCard({ record, currency, busy, onEdit, onAction })
               {status.label}
             </span>
             <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
-              {record.kind === 'exchange' ? 'Exchange' : 'Return'}
+              {record.kind === 'exchange' ? t('returns.exchange') : t('returns.returnKind')}
             </span>
           </div>
           <p className="mt-1 truncate text-sm">
-            {record.customer_name || 'No customer name'}
+            {record.customer_name || t('returns.noCustomerName')}
             {record.order_number ? ` · ${record.order_number}` : ''}
           </p>
           <p className="mt-0.5 text-xs text-muted-foreground">
@@ -40,7 +41,7 @@ export default function ReturnCard({ record, currency, busy, onEdit, onAction })
         </div>
         <div className="text-right">
           <p className="numeric text-sm font-semibold">{money(record.refund_amount, currency)}</p>
-          <p className="text-[11px] text-muted-foreground">refund recorded</p>
+          <p className="text-[11px] text-muted-foreground">{t('returns.refundRecorded')}</p>
         </div>
       </div>
 
@@ -52,13 +53,16 @@ export default function ReturnCard({ record, currency, busy, onEdit, onAction })
               <span className="ml-1 font-mono text-[10px] text-muted-foreground">{line.sku}</span>
             </span>
             <span className="shrink-0 text-muted-foreground">
-              {line.quantity} · {conditionLabel(line.condition)} · {line.restock ? 'restock' : 'not restocked'}
+              {line.quantity} · {conditionLabel(line.condition)} ·{' '}
+              {line.restock ? t('returns.restock') : t('returns.notRestocked')}
             </span>
           </li>
         ))}
         {replacements.map((line, i) => (
           <li key={`x-${i}`} className="flex justify-between gap-2 text-ok">
-            <span className="min-w-0 truncate">Replacement: {line.product_name}</span>
+            <span className="min-w-0 truncate">
+              {t('returns.replacement', { name: line.product_name })}
+            </span>
             <span className="numeric shrink-0">{line.quantity}</span>
           </li>
         ))}
@@ -69,22 +73,22 @@ export default function ReturnCard({ record, currency, busy, onEdit, onAction })
       <div className="mt-3 flex flex-wrap gap-1.5">
         {record.status === 'new' && (
           <Button size="sm" disabled={busy} onClick={() => onAction('approve')}>
-            Approve
+            {t('returns.approve')}
           </Button>
         )}
         {record.status === 'approved' && (
           <Button size="sm" disabled={busy} onClick={() => onAction('complete')}>
-            Complete &amp; apply
+            {t('returns.completeApply')}
           </Button>
         )}
         {['new', 'approved'].includes(record.status) && (
           <Button size="sm" variant="outline" disabled={busy} onClick={onEdit}>
-            <Pencil className="mr-1 h-3.5 w-3.5" /> Edit
+            <Pencil className="mr-1 h-3.5 w-3.5" /> {t('returns.edit')}
           </Button>
         )}
         {['new', 'approved'].includes(record.status) && (
           <Button size="sm" variant="ghost" disabled={busy} onClick={() => onAction('reject')}>
-            Reject
+            {t('returns.reject')}
           </Button>
         )}
         {['new', 'rejected'].includes(record.status) && (
@@ -94,7 +98,7 @@ export default function ReturnCard({ record, currency, busy, onEdit, onAction })
             className="text-muted-foreground"
             disabled={busy}
             onClick={() => onAction('delete')}
-            aria-label={`Delete ${record.number}`}
+            aria-label={t('returns.deleteAria', { number: record.number })}
           >
             <Trash2 className="h-3.5 w-3.5" />
           </Button>

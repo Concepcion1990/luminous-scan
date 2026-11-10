@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { scoped } from '@/lib/scoped';
 import { PRESET_ROLES } from '@/lib/staff';
 import { useToast } from '@/components/ui/use-toast';
+import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import StaffMemberCard from '@/components/staff/StaffMemberCard';
 import StaffMemberDialog from '@/components/staff/StaffMemberDialog';
@@ -71,8 +72,8 @@ export default function Staff() {
   const openAdd = () => {
     if (seatsFull) {
       toast({
-        title: `This plan includes ${staffLimit} additional staff`,
-        description: 'Free a seat or move to Business for unlimited staff.',
+        title: t('staff.planIncludes', { count: staffLimit }),
+        description: t('staff.seatsFullDesc'),
         variant: 'destructive',
       });
       return;
@@ -87,9 +88,9 @@ export default function Staff() {
   };
 
   const removeMember = async (member) => {
-    if (!window.confirm(`Remove ${member.full_name} from the staff list? Their app account stays.`)) return;
+    if (!window.confirm(t('staff.member.removeConfirm', { name: member.full_name }))) return;
     await base44.entities.StaffMember.delete(member.id);
-    toast({ title: 'Staff member removed' });
+    toast({ title: t('staff.member.removed') });
     load();
   };
 
@@ -103,8 +104,8 @@ export default function Staff() {
   const openNewRole = () => {
     if (!canCreateRoles) {
       toast({
-        title: 'Custom roles are a Business feature',
-        description: 'Essentials uses the five built-in roles. Move to Business to create your own.',
+        title: t('staff.role.customFeatureTitle'),
+        description: t('staff.role.customFeatureDesc'),
         variant: 'destructive',
       });
       return;
@@ -122,15 +123,18 @@ export default function Staff() {
     const inUse = members.filter((member) => member.role_id === role.id).length;
     if (inUse > 0) {
       toast({
-        title: 'Role still in use',
-        description: `${inUse} staff member${inUse === 1 ? ' is' : 's are'} on ${role.name}. Move them to another role first.`,
+        title: t('staff.role.inUseTitle'),
+        description:
+          inUse === 1
+            ? t('staff.role.inUseDescOne', { count: inUse, role: role.name })
+            : t('staff.role.inUseDescMany', { count: inUse, role: role.name }),
         variant: 'destructive',
       });
       return;
     }
-    if (!window.confirm(`Delete the ${role.name} role?`)) return;
+    if (!window.confirm(t('staff.role.deleteConfirm', { role: role.name }))) return;
     await base44.entities.StaffRole.delete(role.id);
-    toast({ title: 'Role deleted' });
+    toast({ title: t('staff.role.deleted') });
     load();
   };
 
@@ -146,12 +150,12 @@ export default function Staff() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Team</p>
-          <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">Staff &amp; roles</h1>
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">{t('staff.eyebrow')}</p>
+          <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">{t('staff.title')}</h1>
           <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-            Who works in{' '}
-            <span className="font-medium text-foreground">{profile?.name || 'this business'}</span>, what
-            each person is allowed to do, and the roles you can put them on.
+            {t('staff.subtitleStart')}{' '}
+            <span className="font-medium text-foreground">{profile?.name || t('staff.thisBusiness')}</span>
+            {t('staff.subtitleRest')}
           </p>
           {/* The staff allowance in plain words, so the "5" on the Roles card
               below is never read as a staff limit: that 5 is the count of
@@ -159,20 +163,20 @@ export default function Staff() {
           {!entitlementLoading && (
             <p className="mt-1 text-xs text-muted-foreground">
               {staffLimit == null
-                ? 'Unlimited staff on the Business plan.'
-                : `This plan includes ${staffLimit} additional staff.`}
+                ? t('staff.planUnlimited')
+                : t('staff.planIncludes', { count: staffLimit })}
             </p>
           )}
         </div>
         <div className="flex flex-wrap gap-2">
-          <LimitBadge label="Staff" used={seatsUsed} limit={staffLimit} />
+          <LimitBadge label={t('staff.limitBadgeLabel')} used={seatsUsed} limit={staffLimit} />
           {canCreateRoles && (
             <Button variant="outline" onClick={openNewRole}>
-              <Plus className="mr-1.5 h-4 w-4" /> New role
+              <Plus className="mr-1.5 h-4 w-4" /> {t('staff.newRole')}
             </Button>
           )}
           <Button onClick={openAdd} disabled={!activeId}>
-            <UserPlus className="mr-1.5 h-4 w-4" /> Add staff member
+            <UserPlus className="mr-1.5 h-4 w-4" /> {t('staff.addMember')}
           </Button>
         </div>
       </div>
@@ -180,30 +184,30 @@ export default function Staff() {
       {!activeId && (
         <p className="flex items-start gap-2 rounded-lg border border-warn/30 bg-warn/10 px-3 py-2 text-sm">
           <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-warn" />
-          Create a business first — staff belong to a business.
+          {t('staff.noBusiness')}
         </p>
       )}
 
       {loading ? (
         <div className="flex items-center gap-2 py-8 text-sm text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" /> Loading staff…
+          <Loader2 className="h-4 w-4 animate-spin" /> {t('staff.loading')}
         </div>
       ) : (
         <>
           <div className="grid gap-3 sm:grid-cols-3">
             <div className="rounded-xl border border-border bg-card px-4 py-3">
-              <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">Staff</p>
+              <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">{t('staff.statStaff')}</p>
               {/* Seats in use (active + invited), not staff records: a
                   suspended member still has a card below but holds no seat,
                   so this must agree with the LimitBadge (Finding 25). */}
               <p className="numeric mt-1 text-2xl font-semibold">{seatsUsed}</p>
             </div>
             <div className="rounded-xl border border-border bg-card px-4 py-3">
-              <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">Active</p>
+              <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">{t('staff.statActive')}</p>
               <p className="numeric mt-1 text-2xl font-semibold">{activeCount}</p>
             </div>
             <div className="rounded-xl border border-border bg-card px-4 py-3">
-              <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">Roles</p>
+              <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">{t('staff.statRoles')}</p>
               <p className="numeric mt-1 text-2xl font-semibold">
                 {PRESET_ROLES.length + roles.length}
               </p>
@@ -212,19 +216,18 @@ export default function Staff() {
 
           <section className="space-y-2">
             <div className="flex items-center justify-between gap-2">
-              <h2 className="text-sm font-semibold">Team</h2>
-              <span className="numeric text-[11px] text-muted-foreground">{seatsUsed} people</span>
+              <h2 className="text-sm font-semibold">{t('staff.teamHeading')}</h2>
+              <span className="numeric text-[11px] text-muted-foreground">{t('staff.peopleCount', { count: seatsUsed })}</span>
             </div>
 
             {members.length === 0 ? (
               <div className="rounded-xl border border-dashed border-border bg-card px-4 py-8 text-center">
-                <p className="text-sm font-medium">No staff yet</p>
+                <p className="text-sm font-medium">{t('staff.emptyTitle')}</p>
                 <p className="mx-auto mt-1 max-w-md text-xs leading-relaxed text-muted-foreground">
-                  Add a person, give them a role and the permissions that go with it, and they are invited by
-                  email to sign in to this business.
+                  {t('staff.emptyBody')}
                 </p>
                 <Button className="mt-3" onClick={openAdd} disabled={!activeId}>
-                  <UserPlus className="mr-1.5 h-4 w-4" /> Add the first staff member
+                  <UserPlus className="mr-1.5 h-4 w-4" /> {t('staff.addFirst')}
                 </Button>
               </div>
             ) : (
@@ -245,9 +248,9 @@ export default function Staff() {
 
           <section className="space-y-2">
             <div className="flex items-center justify-between gap-2">
-              <h2 className="text-sm font-semibold">Roles</h2>
+              <h2 className="text-sm font-semibold">{t('staff.rolesHeading')}</h2>
               <span className="numeric text-[11px] text-muted-foreground">
-                {PRESET_ROLES.length + roles.length} roles
+                {t('staff.rolesCount', { count: PRESET_ROLES.length + roles.length })}
               </span>
             </div>
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
@@ -275,33 +278,25 @@ export default function Staff() {
 
           <div className="rounded-xl border border-border bg-card p-4 text-xs leading-relaxed text-muted-foreground sm:p-5">
             <p className="flex items-center gap-1.5 font-medium text-foreground">
-              <ShieldCheck className="h-3.5 w-3.5" /> How staff and roles work
+              <ShieldCheck className="h-3.5 w-3.5" /> {t('staff.howTitle')}
             </p>
             <p className="mt-2">
-              Every member has a role and their own permission list, so you can start from a role and change
-              one thing without making a new role. Editing a role does not rewrite the members already on it —
-              open a member to re-apply their role defaults.
+              {t('staff.how.p1')}
             </p>
             <p className="mt-2">
-              Custom roles are a Business feature: Essentials uses the five built-in roles (Owner, Manager,
-              Stock clerk, Sales clerk, Viewer).
+              {t('staff.how.p2')}
             </p>
             <p className="mt-2">
-              Invitations are sent by email. A member can only sign in once they accept, and removing someone
-              from this list does not delete their app account.
+              {t('staff.how.p3')}
             </p>
             <p className="mt-2">
-              A store is the location a person is assigned to. It is recorded on their card; what they can open
-              is still decided by their role and permissions.
+              {t('staff.how.p4')}
             </p>
             <p className="mt-2">
-              Permissions decide what each person can open: menu items outside their role are hidden, and a
-              blocked address shows a “not on your role” notice instead of the page. A change applies the
-              next time that person loads the app; suspending a member locks them out entirely.
+              {t('staff.how.p5')}
             </p>
             <p className="mt-2">
-              Administrators can see and change all data, manage app users and roles, and are never limited
-              by a staff role. Someone with no staff record — the owner of a new business — keeps full access.
+              {t('staff.how.p6')}
             </p>
           </div>
         </>

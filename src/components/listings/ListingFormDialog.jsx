@@ -21,6 +21,7 @@ import {
 import { useBusiness } from '@/hooks/useBusiness';
 import { withBusiness } from '@/lib/scoped';
 import { LISTING_CHANNELS, LISTING_STATUSES } from '@/lib/listings';
+import { t } from '@/lib/i18n';
 
 const EMPTY = {
   product_id: '',
@@ -72,7 +73,7 @@ export default function ListingFormDialog({ open, onOpenChange, listing, product
     return [
       {
         id: listing.product_id,
-        name: listing.product_name || 'Product',
+        name: listing.product_name || t('listings.productFallback'),
         sku: listing.sku || '',
         gone: true,
       },
@@ -84,17 +85,17 @@ export default function ListingFormDialog({ open, onOpenChange, listing, product
     setError('');
     const product = options.find((p) => p.id === values.product_id);
     if (!product) {
-      setError('Choose which product the listing is for.');
+      setError(t('listings.chooseProductError'));
       return;
     }
     const price = values.price === '' ? null : Number(values.price);
     if (price !== null && (!Number.isFinite(price) || price < 0)) {
-      setError('Enter a listed price of 0 or more.');
+      setError(t('listings.priceError'));
       return;
     }
     const listed = values.quantity_listed === '' ? null : Number(values.quantity_listed);
     if (listed !== null && (!Number.isFinite(listed) || listed < 0)) {
-      setError('Enter a listed quantity of 0 or more.');
+      setError(t('listings.quantityError'));
       return;
     }
     setSaving(true);
@@ -119,9 +120,13 @@ export default function ListingFormDialog({ open, onOpenChange, listing, product
       if (listing) await base44.entities.Listing.update(listing.id, payload);
       else await base44.entities.Listing.create(payload);
       onOpenChange(false);
-      onSaved(listing ? `${product.name}: listing updated.` : `${product.name}: listing added.`);
+      onSaved(
+        listing
+          ? t('listings.updated', { name: product.name })
+          : t('listings.added', { name: product.name })
+      );
     } catch (e) {
-      setError(e.message || 'Could not save this listing.');
+      setError(e.message || t('listings.saveFailed'));
     } finally {
       setSaving(false);
     }
@@ -131,28 +136,26 @@ export default function ListingFormDialog({ open, onOpenChange, listing, product
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{listing ? 'Edit listing' : 'New listing'}</DialogTitle>
-          <DialogDescription>
-            Kept by hand — nothing syncs with a marketplace, so update it whenever you change a listing there.
-          </DialogDescription>
+          <DialogTitle>{listing ? t('listings.editTitle') : t('listings.newTitle')}</DialogTitle>
+          <DialogDescription>{t('listings.formDescription')}</DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-3">
           <div className="grid gap-1">
-            <Label className="text-xs">Product</Label>
+            <Label className="text-xs">{t('listings.product')}</Label>
             <Select
               value={values.product_id || 'none'}
               onValueChange={(v) => set('product_id', v === 'none' ? '' : v)}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Choose a product" />
+                <SelectValue placeholder={t('listings.chooseProduct')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">Choose a product</SelectItem>
+                <SelectItem value="none">{t('listings.chooseProduct')}</SelectItem>
                 {options.map((p) => (
                   <SelectItem key={p.id} value={p.id}>
                     {p.sku ? `${p.name} · ${p.sku}` : p.name}
-                    {p.gone ? ' (no longer in the catalog)' : ''}
+                    {p.gone ? t('listings.noLongerInCatalog') : ''}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -161,7 +164,7 @@ export default function ListingFormDialog({ open, onOpenChange, listing, product
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="grid gap-1">
-              <Label className="text-xs">Channel</Label>
+              <Label className="text-xs">{t('listings.channel')}</Label>
               <Select value={values.channel} onValueChange={(v) => set('channel', v)}>
                 <SelectTrigger>
                   <SelectValue />
@@ -176,7 +179,7 @@ export default function ListingFormDialog({ open, onOpenChange, listing, product
               </Select>
             </div>
             <div className="grid gap-1">
-              <Label className="text-xs">Status</Label>
+              <Label className="text-xs">{t('listings.status')}</Label>
               <Select value={values.status} onValueChange={(v) => set('status', v)}>
                 <SelectTrigger>
                   <SelectValue />
@@ -194,53 +197,53 @@ export default function ListingFormDialog({ open, onOpenChange, listing, product
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="grid gap-1">
-              <Label className="text-xs">Listed price</Label>
+              <Label className="text-xs">{t('listings.listedPrice')}</Label>
               <Input
                 type="number"
                 inputMode="decimal"
                 step="0.01"
                 value={values.price}
                 onChange={(e) => set('price', e.target.value)}
-                placeholder="What it sells for there"
+                placeholder={t('listings.listedPricePlaceholder')}
                 className="numeric"
               />
             </div>
             <div className="grid gap-1">
-              <Label className="text-xs">Quantity listed</Label>
+              <Label className="text-xs">{t('listings.quantityListed')}</Label>
               <Input
                 type="number"
                 inputMode="numeric"
                 min="0"
                 value={values.quantity_listed}
                 onChange={(e) => set('quantity_listed', e.target.value)}
-                placeholder="How many are offered"
+                placeholder={t('listings.quantityListedPlaceholder')}
                 className="numeric"
               />
             </div>
           </div>
 
           <div className="grid gap-1">
-            <Label className="text-xs">Listing id on the channel</Label>
+            <Label className="text-xs">{t('listings.listingId')}</Label>
             <Input
               value={values.external_id}
               onChange={(e) => set('external_id', e.target.value)}
-              placeholder="Optional — the marketplace's own id"
+              placeholder={t('listings.listingIdPlaceholder')}
               className="numeric"
             />
           </div>
 
           <div className="grid gap-1">
-            <Label className="text-xs">Listing link</Label>
+            <Label className="text-xs">{t('listings.listingLink')}</Label>
             <Input
               value={values.url}
               onChange={(e) => set('url', e.target.value)}
-              placeholder="https://…"
+              placeholder={t('listings.listingLinkPlaceholder')}
             />
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="grid gap-1">
-              <Label className="text-xs">Listed on</Label>
+              <Label className="text-xs">{t('listings.listedOn')}</Label>
               <Input
                 type="date"
                 value={values.listed_on}
@@ -248,7 +251,7 @@ export default function ListingFormDialog({ open, onOpenChange, listing, product
               />
             </div>
             <div className="grid gap-1">
-              <Label className="text-xs">Last checked</Label>
+              <Label className="text-xs">{t('listings.lastChecked')}</Label>
               <Input
                 type="date"
                 value={values.last_checked}
@@ -258,11 +261,11 @@ export default function ListingFormDialog({ open, onOpenChange, listing, product
           </div>
 
           <div className="grid gap-1">
-            <Label className="text-xs">Notes</Label>
+            <Label className="text-xs">{t('listings.notes')}</Label>
             <Input
               value={values.notes}
               onChange={(e) => set('notes', e.target.value)}
-              placeholder="Variation, fees, what needs fixing…"
+              placeholder={t('listings.notesPlaceholder')}
             />
           </div>
 
@@ -271,10 +274,10 @@ export default function ListingFormDialog({ open, onOpenChange, listing, product
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t('listings.cancel')}
           </Button>
           <Button onClick={save} disabled={saving}>
-            {saving ? 'Saving…' : 'Save listing'}
+            {saving ? t('listings.saving') : t('listings.saveListing')}
           </Button>
         </DialogFooter>
       </DialogContent>

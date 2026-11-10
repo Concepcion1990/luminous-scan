@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/select';
 import { useBusiness } from '@/hooks/useBusiness';
 import { scoped } from '@/lib/scoped';
+import { t } from '@/lib/i18n';
 import { productTruncationNotice } from '@/lib/inventory';
 import { listListings, LISTING_CHANNELS, LISTING_FILTERS } from '@/lib/listings';
 
@@ -62,9 +63,9 @@ export default function Listings() {
   }, [status, channel, search, activeId, reload]);
 
   const remove = async (listing) => {
-    if (!window.confirm(`Delete the ${listing.product_name} listing?`)) return;
+    if (!window.confirm(t('listings.deleteConfirm', { name: listing.product_name }))) return;
     await base44.entities.Listing.delete(listing.id);
-    setFlash({ ok: true, text: `${listing.product_name}: listing deleted.` });
+    setFlash({ ok: true, text: t('listings.deleted', { name: listing.product_name }) });
     setReload((n) => n + 1);
   };
 
@@ -73,11 +74,11 @@ export default function Listings() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-            Channels
+            {t('listings.eyebrow')}
           </p>
-          <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">Listings</h1>
+          <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">{t('listings.title')}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Where each product is for sale, kept by hand — no marketplace connection, no surprises.
+            {t('listings.subtitle')}
           </p>
         </div>
         <Button
@@ -86,7 +87,7 @@ export default function Listings() {
             setDialogOpen(true);
           }}
         >
-          <Plus className="mr-1.5 h-4 w-4" /> New listing
+          <Plus className="mr-1.5 h-4 w-4" /> {t('listings.newListing')}
         </Button>
       </div>
 
@@ -98,8 +99,7 @@ export default function Listings() {
 
       {productTruncationNotice(products.length, productTotal) && (
         <p className="rounded-lg border border-warn/30 bg-warn/10 px-3 py-2 text-sm">
-          {productTruncationNotice(products.length, productTotal)} — the listing picker lists products
-          alphabetically, so later ones are not offered here.
+          {productTruncationNotice(products.length, productTotal)}{t('listings.truncationSuffix')}
         </p>
       )}
 
@@ -107,7 +107,7 @@ export default function Listings() {
         <Input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search product, SKU or listing id"
+          placeholder={t('listings.searchPlaceholder')}
         />
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex flex-wrap gap-1.5">
@@ -131,7 +131,7 @@ export default function Listings() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All channels</SelectItem>
+              <SelectItem value="all">{t('listings.allChannels')}</SelectItem>
               {Object.entries(LISTING_CHANNELS).map(([key, meta]) => (
                 <SelectItem key={key} value={key}>
                   {meta.label}
@@ -143,14 +143,14 @@ export default function Listings() {
       </div>
 
       <div className="overflow-hidden rounded-xl border border-border bg-card">
-        {loading && <p className="px-4 py-10 text-center text-sm text-muted-foreground">Loading listings…</p>}
+        {loading && <p className="px-4 py-10 text-center text-sm text-muted-foreground">{t('listings.loading')}</p>}
 
         {!loading && !listings.length && (
           <div className="px-4 py-14 text-center">
             <Store className="mx-auto h-6 w-6 text-muted-foreground" />
-            <p className="mt-2 text-sm font-medium">No listings here</p>
+            <p className="mt-2 text-sm font-medium">{t('listings.emptyTitle')}</p>
             <p className="mt-1 text-xs text-muted-foreground">
-              Add where a product is for sale, or clear the filters.
+              {t('listings.emptyHint')}
             </p>
           </div>
         )}

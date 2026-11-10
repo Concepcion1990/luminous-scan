@@ -42,7 +42,7 @@ export default function CrossStoreAvailability({ businessId, product }) {
         setStores(data.stores ?? []);
       })
       .catch((err) => {
-        if (mounted) setError(err?.message || 'Could not check the other stores.');
+        if (mounted) setError(err?.message || t('scan.checkStoresFailed'));
       })
       .finally(() => {
         if (mounted) setLoading(false);
@@ -68,14 +68,14 @@ export default function CrossStoreAvailability({ businessId, product }) {
       setSentTo(store.business_id);
       setSelected(null);
     } catch (err) {
-      setError(err?.message || 'Could not send that request.');
+      setError(err?.message || t('scan.sendRequestFailed'));
     } finally {
       setSending(false);
     }
   };
 
   if (loading) {
-    return <p className="text-sm text-muted-foreground">Checking the other stores…</p>;
+    return <p className="text-sm text-muted-foreground">{t('scan.checkingStores')}</p>;
   }
   if (error) {
     return <p className="text-sm text-destructive">{error}</p>;
@@ -83,7 +83,7 @@ export default function CrossStoreAvailability({ businessId, product }) {
   if (!stores.length) {
     return (
       <p className="text-sm text-muted-foreground">
-        None of your other stores have this item in stock right now.
+        {t('scan.noStoresHaveItem')}
       </p>
     );
   }
@@ -146,7 +146,9 @@ export default function CrossStoreAvailability({ businessId, product }) {
                 placeholder={t('scan.notifyMessage')}
               />
               <Button size="sm" onClick={() => notify(store)} disabled={sending}>
-                {sending ? 'Sending…' : `Send request to ${store.business_name}`}
+                {sending
+                  ? t('scan.sending')
+                  : t('scan.sendRequestTo', { store: store.business_name })}
               </Button>
             </div>
           )}

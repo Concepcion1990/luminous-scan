@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { BellOff, ChevronDown, ChevronRight, Pencil, Trash2 } from 'lucide-react';
 import { ruleCondition, ruleScope } from '@/lib/alerts';
+import { t } from '@/lib/i18n';
 
 const VISIBLE = 8;
 
@@ -16,7 +17,7 @@ export default function AlertRuleCard({ rule, items, onEdit, onDelete, onToggle 
             <h2 className="truncate text-sm font-semibold">{rule.name}</h2>
             {rule.active === false && (
               <span className="font-mono text-[10px] uppercase tracking-wide text-muted-foreground">
-                paused
+                {t('alerts.paused')}
               </span>
             )}
           </div>
@@ -38,13 +39,13 @@ export default function AlertRuleCard({ rule, items, onEdit, onDelete, onToggle 
             onClick={() => onToggle(rule)}
             className="rounded-md border border-border px-2 py-1 text-[11px] font-medium text-muted-foreground hover:text-foreground"
           >
-            {rule.active === false ? 'Resume' : 'Pause'}
+            {rule.active === false ? t('alerts.resume') : t('alerts.pause')}
           </button>
           <button
             type="button"
             onClick={() => onEdit(rule)}
             className="rounded-md p-1.5 text-muted-foreground hover:text-foreground"
-            aria-label={`Edit ${rule.name}`}
+            aria-label={t('alerts.editRule', { name: rule.name })}
           >
             <Pencil className="h-3.5 w-3.5" />
           </button>
@@ -52,7 +53,7 @@ export default function AlertRuleCard({ rule, items, onEdit, onDelete, onToggle 
             type="button"
             onClick={() => onDelete(rule)}
             className="rounded-md p-1.5 text-muted-foreground hover:text-destructive"
-            aria-label={`Delete ${rule.name}`}
+            aria-label={t('alerts.deleteRule', { name: rule.name })}
           >
             <Trash2 className="h-3.5 w-3.5" />
           </button>
@@ -62,7 +63,7 @@ export default function AlertRuleCard({ rule, items, onEdit, onDelete, onToggle 
       {count === 0 ? (
         <p className="border-t border-border bg-secondary/30 px-4 py-3 text-xs text-muted-foreground sm:px-5">
           <BellOff className="mr-1 inline h-3 w-3" />
-          Nothing to flag right now — this alert is quiet.
+          {t('alerts.nothingToFlag')}
         </p>
       ) : (
         <>
@@ -72,7 +73,9 @@ export default function AlertRuleCard({ rule, items, onEdit, onDelete, onToggle 
             className="flex w-full items-center gap-1.5 border-t border-border px-4 py-2 text-left text-[11px] font-medium text-muted-foreground hover:text-foreground sm:px-5"
           >
             {open ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
-            {open ? 'Hide' : 'Show'} the {count} flagged {count === 1 ? 'product' : 'products'}
+            {open
+              ? t('alerts.hideFlagged', { count, s: count === 1 ? '' : 's' })
+              : t('alerts.showFlagged', { count, s: count === 1 ? '' : 's' })}
           </button>
           {open && (
             <div className="divide-y divide-border border-t border-border">
@@ -86,7 +89,7 @@ export default function AlertRuleCard({ rule, items, onEdit, onDelete, onToggle 
               ))}
               {count > VISIBLE && (
                 <p className="px-4 py-2 text-[11px] text-muted-foreground sm:px-5">
-                  and {count - VISIBLE} more — download the alert list from the report below.
+                  {t('alerts.andMoreDownload', { count: count - VISIBLE })}
                 </p>
               )}
             </div>

@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/select';
 import { useBusiness } from '@/hooks/useBusiness';
 import { bundleOnHand, componentRows, disassembleBom } from '@/lib/bom';
+import { t } from '@/lib/i18n';
 
 export default function DisassembleDialog({ open, onOpenChange, bom, locations, levels, user, onDone }) {
   const { activeId } = useBusiness();
@@ -60,10 +61,16 @@ export default function DisassembleDialog({ open, onOpenChange, bom, locations, 
       });
       onOpenChange(false);
       onDone(
-        `Took apart ${amount} × ${bom.product_name} at ${location.name} · ${reference}. Parts are back on the shelf; ${remaining} left.`
+        t('materials.tookApart', {
+          amount,
+          name: bom.product_name,
+          location: location.name,
+          reference,
+          remaining,
+        })
       );
     } catch (e) {
-      setError(e.message || 'Could not take this apart.');
+      setError(e.message || t('materials.disassembleFailed'));
     } finally {
       setBusy(false);
     }
@@ -73,21 +80,19 @@ export default function DisassembleDialog({ open, onOpenChange, bom, locations, 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Take apart {bom?.product_name}</DialogTitle>
-          <DialogDescription>
-            Each unit leaves the shelf and its parts come back at the quantities it was built with.
-          </DialogDescription>
+          <DialogTitle>{t('materials.takeApartTitle', { name: bom?.product_name })}</DialogTitle>
+          <DialogDescription>{t('materials.takeApartDescription')}</DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-3">
           <div className="grid gap-1">
-            <Label className="text-xs">Take apart at</Label>
+            <Label className="text-xs">{t('materials.takeApartAt')}</Label>
             <Select value={locationId || 'none'} onValueChange={(v) => setLocationId(v === 'none' ? '' : v)}>
               <SelectTrigger>
-                <SelectValue placeholder="Choose a location" />
+                <SelectValue placeholder={t('materials.chooseLocation')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">Choose a location</SelectItem>
+                <SelectItem value="none">{t('materials.chooseLocation')}</SelectItem>
                 {locations.map((l) => (
                   <SelectItem key={l.id} value={l.id}>
                     {l.name}
@@ -98,7 +103,9 @@ export default function DisassembleDialog({ open, onOpenChange, bom, locations, 
           </div>
 
           <div className="grid gap-1">
-            <Label className="text-xs">How many to take apart · {onHand} on hand here</Label>
+            <Label className="text-xs">
+              {t('materials.howManyTakeApart', { onHand })}
+            </Label>
             <Input
               type="number"
               inputMode="numeric"
@@ -111,8 +118,8 @@ export default function DisassembleDialog({ open, onOpenChange, bom, locations, 
 
           <div className="overflow-hidden rounded-lg border border-border">
             <div className="flex items-center justify-between bg-muted/60 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-              <span>Part coming back</span>
-              <span>Returns</span>
+              <span>{t('materials.partComingBack')}</span>
+              <span>{t('materials.returnsHeader')}</span>
             </div>
             <div className="divide-y divide-border">
               {rows.map((row) => (
@@ -126,7 +133,7 @@ export default function DisassembleDialog({ open, onOpenChange, bom, locations, 
               ))}
               {!rows.length && (
                 <p className="px-3 py-4 text-sm text-muted-foreground">
-                  This build list has no components yet.
+                  {t('materials.noComponents')}
                 </p>
               )}
             </div>
@@ -134,7 +141,11 @@ export default function DisassembleDialog({ open, onOpenChange, bom, locations, 
 
           {tooMany && (
             <p className="text-sm text-destructive">
-              Only {onHand} × {bom?.product_name} at {location?.name || 'this location'}.
+              {t('materials.onlyOnHand', {
+                onHand,
+                name: bom?.product_name,
+                location: location?.name || t('materials.thisLocation'),
+              })}
             </p>
           )}
           {error && <p className="text-sm text-destructive">{error}</p>}
@@ -142,10 +153,10 @@ export default function DisassembleDialog({ open, onOpenChange, bom, locations, 
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t('materials.cancel')}
           </Button>
           <Button onClick={takeApart} disabled={busy || tooMany || !rows.length || !location}>
-            {busy ? 'Taking apart…' : `Take apart ${amount}`}
+            {busy ? t('materials.takingApart') : t('materials.takeApartButton', { amount })}
           </Button>
         </DialogFooter>
       </DialogContent>

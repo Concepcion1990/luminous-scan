@@ -11,6 +11,7 @@ import AuthLayout from "@/components/AuthLayout";
 import TrademarkNotice from "@/components/TrademarkNotice";
 import { toast } from "@/components/ui/use-toast";
 import { safeReturnTo } from "@/lib/authReturnTo";
+import { t } from '@/lib/i18n';
 
 /**
  * An email waiting on its verification code, so leaving the OTP screen
@@ -44,8 +45,10 @@ function forgetPendingVerificationEmail() {
 }
 
 /** Base44's password rule (docs.base44.com, Auth Module, verified 2026-11-08):
- * at least 8 characters, at most 72 bytes, no complexity requirement. */
-export const PASSWORD_HINT = "At least 8 characters (up to 72 bytes). No special characters required.";
+ * at least 8 characters, at most 72 bytes, no complexity requirement.
+ * T6.3: a function, not an import-time t() call, so the hint follows the
+ * live locale instead of freezing at module load. */
+export function getPasswordHint() { return t('register.passwordHint'); }
 
 export default function Register() {
   const [email, setEmail] = useState("");
@@ -63,7 +66,7 @@ export default function Register() {
     e.preventDefault();
     setError("");
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      setError(t('auth.passwordsDoNotMatch'));
       return;
     }
     setLoading(true);
@@ -82,9 +85,9 @@ export default function Register() {
       const message = String(err.message || "");
       if (/already|exists|registered/i.test(message)) {
         setAlreadyExists(true);
-        setError("An account with this email already exists. Sign in instead — a new code is only sent for a brand-new account.");
+        setError(t('register.alreadyExists'));
       } else {
-        setError(message || "Registration failed");
+        setError(message || t('register.registrationFailed'));
       }
     } finally {
       setLoading(false);
@@ -108,7 +111,7 @@ export default function Register() {
       }
       window.location.href = safeReturnTo();
     } catch (err) {
-      setError(err.message || "Invalid verification code");
+      setError(err.message || t('auth.invalidVerificationCode'));
     } finally {
       setLoading(false);
     }
@@ -119,11 +122,11 @@ export default function Register() {
     try {
       await base44.auth.resendOtp(email);
       toast({
-        title: "Code sent",
-        description: "Check your email for the new code.",
+        title: t('auth.codeSentTitle'),
+        description: t('auth.codeSentDescription'),
       });
     } catch (err) {
-      setError(err.message || "Failed to resend code");
+      setError(err.message || t('auth.failedToResendCode'));
     }
   };
 
@@ -133,7 +136,7 @@ export default function Register() {
   const handleResumeCode = () => {
     setError("");
     if (!email.trim()) {
-      setError("Enter the email the code was sent to first.");
+      setError(t('auth.enterEmailFirst'));
       return;
     }
     setShowOtp(true);
@@ -143,8 +146,8 @@ export default function Register() {
     return (
       <AuthLayout
         icon={Mail}
-        title="Verify your email"
-        subtitle={`We sent a code to ${email}`}
+        title={t('verifyEmail.title')}
+        subtitle={t('register.otpSubtitle', { email })}
       >
         {error && (
           <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
@@ -177,28 +180,26 @@ export default function Register() {
           {loading ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Verifying...
+              {t('verifyEmail.verifying')}
             </>
           ) : (
-            "Verify"
+            t('verifyEmail.verify')
           )}
         </Button>
         <p className="text-center text-sm text-muted-foreground mt-4">
-          Didn't receive the code?{" "}
+          {t('verifyEmail.didntReceiveCode')}{" "}
           <button onClick={handleResend} className="text-primary font-medium hover:underline">
-            Resend
+            {t('verifyEmail.resend')}
           </button>
         </p>
         <p className="text-center text-sm text-muted-foreground">
-          Already have an account with this email?{" "}
+          {t('register.alreadyHaveAccountWithEmail')}{" "}
           <Link to={loginPath} className="text-primary font-medium hover:underline">
-            Log in instead
+            {t('register.logInInstead')}
           </Link>
         </p>
         <p className="text-center text-xs text-muted-foreground">
-          A new code is only sent for a brand-new account. If you created an
-          account with this email before, sign in with the password you set
-          then — no new code will arrive.
+          {t('verifyEmail.newCodeOnlyNote')}
         </p>
       </AuthLayout>
     );
@@ -207,16 +208,16 @@ export default function Register() {
   return (
     <AuthLayout
       icon={UserPlus}
-      title="Create your account"
-      subtitle="Sign up to get started"
+      title={t('register.title')}
+      subtitle={t('register.subtitle')}
       footer={
         <>
-          Already have an account?{" "}
+          {t('register.alreadyHaveAccount')}{" "}
           <Link
             to={loginPath}
             className="text-primary font-medium hover:underline"
           >
-            Log in
+            {t('register.logIn')}
           </Link>
         </>
       }
@@ -225,7 +226,7 @@ export default function Register() {
           <TrademarkNotice />
           <p className="mt-3 text-center text-sm">
             <Link to="/about" className="font-medium text-primary underline underline-offset-4">
-              About Luminous StockHaven
+              {t('auth.aboutLink')}
             </Link>
           </p>
         </>
@@ -237,7 +238,7 @@ export default function Register() {
           {alreadyExists && (
             <div className="mt-2">
               <Link to={loginPath} className="text-primary font-medium hover:underline">
-                Sign in instead
+                {t('register.signInInstead')}
               </Link>
             </div>
           )}
@@ -247,7 +248,7 @@ export default function Register() {
       {pendingEmail && (
         <div className="mb-4 p-3 rounded-lg border border-border bg-muted/50 text-sm">
           <p>
-            A verification code was sent to <span className="font-medium">{pendingEmail}</span>.
+            {t('register.codeSentToBefore')} <span className="font-medium">{pendingEmail}</span>{t('register.codeSentToAfter')}
           </p>
           <button
             type="button"
@@ -257,14 +258,14 @@ export default function Register() {
             }}
             className="text-primary font-medium hover:underline mt-1"
           >
-            Verify the code
+            {t('register.verifyCode')}
           </button>
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">{t('auth.emailLabel')}</Label>
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
             <Input
@@ -272,7 +273,7 @@ export default function Register() {
               type="email"
               autoComplete="email"
               autoFocus
-              placeholder="you@example.com"
+              placeholder={t('auth.emailPlaceholder')}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="pl-10 h-12"
@@ -281,7 +282,7 @@ export default function Register() {
           </div>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password">{t('auth.passwordLabel')}</Label>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
             <Input
@@ -296,10 +297,10 @@ export default function Register() {
               required
             />
           </div>
-          <p className="text-xs text-muted-foreground">{PASSWORD_HINT}</p>
+          <p className="text-xs text-muted-foreground">{getPasswordHint()}</p>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="confirm">Confirm Password</Label>
+          <Label htmlFor="confirm">{t('register.confirmPasswordLabel')}</Label>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
             <Input
@@ -318,17 +319,17 @@ export default function Register() {
           {loading ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Creating account...
+              {t('register.creatingAccount')}
             </>
           ) : (
-            "Create account"
+            t('register.createAccount')
           )}
         </Button>
       </form>
       <p className="text-center text-sm text-muted-foreground mt-4">
-        Already have a verification code?{" "}
+        {t('register.alreadyHaveCode')}{" "}
         <button type="button" onClick={handleResumeCode} className="text-primary font-medium hover:underline">
-          Verify an emailed code
+          {t('register.verifyEmailedCode')}
         </button>
       </p>
     </AuthLayout>

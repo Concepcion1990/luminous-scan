@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { parseCsv } from '@/lib/csvImport';
+import { t } from '../lib/i18n.js';
 
 /**
  * Reads one spreadsheet — CSV or a real Excel workbook — and remembers the chosen
@@ -32,7 +33,7 @@ export default function useImportSheet(guess = () => '') {
       let parsed;
       if (/\.(csv|txt)$/i.test(file.name)) {
         const csv = parseCsv(await file.text());
-        if (!csv.headers.length) throw new Error('That file has no rows to read. Check the first row holds your column names.');
+        if (!csv.headers.length) throw new Error(t('importLib.sheetNoRows'));
         parsed = [{ name: 'CSV', ...csv, warnings: [] }];
       } else {
         const { readWorkbookFile } = await import('@/lib/xlsx');
@@ -42,7 +43,7 @@ export default function useImportSheet(guess = () => '') {
       setSheets(parsed);
       loadSheet(parsed[0]);
     } catch (err) {
-      setError(err?.message || 'That file could not be read.');
+      setError(err?.message || t('importLib.sheetUnreadable'));
     } finally {
       setReading(false);
     }

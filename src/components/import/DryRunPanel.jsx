@@ -1,4 +1,5 @@
 import { CheckCircle2, FlaskConical, TriangleAlert } from 'lucide-react';
+import { t } from '@/lib/i18n';
 
 /** The dry-run verdict: what would be created, what would be skipped, nothing written. */
 export default function DryRunPanel({ dryRun, report, needsCheck, withStock }) {
@@ -6,10 +7,10 @@ export default function DryRunPanel({ dryRun, report, needsCheck, withStock }) {
     return (
       <div className="rounded-lg border border-dashed border-border px-3 py-3 text-xs text-muted-foreground">
         <p className="flex items-center gap-1.5 font-medium text-foreground">
-          <FlaskConical className="h-3.5 w-3.5" /> Dry run
+          <FlaskConical className="h-3.5 w-3.5" /> {t('import.dryRunTitle')}
         </p>
         <p className="mt-1">
-          Run a dry run to test every row against the catalog. It saves nothing.
+          {t('import.dryRunIntro')}
         </p>
       </div>
     );
@@ -30,15 +31,16 @@ export default function DryRunPanel({ dryRun, report, needsCheck, withStock }) {
         ) : (
           <CheckCircle2 className="h-3.5 w-3.5 text-ok" />
         )}
-        {needsCheck ? 'The setup changed since the dry run' : 'Dry run passed'}
+        {needsCheck ? t('import.dryRunStale') : t('import.dryRunPassed')}
       </p>
       <p className="mt-1 text-foreground">
-        <span className="numeric font-semibold">{view.ready}</span> row{view.ready === 1 ? '' : 's'} would be
-        created · <span className="numeric font-semibold">{view.skipped}</span> skipped
+        <span className="numeric font-semibold">{view.ready}</span>{' '}
+        {t('import.dryRunReadyWords', { s: view.ready === 1 ? '' : 's' })} ·{' '}
+        <span className="numeric font-semibold">{view.skipped}</span> {t('import.dryRunSkipped')}
         {withStock && view.units > 0 ? (
           <>
-            {' '}
-            · <span className="numeric font-semibold">{view.units}</span> opening units
+            {' '}· <span className="numeric font-semibold">{view.units}</span>{' '}
+            {t('import.dryRunOpeningUnits')}
           </>
         ) : null}
       </p>
@@ -47,17 +49,15 @@ export default function DryRunPanel({ dryRun, report, needsCheck, withStock }) {
         <ul className="mt-2 space-y-0.5 text-muted-foreground">
           {problems.slice(0, 6).map((row) => (
             <li key={row.index} className="truncate">
-              Row {row.index + 2}: {row.problem}
+              {t('import.problemRow', { row: row.index + 2, problem: row.problem })}
             </li>
           ))}
-          {problems.length > 6 && <li>and {problems.length - 6} more</li>}
+          {problems.length > 6 && <li>{t('import.andMore', { count: problems.length - 6 })}</li>}
         </ul>
       )}
 
       <p className="mt-2 text-[11px] text-muted-foreground">
-        {needsCheck
-          ? 'Run the dry run again before importing.'
-          : 'Nothing has been saved — this was only a check.'}
+        {needsCheck ? t('import.dryRunAgain') : t('import.dryRunNothingSaved')}
       </p>
     </div>
   );

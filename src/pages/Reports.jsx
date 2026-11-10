@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { BarChart3, Download, FileDown, FileSpreadsheet, Files, Loader2, Lock, TriangleAlert } from 'lucide-react';
+import { t } from '@/lib/i18n';
 import StatCard from '@/components/StatCard';
 import ReportControls from '@/components/reports/ReportControls';
 import ReportTable from '@/components/reports/ReportTable';
@@ -89,10 +90,13 @@ export default function Reports() {
   }, [source, filters]);
 
   const periodCaption = useMemo(() => {
-    if (!report || report.report.snapshot) return 'As of today';
+    if (!report || report.report.snapshot) return t('reports.asOfToday');
     if (filters.period === 'custom') {
-      if (!filters.from && !filters.to) return 'Any date';
-      return `${filters.from || 'earliest'} → ${filters.to || 'today'}`;
+      if (!filters.from && !filters.to) return t('reports.anyDate');
+      return t('reports.periodRange', {
+        from: filters.from || t('reports.earliest'),
+        to: filters.to || t('reports.today'),
+      });
     }
     return PERIODS.find((preset) => preset.id === filters.period)?.label || '';
   }, [report, filters]);
@@ -103,8 +107,12 @@ export default function Reports() {
     const filename = `${fileSlug(profile.name) || 'business'}-${report.report.id}-${fileStamp()}.csv`;
     downloadCsv(filename, csv);
     toast({
-      title: 'Report exported',
-      description: `${report.rows.length} row${report.rows.length === 1 ? '' : 's'} saved as ${filename}`,
+      title: t('reports.exported'),
+      description: t('reports.exportedRows', {
+        count: report.rows.length,
+        s: report.rows.length === 1 ? '' : 's',
+        filename,
+      }),
     });
   };
 
@@ -116,8 +124,12 @@ export default function Reports() {
       `${fileSlug(profile.name) || 'business'}-${report.report.id}-${fileStamp()}.xlsx`
     );
     toast({
-      title: 'Report exported',
-      description: `${report.rows.length} row${report.rows.length === 1 ? '' : 's'} saved as ${filename}`,
+      title: t('reports.exported'),
+      description: t('reports.exportedRows', {
+        count: report.rows.length,
+        s: report.rows.length === 1 ? '' : 's',
+        filename,
+      }),
     });
   };
 
@@ -145,11 +157,11 @@ export default function Reports() {
       anchor.download = filename;
       anchor.click();
       URL.revokeObjectURL(url);
-      toast({ title: 'Report exported', description: `Saved as ${filename}` });
+      toast({ title: t('reports.exported'), description: t('reports.savedAs', { filename }) });
     } catch {
       toast({
-        title: 'Export failed',
-        description: 'Could not build the report PDF. Try again.',
+        title: t('reports.exportFailed'),
+        description: t('reports.exportFailedDesc'),
         variant: 'destructive',
       });
     }
@@ -180,8 +192,8 @@ export default function Reports() {
     const rows = sheets.reduce((sum, sheet) => sum + sheet.rows.length, 0);
     if (!rows) {
       toast({
-        title: 'Nothing to download',
-        description: 'No records match these filters yet.',
+        title: t('reports.nothingToDownload'),
+        description: t('reports.nothingToDownloadDesc'),
         variant: 'destructive',
       });
       return;
@@ -192,8 +204,13 @@ export default function Reports() {
       `${fileSlug(profile.name) || 'business'}-all-reports-${fileStamp()}.xlsx`
     );
     toast({
-      title: 'All reports exported',
-      description: `${sheets.length} sheets, ${rows} row${rows === 1 ? '' : 's'} saved as ${filename}`,
+      title: t('reports.allExported'),
+      description: t('reports.allExportedDesc', {
+        sheets: sheets.length,
+        rows,
+        s: rows === 1 ? '' : 's',
+        filename,
+      }),
     });
   };
 
@@ -202,30 +219,29 @@ export default function Reports() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-            {profile.name} · Reports
+            {t('reports.eyebrow', { name: profile.name })}
           </p>
-          <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">Reports</h1>
+          <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">{t('reports.title')}</h1>
           <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-            Pick what to look at, how to group it and over what period. Every figure is counted from your
-            own stock and movement records, and the table can be downloaded as a file.
+            {t('reports.subtitle')}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" onClick={downloadPdf} disabled={!report?.rows.length}>
             <FileDown className="mr-1.5 h-4 w-4" />
-            Download PDF
+            {t('reports.downloadPdf')}
           </Button>
           <Button variant="outline" onClick={downloadExcel} disabled={!report?.rows.length}>
             <FileSpreadsheet className="mr-1.5 h-4 w-4" />
-            Download Excel
+            {t('reports.downloadExcel')}
           </Button>
           <Button variant="outline" onClick={runExport} disabled={!report?.rows.length}>
             <Download className="mr-1.5 h-4 w-4" />
-            Download CSV
+            {t('reports.downloadCsv')}
           </Button>
           <Button onClick={downloadAll} disabled={!source || loading}>
             <Files className="mr-1.5 h-4 w-4" />
-            Download All
+            {t('reports.downloadAll')}
           </Button>
         </div>
       </div>
@@ -239,7 +255,7 @@ export default function Reports() {
 
       {loading && (
         <p className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" /> Reading your records…
+          <Loader2 className="h-4 w-4 animate-spin" /> {t('reports.readingRecords')}
         </p>
       )}
 
@@ -248,13 +264,12 @@ export default function Reports() {
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted">
             <Lock className="h-5 w-5 text-muted-foreground" />
           </div>
-          <h1 className="mt-4 text-xl font-semibold">Advanced reports is a Business feature</h1>
+          <h1 className="mt-4 text-xl font-semibold">{t('reports.lockedTitle')}</h1>
           <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
-            Your workspace is on the Essentials plan. Business adds advanced reports, stock
-            valuation, unlimited products and staff, suppliers, purchasing, exports and bundles.
+            {t('reports.lockedDesc')}
           </p>
           <Button asChild className="mt-5">
-            <Link to="/upgrade">See what Business includes</Link>
+            <Link to="/upgrade">{t('reports.seeBusiness')}</Link>
           </Button>
         </div>
       )}
@@ -268,24 +283,29 @@ export default function Reports() {
               hint={periodCaption}
             />
             <StatCard
-              label="Units"
+              label={t('reports.units')}
               value={report.totals.units}
               unit="units"
-              hint={`${report.rows.length} group${report.rows.length === 1 ? '' : 's'} in this view`}
+              hint={t('reports.groupsInView', {
+                count: report.rows.length,
+                s: report.rows.length === 1 ? '' : 's',
+              })}
             />
             <StatCard
-              label={report.report.snapshot ? 'Stock records' : 'Movements'}
+              label={report.report.snapshot ? t('reports.stockRecords') : t('reports.movements')}
               value={report.totals.count}
-              hint={report.report.snapshot ? 'Location records holding stock' : 'Ledger entries counted'}
+              hint={
+                report.report.snapshot ? t('reports.stockRecordsHint') : t('reports.movementsHint')
+              }
             />
             <StatCard
-              label={`Biggest ${report.groupLabel.toLowerCase()}`}
+              label={t('reports.biggest', { group: report.groupLabel.toLowerCase() })}
               value={report.top ? report.top.units : 0}
               unit="units"
               hint={
                 report.top
                   ? `${report.top.label} · ${formatMoney(report.top.value, profile.currency, 2)}`
-                  : 'Nothing to rank yet'
+                  : t('reports.nothingToRank')
               }
             />
           </div>
@@ -296,10 +316,11 @@ export default function Reports() {
             <p className="flex items-start gap-2 rounded-xl border border-warn/30 bg-warn/10 p-3 text-xs">
               <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-warn" />
               <span>
-                {report.missing.units.toLocaleString()} unit
-                {report.missing.units === 1 ? '' : 's'} in this view have no {report.missing.label}{' '}
-                recorded. Missing money is never treated as zero — they are left out of the figures
-                rather than counted as free. Add the figure on those products and the totals fill in.
+                {t('reports.missingMoney', {
+                  units: report.missing.units.toLocaleString(),
+                  us: report.missing.units === 1 ? '' : 's',
+                  label: report.missing.label,
+                })}
               </span>
             </p>
           )}
@@ -308,28 +329,21 @@ export default function Reports() {
             <p className="flex items-start gap-2 rounded-xl border border-warn/30 bg-warn/10 p-3 text-xs">
               <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-warn" />
               <span>
-                Only the newest {MOVEMENT_CAP.toLocaleString()} ledger entries were read, so movements
-                older than these are not in the totals. Narrow the period to see exact figures for a
-                window.
+                {t('reports.movementsCapped', { cap: MOVEMENT_CAP.toLocaleString() })}
               </span>
             </p>
           )}
 
           <div className="flex items-start gap-2 rounded-xl border border-border bg-card p-4 text-xs text-muted-foreground">
             <BarChart3 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-            <p>
-              Sales use each product’s current retail price, receipts use the cost recorded when the stock
-              arrived, and losses use the current unit cost. Missing money is never treated as zero —
-              leave a figure blank until it is known. A report is a view, not a document: nothing is
-              written to your records when you run one.
-            </p>
+            <p>{t('reports.footnote')}</p>
           </div>
         </>
       )}
 
       {!loading && !activeId && (
         <p className="rounded-lg border border-warn/30 bg-warn/10 px-3 py-2 text-sm">
-          Create a business first — reports are counted per business.
+          {t('reports.createBusinessFirst')}
         </p>
       )}
     </div>

@@ -15,6 +15,7 @@
  */
 import { useCallback, useEffect, useState } from 'react';
 import { Check, Inbox, Send, Store, X } from 'lucide-react';
+import { t } from '@/lib/i18n';
 import PlanGate from '@/components/plan/PlanGate';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
@@ -57,7 +58,9 @@ function statusTone(status) {
 
 function RequestCard({ request, direction, onAnswer, busyId }) {
   const otherStore =
-    direction === 'incoming' ? request.business_name || 'Another store' : request.target_business_name || 'Another store';
+    direction === 'incoming'
+      ? request.business_name || t('crossStore.anotherStore')
+      : request.target_business_name || t('crossStore.anotherStore');
   const busy = busyId === request.id;
   const answerable = direction === 'incoming' && canAnswerCrossStoreRequest(request);
 
@@ -68,7 +71,10 @@ function RequestCard({ request, direction, onAnswer, busyId }) {
           <p className="font-medium">{request.product_name}</p>
           <p className="mt-0.5 text-xs text-muted-foreground">
             {request.sku ? `${request.sku} · ` : ''}
-            {crossStoreModeLabel(request.mode)} · {direction === 'incoming' ? `from ${otherStore}` : `to ${otherStore}`}
+            {crossStoreModeLabel(request.mode)} ·{' '}
+            {direction === 'incoming'
+              ? t('crossStore.fromStore', { store: otherStore })
+              : t('crossStore.toStore', { store: otherStore })}
           </p>
         </div>
         <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${statusTone(request.status)}`}>
@@ -81,7 +87,9 @@ function RequestCard({ request, direction, onAnswer, busyId }) {
       ) : null}
 
       <p className="mt-2 text-xs text-muted-foreground">
-        Asked by {request.requested_by || 'a staff member'}
+        {request.requested_by
+          ? t('crossStore.askedBy', { name: request.requested_by })
+          : t('crossStore.askedByStaff')}
         {request.created_at ? ` · ${formatWhen(request.created_at)}` : ''}
       </p>
 
@@ -89,14 +97,14 @@ function RequestCard({ request, direction, onAnswer, busyId }) {
         <div className="mt-3 flex flex-wrap gap-2 border-t border-border pt-3">
           {request.status === 'open' && (
             <Button size="sm" variant="outline" disabled={busy} onClick={() => onAnswer(request, 'acknowledged')}>
-              {busy ? 'Sending…' : 'Acknowledge'}
+              {busy ? t('crossStore.sending') : t('crossStore.acknowledge')}
             </Button>
           )}
           <Button size="sm" disabled={busy} onClick={() => onAnswer(request, 'resolved')}>
-            <Check className="mr-1.5 h-3.5 w-3.5" /> {busy ? 'Sending…' : 'Mark done'}
+            <Check className="mr-1.5 h-3.5 w-3.5" /> {busy ? t('crossStore.sending') : t('crossStore.markDone')}
           </Button>
           <Button size="sm" variant="outline" disabled={busy} onClick={() => onAnswer(request, 'declined')}>
-            <X className="mr-1.5 h-3.5 w-3.5" /> {busy ? 'Sending…' : 'Decline'}
+            <X className="mr-1.5 h-3.5 w-3.5" /> {busy ? t('crossStore.sending') : t('crossStore.decline')}
           </Button>
         </div>
       )}
@@ -132,7 +140,7 @@ export default function CrossStoreInbox() {
       setIncoming(data.incoming);
       setOutgoing(data.outgoing);
     } catch (err) {
-      setError(err?.message || 'Could not load the cross-store requests.');
+      setError(err?.message || t('crossStore.loadFailed'));
     } finally {
       setLoading(false);
     }
@@ -149,8 +157,8 @@ export default function CrossStoreInbox() {
       setIncoming((current) => current.map((row) => (row.id === request.id ? updated : row)));
     } catch (err) {
       toast({
-        title: 'Could not update that request',
-        description: err?.message || 'Try again.',
+        title: t('crossStore.updateFailed'),
+        description: err?.message || t('crossStore.tryAgain'),
         variant: 'destructive',
       });
     } finally {
@@ -167,16 +175,15 @@ export default function CrossStoreInbox() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-            {profile?.name ? `${profile.name} · ` : ''}Cross-store inbox
+            {profile?.name ? t('crossStore.eyebrow', { name: profile.name }) : t('crossStore.eyebrowPlain')}
           </p>
-          <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">Cross-store inbox</h1>
+          <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">{t('crossStore.title')}</h1>
           <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-            Requests between your stores. When another store asks this store to ship an item or
-            bring it over, answer it here — and see the requests this store has sent out.
+            {t('crossStore.subtitle')}
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={load} disabled={loading}>
-          {loading ? 'Loading…' : 'Refresh'}
+          {loading ? t('crossStore.loading') : t('crossStore.refresh')}
         </Button>
       </div>
 
@@ -187,20 +194,21 @@ export default function CrossStoreInbox() {
       ) : null}
 
       {loading ? (
-        <p className="py-10 text-center text-sm text-muted-foreground">Loading requests…</p>
+        <p className="py-10 text-center text-sm text-muted-foreground">{t('crossStore.loadingRequests')}</p>
       ) : (
         <>
-          <section aria-label="Incoming requests">
+          <section aria-label={t('crossStore.incomingSection')}>
             <div className="mb-2 flex items-center gap-2">
               <Inbox className="h-4 w-4 text-muted-foreground" />
               <h2 className="text-base font-semibold">
-                Incoming{openIncoming.length ? ` · ${openIncoming.length} waiting` : ''}
+                {openIncoming.length
+                  ? t('crossStore.incomingWaiting', { count: openIncoming.length })
+                  : t('crossStore.incoming')}
               </h2>
             </div>
             {incoming.length === 0 ? (
               <p className="rounded-lg border border-dashed border-border px-4 py-6 text-center text-sm text-muted-foreground">
-                No other store has asked this store for anything yet. When one does — from the Scan
-                screen, when an item is out of stock there — it lands here.
+                {t('crossStore.noIncoming')}
               </p>
             ) : (
               <div className="space-y-3">
@@ -217,14 +225,14 @@ export default function CrossStoreInbox() {
             )}
           </section>
 
-          <section aria-label="Outgoing requests">
+          <section aria-label={t('crossStore.outgoingSection')}>
             <div className="mb-2 flex items-center gap-2">
               <Send className="h-4 w-4 text-muted-foreground" />
-              <h2 className="text-base font-semibold">Outgoing</h2>
+              <h2 className="text-base font-semibold">{t('crossStore.outgoing')}</h2>
             </div>
             {outgoing.length === 0 ? (
               <p className="rounded-lg border border-dashed border-border px-4 py-6 text-center text-sm text-muted-foreground">
-                This store has not asked another store for anything yet.
+                {t('crossStore.noOutgoing')}
               </p>
             ) : (
               <div className="space-y-3">
@@ -235,8 +243,7 @@ export default function CrossStoreInbox() {
             )}
             <p className="mt-3 flex items-start gap-1.5 text-xs text-muted-foreground">
               <Store className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-              A request only goes out when the other store actually has the item in stock — the
-              server checks that before anything is sent.
+              {t('crossStore.outgoingNote')}
             </p>
           </section>
         </>

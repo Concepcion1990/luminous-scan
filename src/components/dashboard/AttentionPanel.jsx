@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ArrowUpRight, TriangleAlert } from 'lucide-react';
 import PanelHeading from '@/components/dashboard/PanelHeading';
+import { t } from '@/lib/i18n';
 
 const ROWS = 6;
 
@@ -20,12 +21,12 @@ export default function AttentionPanel({ low = [] }) {
           ) : null
         }
       >
-        Needs attention
+        {t('dashboard.needsAttention')}
       </PanelHeading>
       <div className="flex-1 divide-y divide-border">
         {low.length === 0 && (
           <p className="px-4 py-10 text-center text-sm text-muted-foreground">
-            Nothing below its reorder point.
+            {t('dashboard.nothingBelowReorder')}
           </p>
         )}
         {low.slice(0, ROWS).map((item) => (
@@ -47,7 +48,7 @@ export default function AttentionPanel({ low = [] }) {
               >
                 {item.quantity}
               </p>
-              <p className="font-mono text-[10px] text-muted-foreground">min {item.reorder}</p>
+              <p className="font-mono text-[10px] text-muted-foreground">{t('dashboard.minReorder', { reorder: item.reorder })}</p>
             </div>
           </div>
         ))}
@@ -56,7 +57,7 @@ export default function AttentionPanel({ low = [] }) {
             to="/low-stock"
             className="flex items-center gap-1 px-4 py-2.5 text-xs font-medium text-muted-foreground hover:text-foreground sm:px-5"
           >
-            {low.length - ROWS} more on the low-stock screen <ArrowUpRight className="h-3 w-3" />
+            {t('dashboard.moreOnLowStock', { count: low.length - ROWS })} <ArrowUpRight className="h-3 w-3" />
           </Link>
         )}
       </div>

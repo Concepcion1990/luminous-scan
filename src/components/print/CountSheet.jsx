@@ -1,16 +1,17 @@
 import DocHeader from './DocHeader';
+import { t } from '@/lib/i18n';
 
 export default function CountSheet({ products, business }) {
   return (
     <div className="print-label print-page-break w-[180mm] bg-white p-2 text-black">
       <DocHeader
         business={business}
-        title="Stock count sheet"
-        subtitle="Write the counted quantity in the Counted column."
+        title={t('print.countSheetTitle')}
+        subtitle={t('print.countSheetSubtitle')}
         fields={[
-          ['Location', 'w-[34mm]'],
-          ['Counted by', 'w-[30mm]'],
-          ['Sheet', 'w-[10mm]'],
+          [t('print.fieldLocation'), 'w-[34mm]'],
+          [t('print.countedBy'), 'w-[30mm]'],
+          [t('print.fieldSheet'), 'w-[10mm]'],
         ]}
       />
 
@@ -19,9 +20,9 @@ export default function CountSheet({ products, business }) {
           <tr className="border-b border-black text-left font-mono text-[6.5pt] uppercase tracking-wide">
             <th className="w-[7mm] py-1 font-normal">#</th>
             <th className="w-[29mm] py-1 font-normal">SKU</th>
-            <th className="py-1 font-normal">Item</th>
-            <th className="w-[20mm] py-1 font-normal">Counted</th>
-            <th className="w-[28mm] py-1 font-normal">Notes</th>
+            <th className="py-1 font-normal">{t('print.colItem')}</th>
+            <th className="w-[20mm] py-1 font-normal">{t('print.colCounted')}</th>
+            <th className="w-[28mm] py-1 font-normal">{t('print.colNotes')}</th>
           </tr>
         </thead>
         <tbody>
@@ -50,15 +51,15 @@ export default function CountSheet({ products, business }) {
 
       <footer className="mt-3 flex items-end justify-between gap-6 border-t border-black pt-2 text-[7.5pt]">
         <p>
-          <span className="font-mono text-[6.5pt] uppercase tracking-wide text-black/60">Items counted </span>
+          <span className="font-mono text-[6.5pt] uppercase tracking-wide text-black/60">{t('print.itemsCounted')} </span>
           <span className="inline-block w-[14mm] border-b border-dotted border-black/60">&nbsp;</span>
         </p>
         <p>
-          <span className="font-mono text-[6.5pt] uppercase tracking-wide text-black/60">Counted by </span>
+          <span className="font-mono text-[6.5pt] uppercase tracking-wide text-black/60">{t('print.countedBy')} </span>
           <span className="inline-block w-[34mm] border-b border-dotted border-black/60">&nbsp;</span>
         </p>
         <p>
-          <span className="font-mono text-[6.5pt] uppercase tracking-wide text-black/60">Verified by </span>
+          <span className="font-mono text-[6.5pt] uppercase tracking-wide text-black/60">{t('print.verifiedBy')} </span>
           <span className="inline-block w-[34mm] border-b border-dotted border-black/60">&nbsp;</span>
         </p>
       </footer>

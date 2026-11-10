@@ -8,6 +8,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import SettingsCard from './SettingsCard';
+import { t } from '@/lib/i18n';
 import { CURRENCIES, DATE_FORMATS, timezoneOptions } from '@/lib/business';
 import { localTimeZoneName } from '@/lib/dates';
 
@@ -20,57 +21,57 @@ export default function DetailsCard({ values, onChange }) {
   return (
     <div className="space-y-4">
       <SettingsCard
-        title="Contact information"
-        description="Optional — used on receipts, packing slips and business documents."
+        title={t('settings.details.contactTitle')}
+        description={t('settings.details.contactDescription')}
       >
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="business-email">Email</Label>
+            <Label htmlFor="business-email">{t('settings.details.email')}</Label>
             <Input
               id="business-email"
               type="email"
               value={values.contact_email}
               onChange={set('contact_email')}
-              placeholder="hello@yourbusiness.com"
+              placeholder={t('settings.details.emailPlaceholder')}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="business-phone">Phone</Label>
+            <Label htmlFor="business-phone">{t('settings.details.phone')}</Label>
             <Input
               id="business-phone"
               value={values.contact_phone}
               onChange={set('contact_phone')}
-              placeholder="(555) 123-4567"
+              placeholder={t('settings.details.phonePlaceholder')}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="business-website">Website</Label>
+            <Label htmlFor="business-website">{t('settings.details.website')}</Label>
             <Input
               id="business-website"
               value={values.website}
               onChange={set('website')}
-              placeholder="yourbusiness.com"
+              placeholder={t('settings.details.websitePlaceholder')}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="business-address">Address</Label>
+            <Label htmlFor="business-address">{t('settings.details.address')}</Label>
             <Input
               id="business-address"
               value={values.address}
               onChange={set('address')}
-              placeholder="Street, city, state, ZIP"
+              placeholder={t('settings.details.addressPlaceholder')}
             />
           </div>
         </div>
       </SettingsCard>
 
       <SettingsCard
-        title="Currency, dates and units"
-        description="How money, dates and measurements are shown throughout the app."
+        title={t('settings.details.regionalTitle')}
+        description={t('settings.details.regionalDescription')}
       >
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label>Currency</Label>
+            <Label>{t('settings.details.currency')}</Label>
             <Select value={values.currency} onValueChange={pick('currency')}>
               <SelectTrigger>
                 <SelectValue />
@@ -86,7 +87,7 @@ export default function DetailsCard({ values, onChange }) {
           </div>
 
           <div className="space-y-2">
-            <Label>Timezone</Label>
+            <Label>{t('settings.details.timezone')}</Label>
             <Select value={values.timezone || localTimeZoneName()} onValueChange={pick('timezone')}>
               <SelectTrigger>
                 <SelectValue />
@@ -102,7 +103,7 @@ export default function DetailsCard({ values, onChange }) {
           </div>
 
           <div className="space-y-2">
-            <Label>Date format</Label>
+            <Label>{t('settings.details.dateFormat')}</Label>
             <Select value={values.date_format} onValueChange={pick('date_format')}>
               <SelectTrigger>
                 <SelectValue />
@@ -118,29 +119,30 @@ export default function DetailsCard({ values, onChange }) {
           </div>
 
           <div className="space-y-2">
-            <Label>Measurements</Label>
+            <Label>{t('settings.details.measurements')}</Label>
             <Select value={values.unit_system} onValueChange={pick('unit_system')}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="imperial">Imperial (oz, in)</SelectItem>
-                <SelectItem value="metric">Metric (g, cm)</SelectItem>
+                <SelectItem value="imperial">{t('settings.details.imperial')}</SelectItem>
+                <SelectItem value="metric">{t('settings.details.metric')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label>Language</Label>
+            <Label>{t('settings.details.language')}</Label>
             <Select value={values.language} onValueChange={pick('language')}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="en">English</SelectItem>
+                <SelectItem value="ar">{t('settings.details.arabic')}</SelectItem>
+                <SelectItem value="en">{t('settings.details.english')}</SelectItem>
               </SelectContent>
             </Select>
-            <p className="text-xs text-muted-foreground">More languages are being prepared.</p>
+            <p className="text-xs text-muted-foreground">{t('settings.details.moreLanguages')}</p>
           </div>
         </div>
       </SettingsCard>

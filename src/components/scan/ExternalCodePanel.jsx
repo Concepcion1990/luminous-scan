@@ -1,11 +1,12 @@
 import { Copy, ExternalLink, Globe, PackageSearch, RotateCcw, ShieldAlert, Tag, Type } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
+import { t } from '@/lib/i18n';
 
 const TITLES = {
-  url: 'This code links to a website',
-  structured: 'This code carries product details',
-  text: 'This code contains text, not a product',
+  url: 'scan.externalTitleUrl',
+  structured: 'scan.externalTitleStructured',
+  text: 'scan.externalTitleText',
 };
 
 /**
@@ -21,9 +22,9 @@ export default function ExternalCodePanel({ scanned, onDismiss, onSearch }) {
   const copy = async (value) => {
     try {
       await navigator.clipboard.writeText(value);
-      toast({ title: 'Copied to clipboard' });
+      toast({ title: t('scan.copied') });
     } catch {
-      toast({ title: 'Could not copy', description: value, variant: 'destructive' });
+      toast({ title: t('scan.copyFailed'), description: value, variant: 'destructive' });
     }
   };
 
@@ -43,7 +44,9 @@ export default function ExternalCodePanel({ scanned, onDismiss, onSearch }) {
 
       <div className="space-y-2">
         <p className="text-sm font-medium">
-          {unsafe ? 'This link type is never opened' : TITLES[scanned.kind] || 'Scanned code'}
+          {unsafe
+            ? t('scan.externalUnsafeTitle')
+            : t(TITLES[scanned.kind] || 'scan.externalTitleFallback')}
         </p>
 
         {isStructured ? (
@@ -63,15 +66,15 @@ export default function ExternalCodePanel({ scanned, onDismiss, onSearch }) {
 
         <p className="mx-auto max-w-sm text-xs text-muted-foreground">
           {isUrl
-            ? 'It is not part of your inventory. Nothing opens until you choose to open it, and websites reached this way are not verified.'
+            ? t('scan.externalUrlNote')
             : unsafe
-            ? 'Only ordinary web addresses are opened from a scan. This content is shown for reference only.'
-            : 'Nothing was saved and no stock changed.'}
+              ? t('scan.externalUnsafeNote')
+              : t('scan.externalNothingSaved')}
         </p>
 
         {isUrl && scanned.productRef && (
           <p className="mx-auto max-w-sm rounded-md bg-secondary px-3 py-2 text-left text-xs text-muted-foreground">
-            This link carries the product code{' '}
+            {t('scan.externalProductRefStart')}{' '}
             <span className="numeric font-medium text-foreground">{scanned.productRef.value}</span>.
           </p>
         )}
@@ -82,7 +85,7 @@ export default function ExternalCodePanel({ scanned, onDismiss, onSearch }) {
           <Button asChild>
             <a href={scanned.url} target="_blank" rel="noopener noreferrer nofollow">
               <ExternalLink className="h-4 w-4" />
-              Open website
+              {t('scan.openWebsite')}
             </a>
           </Button>
         )}
@@ -90,7 +93,7 @@ export default function ExternalCodePanel({ scanned, onDismiss, onSearch }) {
         {isUrl && scanned.productRef && (
           <Button variant="outline" onClick={() => onSearch(scanned.productRef.value)}>
             <PackageSearch className="h-4 w-4" />
-            Find this code in inventory
+            {t('scan.findCodeInInventory')}
           </Button>
         )}
 
@@ -100,18 +103,18 @@ export default function ExternalCodePanel({ scanned, onDismiss, onSearch }) {
         {!isUrl && !unsafe && scanned.kind !== 'text' && searchCode && (
           <Button variant="outline" onClick={() => onSearch(searchCode)}>
             <PackageSearch className="h-4 w-4" />
-            Search inventory
+            {t('scan.searchInventory')}
           </Button>
         )}
 
         <Button variant="outline" onClick={() => copy(isUrl ? scanned.url : searchCode || scanned.raw)}>
           <Copy className="h-4 w-4" />
-          Copy
+          {t('scan.copy')}
         </Button>
 
         <Button variant="ghost" onClick={onDismiss}>
           <RotateCcw className="h-3.5 w-3.5" />
-          Scan next
+          {t('scan.scanNext')}
         </Button>
       </div>
     </div>

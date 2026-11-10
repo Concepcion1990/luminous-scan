@@ -26,15 +26,8 @@ import useIsDesktop from '@/hooks/useIsDesktop';
 import useModalHistory from '@/hooks/useModalHistory';
 import LimitBadge from '@/components/plan/LimitBadge';
 import { createProducts } from '@/lib/entitlements';
+import { t } from '@/lib/i18n';
 
-const SORT_OPTIONS = [
-  { value: 'name', label: 'Product name' },
-  { value: 'codes', label: 'Barcode / UPC' },
-  { value: 'category', label: 'Category' },
-  { value: 'onHand', label: 'On hand' },
-  { value: 'reorder', label: 'Reorder point' },
-  { value: 'price', label: 'Retail price' },
-];
 
 export default function Products() {
   const { user } = useAuth();
@@ -64,6 +57,15 @@ export default function Products() {
   const [reload, setReload] = useState(0);
   const [sort, setSort] = useState({ key: 'name', dir: 'asc' });
   const [activeCount, setActiveCount] = useState(0);
+
+  const SORT_OPTIONS = [
+    { value: 'name', label: t('products.sortName') },
+    { value: 'codes', label: t('products.sortCodes') },
+    { value: 'category', label: t('products.sortCategory') },
+    { value: 'onHand', label: t('products.sortOnHand') },
+    { value: 'reorder', label: t('products.sortReorder') },
+    { value: 'price', label: t('products.sortPrice') },
+  ];
 
   // The allowance counts distinct sellable records, never physical units.
   // While the entitlement row is still loading the cap is unknown (null),
@@ -237,8 +239,8 @@ export default function Products() {
   // (productLimitMessage in base44/shared/planLimits.ts), not a raw error.
   const productLimitToast = () => {
     toast({
-      title: `This plan includes ${productLimit} active products`,
-      description: 'Archive one you no longer sell to free a slot, or move to Business for unlimited products.',
+      title: t('products.limitTitle', { limit: productLimit }),
+      description: t('products.limitDescription'),
       variant: 'destructive',
     });
   };
@@ -263,7 +265,7 @@ export default function Products() {
     const next = product.status === 'archived' ? 'active' : 'archived';
     await base44.entities.Product.update(product.id, { status: next });
     toast({
-      title: next === 'archived' ? 'Product archived' : 'Product restored',
+      title: next === 'archived' ? t('products.archivedTitle') : t('products.restoredTitle'),
       description: product.name,
     });
     setReload((r) => r + 1);
@@ -299,7 +301,7 @@ export default function Products() {
     delete payload.created_by_id;
     const created = (await createProducts(activeId, [payload]))[0];
     toast({
-      title: 'Product duplicated',
+      title: t('products.duplicatedTitle'),
       description: `${created.name} · ${created.sku}`,
     });
     setReload((r) => r + 1);
@@ -309,7 +311,7 @@ export default function Products() {
     await base44.entities.Product.delete(product.id);
     const own = levels.filter((l) => l.product_id === product.id);
     if (own.length) await base44.entities.StockLevel.deleteMany({ product_id: product.id });
-    toast({ title: 'Product deleted', description: product.name });
+    toast({ title: t('products.deletedTitle'), description: product.name });
     setReload((r) => r + 1);
   };
 
@@ -317,17 +319,17 @@ export default function Products() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Catalog</p>
-          <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">Products</h1>
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">{t('products.eyebrow')}</p>
+          <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">{t('products.title')}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Every SKU, UPC, barcode and QR code your scanners resolve.
+            {t('products.subtitle')}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <LimitBadge label="Products" used={activeCount} limit={productLimit} />
+          <LimitBadge label={t('products.limitLabel')} used={activeCount} limit={productLimit} />
           <ExportCsvButton businessName={profile.name} businessId={activeId} />
           <Button onClick={openNew}>
-            <Plus className="mr-1.5 h-4 w-4" /> New product
+            <Plus className="mr-1.5 h-4 w-4" /> {t('products.newProduct')}
           </Button>
         </div>
       </div>
@@ -337,7 +339,7 @@ export default function Products() {
         <Input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search name, SKU, ISBN, author, brand or tag"
+          placeholder={t('products.searchPlaceholder')}
           className="h-11 bg-card pl-9"
         />
       </div>
@@ -352,14 +354,14 @@ export default function Products() {
 
       <div className="flex items-center gap-2 md:hidden">
         <ResponsiveSelect
-          title="Sort products"
-          ariaLabel="Sort products"
+          title={t('products.sortTitle')}
+          ariaLabel={t('products.sortTitle')}
           className="h-9 bg-card"
           value={sort.key}
           onValueChange={(key) => setSort((current) => ({ ...current, key }))}
           options={SORT_OPTIONS.map((option) => ({
             value: option.value,
-            label: `Sort: ${option.label}`,
+            label: t('products.sortOption', { label: option.label }),
           }))}
         />
         <Button
@@ -367,7 +369,7 @@ export default function Products() {
           size="icon"
           className="h-11 w-11 shrink-0 lg:h-9 lg:w-9"
           onClick={() => setSort((current) => ({ ...current, dir: current.dir === 'asc' ? 'desc' : 'asc' }))}
-          aria-label={sort.dir === 'asc' ? 'Sort descending' : 'Sort ascending'}
+          aria-label={sort.dir === 'asc' ? t('products.sortDescending') : t('products.sortAscending')}
         >
           {sort.dir === 'asc' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
         </Button>
@@ -379,7 +381,7 @@ export default function Products() {
             <Checkbox
               checked={allSelected}
               onCheckedChange={toggleAll}
-              aria-label="Select all listed products"
+              aria-label={t('products.selectAllAria')}
             />
             <button
               type="button"
@@ -387,8 +389,8 @@ export default function Products() {
               className="text-xs text-muted-foreground transition-colors hover:text-foreground"
             >
               {selectedProducts.length
-                ? `${selectedProducts.length} selected`
-                : `Select all ${items.length} listed`}
+                ? t('products.selectedCount', { count: selectedProducts.length })
+                : t('products.selectAllCount', { count: items.length })}
             </button>
           </div>
           <Button
@@ -397,7 +399,7 @@ export default function Products() {
             disabled={!selectedProducts.length}
             onClick={() => setBulkOpen(true)}
           >
-            Bulk edit
+            {t('products.bulkEdit')}
           </Button>
         </div>
       )}
@@ -406,12 +408,12 @@ export default function Products() {
         <div className="hidden grid-cols-[26px_minmax(0,2.2fr)_minmax(0,1.2fr)_110px_110px_88px] gap-3 border-b border-border bg-muted/50 px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground md:grid xl:grid-cols-[26px_48px_minmax(0,2.4fr)_minmax(0,1.3fr)_120px_110px_84px_104px_96px]">
           <span />
           <span className="hidden xl:block">Photo</span>
-          <SortHeader label="Product" column="name" sort={sort} onSort={toggleSort} />
-          <SortHeader label="Codes" column="codes" sort={sort} onSort={toggleSort} />
-          <SortHeader label="Category" column="category" sort={sort} onSort={toggleSort} />
-          <SortHeader label="On hand" column="onHand" sort={sort} onSort={toggleSort} align="right" />
+          <SortHeader label={t('products.colProduct')} column="name" sort={sort} onSort={toggleSort} />
+          <SortHeader label={t('products.colCodes')} column="codes" sort={sort} onSort={toggleSort} />
+          <SortHeader label={t('products.colCategory')} column="category" sort={sort} onSort={toggleSort} />
+          <SortHeader label={t('products.colOnHand')} column="onHand" sort={sort} onSort={toggleSort} align="right" />
           <SortHeader
-            label="Reorder"
+            label={t('products.colReorder')}
             column="reorder"
             sort={sort}
             onSort={toggleSort}
@@ -419,25 +421,25 @@ export default function Products() {
             className="hidden xl:flex"
           />
           <SortHeader
-            label="Price"
+            label={t('products.colPrice')}
             column="price"
             sort={sort}
             onSort={toggleSort}
             align="right"
             className="hidden xl:flex"
           />
-          <span className="text-right">Actions</span>
+          <span className="text-right">{t('products.colActions')}</span>
         </div>
 
-        {loading && <p className="px-4 py-10 text-center text-sm text-muted-foreground">Loading catalog…</p>}
+        {loading && <p className="px-4 py-10 text-center text-sm text-muted-foreground">{t('products.loading')}</p>}
 
         {!loading && items.length === 0 && (
           <div className="px-4 py-14 text-center">
-            <p className="text-sm font-medium">No products found</p>
+            <p className="text-sm font-medium">{t('products.emptyTitle')}</p>
             <p className="mt-1 text-xs text-muted-foreground">
               {isFiltered
-                ? 'No products match this search and these filters.'
-                : 'Add your first product to start scanning.'}
+                ? t('products.emptyFiltered')
+                : t('products.emptyHint')}
             </p>
           </div>
         )}
@@ -458,7 +460,7 @@ export default function Products() {
                   <Checkbox
                     checked={selected.includes(product.id)}
                     onCheckedChange={() => toggleOne(product.id)}
-                    aria-label={`Select ${product.name}`}
+                    aria-label={t('products.selectAria', { name: product.name })}
                   />
                   <ProductThumb product={product} className="hidden h-10 w-10 xl:block" />
                   <button
@@ -475,7 +477,7 @@ export default function Products() {
                       <span className="block truncate text-sm font-medium">{product.name}</span>
                       <span className="numeric block truncate text-[11px] text-muted-foreground">
                         {product.sku}
-                        {isLow && <span className="ml-2 font-mono uppercase text-warn">low</span>}
+                        {isLow && <span className="ml-2 font-mono uppercase text-warn">{t('products.lowBadge')}</span>}
                         {product.status && product.status !== 'active' && (
                           <span className="ml-2 font-mono uppercase text-muted-foreground">
                             {product.status}
@@ -494,7 +496,7 @@ export default function Products() {
                   <span className="numeric hidden text-right text-sm font-semibold md:block">
                     {total}
                     <span className="ml-1 font-mono text-[10px] font-normal uppercase text-muted-foreground">
-                      {product.unit || 'each'}
+                      {product.unit || t('products.unitEach')}
                     </span>
                   </span>
                   <span className="numeric hidden text-right text-xs text-muted-foreground xl:block">
@@ -510,7 +512,7 @@ export default function Products() {
                       variant="ghost"
                       size="icon"
                       className="h-11 w-11 lg:h-8 lg:w-8"
-                      aria-label={`Edit ${product.name}`}
+                      aria-label={t('products.editAria', { name: product.name })}
                       onClick={() => openEdit(product)}
                     >
                       <Pencil className="h-3.5 w-3.5" />
@@ -525,7 +527,7 @@ export default function Products() {
                         variant="ghost"
                         size="icon"
                         className="h-11 w-11 text-muted-foreground hover:text-destructive lg:h-8 lg:w-8"
-                        aria-label={`Delete ${product.name}`}
+                        aria-label={t('products.deleteAria', { name: product.name })}
                         onClick={() => remove(product)}
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -554,15 +556,17 @@ export default function Products() {
                       })}
                     </div>
                     <p className="mt-2 font-mono text-[10px] uppercase tracking-wide text-muted-foreground">
-                      Reorder at {product.reorder_point || 0} · cost{' '}
-                      {formatMoney(product.cost, profile.currency, 2)} · price{' '}
-                      {product.price || 0}
+                      {t('products.reorderLine', {
+                        reorder: product.reorder_point || 0,
+                        cost: formatMoney(product.cost, profile.currency, 2),
+                        price: product.price || 0,
+                      })}
                     </p>
                     {(product.isbn || product.author || product.condition) && (
                       <p className="mt-1 text-[11px] text-muted-foreground">
                         {[
                           product.author,
-                          product.isbn ? `ISBN ${product.isbn}` : '',
+                          product.isbn ? t('products.isbnLabel', { isbn: product.isbn }) : '',
                           product.condition,
                         ]
                           .filter(Boolean)
@@ -578,7 +582,7 @@ export default function Products() {
                         {[
                           product.status && product.status !== 'active' ? product.status : '',
                           product.brand,
-                          product.publisher ? `Published by ${product.publisher}` : '',
+                          product.publisher ? t('products.publishedBy', { publisher: product.publisher }) : '',
                           product.subcategory,
                           (product.tags || []).map((tag) => `#${tag}`).join(' '),
                         ]
@@ -613,7 +617,7 @@ export default function Products() {
         subcategories={vocabulary.subcategories}
         tags={tagOptions}
         onDone={(count) => {
-          toast({ title: 'Catalog updated', description: `${count} products changed` });
+          toast({ title: t('products.catalogUpdated'), description: t('products.productsChanged', { count, plural: count === 1 ? '' : 's' }) });
           setReload((r) => r + 1);
         }}
       />

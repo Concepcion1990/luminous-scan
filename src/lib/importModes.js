@@ -5,6 +5,7 @@
  */
 
 import { normalizeHeader } from '@/lib/csvImport';
+import { t } from './i18n.js';
 
 const UNITS = ['each', 'case', 'pair', 'pack', 'kg'];
 const STATUSES = ['active', 'draft', 'archived', 'discontinued'];
@@ -12,54 +13,54 @@ const STATUSES = ['active', 'draft', 'archived', 'discontinued'];
 export const IMPORT_MODES = [
   {
     id: 'create',
-    label: 'Create new products',
-    hint: 'Add products that are not in the catalog yet, with optional opening stock.',
+    get label() { return t('importLib.mode.create.label'); },
+    get hint() { return t('importLib.mode.create.hint'); },
   },
   {
     id: 'update',
-    label: 'Update existing products',
-    hint: 'Correct names, prices, categories and other details. Quantities are never touched.',
+    get label() { return t('importLib.mode.update.label'); },
+    get hint() { return t('importLib.mode.update.hint'); },
   },
   {
     id: 'receive',
-    label: 'Receive stock',
-    hint: 'Add arriving quantities to one location and record them in the movement ledger.',
+    get label() { return t('importLib.mode.receive.label'); },
+    get hint() { return t('importLib.mode.receive.hint'); },
   },
 ];
 
 /** Fields a product-update sheet can carry. `kind` decides how a cell is read. */
 export const UPDATE_FIELDS = [
-  { key: 'id', label: 'Record ID', kind: 'id' },
-  { key: 'sku', label: 'SKU (match key)', kind: 'sku' },
-  { key: 'name', label: 'Product name' },
-  { key: 'description', label: 'Description' },
-  { key: 'category', label: 'Category' },
-  { key: 'subcategory', label: 'Subcategory' },
-  { key: 'tags', label: 'Tags (comma separated)', kind: 'tags' },
-  { key: 'condition', label: 'Condition' },
-  { key: 'cost', label: 'Unit cost', kind: 'number' },
-  { key: 'price', label: 'Retail price', kind: 'number' },
-  { key: 'supplier_name', label: 'Preferred supplier' },
-  { key: 'weight', label: 'Weight' },
-  { key: 'dimensions', label: 'Dimensions' },
-  { key: 'notes', label: 'Notes' },
-  { key: 'author', label: 'Author' },
-  { key: 'brand', label: 'Brand' },
-  { key: 'publisher', label: 'Publisher' },
-  { key: 'unit', label: 'Unit of measure', kind: 'unit' },
-  { key: 'reorder_point', label: 'Reorder point', kind: 'number' },
-  { key: 'status', label: 'Product status', kind: 'status' },
+  { key: 'id', get label() { return t('importLib.updateField.id'); }, kind: 'id' },
+  { key: 'sku', get label() { return t('importLib.updateField.sku'); }, kind: 'sku' },
+  { key: 'name', get label() { return t('importLib.updateField.name'); } },
+  { key: 'description', get label() { return t('importLib.updateField.description'); } },
+  { key: 'category', get label() { return t('importLib.updateField.category'); } },
+  { key: 'subcategory', get label() { return t('importLib.updateField.subcategory'); } },
+  { key: 'tags', get label() { return t('importLib.updateField.tags'); }, kind: 'tags' },
+  { key: 'condition', get label() { return t('importLib.updateField.condition'); } },
+  { key: 'cost', get label() { return t('importLib.updateField.cost'); }, kind: 'number' },
+  { key: 'price', get label() { return t('importLib.updateField.price'); }, kind: 'number' },
+  { key: 'supplier_name', get label() { return t('importLib.updateField.supplierName'); } },
+  { key: 'weight', get label() { return t('importLib.updateField.weight'); } },
+  { key: 'dimensions', get label() { return t('importLib.updateField.dimensions'); } },
+  { key: 'notes', get label() { return t('importLib.updateField.notes'); } },
+  { key: 'author', get label() { return t('importLib.updateField.author'); } },
+  { key: 'brand', get label() { return t('importLib.updateField.brand'); } },
+  { key: 'publisher', get label() { return t('importLib.updateField.publisher'); } },
+  { key: 'unit', get label() { return t('importLib.updateField.unit'); }, kind: 'unit' },
+  { key: 'reorder_point', get label() { return t('importLib.updateField.reorderPoint'); }, kind: 'number' },
+  { key: 'status', get label() { return t('importLib.updateField.status'); }, kind: 'status' },
 ];
 
 /** Fields a stock-receipt sheet can carry. */
 export const RECEIVE_FIELDS = [
-  { key: 'id', label: 'Record ID', kind: 'id' },
-  { key: 'sku', label: 'SKU (match key)', kind: 'sku' },
-  { key: 'quantity', label: 'Quantity received', kind: 'number' },
-  { key: 'unit_cost', label: 'Unit cost', kind: 'number' },
-  { key: 'reference', label: 'Reference (PO / invoice)' },
-  { key: 'supplier_name', label: 'Supplier' },
-  { key: 'note', label: 'Note' },
+  { key: 'id', get label() { return t('importLib.receiveField.id'); }, kind: 'id' },
+  { key: 'sku', get label() { return t('importLib.receiveField.sku'); }, kind: 'sku' },
+  { key: 'quantity', get label() { return t('importLib.receiveField.quantity'); }, kind: 'number' },
+  { key: 'unit_cost', get label() { return t('importLib.receiveField.unitCost'); }, kind: 'number' },
+  { key: 'reference', get label() { return t('importLib.receiveField.reference'); } },
+  { key: 'supplier_name', get label() { return t('importLib.receiveField.supplierName'); } },
+  { key: 'note', get label() { return t('importLib.receiveField.note'); } },
 ];
 
 const UPDATE_SYNONYMS = {

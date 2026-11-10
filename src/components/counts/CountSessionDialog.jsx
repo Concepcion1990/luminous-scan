@@ -19,6 +19,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { buildSheet, countNumber } from '@/lib/counts';
+import { t } from '@/lib/i18n';
+
 import { useBusiness } from '@/hooks/useBusiness';
 import { withBusiness } from '@/lib/scoped';
 
@@ -51,7 +53,7 @@ export default function CountSessionDialog({ open, onOpenChange, products, locat
   const create = async () => {
     const location = locations.find((l) => l.id === locationId);
     if (!location) {
-      setError('Choose the location you are counting.');
+      setError(t('counts.chooseLocation'));
       return;
     }
     setSaving(true);
@@ -66,7 +68,7 @@ export default function CountSessionDialog({ open, onOpenChange, products, locat
             location_id: location.id,
             location_name: location.name,
             category,
-            scope_note: category ? `${category} at ${location.name}` : `All stock at ${location.name}`,
+            scope_note: category ? t('counts.scopeNoteCategory', { category, location: location.name }) : t('counts.scopeNoteAll', { location: location.name }),
             lines,
             notes,
             started_at: new Date().toISOString(),
@@ -76,9 +78,9 @@ export default function CountSessionDialog({ open, onOpenChange, products, locat
         )
       );
       onOpenChange(false);
-      onCreated?.(`Count session started at ${location.name}.`);
+      onCreated?.(t('counts.startedMessage', { location: location.name }));
     } catch (e) {
-      setError(e.message || 'Could not start the count.');
+      setError(e.message || t('counts.startFailed'));
     } finally {
       setSaving(false);
     }
@@ -88,21 +90,21 @@ export default function CountSessionDialog({ open, onOpenChange, products, locat
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Start a count</DialogTitle>
+          <DialogTitle>{t('counts.startTitle')}</DialogTitle>
           <DialogDescription>
-            The sheet snapshots what the system says is on hand. Counted numbers only reach stock after approval.
+            {t('counts.startDescription')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-3">
           <div className="grid gap-1">
-            <Label className="text-xs">Location</Label>
+            <Label className="text-xs">{t('counts.locationLabel')}</Label>
             <Select value={locationId || 'none'} onValueChange={(v) => setLocationId(v === 'none' ? '' : v)}>
               <SelectTrigger>
-                <SelectValue placeholder="Choose a location" />
+                <SelectValue placeholder={t('counts.chooseLocationOption')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">Choose a location</SelectItem>
+                <SelectItem value="none">{t('counts.chooseLocationOption')}</SelectItem>
                 {locations.map((l) => (
                   <SelectItem key={l.id} value={l.id}>
                     {l.name}
@@ -113,7 +115,7 @@ export default function CountSessionDialog({ open, onOpenChange, products, locat
           </div>
 
           <div className="grid gap-1">
-            <Label className="text-xs">Scope</Label>
+            <Label className="text-xs">{t('counts.scopeLabel')}</Label>
             <Select
               value={category || 'all'}
               onValueChange={(v) => setCategory(v === 'all' ? '' : v)}
@@ -122,25 +124,25 @@ export default function CountSessionDialog({ open, onOpenChange, products, locat
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Only what is on hand here</SelectItem>
+                <SelectItem value="all">{t('counts.scopeOnHand')}</SelectItem>
                 {categories.map((c) => (
                   <SelectItem key={c} value={c}>
-                    Whole category: {c}
+                    {t('counts.scopeCategory', { category: c })}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
             <p className="text-[11px] text-muted-foreground">
-              {preview} product{preview === 1 ? '' : 's'} will start on the sheet; scan to add anything else.
+              {t('counts.previewLine', { count: preview, plural: preview === 1 ? '' : 's' })}
             </p>
           </div>
 
           <div className="grid gap-1">
-            <Label className="text-xs">Notes</Label>
+            <Label className="text-xs">{t('counts.notesLabel')}</Label>
             <Input
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Who is counting, which aisle…"
+              placeholder={t('counts.notesPlaceholder')}
             />
           </div>
 
@@ -149,10 +151,10 @@ export default function CountSessionDialog({ open, onOpenChange, products, locat
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t('counts.cancel')}
           </Button>
           <Button onClick={create} disabled={saving}>
-            {saving ? 'Starting…' : 'Start count'}
+            {saving ? t('counts.starting') : t('counts.startButton')}
           </Button>
         </DialogFooter>
       </DialogContent>

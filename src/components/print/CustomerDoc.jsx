@@ -1,8 +1,13 @@
 import DocHeader from './DocHeader';
 import { channelLabel } from '@/lib/orders';
 import { formatMoney } from '@/lib/inventory';
+import { t } from '@/lib/i18n';
 
-const TITLES = { invoice: 'Invoice', receipt: 'Sales receipt', packing: 'Packing slip' };
+const TITLES = {
+  invoice: 'print.invoiceTitle',
+  receipt: 'print.salesReceiptTitle',
+  packing: 'print.packingSlipTitle',
+};
 
 function shortDate(value) {
   if (!value) return '';
@@ -25,34 +30,35 @@ export default function CustomerDoc({ order, business, mode = 'invoice' }) {
 
   const fields = packing
     ? [
-        ['Packed by', 'w-[30mm]'],
-        ['Checked by', 'w-[30mm]'],
-        ['Ship date', 'w-[22mm]'],
+        [t('print.fieldPackedBy'), 'w-[30mm]'],
+        [t('print.fieldCheckedBy'), 'w-[30mm]'],
+        [t('print.fieldShipDate'), 'w-[22mm]'],
       ]
     : receipt
       ? [
-          ['Paid by', 'w-[30mm]'],
-          ['Method', 'w-[24mm]'],
-          ['Served by', 'w-[26mm]'],
+          [t('print.fieldPaidBy'), 'w-[30mm]'],
+          [t('print.fieldMethod'), 'w-[24mm]'],
+          [t('print.fieldServedBy'), 'w-[26mm]'],
         ]
       : [
-          ['Terms', 'w-[24mm]'],
-          ['Due', 'w-[22mm]'],
-          ['Customer ref', 'w-[30mm]'],
+          [t('print.fieldTerms'), 'w-[24mm]'],
+          [t('print.fieldDue'), 'w-[22mm]'],
+          [t('print.fieldCustomerRef'), 'w-[30mm]'],
         ];
 
+  const discountLabel = t('print.discount');
   const totals = [
-    ['Subtotal', order.subtotal],
-    ['Discount', order.discount],
-    ['Shipping', order.shipping],
-    ['Tax', order.tax],
-  ].filter(([label, value]) => label !== 'Discount' || Number(value) > 0);
+    [t('print.subtotal'), order.subtotal],
+    [discountLabel, order.discount],
+    [t('print.shipping'), order.shipping],
+    [t('print.tax'), order.tax],
+  ].filter(([label, value]) => label !== discountLabel || Number(value) > 0);
 
   return (
     <div className="print-label print-page-break w-[180mm] bg-white p-2 text-black">
       <DocHeader
         business={business}
-        title={TITLES[mode] || TITLES.invoice}
+        title={t(TITLES[mode] || TITLES.invoice)}
         subtitle={[order.number, shortDate(order.order_date), channelLabel(order.channel)]
           .filter(Boolean)
           .join(' · ')}
@@ -62,7 +68,7 @@ export default function CustomerDoc({ order, business, mode = 'invoice' }) {
       <div className="mt-2 grid gap-y-0.5 text-[8pt]">
         <p>
           <span className="font-mono text-[6.5pt] uppercase tracking-wide text-black/60">
-            {packing ? 'Ship to ' : 'Customer '}
+            {packing ? t('print.shipTo') : t('print.customer')}{' '}
           </span>
           {order.customer_name || '—'}
           {order.customer_email ? ` · ${order.customer_email}` : ''}
@@ -70,22 +76,22 @@ export default function CustomerDoc({ order, business, mode = 'invoice' }) {
         </p>
         <p>
           <span className="font-mono text-[6.5pt] uppercase tracking-wide text-black/60">
-            {packing ? 'Ships from ' : 'Fulfilled from '}
+            {packing ? t('print.shipsFrom') : t('print.fulfilledFrom')}{' '}
           </span>
           {order.location_name || '—'}
-          {order.customer_ref ? ` · ref ${order.customer_ref}` : ''}
+          {order.customer_ref ? t('print.refSuffix', { ref: order.customer_ref }) : ''}
         </p>
         <p>
-          <span className="font-mono text-[6.5pt] uppercase tracking-wide text-black/60">Status </span>
+          <span className="font-mono text-[6.5pt] uppercase tracking-wide text-black/60">{t('print.status')} </span>
           {order.status}
           {!packing && order.tracking_ref
-            ? ` · ${order.carrier || 'Tracking'} ${order.tracking_ref}`
+            ? ` · ${order.carrier || t('print.trackingFallback')} ${order.tracking_ref}`
             : ''}
-          {packing && ` · ${units} unit${units === 1 ? '' : 's'}`}
+          {packing && t('print.packingUnitCount', { units, s: units === 1 ? '' : 's' })}
         </p>
         {order.notes && (
           <p className="whitespace-pre-line">
-            <span className="font-mono text-[6.5pt] uppercase tracking-wide text-black/60">Notes </span>
+            <span className="font-mono text-[6.5pt] uppercase tracking-wide text-black/60">{t('print.notes')} </span>
             {order.notes}
           </p>
         )}
@@ -95,10 +101,10 @@ export default function CustomerDoc({ order, business, mode = 'invoice' }) {
         <thead>
           <tr className="border-b border-black text-left font-mono text-[6.5pt] uppercase tracking-wide">
             <th className="w-[26mm] py-1 font-normal">SKU</th>
-            <th className="py-1 font-normal">Item</th>
-            <th className="w-[14mm] py-1 text-right font-normal">Qty</th>
-            {!packing && <th className="w-[22mm] py-1 text-right font-normal">Unit price</th>}
-            {!packing && <th className="w-[22mm] py-1 text-right font-normal">Amount</th>}
+            <th className="py-1 font-normal">{t('print.colItem')}</th>
+            <th className="w-[14mm] py-1 text-right font-normal">{t('print.colQty')}</th>
+            {!packing && <th className="w-[22mm] py-1 text-right font-normal">{t('print.colUnitPrice')}</th>}
+            {!packing && <th className="w-[22mm] py-1 text-right font-normal">{t('print.colAmount')}</th>}
           </tr>
         </thead>
         <tbody>
@@ -125,7 +131,7 @@ export default function CustomerDoc({ order, business, mode = 'invoice' }) {
           {lines.length === 0 && (
             <tr>
               <td colSpan={packing ? 3 : 5} className="py-3 text-center text-[8pt] text-black/60">
-                No lines on this order.
+                {t('print.noLines')}
               </td>
             </tr>
           )}
@@ -135,11 +141,11 @@ export default function CustomerDoc({ order, business, mode = 'invoice' }) {
       {packing ? (
         <div className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-[8pt]">
           <p>
-            <span className="font-mono text-[6.5pt] uppercase tracking-wide text-black/60">Carrier </span>
+            <span className="font-mono text-[6.5pt] uppercase tracking-wide text-black/60">{t('print.carrier')} </span>
             {order.carrier || '________________'}
           </p>
           <p>
-            <span className="font-mono text-[6.5pt] uppercase tracking-wide text-black/60">Tracking </span>
+            <span className="font-mono text-[6.5pt] uppercase tracking-wide text-black/60">{t('print.tracking')} </span>
             {order.tracking_ref || '________________'}
           </p>
         </div>
@@ -152,7 +158,7 @@ export default function CustomerDoc({ order, business, mode = 'invoice' }) {
             </div>
           ))}
           <div className="flex justify-between py-1 text-[9.5pt] font-semibold">
-            <span>{receipt ? 'Total paid' : 'Total due'}</span>
+            <span>{receipt ? t('print.totalPaid') : t('print.totalDue')}</span>
             <span className="numeric">{money(order.total)}</span>
           </div>
         </div>
@@ -160,10 +166,10 @@ export default function CustomerDoc({ order, business, mode = 'invoice' }) {
 
       <p className="mt-3 border-t border-black/25 pt-2 font-mono text-[6.5pt] uppercase tracking-wide text-black/60">
         {packing
-          ? 'Tick each line as it goes in the box, then mark the order shipped so stock leaves once.'
+          ? t('print.footerPacking')
           : receipt
-            ? 'Payment is recorded by hand. This receipt does not itself charge a card.'
-            : 'Amounts are as entered on the order. Payment is tracked by hand, not collected by this document.'}
+            ? t('print.footerReceipt')
+            : t('print.footerInvoice')}
       </p>
     </div>
   );

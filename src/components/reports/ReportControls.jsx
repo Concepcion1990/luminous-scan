@@ -1,5 +1,6 @@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { t } from '@/lib/i18n';
 import {
   Select,
   SelectContent,
@@ -32,7 +33,7 @@ export default function ReportControls({ value, onChange, locations, categories 
   return (
     <section className="rounded-xl border border-border bg-card p-4 sm:p-5">
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        <Field label="Report">
+        <Field label={t('reports.fieldReport')}>
           <Select value={value.reportId} onValueChange={pickReport}>
             <SelectTrigger>
               <SelectValue />
@@ -47,7 +48,7 @@ export default function ReportControls({ value, onChange, locations, categories 
           </Select>
         </Field>
 
-        <Field label="Group by">
+        <Field label={t('reports.fieldGroupBy')}>
           <Select value={value.groupBy} onValueChange={(groupBy) => onChange({ groupBy })}>
             <SelectTrigger>
               <SelectValue />
@@ -62,7 +63,7 @@ export default function ReportControls({ value, onChange, locations, categories 
           </Select>
         </Field>
 
-        <Field label={report.snapshot ? 'Snapshot' : 'Period'}>
+        <Field label={report.snapshot ? t('reports.fieldSnapshot') : t('reports.fieldPeriod')}>
           <Select
             value={report.snapshot ? 'now' : value.period}
             onValueChange={(period) => onChange({ period })}
@@ -73,7 +74,7 @@ export default function ReportControls({ value, onChange, locations, categories 
             </SelectTrigger>
             <SelectContent>
               {report.snapshot ? (
-                <SelectItem value="now">Today, right now</SelectItem>
+                <SelectItem value="now">{t('reports.snapshotNow')}</SelectItem>
               ) : (
                 PERIODS.map((period) => (
                   <SelectItem key={period.id} value={period.id}>
@@ -87,14 +88,14 @@ export default function ReportControls({ value, onChange, locations, categories 
 
         {!report.snapshot && value.period === 'custom' && (
           <>
-            <Field label="From">
+            <Field label={t('reports.fieldFrom')}>
               <Input
                 type="date"
                 value={value.from}
                 onChange={(event) => onChange({ from: event.target.value })}
               />
             </Field>
-            <Field label="To">
+            <Field label={t('reports.fieldTo')}>
               <Input
                 type="date"
                 value={value.to}
@@ -104,7 +105,7 @@ export default function ReportControls({ value, onChange, locations, categories 
           </>
         )}
 
-        <Field label="Location">
+        <Field label={t('reports.fieldLocation')}>
           <Select
             value={value.locationId || 'all'}
             onValueChange={(next) =>
@@ -118,7 +119,7 @@ export default function ReportControls({ value, onChange, locations, categories 
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All locations</SelectItem>
+              <SelectItem value="all">{t('reports.allLocations')}</SelectItem>
               {places.map(({ location, depth }) => (
                 <SelectItem key={location.id} value={location.id}>
                   {'—'.repeat(depth)} {depth > 0 ? ' ' : ''}
@@ -129,7 +130,7 @@ export default function ReportControls({ value, onChange, locations, categories 
           </Select>
         </Field>
 
-        <Field label="Category">
+        <Field label={t('reports.fieldCategory')}>
           <Select
             value={value.category || 'all'}
             onValueChange={(next) => onChange({ category: next === 'all' ? '' : next })}
@@ -138,7 +139,7 @@ export default function ReportControls({ value, onChange, locations, categories 
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All categories</SelectItem>
+              <SelectItem value="all">{t('reports.allCategories')}</SelectItem>
               {categories.map((category) => (
                 <SelectItem key={category} value={category}>
                   {category}

@@ -15,6 +15,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import PermissionPicker from '@/components/staff/PermissionPicker';
+import { t } from '@/lib/i18n';
 
 /** Create or edit one of the business's own roles. */
 export default function RoleDialog({ open, onOpenChange, role, businessId, onSaved }) {
@@ -36,11 +37,11 @@ export default function RoleDialog({ open, onOpenChange, role, businessId, onSav
 
   const save = async () => {
     if (!form.name.trim()) {
-      setError('Give the role a name.');
+      setError(t('staff.role.nameError'));
       return;
     }
     if (!businessId) {
-      setError('Create a business first.');
+      setError(t('staff.role.noBusinessError'));
       return;
     }
     setBusy(true);
@@ -57,11 +58,11 @@ export default function RoleDialog({ open, onOpenChange, role, businessId, onSav
       // Editing an existing role stays a direct update (editing is not creating).
       if (role) await base44.entities.StaffRole.update(role.id, payload);
       else await createRole(businessId, payload);
-      toast({ title: role ? 'Role updated' : 'Role created' });
+      toast({ title: role ? t('staff.role.updated') : t('staff.role.created') });
       onSaved?.();
       onOpenChange(false);
     } catch (err) {
-      setError(err?.message || 'Could not save this role.');
+      setError(err?.message || t('staff.role.saveError'));
     } finally {
       setBusy(false);
     }
@@ -71,34 +72,34 @@ export default function RoleDialog({ open, onOpenChange, role, businessId, onSav
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{role ? 'Edit role' : 'New role'}</DialogTitle>
+          <DialogTitle>{role ? t('staff.role.editTitle') : t('staff.role.newTitle')}</DialogTitle>
           <DialogDescription>
-            A role is a named set of permissions. Staff members can start from it and keep their own tweaks.
+            {t('staff.role.description')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="grid gap-1.5">
-            <Label htmlFor="role-name">Role name</Label>
+            <Label htmlFor="role-name">{t('staff.role.nameLabel')}</Label>
             <Input
               id="role-name"
               value={form.name}
               onChange={(event) => setForm((c) => ({ ...c, name: event.target.value }))}
-              placeholder="Weekend lead"
+              placeholder={t('staff.role.namePlaceholder')}
             />
           </div>
           <div className="grid gap-1.5">
-            <Label htmlFor="role-description">What it is for</Label>
+            <Label htmlFor="role-description">{t('staff.role.purposeLabel')}</Label>
             <Input
               id="role-description"
               value={form.description}
               onChange={(event) => setForm((c) => ({ ...c, description: event.target.value }))}
-              placeholder="Covers the floor on Saturdays, no buying."
+              placeholder={t('staff.role.purposePlaceholder')}
             />
           </div>
 
           <div className="space-y-1.5">
-            <Label>Permissions</Label>
+            <Label>{t('staff.role.permissionsLabel')}</Label>
             <PermissionPicker
               value={form.permissions}
               onChange={(permissions) => setForm((c) => ({ ...c, permissions }))}
@@ -114,17 +115,17 @@ export default function RoleDialog({ open, onOpenChange, role, businessId, onSav
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={busy}>
-            Cancel
+            {t('staff.role.cancel')}
           </Button>
           <Button onClick={save} disabled={busy}>
             {busy ? (
               <>
-                <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> Saving…
+                <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> {t('staff.role.saving')}
               </>
             ) : role ? (
-              'Save role'
+              t('staff.role.save')
             ) : (
-              'Create role'
+              t('staff.role.create')
             )}
           </Button>
         </DialogFooter>

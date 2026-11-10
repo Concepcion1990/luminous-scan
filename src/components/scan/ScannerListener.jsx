@@ -1,5 +1,6 @@
 import { ScanLine } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { t } from '@/lib/i18n';
 
 /** Desktop-only status strip for a handheld reader attached to the computer. */
 export default function ScannerListener({ armed, lastCode, onFocusInput }) {
@@ -13,22 +14,20 @@ export default function ScannerListener({ armed, lastCode, onFocusInput }) {
         </span>
         <ScanLine className="h-4 w-4 shrink-0 text-primary" />
         <div className="min-w-0">
-          <p className="text-xs font-medium">Handheld scanner ready</p>
+          <p className="text-xs font-medium">{t('scan.handheldReady')}</p>
           <p className="truncate text-[11px] text-muted-foreground">
-            {armed
-              ? 'Reading a code…'
-              : 'Scan anywhere on this page — the reader types the code and sends Enter.'}
+            {armed ? t('scan.readingCode') : t('scan.handheldHint')}
           </p>
         </div>
       </div>
       <div className="flex shrink-0 items-center gap-2">
         {lastCode && (
-          <span className="numeric font-mono text-[11px] text-muted-foreground" title="Last code read">
-            last {lastCode}
+          <span className="numeric font-mono text-[11px] text-muted-foreground" title={t('scan.lastCodeTitle')}>
+            {t('scan.lastCode', { code: lastCode })}
           </span>
         )}
         <Button variant="outline" size="sm" onClick={onFocusInput}>
-          Focus box
+          {t('scan.focusBox')}
         </Button>
       </div>
     </div>

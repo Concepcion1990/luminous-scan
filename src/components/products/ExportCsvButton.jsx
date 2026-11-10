@@ -11,6 +11,8 @@ import { useToast } from '@/components/ui/use-toast';
 import useEntitlements from '@/hooks/useEntitlements';
 import { loadInventory } from '@/lib/inventory';
 import { downloadCsv, fileSlug, fileStamp, toCsv } from '@/lib/csv';
+import { t } from '@/lib/i18n';
+
 
 export default function ExportCsvButton({ businessName, businessId }) {
   const { toast } = useToast();
@@ -33,44 +35,46 @@ export default function ExportCsvButton({ businessName, businessId }) {
       });
 
       const columns = [
-        { label: 'Name', value: (p) => p.name },
-        { label: 'SKU', value: (p) => p.sku, text: true },
-        { label: 'Category', value: (p) => p.category || '' },
-        { label: 'Unit', value: (p) => p.unit || 'each' },
-        { label: 'UPC / EAN', value: (p) => p.upc || '', text: true },
-        { label: 'Barcode', value: (p) => p.barcode || '', text: true },
-        { label: 'QR code', value: (p) => p.qr_code || '', text: true },
-        { label: 'Cost', value: (p) => p.cost ?? '' },
-        { label: 'Price', value: (p) => p.price ?? '' },
-        { label: 'Reorder point', value: (p) => p.reorder_point ?? 0 },
-        { label: 'On hand', value: (p) => totals.get(p.id) || 0 },
+        { label: t('products.exportColName'), value: (p) => p.name },
+        { label: t('products.exportColSku'), value: (p) => p.sku, text: true },
+        { label: t('products.exportColCategory'), value: (p) => p.category || '' },
+        { label: t('products.exportColUnit'), value: (p) => p.unit || t('products.unitEach') },
+        { label: t('products.exportColUpc'), value: (p) => p.upc || '', text: true },
+        { label: t('products.exportColBarcode'), value: (p) => p.barcode || '', text: true },
+        { label: t('products.exportColQr'), value: (p) => p.qr_code || '', text: true },
+        { label: t('products.exportColCost'), value: (p) => p.cost ?? '' },
+        { label: t('products.exportColPrice'), value: (p) => p.price ?? '' },
+        { label: t('products.exportColReorder'), value: (p) => p.reorder_point ?? 0 },
+        { label: t('products.exportColOnHand'), value: (p) => totals.get(p.id) || 0 },
         ...locations.map((location) => ({
-          label: `On hand — ${location.name}`,
+          label: t('products.exportColOnHandLocation', { location: location.name }),
           value: (p) => perLocation.get(p.id)?.get(location.id) || 0,
         })),
-        { label: 'Notes', value: (p) => p.notes || '' },
-        { label: 'Active', value: (p) => (p.active === false ? 'No' : 'Yes') },
-        { label: 'Created', value: (p) => p.created_date || '' },
+        { label: t('products.exportColNotes'), value: (p) => p.notes || '' },
+        { label: t('products.exportColActive'), value: (p) => (p.active === false ? t('products.exportNo') : t('products.exportYes')) },
+        { label: t('products.exportColCreated'), value: (p) => p.created_date || '' },
       ];
 
       const base = `${fileSlug(businessName) || 'inventory'}-catalog-${fileStamp()}`;
       if (format === 'xlsx') {
         const { downloadSheets } = await import('@/lib/xlsx');
-        downloadSheets([{ name: 'Catalog', columns, rows: products }], `${base}.xlsx`);
+        downloadSheets([{ name: t('products.exportSheetName'), columns, rows: products }], `${base}.xlsx`);
       } else {
         downloadCsv(`${base}.csv`, toCsv(columns, products));
       }
 
       toast({
-        title: 'Catalog exported',
-        description: `${products.length} product${products.length === 1 ? '' : 's'} saved as ${
-          format === 'xlsx' ? 'Excel' : 'CSV'
-        }.`,
+        title: t('products.exportedTitle'),
+        description: t('products.exportedDescription', {
+          count: products.length,
+          plural: products.length === 1 ? '' : 's',
+          format: format === 'xlsx' ? 'Excel' : 'CSV',
+        }),
       });
     } catch {
       toast({
-        title: 'Export failed',
-        description: 'The catalog could not be read. Try again.',
+        title: t('products.exportFailedTitle'),
+        description: t('products.exportFailedDescription'),
         variant: 'destructive',
       });
     } finally {
@@ -97,16 +101,16 @@ export default function ExportCsvButton({ businessName, businessId }) {
           ) : (
             <Download className="mr-1.5 h-4 w-4" />
           )}
-          {busy ? 'Exporting…' : 'Export'}
+          {busy ? t('products.exporting') : t('products.exportButton')}
           <ChevronDown className="ml-1 h-3.5 w-3.5 opacity-60" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => run('xlsx')}>
-          <FileSpreadsheet className="mr-2 h-3.5 w-3.5" /> Excel workbook (.xlsx)
+          <FileSpreadsheet className="mr-2 h-3.5 w-3.5" /> {t('products.exportXlsx')}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => run('csv')}>
-          <Download className="mr-2 h-3.5 w-3.5" /> CSV file
+          <Download className="mr-2 h-3.5 w-3.5" /> {t('products.exportCsv')}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -14,6 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { t } from '@/lib/i18n';
 
 const empty = {
   name: '',
@@ -57,7 +58,7 @@ export default function SupplierFormDialog({ open, onOpenChange, supplier, onSav
 
   const save = async () => {
     if (!form.name.trim()) {
-      setError('A supplier name is required.');
+      setError(t('suppliers.nameRequired'));
       return;
     }
     setSaving(true);
@@ -81,7 +82,7 @@ export default function SupplierFormDialog({ open, onOpenChange, supplier, onSav
       onSaved?.(saved);
       onOpenChange(false);
     } catch (err) {
-      setError(err?.message || 'Could not save this supplier.');
+      setError(err?.message || t('suppliers.saveFailed'));
     } finally {
       setSaving(false);
     }
@@ -91,41 +92,39 @@ export default function SupplierFormDialog({ open, onOpenChange, supplier, onSav
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{supplier ? 'Edit supplier' : 'New supplier'}</DialogTitle>
-          <DialogDescription>
-            Suppliers appear on purchase orders, and what you pay them sets each product's cost.
-          </DialogDescription>
+          <DialogTitle>{supplier ? t('suppliers.editTitle') : t('suppliers.newTitle')}</DialogTitle>
+          <DialogDescription>{t('suppliers.formDescription')}</DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4">
           <div className="grid gap-2">
-            <Label htmlFor="supplier-name">Supplier name</Label>
-            <Input id="supplier-name" value={form.name} onChange={set('name')} placeholder="Ingram Content Group" />
+            <Label htmlFor="supplier-name">{t('suppliers.supplierName')}</Label>
+            <Input id="supplier-name" value={form.name} onChange={set('name')} placeholder={t('suppliers.supplierNamePlaceholder')} />
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="contact">Contact</Label>
-            <Input id="contact" value={form.contact_name} onChange={set('contact_name')} placeholder="Dana Ruiz" />
+            <Label htmlFor="contact">{t('suppliers.contact')}</Label>
+            <Input id="contact" value={form.contact_name} onChange={set('contact_name')} placeholder={t('suppliers.contactPlaceholder')} />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('suppliers.email')}</Label>
               <Input id="email" type="email" value={form.email} onChange={set('email')} />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="phone">Phone</Label>
+              <Label htmlFor="phone">{t('suppliers.phone')}</Label>
               <Input id="phone" value={form.phone} onChange={set('phone')} />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="grid gap-2">
-              <Label htmlFor="account">Account number</Label>
+              <Label htmlFor="account">{t('suppliers.accountNumberLabel')}</Label>
               <Input id="account" value={form.account_number} onChange={set('account_number')} className="font-mono" />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="lead">Lead time (days)</Label>
+              <Label htmlFor="lead">{t('suppliers.leadTime')}</Label>
               <Input
                 id="lead"
                 type="number"
@@ -137,17 +136,17 @@ export default function SupplierFormDialog({ open, onOpenChange, supplier, onSav
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="address">Address</Label>
+            <Label htmlFor="address">{t('suppliers.address')}</Label>
             <Textarea id="address" value={form.address} onChange={set('address')} rows={2} />
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="website">Website</Label>
-            <Input id="website" value={form.website} onChange={set('website')} placeholder="supplier.com" />
+            <Label htmlFor="website">{t('suppliers.website')}</Label>
+            <Input id="website" value={form.website} onChange={set('website')} placeholder={t('suppliers.websitePlaceholder')} />
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="supplier-notes">Notes</Label>
+            <Label htmlFor="supplier-notes">{t('suppliers.notes')}</Label>
             <Textarea id="supplier-notes" value={form.notes} onChange={set('notes')} rows={2} />
           </div>
 
@@ -156,10 +155,10 @@ export default function SupplierFormDialog({ open, onOpenChange, supplier, onSav
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t('suppliers.cancel')}
           </Button>
           <Button onClick={save} disabled={saving}>
-            {saving ? 'Saving…' : supplier ? 'Save changes' : 'Add supplier'}
+            {saving ? t('suppliers.saving') : supplier ? t('suppliers.saveChanges') : t('suppliers.addSupplier')}
           </Button>
         </DialogFooter>
       </DialogContent>

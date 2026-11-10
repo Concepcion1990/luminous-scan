@@ -1,15 +1,16 @@
 /**
  * T6 — i18n framework (src/lib/i18n.js + src/lib/locales/en.js).
  *
- * The UI stays English until the owner picks the first translation
- * language. These tests prove the machinery, not a translation:
+ * T6.3 added the first translation language (Arabic, ar) on top of the
+ * machinery: these tests prove the machinery AND the Arabic locale —
  * English strings resolve for the converted surfaces (nav + scan),
- * interpolation works, unknown locales fall back to English, and a
- * missing key degrades to the key itself instead of crashing.
+ * interpolation works, unknown locales fall back to English, a missing
+ * key degrades to the key itself instead of crashing, and every English
+ * key exists in Arabic with matching value placeholders.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { t, setLocale, getLocale, getStrings, SUPPORTED_LOCALES, DEFAULT_LOCALE } from './i18n.js';
+import { t, setLocale, getLocale, getStrings, SUPPORTED_LOCALES, DEFAULT_LOCALE, isRTL } from './i18n.js';
 import { en } from './locales/en.js';
 
 test('English strings resolve for the converted surfaces', () => {
@@ -52,8 +53,22 @@ test('every nav labelKey has an English string', async () => {
   }
 });
 
-test('the registry is English-only until the owner picks the first language', () => {
-  assert.deepEqual(SUPPORTED_LOCALES, ['en']);
+test('RTL locales are detected (document direction flips in a real browser)', () => {
+  // The node test env has no document — isRTL is the unit under test
+  // here; the live dir flip is verified at T7 in a real browser.
+  assert.equal(isRTL('ar'), true);
+  assert.equal(isRTL('fa'), true);
+  assert.equal(isRTL('prs'), true);
+  assert.equal(isRTL('tg'), true);
+  assert.equal(isRTL('ur'), true);
+  assert.equal(isRTL('pa-Arab'), true);
+  assert.equal(isRTL('en'), false);
+  assert.equal(isRTL('es-MX'), false);
+  assert.equal(isRTL('zh-Hans'), false);
+});
+
+test('the registry holds English and Arabic, ABC order', () => {
+  assert.deepEqual(SUPPORTED_LOCALES, ['ar', 'en']);
   assert.equal(DEFAULT_LOCALE, 'en');
 });
 
@@ -67,4 +82,45 @@ test('every English string is a non-empty string', () => {
   assert.ok(keys.filter((k) => k.startsWith('nav.')).length >= 25);
   assert.ok(keys.filter((k) => k.startsWith('scan.')).length >= 20);
   assert.ok(keys.filter((k) => k.startsWith('sync.')).length >= 4);
+});
+
+/**
+ * T6.3 — Arabic (ar), the first translated locale. A language is only
+ * "done" when the whole app flows in it: every English key exists in
+ * Arabic, every value is a non-empty string, and the value placeholders
+ * ({count}, {name}, {price}…) match — except the English plural-agreement
+ * markers ({s}, {plural}, {suffix}, {us}, {cs}, {ps}, {fs}, {rs}), which
+ * Arabic omits by design: Arabic plural lives in the word form, and
+ * keeping one would render a stray Latin letter (e.g. منتجs).
+ */
+test('Arabic has every English key, with matching value placeholders', async () => {
+  const { ar } = await import('./locales/ar.js');
+  const agreement = new Set(['s', 'plural', 'suffix', 'us', 'cs', 'ps', 'fs', 'rs']);
+  const placeholders = (text) => new Set([...text.matchAll(/\{(\w+)\}/g)].map((m) => m[1]));
+  assert.equal(Object.keys(ar).length, Object.keys(en).length);
+  for (const [key, english] of Object.entries(en)) {
+    const arabic = ar[key];
+    assert.equal(typeof arabic, 'string', `ar missing key: ${key}`);
+    assert.ok(arabic.length > 0, `ar empty value: ${key}`);
+    const want = new Set([...placeholders(english)].filter((p) => !agreement.has(p)));
+    const got = placeholders(arabic);
+    for (const p of want) assert.ok(got.has(p), `ar ${key} missing {${p}}`);
+    for (const p of got) assert.ok(placeholders(english).has(p), `ar ${key} extra {${p}}`);
+    for (const p of agreement) assert.ok(!got.has(p), `ar ${key} keeps agreement marker {${p}}`);
+  }
+});
+
+test('switching to Arabic renders the app in Arabic, RTL included', () => {
+  assert.equal(setLocale('ar'), 'ar');
+  assert.equal(getLocale(), 'ar');
+  assert.equal(t('nav.scan'), 'مسح');
+  assert.equal(t('nav.overview'), 'نظرة عامة');
+  assert.equal(t('scan.printShelfTag'), 'طباعة بطاقة الرف');
+  assert.equal(t('sync.sent'), 'تم إرسال جميع التغييرات');
+  assert.equal(t('scan.onlyOnHand', { count: 3, location: 'الممر 1' }), 'يوجد فقط 3 متوفر في الممر 1.');
+  assert.equal(isRTL(), true);
+  // And back to English — the switch is live, not frozen at import.
+  assert.equal(setLocale('en'), 'en');
+  assert.equal(t('nav.scan'), 'Scan');
+  assert.equal(isRTL(), false);
 });

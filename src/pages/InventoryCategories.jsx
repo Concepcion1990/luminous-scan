@@ -6,6 +6,8 @@ import { useBusiness } from '@/hooks/useBusiness';
 import useEntitlements from '@/hooks/useEntitlements';
 import ProductThumb from '@/components/products/ProductThumb';
 import { Input } from '@/components/ui/input';
+import { t } from '@/lib/i18n';
+
 import {
   Select,
   SelectContent,
@@ -97,13 +99,13 @@ export default function InventoryCategories() {
     <div className="space-y-5">
       <div>
         <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-          Stock by category
+          {t('inventory.byCategoryEyebrow')}
         </p>
-        <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">Inventory by category</h1>
+        <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">{t('inventory.byCategoryTitle')}</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           {showValue
-            ? 'Every product filed under its category, with the units and cost value each one holds.'
-            : 'Every product filed under its category, with the units each one holds.'}
+            ? t('inventory.byCategorySubtitleValue')
+            : t('inventory.byCategorySubtitleUnits')}
         </p>
       </div>
 
@@ -113,7 +115,7 @@ export default function InventoryCategories() {
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search a product or SKU"
+            placeholder={t('inventory.byCategorySearch')}
             className="pl-8"
           />
         </div>
@@ -122,10 +124,10 @@ export default function InventoryCategories() {
           onValueChange={(value) => setLocationId(value === 'all' ? '' : value)}
         >
           <SelectTrigger className="sm:w-52">
-            <SelectValue placeholder="All locations" />
+            <SelectValue placeholder={t('inventory.allLocations')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All locations</SelectItem>
+            <SelectItem value="all">{t('inventory.allLocations')}</SelectItem>
             {locations.map((location) => (
               <SelectItem key={location.id} value={location.id}>
                 {location.name}
@@ -134,28 +136,32 @@ export default function InventoryCategories() {
           </SelectContent>
         </Select>
         <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-          {groups.length} {groups.length === 1 ? 'category' : 'categories'} · {totalUnits} units
+          {t('inventory.categorySummary', {
+            count: groups.length,
+            categoryWord: groups.length === 1 ? t('inventory.categorySingular') : t('inventory.categoryPlural'),
+            units: totalUnits,
+          })}
         </p>
       </div>
 
       {inventory === null ? (
         <div className="rounded-xl border border-border bg-card px-4 py-10 text-center text-sm text-muted-foreground">
-          Loading categories…
+          {t('inventory.categoriesLoading')}
         </div>
       ) : groups.length === 0 ? (
         <div className="rounded-xl border border-border bg-card px-4 py-10 text-center text-sm text-muted-foreground">
           {inventory.products.length === 0 ? (
             <>
-              No products yet.{' '}
+              {t('inventory.emptyNoProducts')}{' '}
               <Link to="/products" className="underline underline-offset-2 hover:text-foreground">
-                Add products
+                {t('inventory.byCategoryAddProducts')}
               </Link>{' '}
-              and they will group here by category.
+              {t('inventory.byCategoryAddSuffix')}
             </>
           ) : search.trim() ? (
-            'Nothing matches that search.'
+            t('inventory.emptyNoMatch')
           ) : (
-            'No products are stocked at that location yet.'
+            t('inventory.byCategoryEmptyLocation')
           )}
         </div>
       ) : (
@@ -173,10 +179,13 @@ export default function InventoryCategories() {
                     className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${open ? '' : '-rotate-90'}`}
                   />
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">{group.name}</p>
+                    <p className="truncate text-sm font-medium">{group.name === UNCATEGORIZED ? t('inventory.uncategorized') : group.name}</p>
                     <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-                      {group.items.length} {group.items.length === 1 ? 'product' : 'products'}
-                      {group.low ? ` · ${group.low} low` : ''}
+                      {t('inventory.groupProductCount', {
+                        count: group.items.length,
+                        word: group.items.length === 1 ? t('inventory.productSingular') : t('inventory.productPlural'),
+                      })}
+                      {group.low ? t('inventory.groupLowSuffix', { low: group.low }) : ''}
                     </p>
                   </div>
                   <div className="shrink-0 text-right">
@@ -200,14 +209,14 @@ export default function InventoryCategories() {
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-sm">{product.name}</p>
                           <p className="truncate font-mono text-[10px] text-muted-foreground">
-                            {product.sku || 'No SKU'}
+                            {product.sku || t('inventory.noSku')}
                             {product.subcategory ? ` · ${product.subcategory}` : ''}
                           </p>
                         </div>
                         <div className="shrink-0 text-right">
                           <p className={`numeric text-sm font-semibold ${low ? 'text-warn' : ''}`}>{onHand}</p>
                           <p className="font-mono text-[9px] uppercase tracking-wide text-muted-foreground">
-                            {low ? `reorder ${product.reorder_point}` : 'on hand'}
+                            {low ? t('inventory.reorderLabel', { point: product.reorder_point }) : t('inventory.onHand')}
                           </p>
                         </div>
                       </div>
@@ -217,7 +226,7 @@ export default function InventoryCategories() {
                         to="/inventory"
                         className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground underline underline-offset-2 hover:text-foreground"
                       >
-                        Adjust stock
+                        {t('inventory.adjustStock')}
                       </Link>
                     </div>
                   </div>

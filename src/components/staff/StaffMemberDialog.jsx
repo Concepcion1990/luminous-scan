@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import PermissionPicker from '@/components/staff/PermissionPicker';
+import { t } from '@/lib/i18n';
 import { orderedLocations } from '@/lib/locations';
 
 const emptyForm = (customRoles, stripBusinessOnly = (permissions) => permissions) => {
@@ -126,15 +127,15 @@ export default function StaffMemberDialog({
   const save = async () => {
     const email = form.email.trim().toLowerCase();
     if (!form.full_name.trim() || !email) {
-      setError('A name and an email are needed.');
+      setError(t('staff.memberDialog.nameEmailError'));
       return;
     }
     if (!businessId) {
-      setError('Create a business first.');
+      setError(t('staff.memberDialog.noBusinessError'));
       return;
     }
     if (!isAdmin && email === String(user?.email || '').toLowerCase()) {
-      setError('You cannot add or change your own staff record — ask an administrator.');
+      setError(t('staff.memberDialog.ownRecordError'));
       return;
     }
     // One seat per email: a second record would make that person's permissions ambiguous.
@@ -142,7 +143,7 @@ export default function StaffMemberDialog({
       (other) => other.id !== member?.id && String(other.email || '').toLowerCase() === email
     );
     if (clash) {
-      setError(`${clash.full_name} already has a staff record with ${email}. Edit that one instead.`);
+      setError(t('staff.memberDialog.emailClash', { name: clash.full_name, email }));
       return;
     }
     setBusy(true);
@@ -173,26 +174,29 @@ export default function StaffMemberDialog({
         try {
           await base44.users.inviteUser(email, form.app_role);
           toast({
-            title: 'Invitation sent',
-            description: `${email} is invited as ${form.role_name || 'staff'}. Set their status to Active once they sign in so they can start working.`,
+            title: t('staff.memberDialog.inviteSent'),
+            description: t('staff.memberDialog.inviteSentDesc', {
+              email,
+              role: form.role_name || t('staff.member.roleFallback'),
+            }),
           });
         } catch (inviteError) {
           toast({
-            title: 'Staff member saved',
+            title: t('staff.memberDialog.saved'),
             description:
               inviteError?.message ||
-              'The invitation could not be sent. Invite them again once they have an account.',
+              t('staff.memberDialog.inviteFailedDesc'),
             variant: 'destructive',
           });
         }
       } else {
-        toast({ title: member ? 'Staff member updated' : 'Staff member added' });
+        toast({ title: member ? t('staff.memberDialog.updated') : t('staff.memberDialog.added') });
       }
 
       onSaved?.();
       onOpenChange(false);
     } catch (err) {
-      setError(err?.message || 'Could not save this staff member.');
+      setError(err?.message || t('staff.memberDialog.saveError'));
     } finally {
       setBusy(false);
     }
@@ -217,48 +221,48 @@ export default function StaffMemberDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{member ? 'Edit staff member' : 'Add a staff member'}</DialogTitle>
+          <DialogTitle>{member ? t('staff.memberDialog.editTitle') : t('staff.memberDialog.addTitle')}</DialogTitle>
           <DialogDescription>
             {member
-              ? 'Change their role, permissions or access.'
-              : 'Pick a role to start from, then adjust anything they should or should not reach.'}
+              ? t('staff.memberDialog.editDescription')
+              : t('staff.memberDialog.addDescription')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="grid gap-1.5">
-              <Label htmlFor="staff-name">Full name</Label>
+              <Label htmlFor="staff-name">{t('staff.memberDialog.nameLabel')}</Label>
               <Input
                 id="staff-name"
                 value={form.full_name}
                 onChange={(event) => setForm((c) => ({ ...c, full_name: event.target.value }))}
-                placeholder="Alex Rivera"
+                placeholder={t('staff.memberDialog.namePlaceholder')}
               />
             </div>
             <div className="grid gap-1.5">
-              <Label htmlFor="staff-email">Email</Label>
+              <Label htmlFor="staff-email">{t('staff.memberDialog.emailLabel')}</Label>
               <Input
                 id="staff-email"
                 type="email"
                 value={form.email}
                 onChange={(event) => setForm((c) => ({ ...c, email: event.target.value }))}
-                placeholder="alex@example.com"
+                placeholder={t('staff.memberDialog.emailPlaceholder')}
               />
             </div>
           </div>
 
           <div className="grid gap-1.5">
-            <Label>Store</Label>
+            <Label>{t('staff.memberDialog.storeLabel')}</Label>
             <Select
               value={form.location_id || 'all'}
               onValueChange={(value) => chooseStore(value === 'all' ? '' : value)}
             >
               <SelectTrigger>
-                <SelectValue placeholder="All locations" />
+                <SelectValue placeholder={t('staff.memberDialog.allLocationsPlaceholder')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All locations — no single store</SelectItem>
+                <SelectItem value="all">{t('staff.memberDialog.allLocations')}</SelectItem>
                 {places.map(({ location, depth }) => (
                   <SelectItem key={location.id} value={location.id}>
                     {'—'.repeat(depth)} {depth > 0 ? ' ' : ''}
@@ -269,17 +273,17 @@ export default function StaffMemberDialog({
             </Select>
             <p className="text-[11px] text-muted-foreground">
               {locations.length
-                ? 'Which store this person works from. It is shown on their staff card.'
-                : 'No locations yet — add one on the Locations page to assign a store.'}
+                ? t('staff.memberDialog.storeHint')
+                : t('staff.memberDialog.noLocationsHint')}
             </p>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="grid gap-1.5">
-              <Label>Role</Label>
+              <Label>{t('staff.memberDialog.roleLabel')}</Label>
               <Select value={form.role_id || undefined} onValueChange={chooseRole}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Choose a role" />
+                  <SelectValue placeholder={t('staff.memberDialog.rolePlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
                   {roles.map((role) => (
@@ -291,7 +295,7 @@ export default function StaffMemberDialog({
               </Select>
             </div>
             <div className="grid gap-1.5">
-              <Label>Status</Label>
+              <Label>{t('staff.memberDialog.statusLabel')}</Label>
               <Select
                 value={form.status}
                 onValueChange={(value) => setForm((c) => ({ ...c, status: value }))}
@@ -311,7 +315,7 @@ export default function StaffMemberDialog({
           </div>
 
           <div className="grid gap-1.5">
-            <Label>Workspace access</Label>
+            <Label>{t('staff.memberDialog.accessLabel')}</Label>
             <Select
               value={form.app_role}
               onValueChange={(value) => setForm((c) => ({ ...c, app_role: value }))}
@@ -320,48 +324,51 @@ export default function StaffMemberDialog({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="user">User — sees the app</SelectItem>
-                {isAdmin && <SelectItem value="admin">Administrator — manages everything</SelectItem>}
+                <SelectItem value="user">{t('staff.memberDialog.userOption')}</SelectItem>
+                {isAdmin && <SelectItem value="admin">{t('staff.memberDialog.adminOption')}</SelectItem>}
               </SelectContent>
             </Select>
             <p className="text-[11px] text-muted-foreground">
               {form.app_role === 'admin'
-                ? 'Administrators can see and change all data and manage app users.'
-                : 'Users work inside the app; only administrators can grant administrator access.'}
+                ? t('staff.memberDialog.adminHint')
+                : t('staff.memberDialog.userHint')}
             </p>
           </div>
 
           <div className="space-y-1.5">
-            <Label>Permissions</Label>
+            <Label>{t('staff.memberDialog.permissionsLabel')}</Label>
             <PermissionPicker
               value={form.permissions}
               onChange={(permissions) => setForm((c) => ({ ...c, permissions }))}
             />
             {roleChanged && (
               <p className="text-[11px] text-muted-foreground">
-                These permissions no longer match {form.role_name} — this member now has their own set.
+                {t('staff.memberDialog.roleChanged', { role: form.role_name })}
               </p>
             )}
           </div>
 
           <div className="grid gap-1.5">
-            <Label htmlFor="staff-notes">Notes</Label>
+            <Label htmlFor="staff-notes">{t('staff.memberDialog.notesLabel')}</Label>
             <Textarea
               id="staff-notes"
               rows={2}
               value={form.notes}
               onChange={(event) => setForm((c) => ({ ...c, notes: event.target.value }))}
-              placeholder="Works Saturdays, covers the front counter."
+              placeholder={t('staff.memberDialog.notesPlaceholder')}
             />
           </div>
 
           {!member && (
             <p className="rounded-lg border border-border bg-muted/40 px-3 py-2 text-[11px] leading-relaxed text-muted-foreground">
               {form.status === 'invited'
-                ? `Saving sends an invitation to ${form.email || 'this email'}. Their role, store and permissions are already set here, and their seat switches on once you set them to Active.`
-                : `No invitation is sent for a member added as ${
-                    form.status === 'suspended' ? 'Suspended' : 'Active'
-                  } — they need an app account already. Choose Invited to email them.`}
+                ? t('staff.memberDialog.inviteNoteInvited', { email: form.email || t('staff.memberDialog.thisEmail') })
+                : t('staff.memberDialog.inviteNoteOther', {
+                    status:
+                      form.status === 'suspended'
+                        ? t('staff.memberDialog.statusSuspended')
+                        : t('staff.memberDialog.statusActive'),
+                  })}
             </p>
           )}
 
@@ -374,17 +381,17 @@ export default function StaffMemberDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={busy}>
-            Cancel
+            {t('staff.memberDialog.cancel')}
           </Button>
           <Button onClick={save} disabled={busy}>
             {busy ? (
               <>
-                <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> Saving…
+                <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> {t('staff.memberDialog.saving')}
               </>
             ) : member ? (
-              'Save changes'
+              t('staff.memberDialog.saveChanges')
             ) : (
-              'Add staff member'
+              t('staff.memberDialog.addButton')
             )}
           </Button>
         </DialogFooter>

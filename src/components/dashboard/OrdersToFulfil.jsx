@@ -3,6 +3,7 @@ import { ArrowUpRight } from 'lucide-react';
 import PanelHeading from '@/components/dashboard/PanelHeading';
 import { ORDER_STATUS, heldUnits } from '@/lib/orders';
 import { formatMoney } from '@/lib/inventory';
+import { t } from '@/lib/i18n';
 
 const ROWS = 5;
 
@@ -15,7 +16,7 @@ export default function OrdersToFulfil({ orders = [], currency = 'USD' }) {
       <PanelHeading
         sub={
           orders.length
-            ? `${orders.length} open · ${units} unit${units === 1 ? '' : 's'} held`
+            ? t('dashboard.ordersSub', { count: orders.length, units, s: units === 1 ? '' : 's' })
             : undefined
         }
         action={
@@ -23,15 +24,15 @@ export default function OrdersToFulfil({ orders = [], currency = 'USD' }) {
             to="/orders"
             className="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground"
           >
-            Orders <ArrowUpRight className="h-3 w-3" />
+            {t('dashboard.ordersLink')} <ArrowUpRight className="h-3 w-3" />
           </Link>
         }
       >
-        Orders to fulfil
+        {t('dashboard.ordersToFulfil')}
       </PanelHeading>
       <div className="divide-y divide-border">
         {orders.length === 0 && (
-          <p className="px-4 py-6 text-center text-sm text-muted-foreground">No orders waiting on stock.</p>
+          <p className="px-4 py-6 text-center text-sm text-muted-foreground">{t('dashboard.noOrdersWaiting')}</p>
         )}
         {orders.slice(0, ROWS).map((order) => (
           <Link
@@ -41,7 +42,7 @@ export default function OrdersToFulfil({ orders = [], currency = 'USD' }) {
           >
             <div className="min-w-0">
               <p className="numeric truncate text-xs font-semibold">{order.number}</p>
-              <p className="truncate text-xs text-muted-foreground">{order.customer_name || 'No customer name'}</p>
+              <p className="truncate text-xs text-muted-foreground">{order.customer_name || t('dashboard.noCustomerName')}</p>
             </div>
             <div className="shrink-0 text-right">
               <p className="numeric text-xs font-semibold">{formatMoney(order.total, currency, 2)}</p>
@@ -53,7 +54,7 @@ export default function OrdersToFulfil({ orders = [], currency = 'USD' }) {
         ))}
         {orders.length > ROWS && (
           <p className="px-4 py-2 font-mono text-[10px] uppercase tracking-wide text-muted-foreground">
-            {orders.length - ROWS} more
+            {t('dashboard.moreCount', { count: orders.length - ROWS })}
           </p>
         )}
       </div>

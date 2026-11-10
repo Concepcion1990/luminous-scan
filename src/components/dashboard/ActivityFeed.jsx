@@ -3,6 +3,7 @@ import { format } from 'date-fns';
 import PanelHeading from '@/components/dashboard/PanelHeading';
 import { MOVEMENT_TYPES } from '@/lib/inventory';
 import { toLocalDate } from '@/lib/dates';
+import { t } from '@/lib/i18n';
 
 const TONE_CLASS = {
   in: 'bg-ok',
@@ -16,16 +17,16 @@ export default function ActivityFeed({ movements = [] }) {
       <PanelHeading
         action={
           <Link to="/movements" className="shrink-0 text-xs font-medium text-muted-foreground hover:text-foreground">
-            Full history
+            {t('dashboard.fullHistory')}
           </Link>
         }
       >
-        Recent inventory activity
+        {t('dashboard.recentActivity')}
       </PanelHeading>
       <ul className="divide-y divide-border">
         {movements.length === 0 && (
           <li className="px-4 py-10 text-center text-sm text-muted-foreground">
-            No movements recorded yet.
+            {t('dashboard.noMovementsYet')}
           </li>
         )}
         {movements.map((movement) => {

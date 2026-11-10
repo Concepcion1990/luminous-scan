@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/client';
 import { useBusiness } from '@/hooks/useBusiness';
+import { t } from '@/lib/i18n';
+
 import { withBusiness } from '@/lib/scoped';
 import { createLocation } from '@/lib/entitlements';
 import { parentCandidates } from '@/lib/locations';
@@ -24,8 +26,6 @@ import {
 
 const NONE = 'none';
 
-const KINDS = ['store', 'warehouse', 'van', 'shelf', 'bin', 'other'];
-
 export default function LocationFormDialog({
   open,
   onOpenChange,
@@ -38,6 +38,15 @@ export default function LocationFormDialog({
   const [form, setForm] = useState({ name: '', code: '', kind: 'store', address: '', parent_id: '' });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+
+  const KIND_LABELS = {
+    store: t('locations.kindStore'),
+    warehouse: t('locations.kindWarehouse'),
+    van: t('locations.kindVan'),
+    shelf: t('locations.kindShelf'),
+    bin: t('locations.kindBin'),
+    other: t('locations.kindOther'),
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -57,7 +66,7 @@ export default function LocationFormDialog({
 
   const save = async () => {
     if (!form.name.trim()) {
-      setError('Give this location a name.');
+      setError(t('locations.nameRequired'));
       return;
     }
     setSaving(true);
@@ -88,7 +97,7 @@ export default function LocationFormDialog({
       onSaved?.();
       onOpenChange(false);
     } catch (err) {
-      setError(err?.message || 'Could not save this location.');
+      setError(err?.message || t('locations.saveFailed'));
     } finally {
       setSaving(false);
     }
@@ -98,28 +107,28 @@ export default function LocationFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{location ? 'Edit location' : 'New location'}</DialogTitle>
+          <DialogTitle>{location ? t('locations.editTitle') : t('locations.newTitle')}</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4">
           <div className="grid gap-2">
-            <Label htmlFor="loc-name">Name</Label>
+            <Label htmlFor="loc-name">{t('locations.nameLabel')}</Label>
             <Input id="loc-name" value={form.name} onChange={set('name')} placeholder="Shelf A" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="grid gap-2">
-              <Label htmlFor="loc-code">Short code</Label>
+              <Label htmlFor="loc-code">{t('locations.codeLabel')}</Label>
               <Input id="loc-code" value={form.code} onChange={set('code')} placeholder="SH-A" className="font-mono" />
             </div>
             <div className="grid gap-2">
-              <Label>Type</Label>
+              <Label>{t('locations.typeLabel')}</Label>
               <Select value={form.kind} onValueChange={set('kind')}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {KINDS.map((k) => (
+                  {Object.keys(KIND_LABELS).map((k) => (
                     <SelectItem key={k} value={k}>
-                      {k}
+                      {KIND_LABELS[k]}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -127,16 +136,16 @@ export default function LocationFormDialog({
             </div>
           </div>
           <div className="grid gap-2">
-            <Label>Inside location</Label>
+            <Label>{t('locations.parentLabel')}</Label>
             <Select
               value={form.parent_id || NONE}
               onValueChange={(v) => set('parent_id')(v === NONE ? '' : v)}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Top level" />
+                <SelectValue placeholder={t('locations.topLevelPlaceholder')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={NONE}>Top level (no parent)</SelectItem>
+                <SelectItem value={NONE}>{t('locations.topLevelOption')}</SelectItem>
                 {parents.map(({ location: option, depth }) => (
                   <SelectItem key={option.id} value={option.id}>
                     {`${'— '.repeat(depth)}${option.name}`}
@@ -145,22 +154,21 @@ export default function LocationFormDialog({
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground">
-              Nest a shelf inside a store, or a bin inside a shelf. Stock counted at a parent includes
-              everything inside it.
+              {t('locations.nestHint')}
             </p>
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="loc-address">Address</Label>
-            <Input id="loc-address" value={form.address} onChange={set('address')} placeholder="Optional" />
+            <Label htmlFor="loc-address">{t('locations.addressLabel')}</Label>
+            <Input id="loc-address" value={form.address} onChange={set('address')} placeholder={t('locations.optionalPlaceholder')} />
           </div>
           {error && <p className="text-sm text-destructive">{error}</p>}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t('locations.cancel')}
           </Button>
           <Button onClick={save} disabled={saving}>
-            {saving ? 'Saving…' : 'Save location'}
+            {saving ? t('locations.saving') : t('locations.saveButton')}
           </Button>
         </DialogFooter>
       </DialogContent>

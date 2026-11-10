@@ -167,7 +167,7 @@ export default function Layout() {
 
         <div className="mx-3 shrink-0 rounded-lg bg-primary-foreground/8 px-3 py-2.5">
           <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-primary-foreground/40">
-            Your business
+            {t('layout.yourBusiness')}
           </p>
           <div className="mt-1.5">
             <MerchantMark profile={profile} showTagline />
@@ -183,8 +183,8 @@ export default function Layout() {
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Find a screen"
-              aria-label="Find a screen"
+              placeholder={t('layout.findScreen')}
+              aria-label={t('layout.findScreen')}
               className="w-full bg-transparent text-[13px] placeholder:text-primary-foreground/35 focus:outline-none"
             />
           </label>
@@ -192,7 +192,7 @@ export default function Layout() {
 
         <nav className="min-h-0 flex-1 overflow-y-auto px-3 pb-4">
           {entitlementLoading ? (
-            <div className="space-y-2 px-3 py-2" aria-label="Loading screens">
+            <div className="space-y-2 px-3 py-2" aria-label={t('layout.loadingScreens')}>
               {[0, 1, 2, 3, 4, 5].map((i) => (
                 <div key={i} className="h-8 animate-pulse rounded-md bg-primary-foreground/10" />
               ))}
@@ -200,7 +200,7 @@ export default function Layout() {
           ) : (
             <>
               {groups.length === 0 && (
-                <p className="px-3 py-4 text-xs text-primary-foreground/50">No screens match “{query}”.</p>
+                <p className="px-3 py-4 text-xs text-primary-foreground/50">{t('layout.noScreensMatch', { query })}</p>
               )}
               {groups.map((group) => (
                 <div key={group.label} className="mb-2.5">
@@ -235,10 +235,10 @@ export default function Layout() {
 
         <div className="shrink-0 border-t border-primary-foreground/12 px-5 py-3.5">
           <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-primary-foreground/40">
-            Barcode · UPC · ISBN · QR
+            {t('layout.scanCodes')}
           </p>
           <p className="mt-1 text-xs leading-relaxed text-primary-foreground/60">
-            Scan with your camera or a handheld reader.
+            {t('layout.scanHint')}
           </p>
           <p className="mt-2 text-[10px] leading-snug text-primary-foreground/35">{PUBLISHER}</p>
         </div>
@@ -263,7 +263,7 @@ export default function Layout() {
                       navigate('/', { replace: true });
                     }
                   }}
-                  aria-label="Go back"
+                  aria-label={t('layout.goBack')}
                   className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-primary-foreground/20 text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground/60"
                 >
                   <ArrowLeft className="h-5 w-5" aria-hidden="true" />
@@ -278,7 +278,7 @@ export default function Layout() {
                   to="/scan"
                   className="shrink-0 rounded-md bg-accent px-3 py-1.5 text-xs font-semibold text-accent-foreground"
                 >
-                  Scan
+                  {t('layout.scan')}
                 </NavLink>
               )}
             </div>
@@ -296,7 +296,7 @@ export default function Layout() {
             >
               <span className="flex items-center gap-2">
                 <Menu className="h-4 w-4" aria-hidden="true" />
-                All screens
+                {t('layout.allScreens')}
               </span>
               <ChevronDown
                 className={`h-4 w-4 transition-transform ${mobileMenuOpen ? 'rotate-180' : ''}`}
@@ -306,7 +306,7 @@ export default function Layout() {
           </div>
           <nav
             id="stockhaven-mobile-modules"
-            aria-label="All business screens"
+            aria-label={t('layout.allScreensAria')}
             hidden={!mobileMenuOpen}
             onKeyDown={(event) => {
               if (event.key === 'Escape') {
@@ -316,7 +316,7 @@ export default function Layout() {
             className="max-h-[65vh] overflow-y-auto border-t border-primary-foreground/10 px-3 pb-3 pt-2"
           >
             {entitlementLoading ? (
-              <div className="space-y-2 px-2 py-2" aria-label="Loading screens">
+              <div className="space-y-2 px-2 py-2" aria-label={t('layout.loadingScreens')}>
                 {[0, 1, 2, 3, 4, 5].map((i) => (
                   <div key={i} className="h-11 animate-pulse rounded-md bg-primary-foreground/10" />
                 ))}
@@ -358,7 +358,7 @@ export default function Layout() {
           <div className="mx-auto w-full max-w-[1400px]">
             {accessLoading ? (
               <div className="flex items-center gap-2 py-10 text-sm text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" /> Checking your access…
+                <Loader2 className="h-4 w-4 animate-spin" /> {t('layout.checkingAccess')}
               </div>
             ) : blocked || blockedReason === 'pending' ? (
               <AccessPaused reason={blockedReason} />
@@ -423,7 +423,7 @@ export default function Layout() {
         </main>
 
         <nav
-          aria-label="Primary mobile navigation"
+          aria-label={t('layout.primaryNavAria')}
           className="stockhaven-mobile-tabbar fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card shadow-lg lg:hidden"
         >
           <div className="mx-auto flex min-h-[64px] max-w-xl items-stretch justify-around px-1">

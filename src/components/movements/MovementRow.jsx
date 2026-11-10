@@ -1,4 +1,6 @@
 import { format } from 'date-fns';
+import { t } from '@/lib/i18n';
+
 import { Loader2, RotateCcw, Undo2 } from 'lucide-react';
 import { MOVEMENT_TYPES } from '@/lib/inventory';
 import { toLocalDate } from '@/lib/dates';
@@ -26,7 +28,7 @@ export function deltaLabel(movement) {
   if (direction === 'set') return `${movement.previous_qty ?? 0} → ${movement.new_qty ?? 0}`;
   if (direction === 'hold') {
     const sign = movement.type === 'reserved' ? '+' : '−';
-    return `${sign}${movement.quantity} held`;
+    return t('movements.heldDelta', { sign, quantity: movement.quantity });
   }
   if (direction === 'in') return `+${movement.quantity}`;
   return `−${movement.quantity}`;
@@ -50,11 +52,11 @@ export default function MovementRow({
       <span className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${dotClass[meta.tone] || 'bg-accent'}`} />
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-baseline gap-x-2">
-          <span className="text-sm font-medium">{movement.product_name || 'Product'}</span>
+          <span className="text-sm font-medium">{movement.product_name || t('movements.unknownProduct')}</span>
           <span className="font-mono text-[11px] text-muted-foreground">{movement.sku}</span>
           {reversed && (
             <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wide text-muted-foreground">
-              reversed
+              {t('movements.reversedBadge')}
             </span>
           )}
         </div>
@@ -66,7 +68,7 @@ export default function MovementRow({
         </p>
         {movement.reversal_of_id && (
           <p className="mt-0.5 flex items-center gap-1 text-[11px] text-accent">
-            <Undo2 className="h-3 w-3" /> Reverses {movement.reversal_of_label || 'an earlier entry'}
+            <Undo2 className="h-3 w-3" /> {t('movements.reversesLabel', { label: movement.reversal_of_label || t('movements.earlierEntry') })}
           </p>
         )}
         {blocker && confirming && (
@@ -77,15 +79,15 @@ export default function MovementRow({
             {confirming ? (
               <>
                 <Button size="sm" variant="outline" className="min-h-11 lg:min-h-0" onClick={onConfirmReverse} disabled={busy}>
-                  {busy ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : null} Confirm reversal
+                  {busy ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : null} {t('movements.confirmReversal')}
                 </Button>
                 <Button size="sm" variant="ghost" className="min-h-11 lg:min-h-0" onClick={onCancelReverse} disabled={busy}>
-                  Cancel
+                  {t('movements.cancel')}
                 </Button>
               </>
             ) : (
               <Button size="sm" variant="ghost" className="h-11 px-1.5 text-[11px] lg:h-7" onClick={onAskReverse}>
-                <RotateCcw className="mr-1 h-3 w-3" /> Reverse
+                <RotateCcw className="mr-1 h-3 w-3" /> {t('movements.reverseButton')}
               </Button>
             )}
           </div>

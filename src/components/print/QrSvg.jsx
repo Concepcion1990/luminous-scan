@@ -1,11 +1,12 @@
 import { qrMatrix } from '@/lib/qr';
+import { t } from '@/lib/i18n';
 
 /** A QR code drawn as SVG, ready for print. */
 export default function QrSvg({ value, className = 'h-16 w-16' }) {
   const matrix = qrMatrix(value);
   if (!matrix) {
     return (
-      <p className="text-[6pt] leading-tight text-black/60">Code too long for this QR label</p>
+      <p className="text-[6pt] leading-tight text-black/60">{t('print.qrTooLong')}</p>
     );
   }
 
@@ -25,7 +26,7 @@ export default function QrSvg({ value, className = 'h-16 w-16' }) {
       className={className}
       shapeRendering="crispEdges"
       role="img"
-      aria-label={`QR code ${value}`}
+      aria-label={t('print.qrLabel', { value })}
     >
       <rect width={size} height={size} fill="#ffffff" />
       <path d={path} fill="#000000" />

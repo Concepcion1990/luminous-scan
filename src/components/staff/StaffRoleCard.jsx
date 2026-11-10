@@ -1,6 +1,7 @@
 import { Pencil, Trash2, Users } from 'lucide-react';
 import { permissionSummary } from '@/lib/staff';
 import { Button } from '@/components/ui/button';
+import { t } from '@/lib/i18n';
 
 /** One role: what it grants, and how many staff members sit on it. */
 export default function StaffRoleCard({ role, memberCount = 0, builtIn = false, planKey = 'business', onEdit, onDelete }) {
@@ -15,12 +16,12 @@ export default function StaffRoleCard({ role, memberCount = 0, builtIn = false, 
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold">{role.name}</p>
           <p className="mt-0.5 text-[11px] leading-relaxed text-muted-foreground">
-            {role.description || 'No description'}
+            {role.description || t('staff.roleCard.noDescription')}
           </p>
         </div>
         {builtIn ? (
           <span className="shrink-0 rounded-full border border-border bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">
-            Built-in
+            {t('staff.roleCard.builtIn')}
           </span>
         ) : null}
       </div>
@@ -36,19 +37,19 @@ export default function StaffRoleCard({ role, memberCount = 0, builtIn = false, 
             </span>
           ))
         ) : (
-          <span className="text-[10px] text-muted-foreground">No permissions granted</span>
+          <span className="text-[10px] text-muted-foreground">{t('staff.roleCard.noPermissions')}</span>
         )}
       </div>
 
       <p className="mt-2 flex items-center gap-1 text-[11px] text-muted-foreground">
         <Users className="h-3 w-3" />
-        <span className="numeric">{memberCount}</span> staff member{memberCount === 1 ? '' : 's'}
+        <span className="numeric">{memberCount}</span>{' '}{memberCount === 1 ? t('staff.roleCard.member') : t('staff.roleCard.members')}
       </p>
 
       {!builtIn && (
         <div className="mt-3 flex gap-2">
           <Button size="sm" variant="outline" onClick={() => onEdit(role)}>
-            <Pencil className="mr-1.5 h-3.5 w-3.5" /> Edit
+            <Pencil className="mr-1.5 h-3.5 w-3.5" /> {t('staff.roleCard.edit')}
           </Button>
           <Button
             size="sm"
@@ -56,7 +57,7 @@ export default function StaffRoleCard({ role, memberCount = 0, builtIn = false, 
             className="text-destructive hover:text-destructive"
             onClick={() => onDelete(role)}
           >
-            <Trash2 className="mr-1.5 h-3.5 w-3.5" /> Delete
+            <Trash2 className="mr-1.5 h-3.5 w-3.5" /> {t('staff.roleCard.delete')}
           </Button>
         </div>
       )}

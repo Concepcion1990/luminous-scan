@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { t } from '@/lib/i18n';
 
 /**
  * "Products: 38 of 50" — and, when the allowance is used up, what to do next.
@@ -20,11 +21,11 @@ export default function LimitBadge({ label, used, limit, className }) {
         {label}
       </span>
       <span className="numeric font-semibold">
-        {used} of {limit}
+        {t('plan.limitBadge.usedOf', { used, limit })}
       </span>
       {full && (
         <Link to="/upgrade" className="font-medium text-primary underline underline-offset-2">
-          Upgrade
+          {t('plan.limitBadge.upgrade')}
         </Link>
       )}
     </div>

@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { en } from './locales/en.js';
 import {
   COMPARISON_ROWS,
   PLANS,
@@ -93,13 +94,20 @@ test('BusinessListCard waits for the plan instead of printing Essentials default
   const card = readFileSync('src/components/business/BusinessListCard.jsx', 'utf8');
   assert.match(card, /plansLoading/);
   assert.match(card, /plansError/);
-  assert.match(card, /Loading your plan/);
-  assert.match(card, /Plan unavailable/);
-  assert.match(card, /Try again/);
+  // T6.3: the copy moved into en.js (settings.businesses.*) and renders
+  // through t() — assert the card references the keys and the English
+  // values still say the words.
+  assert.match(card, /t\('settings\.businesses\.loadingPlan'\)/);
+  assert.match(en['settings.businesses.loadingPlan'], /Loading your plan/);
+  assert.match(card, /t\('settings\.businesses\.planUnavailable'\)/);
+  assert.equal(en['settings.businesses.planUnavailable'], 'Plan unavailable');
+  assert.match(card, /t\('settings\.businesses\.tryAgain'\)/);
+  assert.equal(en['settings.businesses.tryAgain'], 'Try again');
   assert.match(card, /refetchPlans/);
   // The "N of Y" badge only prints the count once the plan has loaded.
-  assert.match(card, /plansLoading\s*\n?\s*\? 'Loading your plan…'/);
-  assert.match(card, /: `\$\{businesses\.length\} of \$\{limit\}`/);
+  assert.match(card, /plansLoading\s*\n?\s*\? t\('settings\.businesses\.loadingPlan'\)/);
+  assert.match(card, /t\('settings\.businesses\.count', \{ count: businesses\.length, limit \}\)/);
+  assert.equal(en['settings.businesses.count'], '{count} of {limit}');
   // The Essentials sentence only appears once a real limit is known.
   assert.match(card, /limit != null && !canCreate/);
   // Add business stays disabled until the allowance is known.
@@ -109,9 +117,14 @@ test('BusinessListCard waits for the plan instead of printing Essentials default
 test('BusinessSwitcher never prints an unknown business allowance as a number', () => {
   const switcher = readFileSync('src/components/business/BusinessSwitcher.jsx', 'utf8');
   assert.match(switcher, /\{businesses\.length\}\/\{limit \?\? '…'\}/);
-  assert.match(switcher, /Your business allowance is still loading/);
-  // Singular when the allowance is one: "1 business", never "1 businesses".
-  assert.match(switcher, /You can own up to \$\{limit\} business\$\{limit === 1 \? '' : 'es'\} on this login/);
+  // T6.3: the copy moved into en.js (settings.switcher.*) and renders
+  // through t() — the singular/plural split is now two keys.
+  assert.match(switcher, /t\('settings\.switcher\.allowanceLoading'\)/);
+  assert.equal(en['settings.switcher.allowanceLoading'], 'Your business allowance is still loading.');
+  assert.match(switcher, /t\('settings\.switcher\.allowanceOne', \{ limit \}\)/);
+  assert.equal(en['settings.switcher.allowanceOne'], 'You can own up to {limit} business on this login.');
+  assert.match(switcher, /t\('settings\.switcher\.allowanceMany', \{ limit \}\)/);
+  assert.equal(en['settings.switcher.allowanceMany'], 'You can own up to {limit} businesses on this login.');
   assert.doesNotMatch(switcher, /\$\{limit\} businesses/);
 });
 
@@ -125,11 +138,15 @@ test('Staff gates its seat cap on the loaded entitlement', () => {
 
 test('Staff states the allowance in plain words, so the Roles count is never read as a limit', () => {
   const staff = readFileSync('src/pages/Staff.jsx', 'utf8');
-  assert.match(staff, /Unlimited staff on the Business plan\./);
-  assert.match(staff, /This plan includes \$\{staffLimit\} additional staff\./);
+  // T6.3: the copy moved into en.js (staff.*) and renders through t().
+  assert.match(staff, /t\('staff\.planUnlimited'\)/);
+  assert.equal(en['staff.planUnlimited'], 'Unlimited staff on the Business plan.');
+  assert.match(staff, /t\('staff\.planIncludes', \{ count: staffLimit \}\)/);
+  assert.equal(en['staff.planIncludes'], 'This plan includes {count} additional staff.');
   // The "5" on the page is the count of built-in roles, labelled as Roles.
   assert.match(staff, /PRESET_ROLES\.length \+ roles\.length/);
-  assert.match(staff, />Roles</);
+  assert.match(staff, /t\('staff\.rolesHeading'\)/);
+  assert.equal(en['staff.rolesHeading'], 'Roles');
   assert.doesNotMatch(staff, /5 additional staff|5 staff members|up to 5 staff/i);
 });
 
@@ -149,7 +166,10 @@ test('PlanSummaryCard does not print the Essentials name while the plan loads', 
   const card = readFileSync('src/components/plans/PlanSummaryCard.jsx', 'utf8');
   assert.match(card, /const \{ plan, record, isEssentials, isLoading \} = useEntitlements\(\);/);
   assert.match(card, /if \(isLoading\) \{/);
-  assert.match(card, /Loading your plan…/);
+  // T6.3: the copy moved into en.js (plans.loadingPlan) and renders
+  // through t().
+  assert.match(card, /t\('plans\.loadingPlan'\)/);
+  assert.equal(en['plans.loadingPlan'], 'Loading your plan…');
 });
 
 test('LimitBadge renders nothing for an unknown limit', () => {
@@ -168,12 +188,19 @@ test('LimitBadge renders nothing for an unknown limit', () => {
  * additional staff").
  */
 test('the Essentials staff cap is 3 additional staff — the owner holds no seat', () => {
-  const limits = readFileSync('base44/shared/planLimits.ts', 'utf8');
-  assert.match(limits, /\/\*\* A seat is held by an active member or a pending invitation, never by the owner\. \*\//);
-  assert.match(limits, /export async function staffSeatCount\(base44, businessId\) \{/);
-  assert.match(limits, /status: \{ \$in: \['active', 'invited'\] \},/);
-  assert.match(limits, /export function staffLimitMessage\(limit\) \{/);
-  assert.match(limits, /This plan includes \$\{limit\} additional staff\. Free a seat or move to Business for unlimited staff\./);
+  // T6.3: this test used to read the Base44 repo's base44/shared/planLimits.ts,
+  // which does not exist in the twin repo — retargeted to the twin's own
+  // server files, which carry the same rule and the same wording.
+  const staffServer = readFileSync('server/staff.js', 'utf8');
+  assert.match(staffServer, /\/\*\* A seat is held by an active member or a pending invitation, never by the owner\. \*\//);
+  assert.match(staffServer, /export async function staffSeatCount\(pool, businessId\) \{/);
+  assert.match(staffServer, /status IN \('active', 'invited'\)/);
+  const plansServer = readFileSync('server/plans.js', 'utf8');
+  assert.match(plansServer, /export function staffLimitMessage\(limit\) \{/);
+  assert.match(
+    plansServer,
+    /`This plan includes \$\{limit\} additional staff\. Free a seat or move to Business for unlimited staff\.`/
+  );
   const entitlements = readFileSync('src/lib/entitlements.js', 'utf8');
   assert.match(entitlements, /\/\*\* Staff seats: active members plus invitations, which reserve a seat\. \*\//);
   assert.match(entitlements, /status: \{ \$in: \['active', 'invited'\] \},/);
@@ -188,7 +215,9 @@ test('the Essentials staff cap is 3 additional staff — the owner holds no seat
     COMPARISON_ROWS.find((row) => row.label === 'Additional staff'),
     { label: 'Additional staff', mobile: 'Set at launch', essentials: 'Up to three', business: 'Unlimited' }
   );
-  assert.match(staff, /This plan includes \$\{staffLimit\} additional staff\./);
+  // T6.3: the sentence moved into en.js (staff.planIncludes).
+  assert.match(staff, /t\('staff\.planIncludes', \{ count: staffLimit \}\)/);
+  assert.equal(en['staff.planIncludes'], 'This plan includes {count} additional staff.');
   // No bare "three staff" remains in the plan copy.
   assert.doesNotMatch(readFileSync('src/lib/plans.js', 'utf8'), /three staff/i);
   // OPEN: Terms (§2, "three additional staff accounts") already agrees,
@@ -228,8 +257,11 @@ test('Inventory by category hides the money line on Essentials', () => {
   // The money line is the only thing gated: units and low counts stay.
   assert.equal((page.match(/formatMoney\(group\.value, profile\.currency, 2\)/g) || []).length, 1);
   assert.match(page, /\{group\.units\}/);
-  assert.match(page, /\{group\.low \? ` · \$\{group\.low\} low` : ''\}/);
-  assert.match(page, /with the units each one holds/);
+  // T6.3: the low suffix moved into en.js (inventory.groupLowSuffix).
+  assert.match(page, /\{group\.low \? t\('inventory\.groupLowSuffix', \{ low: group\.low \}\) : ''\}/);
+  assert.equal(en['inventory.groupLowSuffix'], ' · {low} low');
+  assert.match(page, /t\('inventory\.byCategorySubtitleUnits'\)/);
+  assert.match(en['inventory.byCategorySubtitleUnits'], /with the units each one holds/);
   // The route is NOT PlanGate-locked: the page stays open on Essentials.
   const app = readFileSync('src/App.jsx', 'utf8');
   const categoriesRoute = app.split('\n').find((line) => line.includes('path="/inventory/categories"'));
@@ -249,16 +281,21 @@ test('Copy product shares the at-limit guard and the one at-limit message', () =
   assert.match(products, /const openCopy = \(product\) => \{\s*\n?\s*if \(atProductLimit\) \{\s*\n?\s*productLimitToast\(\);\s*\n?\s*return;/);
   assert.match(products, /const openNew = \(\) => \{\s*\n?\s*if \(atProductLimit\) \{\s*\n?\s*productLimitToast\(\);\s*\n?\s*return;/);
   // The description string appears exactly once — the three callers share it.
+  // T6.3: the wording moved into en.js (products.limitDescription) and the
+  // toast renders it through t(); assert the key is referenced once and
+  // the English value is the shared wording.
   const description = 'Archive one you no longer sell to free a slot, or move to Business for unlimited products.';
-  assert.equal(products.split(description).length - 1, 1);
+  assert.equal(en['products.limitDescription'], description);
+  assert.equal((products.match(/t\('products\.limitDescription'\)/g) || []).length, 1);
   // The shorter Duplicate wording is gone.
   assert.doesNotMatch(products, /or move to Business\.'/);
   // The server's refusal at 51 is the same friendly wording, not a raw
   // function error: a 403 with code product_limit and productLimitMessage.
-  const entry = readFileSync('base44/functions/create-products/entry.ts', 'utf8');
-  assert.match(entry, /error: productLimitMessage\(limits\.products, used\),/);
-  assert.match(entry, /code: 'product_limit',/);
-  const limits = readFileSync('base44/shared/planLimits.ts', 'utf8');
+  // T6.3: the Base44 entry path does not exist in the twin repo — the
+  // twin enforces the same refusal in server/entities.js.
+  const entry = readFileSync('server/entities.js', 'utf8');
+  assert.match(entry, /err\(403, 'product_limit', productLimitMessage\(limits\.products, used\)\)/);
+  const limits = readFileSync('server/plans.js', 'utf8');
   assert.match(limits, /export function productLimitMessage\(limit, used\) \{/);
   assert.match(
     limits,
@@ -270,7 +307,11 @@ test('Copy product shares the at-limit guard and the one at-limit message', () =
  * formatted price. */
 test('the expanded product row formats cost as money', () => {
   const products = readFileSync('src/pages/Products.jsx', 'utf8');
-  assert.match(products, /\{formatMoney\(product\.cost, profile\.currency, 2\)\} · price/);
+  // T6.3: the reorder line moved into en.js (products.reorderLine) and the
+  // cost is still formatted as money when passed in.
+  assert.match(products, /t\('products\.reorderLine', \{/);
+  assert.match(products, /cost: formatMoney\(product\.cost, profile\.currency, 2\),/);
+  assert.equal(en['products.reorderLine'], 'Reorder at {reorder} · cost {cost} · price {price}');
   assert.doesNotMatch(products, /cost \{product\.cost \|\| 0\}/);
 });
 
@@ -287,7 +328,9 @@ test('Layout holds the nav at its loading state until the plan is known', () => 
   const layout = readFileSync('src/components/Layout.jsx', 'utf8');
   assert.match(layout, /const \{ can: planAllows, isLoading: entitlementLoading \} = useEntitlements\(\);/);
   // Both nav surfaces hold: the laptop sidebar and the mobile All screens menu.
-  assert.equal((layout.match(/aria-label="Loading screens"/g) || []).length, 2);
+  // T6.3: the aria-label moved into en.js (layout.loadingScreens).
+  assert.equal((layout.match(/aria-label=\{t\('layout\.loadingScreens'\)\}/g) || []).length, 2);
+  assert.equal(en['layout.loadingScreens'], 'Loading screens');
   assert.match(layout, /animate-pulse rounded-md bg-primary-foreground\/10/);
   // The filter itself is unchanged: staff permission AND plan feature.
   assert.match(layout, /\(!item\.perm \|\| can\(item\.perm\)\) && \(!item\.feature \|\| planAllows\(item\.feature\)\)/);
@@ -304,7 +347,9 @@ test('BusinessSwitcher explains a disabled New button and counts in compact too'
   // who may create (a staff seat never sees the button).
   assert.match(switcher, /const atBusinessLimit = mayCreate && limit != null && !canCreate;/);
   assert.match(switcher, /\{atBusinessLimit && \(/);
-  assert.match(switcher, /Business allows up to \{PLANS\.business\.limits\.businesses\} —/);
+  // T6.3: the sentence moved into en.js (settings.switcher.limitNote).
+  assert.match(switcher, /t\('settings\.switcher\.limitNote', \{ max: PLANS\.business\.limits\.businesses \}\)/);
+  assert.equal(en['settings.switcher.limitNote'], 'Business allows up to {max} —');
   assert.match(switcher, /<Link to="\/upgrade"/);
   // The count is no longer compact-gated.
   assert.doesNotMatch(switcher, /\{!compact && \(/);
@@ -317,7 +362,9 @@ test('BusinessSwitcher explains a disabled New button and counts in compact too'
  * consistent with the LimitBadge. */
 test('Staff counts seats in use, not staff records', () => {
   const staff = readFileSync('src/pages/Staff.jsx', 'utf8');
-  assert.match(staff, /\{seatsUsed\} people/);
+  // T6.3: the count line moved into en.js (staff.peopleCount).
+  assert.match(staff, /t\('staff\.peopleCount', \{ count: seatsUsed \}\)/);
+  assert.equal(en['staff.peopleCount'], '{count} people');
   assert.doesNotMatch(staff, /\{members\.length\} people/);
   // The Staff stat card prints seatsUsed too — the record count appears
   // nowhere as a bare number on this page.
@@ -335,7 +382,10 @@ test('PlanSummaryCard defaults a missing record to pending_checkout, never Full 
   const card = readFileSync('src/components/plans/PlanSummaryCard.jsx', 'utf8');
   assert.match(card, /const status = record\?\.status \|\| 'pending_checkout';/);
   assert.doesNotMatch(card, /record\?\.status \|\| 'grandfathered'/);
-  assert.match(card, /pending_checkout: 'Checkout pending',/);
+  // T6.3: the status labels moved into en.js (plans.status.*).
+  assert.match(card, /pending_checkout: t\('plans\.status\.pendingCheckout'\),/);
+  assert.equal(en['plans.status.pendingCheckout'], 'Checkout pending');
   // The grandfathered label still exists for the real pre-launch records.
-  assert.match(card, /grandfathered: 'Full access',/);
+  assert.match(card, /grandfathered: t\('plans\.status\.grandfathered'\),/);
+  assert.equal(en['plans.status.grandfathered'], 'Full access');
 });

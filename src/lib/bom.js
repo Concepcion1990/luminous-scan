@@ -1,19 +1,20 @@
 import { base44, apiRequest } from '@/api/client';
 import { scoped } from '@/lib/scoped';
+import { t } from './i18n.js';
 
 /** A bundle is a kit of existing items; a recipe is what a made item consumes. */
 export const BUILD_KINDS = {
   bundle: {
-    label: 'Bundle',
-    short: 'Kit',
-    blurb: 'Existing products packed together and sold as one unit',
-    tip: 'Building a bundle takes each part off the shelf and puts one bundle on it.',
+    get label() { return t('bomLib.kindBundle'); },
+    get short() { return t('bomLib.kindBundleShort'); },
+    get blurb() { return t('bomLib.kindBundleBlurb'); },
+    get tip() { return t('bomLib.kindBundleTip'); },
   },
   recipe: {
-    label: 'Recipe',
-    short: 'Materials',
-    blurb: 'Materials and parts consumed to make the finished item',
-    tip: 'Building takes the materials off the shelf and puts the finished item on it.',
+    get label() { return t('bomLib.kindRecipe'); },
+    get short() { return t('bomLib.kindRecipeShort'); },
+    get blurb() { return t('bomLib.kindRecipeBlurb'); },
+    get tip() { return t('bomLib.kindRecipeTip'); },
   },
 };
 
@@ -99,16 +100,18 @@ export async function listBuildableProducts(businessId = '') {
  */
 export async function assembleBom({ bom, product, location, quantity, user, businessId = '' }) {
   const qty = Math.max(1, Math.floor(Number(quantity) || 0));
-  if (!location) throw new Error('Choose where you are building.');
+  if (!location) throw new Error(t('bomLib.chooseBuildLocation'));
   const lines = usableLines(bom);
-  if (!lines.length) throw new Error('This build list has no components yet.');
+  if (!lines.length) throw new Error(t('bomLib.noComponentsYet'));
 
   // The finished product must still exist, or the build would put stock on the
   // shelf for something that is no longer in the catalog.
   const finished = await base44.entities.Product.get(bom.product_id).catch(() => null);
   if (!finished) {
     throw new Error(
-      `${product?.name || 'The finished product'} is no longer in the catalog — add it back before building.`
+      t('bomLib.finishedNoLongerInCatalog', {
+        name: product?.name || t('bomLib.finishedProductFallback'),
+      })
     );
   }
 
@@ -123,7 +126,13 @@ export async function assembleBom({ bom, product, location, quantity, user, busi
     const have = onHand.get(line.component_id) || 0;
     if (need > have) {
       throw new Error(
-        `${line.component_name}: only ${have} at ${location.name}, ${need} needed for ${qty}.`
+        t('bomLib.onlyHaveNeedFor', {
+          component: line.component_name,
+          have,
+          location: location.name,
+          need,
+          qty,
+        })
       );
     }
   });
@@ -152,9 +161,9 @@ export function bundleOnHand(bom, levels, locationId) {
  */
 export async function disassembleBom({ bom, product, location, quantity, user, businessId = '' }) {
   const qty = Math.max(1, Math.floor(Number(quantity) || 0));
-  if (!location) throw new Error('Choose where you are taking it apart.');
+  if (!location) throw new Error(t('bomLib.chooseTeardownLocation'));
   const lines = usableLines(bom);
-  if (!lines.length) throw new Error('This build list has no components yet.');
+  if (!lines.length) throw new Error(t('bomLib.noComponentsYet'));
 
   const page = await base44.entities.StockLevel.filter(
     scoped({ location_id: location.id }, businessId),
@@ -163,7 +172,9 @@ export async function disassembleBom({ bom, product, location, quantity, user, b
   const onHand =
     (page.items ?? []).find((level) => level.product_id === bom.product_id)?.quantity ?? 0;
   if (qty > onHand) {
-    throw new Error(`Only ${onHand} × ${product.name} at ${location.name}.`);
+    throw new Error(
+      t('bomLib.onlyOnHandAt', { onHand, name: product.name, location: location.name })
+    );
   }
 
   const result = await apiRequest(

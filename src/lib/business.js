@@ -1,5 +1,6 @@
 import { base44 } from '@/api/client';
 import { localTimeZoneName } from '@/lib/dates';
+import { t } from './i18n.js';
 
 export const APP_NAME = 'Luminous StockHaven';
 export const APP_TAGLINE = 'A home for everything your business carries.';
@@ -27,20 +28,20 @@ export const DEFAULT_BUSINESS = {
 };
 
 export const BRAND_COLORS = [
-  { label: 'Forest', value: '#145042' },
-  { label: 'Deep pine', value: '#1d3b2a' },
-  { label: 'Ink', value: '#22303a' },
-  { label: 'Clay', value: '#7d4b34' },
-  { label: 'Plum', value: '#5b3352' },
+  { get label() { return t('businessLib.brandColor.forest'); }, value: '#145042' },
+  { get label() { return t('businessLib.brandColor.deepPine'); }, value: '#1d3b2a' },
+  { get label() { return t('businessLib.brandColor.ink'); }, value: '#22303a' },
+  { get label() { return t('businessLib.brandColor.clay'); }, value: '#7d4b34' },
+  { get label() { return t('businessLib.brandColor.plum'); }, value: '#5b3352' },
 ];
 
 export const CURRENCIES = ['USD', 'CAD', 'GBP', 'EUR', 'AUD', 'NZD', 'MXN', 'JPY'];
 
 export const DATE_FORMATS = [
-  { value: 'MMM d, yyyy', label: 'Nov 4, 2026' },
-  { value: 'd MMM yyyy', label: '4 Nov 2026' },
-  { value: 'M/d/yyyy', label: '11/4/2026' },
-  { value: 'yyyy-MM-dd', label: '2026-11-04' },
+  { value: 'MMM d, yyyy', get label() { return t('businessLib.dateFormat.mmmDyyyy'); } },
+  { value: 'd MMM yyyy', get label() { return t('businessLib.dateFormat.dMmmYyyy'); } },
+  { value: 'M/d/yyyy', get label() { return t('businessLib.dateFormat.mDYyyy'); } },
+  { value: 'yyyy-MM-dd', get label() { return t('businessLib.dateFormat.yyyyMMdd'); } },
 ];
 
 /** Fills in defaults so the app always has a name, tagline and timezone to show. */

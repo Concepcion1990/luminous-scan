@@ -1,5 +1,6 @@
 import { Check, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { t } from '@/lib/i18n';
 
 export default function ProductPicker({ products, loading, search, onSearch, selectedIds, onToggle }) {
   return (
@@ -9,16 +10,16 @@ export default function ProductPicker({ products, loading, search, onSearch, sel
         <Input
           value={search}
           onChange={(event) => onSearch(event.target.value)}
-          placeholder="Name, SKU, ISBN or UPC"
+          placeholder={t('print.searchPlaceholder')}
           className="pl-9"
         />
       </div>
 
       <ul className="max-h-[340px] divide-y divide-border overflow-y-auto rounded-lg border border-border">
-        {loading && <li className="px-3 py-4 text-xs text-muted-foreground">Loading catalog…</li>}
+        {loading && <li className="px-3 py-4 text-xs text-muted-foreground">{t('print.loadingCatalog')}</li>}
 
         {!loading && products.length === 0 && (
-          <li className="px-3 py-4 text-xs text-muted-foreground">No products match that search.</li>
+          <li className="px-3 py-4 text-xs text-muted-foreground">{t('print.noProductsMatch')}</li>
         )}
 
         {products.map((product) => {

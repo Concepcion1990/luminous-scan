@@ -115,14 +115,14 @@ function publicBusiness(row) {
 }
 
 // T6: the identity fields Settings may save, and their validation.
-// Languages mirror src/lib/locales/index.js (only 'en' ships in T6;
-// the registry grows one language at a time, ABC order, her call).
+// Languages mirror src/lib/i18n.js (LOCALES) — 'ar' + 'en' in T6.3;
+// the registry grows one language at a time, ABC order, her call.
 const BUSINESS_UPDATE_FIELDS = [
   'name', 'tagline', 'logo_url', 'brand_color', 'contact_email',
   'contact_phone', 'website', 'address', 'currency', 'timezone',
   'date_format', 'unit_system', 'language',
 ];
-const SUPPORTED_LANGUAGES = ['en'];
+const SUPPORTED_LANGUAGES = ['ar', 'en'];
 const SUPPORTED_CURRENCIES = ['USD', 'CAD', 'GBP', 'EUR', 'AUD', 'NZD', 'MXN', 'JPY'];
 const SUPPORTED_DATE_FORMATS = ['MMM d, yyyy', 'd MMM yyyy', 'M/d/yyyy', 'yyyy-MM-dd'];
 

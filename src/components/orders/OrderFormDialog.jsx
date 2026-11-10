@@ -25,6 +25,7 @@ import { blankLine, CHANNELS, orderNumber, orderTotals } from '@/lib/orders';
 import { money, todayIso } from '@/lib/purchasing';
 import { useBusiness } from '@/hooks/useBusiness';
 import { withBusiness } from '@/lib/scoped';
+import { t } from '@/lib/i18n';
 
 export default function OrderFormDialog({ open, onOpenChange, order, products, locations, currency, onSaved }) {
   const { activeId } = useBusiness();
@@ -96,7 +97,7 @@ export default function OrderFormDialog({ open, onOpenChange, order, products, l
         shipped: Number(line.shipped) || 0,
       }));
     if (!lines.length) {
-      setError('Add at least one product with a quantity.');
+      setError(t('orders.needLine'));
       return;
     }
 
@@ -128,9 +129,9 @@ export default function OrderFormDialog({ open, onOpenChange, order, products, l
       if (order) await base44.entities.Order.update(order.id, payload);
       else await base44.entities.Order.create(withBusiness({ ...payload, status: 'new' }, activeId));
       onOpenChange(false);
-      onSaved?.(order ? 'Order updated.' : 'Order created.');
+      onSaved?.(order ? t('orders.orderUpdated') : t('orders.orderCreated'));
     } catch (e) {
-      setError(e.message || 'Could not save this order.');
+      setError(e.message || t('orders.saveFailed'));
     } finally {
       setSaving(false);
     }
@@ -140,15 +141,15 @@ export default function OrderFormDialog({ open, onOpenChange, order, products, l
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{order ? `Edit ${order.number}` : 'New customer order'}</DialogTitle>
-          <DialogDescription>
-            Orders hold stock or deduct it on shipment — nothing leaves the shelf until you ship.
-          </DialogDescription>
+          <DialogTitle>
+            {order ? t('orders.editTitle', { number: order.number }) : t('orders.newTitle')}
+          </DialogTitle>
+          <DialogDescription>{t('orders.formDescription')}</DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-3">
           <div className="grid gap-1">
-            <Label className="text-xs">Order number</Label>
+            <Label className="text-xs">{t('orders.orderNumber')}</Label>
             <Input
               className="font-mono text-xs"
               value={form.number}
@@ -158,26 +159,26 @@ export default function OrderFormDialog({ open, onOpenChange, order, products, l
 
           <div className="grid grid-cols-2 gap-2">
             <div className="grid gap-1">
-              <Label className="text-xs">Customer</Label>
+              <Label className="text-xs">{t('orders.customer')}</Label>
               <Input
                 value={form.customer_name}
                 onChange={(e) => setForm({ ...form, customer_name: e.target.value })}
-                placeholder="Name"
+                placeholder={t('orders.customerNamePlaceholder')}
               />
             </div>
             <div className="grid gap-1">
-              <Label className="text-xs">Customer reference</Label>
+              <Label className="text-xs">{t('orders.customerReference')}</Label>
               <Input
                 value={form.customer_ref}
                 onChange={(e) => setForm({ ...form, customer_ref: e.target.value })}
-                placeholder="Handle, buyer id"
+                placeholder={t('orders.customerReferencePlaceholder')}
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-2">
             <div className="grid gap-1">
-              <Label className="text-xs">Email</Label>
+              <Label className="text-xs">{t('orders.email')}</Label>
               <Input
                 type="email"
                 value={form.customer_email}
@@ -185,7 +186,7 @@ export default function OrderFormDialog({ open, onOpenChange, order, products, l
               />
             </div>
             <div className="grid gap-1">
-              <Label className="text-xs">Phone</Label>
+              <Label className="text-xs">{t('orders.phone')}</Label>
               <Input
                 value={form.customer_phone}
                 onChange={(e) => setForm({ ...form, customer_phone: e.target.value })}
@@ -195,7 +196,7 @@ export default function OrderFormDialog({ open, onOpenChange, order, products, l
 
           <div className="grid grid-cols-2 gap-2">
             <div className="grid gap-1">
-              <Label className="text-xs">Channel</Label>
+              <Label className="text-xs">{t('orders.channel')}</Label>
               <Select value={form.channel} onValueChange={(v) => setForm({ ...form, channel: v })}>
                 <SelectTrigger>
                   <SelectValue />
@@ -210,7 +211,7 @@ export default function OrderFormDialog({ open, onOpenChange, order, products, l
               </Select>
             </div>
             <div className="grid gap-1">
-              <Label className="text-xs">Order date</Label>
+              <Label className="text-xs">{t('orders.orderDate')}</Label>
               <Input
                 type="date"
                 value={form.order_date}
@@ -220,16 +221,16 @@ export default function OrderFormDialog({ open, onOpenChange, order, products, l
           </div>
 
           <div className="grid gap-1">
-            <Label className="text-xs">Ships from</Label>
+            <Label className="text-xs">{t('orders.shipsFrom')}</Label>
             <Select
               value={form.location_id || 'none'}
               onValueChange={(v) => setForm({ ...form, location_id: v === 'none' ? '' : v })}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Choose a location" />
+                <SelectValue placeholder={t('orders.chooseLocation')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">Choose a location</SelectItem>
+                <SelectItem value="none">{t('orders.chooseLocation')}</SelectItem>
                 {locations.map((l) => (
                   <SelectItem key={l.id} value={l.id}>
                     {l.name}
@@ -241,13 +242,13 @@ export default function OrderFormDialog({ open, onOpenChange, order, products, l
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label className="text-xs">Products</Label>
+              <Label className="text-xs">{t('orders.products')}</Label>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setForm((f) => ({ ...f, lines: [...f.lines, blankLine()] }))}
               >
-                <Plus className="mr-1 h-3.5 w-3.5" /> Add line
+                <Plus className="mr-1 h-3.5 w-3.5" /> {t('orders.addLine')}
               </Button>
             </div>
             {form.lines.map((line, index) => (
@@ -266,7 +267,7 @@ export default function OrderFormDialog({ open, onOpenChange, order, products, l
 
           <div className="grid grid-cols-3 gap-2">
             <div className="grid gap-1">
-              <Label className="text-xs">Discount</Label>
+              <Label className="text-xs">{t('orders.discount')}</Label>
               <Input
                 type="number"
                 inputMode="decimal"
@@ -276,7 +277,7 @@ export default function OrderFormDialog({ open, onOpenChange, order, products, l
               />
             </div>
             <div className="grid gap-1">
-              <Label className="text-xs">Shipping</Label>
+              <Label className="text-xs">{t('orders.shipping')}</Label>
               <Input
                 type="number"
                 inputMode="decimal"
@@ -286,7 +287,7 @@ export default function OrderFormDialog({ open, onOpenChange, order, products, l
               />
             </div>
             <div className="grid gap-1">
-              <Label className="text-xs">Tax</Label>
+              <Label className="text-xs">{t('orders.tax')}</Label>
               <Input
                 type="number"
                 inputMode="decimal"
@@ -299,26 +300,26 @@ export default function OrderFormDialog({ open, onOpenChange, order, products, l
 
           <div className="rounded-lg bg-secondary px-3 py-2 text-sm">
             <div className="flex justify-between text-muted-foreground">
-              <span>Subtotal</span>
+              <span>{t('orders.subtotal')}</span>
               <span className="numeric">{money(totals.subtotal, currency)}</span>
             </div>
             <div className="mt-1 flex justify-between font-medium">
-              <span>Total</span>
+              <span>{t('orders.total')}</span>
               <span className="numeric">{money(totals.total, currency)}</span>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-2">
             <div className="grid gap-1">
-              <Label className="text-xs">Carrier</Label>
+              <Label className="text-xs">{t('orders.carrier')}</Label>
               <Input
                 value={form.carrier}
                 onChange={(e) => setForm({ ...form, carrier: e.target.value })}
-                placeholder="USPS, UPS…"
+                placeholder={t('orders.carrierPlaceholder')}
               />
             </div>
             <div className="grid gap-1">
-              <Label className="text-xs">Tracking reference</Label>
+              <Label className="text-xs">{t('orders.trackingReference')}</Label>
               <Input
                 className="font-mono text-xs"
                 value={form.tracking_ref}
@@ -328,12 +329,12 @@ export default function OrderFormDialog({ open, onOpenChange, order, products, l
           </div>
 
           <div className="grid gap-1">
-            <Label className="text-xs">Notes</Label>
+            <Label className="text-xs">{t('orders.notes')}</Label>
             <Textarea
               rows={3}
               value={form.notes}
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
-              placeholder="Gift wrap, delivery instructions, internal notes…"
+              placeholder={t('orders.notesPlaceholder')}
             />
           </div>
 
@@ -342,10 +343,10 @@ export default function OrderFormDialog({ open, onOpenChange, order, products, l
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t('orders.cancel')}
           </Button>
           <Button onClick={save} disabled={saving}>
-            {saving ? 'Saving…' : 'Save order'}
+            {saving ? t('orders.saving') : t('orders.saveOrder')}
           </Button>
         </DialogFooter>
       </DialogContent>

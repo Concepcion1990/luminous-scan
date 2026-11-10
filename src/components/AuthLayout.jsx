@@ -1,4 +1,5 @@
 import React from "react";
+import { t } from '@/lib/i18n';
 import { ScanLine } from "lucide-react";
 
 export default function AuthLayout({ icon: Icon, title, subtitle, footer, below, children }) {
@@ -15,7 +16,7 @@ export default function AuthLayout({ icon: Icon, title, subtitle, footer, below,
             </span>
           </div>
           <p className="mt-2 text-center text-xs text-muted-foreground">
-            A home for everything your business carries.
+            {t('auth.tagline')}
           </p>
         </div>
         <div className="text-center mb-10">

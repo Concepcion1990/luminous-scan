@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ArrowRight, Bluetooth, Download, FileDown, Lock, Printer, Usb, X } from 'lucide-react';
 import { base44, apiDownload } from '@/api/client';
+import { t } from '@/lib/i18n';
 import { useBusiness } from '@/hooks/useBusiness';
 import useEntitlements from '@/hooks/useEntitlements';
 import { listProducts } from '@/lib/inventory';
@@ -226,7 +227,7 @@ export default function PrintCenter() {
       anchor.click();
       URL.revokeObjectURL(url);
     } catch {
-      setDirectStatus('That PDF could not be built. Try the Print button instead.');
+      setDirectStatus(t('print.pdfFailed'));
     } finally {
       setPdfBusy(false);
     }
@@ -245,9 +246,9 @@ export default function PrintCenter() {
         kind === 'bluetooth'
           ? await printLabelsViaBluetooth(selected, { copies })
           : await printLabelsViaUsb(selected, { copies });
-      setDirectStatus(`Sent ${result.bytes} bytes to ${result.deviceName}.`);
+      setDirectStatus(t('print.sentToPrinter', { bytes: result.bytes, deviceName: result.deviceName }));
     } catch (error) {
-      setDirectStatus(error?.message || 'That did not print — use the Print button instead.');
+      setDirectStatus(error?.message || t('print.printFailed'));
     } finally {
       setDirectBusy('');
     }
@@ -261,64 +262,81 @@ export default function PrintCenter() {
         businessName: profile.name,
         filename: `${profile.name || 'business'}-labels.pdf`,
       });
-      setDirectStatus('Labels PDF downloaded — it prints without an internet connection.');
+      setDirectStatus(t('print.labelsPdfDownloaded'));
     } catch {
-      setDirectStatus('That PDF could not be built. Try the Print button instead.');
+      setDirectStatus(t('print.pdfFailed'));
     }
   };
 
   const summaryTitle = isOrder
     ? order
-      ? `${order.number} · ${(order.lines || []).length} line${(order.lines || []).length === 1 ? '' : 's'}`
-      : 'No purchase order chosen'
+      ? t('print.summaryLines', {
+          number: order.number,
+          count: (order.lines || []).length,
+          s: (order.lines || []).length === 1 ? '' : 's',
+        })
+      : t('print.noOrderChosen')
     : isCustomerDoc
       ? customerOrder
-        ? `${customerOrder.number} · ${(customerOrder.lines || []).length} line${(customerOrder.lines || []).length === 1 ? '' : 's'}`
-        : 'No customer order chosen'
+        ? t('print.summaryLines', {
+            number: customerOrder.number,
+            count: (customerOrder.lines || []).length,
+            s: (customerOrder.lines || []).length === 1 ? '' : 's',
+          })
+        : t('print.noCustomerOrderChosen')
       : isReturnDoc
         ? returnRecord
-          ? `${returnRecord.number} · ${(returnRecord.lines || []).length} line${(returnRecord.lines || []).length === 1 ? '' : 's'}`
-          : 'No return chosen'
+          ? t('print.summaryLines', {
+              number: returnRecord.number,
+              count: (returnRecord.lines || []).length,
+              s: (returnRecord.lines || []).length === 1 ? '' : 's',
+            })
+          : t('print.noReturnChosen')
         : isDocument
-          ? `${selected.length} line${selected.length === 1 ? '' : 's'} on one sheet`
-          : `${labels.length} label${labels.length === 1 ? '' : 's'}`;
+          ? t('print.linesOnOneSheet', {
+              count: selected.length,
+              s: selected.length === 1 ? '' : 's',
+            })
+          : t('print.labelsCount', { count: labels.length, s: labels.length === 1 ? '' : 's' });
+
+  const templateLabel = activeTemplate?.labelKey ? t(activeTemplate.labelKey) : '';
 
   const summarySub = isOrder
-    ? `${activeTemplate?.label} · ${order ? order.supplier_name : 'pick a purchase order'}`
+    ? `${templateLabel} · ${order ? order.supplier_name : t('print.pickOrder')}`
     : isCustomerDoc
-      ? `${activeTemplate?.label} · ${
-          customerOrder ? customerOrder.customer_name || 'no customer name' : 'pick a customer order'
+      ? `${templateLabel} · ${
+          customerOrder ? customerOrder.customer_name || t('print.noCustomerName') : t('print.pickCustomerOrder')
         }`
       : isReturnDoc
-        ? `${activeTemplate?.label} · ${
+        ? `${templateLabel} · ${
             returnRecord
-              ? returnRecord.customer_name || returnRecord.order_number || 'no customer'
-              : 'pick a return'
+              ? returnRecord.customer_name || returnRecord.order_number || t('print.noCustomerFallback')
+              : t('print.pickReturn')
           }`
-        : `${activeTemplate?.label} · ${selected.length} product${
-            selected.length === 1 ? '' : 's'
-          } selected`;
+        : t('print.selectedProducts', {
+            label: templateLabel,
+            count: selected.length,
+            s: selected.length === 1 ? '' : 's',
+          });
 
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3 no-print">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Print center</p>
-          <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">Labels &amp; sheets</h1>
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">{t('print.eyebrow')}</p>
+          <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">{t('print.title')}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {showSupplierDocs
-              ? 'Scannable labels, stock sheets, pick lists, purchase orders, customer invoices, receipts and return documents.'
-              : 'Scannable labels, stock sheets, pick lists, customer invoices, receipts and return documents.'}
+            {showSupplierDocs ? t('print.subtitleFull') : t('print.subtitleEssentials')}
           </p>
         </div>
         <div className="flex gap-2">
           {serverPdfPath() && (
             <Button variant="outline" onClick={downloadServerPdf} disabled={blank || pdfBusy}>
-              <FileDown className="mr-1.5 h-4 w-4" /> {pdfBusy ? 'Building…' : 'PDF'}
+              <FileDown className="mr-1.5 h-4 w-4" /> {pdfBusy ? t('print.buildingPdf') : 'PDF'}
             </Button>
           )}
           <Button onClick={() => window.print()} disabled={blank}>
-            <Printer className="mr-1.5 h-4 w-4" /> Print
+            <Printer className="mr-1.5 h-4 w-4" /> {t('print.printButton')}
           </Button>
         </div>
       </div>
@@ -327,7 +345,7 @@ export default function PrintCenter() {
         <div className="space-y-4 no-print">
           <div className="rounded-xl border border-border bg-card p-4">
             <Label className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-              Print style
+              {t('print.printStyle')}
             </Label>
             <div className="mt-2 grid gap-1.5">
               {visibleTemplates.map((entry) => (
@@ -341,13 +359,13 @@ export default function PrintCenter() {
                       : 'border-border hover:bg-muted'
                   }`}
                 >
-                  <span className="block text-sm font-medium">{entry.label}</span>
+                  <span className="block text-sm font-medium">{t(entry.labelKey)}</span>
                   <span
                     className={`block text-[11px] ${
                       template === entry.key ? 'text-primary-foreground/60' : 'text-muted-foreground'
                     }`}
                   >
-                    {entry.hint}
+                    {t(entry.hintKey)}
                   </span>
                 </button>
               ))}
@@ -359,12 +377,12 @@ export default function PrintCenter() {
                 >
                   <span className="flex items-center gap-1.5 text-sm font-medium">
                     <Lock className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                    {entry.label}
+                    {t(entry.labelKey)}
                     <span className="ml-auto rounded-full bg-muted px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
-                      Business
+                      {t('print.businessBadge')}
                     </span>
                   </span>
-                  <span className="block text-[11px] text-muted-foreground">{entry.hint}</span>
+                  <span className="block text-[11px] text-muted-foreground">{t(entry.hintKey)}</span>
                 </Link>
               ))}
             </div>
@@ -384,7 +402,7 @@ export default function PrintCenter() {
           <div className="rounded-xl border border-border bg-card p-4">
             <div className="flex items-center justify-between gap-3">
               <Label className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                Products
+                {t('print.productsLabel')}
               </Label>
               {!isDocument && (
                 <Input
@@ -395,12 +413,12 @@ export default function PrintCenter() {
                   value={copies}
                   onChange={(event) => setCopies(event.target.value)}
                   className="h-8 w-16 text-center"
-                  aria-label="Copies per product"
+                  aria-label={t('print.copiesAria')}
                 />
               )}
             </div>
             <p className="mt-1 text-[11px] text-muted-foreground">
-              {isDocument ? 'All selected items print on one sheet' : 'Copies of each label'}
+              {isDocument ? t('print.allOnOneSheet') : t('print.copiesOfEach')}
             </p>
             <div className="mt-3">
               <ProductPicker
@@ -418,11 +436,10 @@ export default function PrintCenter() {
           {isLabelStyle && selected.length > 0 && (
             <div className="rounded-xl border border-border bg-card p-4">
               <Label className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                Print straight to the printer
+                {t('print.directTitle')}
               </Label>
               <p className="mt-1 text-[11px] text-muted-foreground">
-                Labels print on both plans, and these send straight to the printer — no internet
-                needed once this page is loaded.
+                {t('print.directDesc')}
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {canBluetooth ? (
@@ -432,7 +449,7 @@ export default function PrintCenter() {
                     disabled={Boolean(directBusy)}
                   >
                     <Bluetooth className="mr-1.5 h-4 w-4" />
-                    {directBusy === 'bluetooth' ? 'Sending…' : 'Bluetooth'}
+                    {directBusy === 'bluetooth' ? t('print.sending') : t('print.bluetooth')}
                   </Button>
                 ) : (
                   <p className="text-[11px] leading-relaxed text-muted-foreground">
@@ -442,7 +459,7 @@ export default function PrintCenter() {
                 {canUsb ? (
                   <Button size="sm" onClick={() => printDirect('usb')} disabled={Boolean(directBusy)}>
                     <Usb className="mr-1.5 h-4 w-4" />
-                    {directBusy === 'usb' ? 'Sending…' : 'USB'}
+                    {directBusy === 'usb' ? t('print.sending') : t('print.usb')}
                   </Button>
                 ) : (
                   <p className="text-[11px] leading-relaxed text-muted-foreground">
@@ -450,7 +467,7 @@ export default function PrintCenter() {
                   </p>
                 )}
                 <Button size="sm" variant="outline" onClick={downloadLabels}>
-                  <Download className="mr-1.5 h-4 w-4" /> Labels PDF
+                  <Download className="mr-1.5 h-4 w-4" /> {t('print.labelsPdf')}
                 </Button>
               </div>
               {directStatus && <p className="mt-2 text-[11px] text-muted-foreground">{directStatus}</p>}
@@ -466,7 +483,7 @@ export default function PrintCenter() {
             </div>
             {!pickedDoc && selected.length > 0 && (
               <Button variant="ghost" size="sm" onClick={() => setSelected([])}>
-                Clear selection
+                {t('print.clearSelection')}
               </Button>
             )}
           </div>
@@ -492,30 +509,29 @@ export default function PrintCenter() {
               <div className="px-4 py-16 text-center">
                 <Lock className="mx-auto h-6 w-6 text-muted-foreground" />
                 <p className="mt-2 text-sm font-medium">
-                  {activeTemplate?.label} is a Business feature
+                  {t('print.templateIsBusiness', { label: templateLabel })}
                 </p>
                 <p className="mx-auto mt-1 max-w-[280px] text-xs text-muted-foreground">
-                  Supplier documents go with the Business plan — suppliers, purchasing and
-                  purchase orders. Everything you have now keeps working.
+                  {t('print.supplierBlockedDesc')}
                 </p>
                 <Button asChild className="mt-4">
                   <Link to="/upgrade">
-                    See what Business includes <ArrowRight className="ml-1.5 h-4 w-4" />
+                    {t('print.seeBusiness')} <ArrowRight className="ml-1.5 h-4 w-4" />
                   </Link>
                 </Button>
               </div>
             ) : blank ? (
               <div className="px-4 py-16 text-center">
                 <Printer className="mx-auto h-6 w-6 text-muted-foreground" />
-                <p className="mt-2 text-sm font-medium">Nothing to print yet</p>
+                <p className="mt-2 text-sm font-medium">{t('print.nothingToPrint')}</p>
                 <p className="mx-auto mt-1 max-w-[280px] text-xs text-muted-foreground">
                   {isOrder
-                    ? 'Pick a purchase order from the list to preview the document.'
+                    ? t('print.pickOrderHint')
                     : isCustomerDoc
-                      ? 'Pick a customer order from the list to preview the document.'
+                      ? t('print.pickCustomerOrderHint')
                       : isReturnDoc
-                        ? 'Pick a logged return from the list to preview the document.'
-                        : 'Choose a style, then pick products from the list. The preview shows exactly what comes out of the printer.'}
+                        ? t('print.pickReturnHint')
+                        : t('print.chooseStyleHint')}
                 </p>
               </div>
             ) : isOrder ? (
@@ -544,53 +560,32 @@ export default function PrintCenter() {
 
       <div className="rounded-xl border border-border bg-card p-4 text-xs leading-relaxed text-muted-foreground no-print sm:p-5">
         <p className="flex items-center gap-1.5 font-medium text-foreground">
-          <Printer className="h-3.5 w-3.5" /> How to reach your printer
+          <Printer className="h-3.5 w-3.5" /> {t('print.howToReach')}
+        </p>
+        <p className="mt-2">{t('print.howIntro')}</p>
+        <p className="mt-2">
+          <span className="font-medium text-foreground">{t('print.howBluetoothLead')}</span>{' '}
+          {t('print.howBluetoothBody')}
         </p>
         <p className="mt-2">
-          This app connects to printers you already own — it is not a printer itself. There are four
-          ways to reach one, and labels print on both plans over any of them. Packing slips, purchase
-          orders, supplier documents and reports are Business-only, whatever the connection.
+          <span className="font-medium text-foreground">{t('print.howWifiLead')}</span>{' '}
+          {t('print.howWifiBody')}
         </p>
         <p className="mt-2">
-          <span className="font-medium text-foreground">Bluetooth.</span> From this page, on desktop
-          Chrome or Edge and on Android Chrome: pick your label printer and the labels go straight to
-          it. It does not work in iOS Safari — on an iPhone, Bluetooth printing comes with the mobile
-          app instead. A printer that only speaks Zebra ZPL or Brother&apos;s own language will not
-          understand the labels this page sends; that is checked against real printers before it is
-          called working.
+          <span className="font-medium text-foreground">{t('print.howEthernetLead')}</span>{' '}
+          {t('print.howEthernetBody')}
         </p>
         <p className="mt-2">
-          <span className="font-medium text-foreground">Wi-Fi.</span> Install the printer on your
-          shop&apos;s Wi-Fi, then use the Print button — it prints through the printer installed on
-          this computer, over the shop network. On an iPhone, AirPrint is built in: an AirPrint
-          printer on the same Wi-Fi just appears in the print sheet, no cord and no app needed, and
-          the app needs no AirPrint-specific code. The printer must support AirPrint (most new ones
-          do) and the phone and printer must be on the same Wi-Fi.
+          <span className="font-medium text-foreground">{t('print.howUsbLead')}</span>{' '}
+          {t('print.howUsbBody')}
         </p>
         <p className="mt-2">
-          <span className="font-medium text-foreground">Ethernet.</span> Wire the printer to your
-          shop network with an Ethernet cord, install it on the computer, and print through the
-          Print button. Ethernet is a desktop and computer path — iPhones do not use Ethernet cords.
+          <span className="font-medium text-foreground">{t('print.howCordsLead')}</span>{' '}
+          {t('print.howCordsBody')}
         </p>
         <p className="mt-2">
-          <span className="font-medium text-foreground">USB.</span> Plug the printer into the
-          computer with its cord and use the Print button — it prints through the printer installed
-          there. On an Android phone with a USB OTG cable, the USB button above talks straight to
-          the printer. iPhones cannot print over USB directly — no WebUSB there — so use Wi-Fi /
-          AirPrint, or Bluetooth from the mobile app.
-        </p>
-        <p className="mt-2">
-          <span className="font-medium text-foreground">Cords still serve iPhones, one step
-          removed.</span> A USB printer plugged into the shop computer, or an Ethernet printer wired
-          to the network, shows up on your iPhone over the shop Wi-Fi (AirPrint / shared printer) —
-          the cords put the printer on the network solidly, and the phone reaches it wirelessly.
-        </p>
-        <p className="mt-2">
-          <span className="font-medium text-foreground">If the internet drops,</span> the labels and
-          documents already on this page still print — the Print button, the Labels PDF, Bluetooth
-          and USB need no connection. What does need the internet is loading the page and its
-          products in the first place. Full offline mode (working in the app with no connection at
-          all) is a separate, bigger build and is not claimed here.
+          <span className="font-medium text-foreground">{t('print.howOfflineLead')}</span>{' '}
+          {t('print.howOfflineBody')}
         </p>
       </div>
     </div>

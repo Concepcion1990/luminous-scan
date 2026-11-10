@@ -1,4 +1,6 @@
 import { ChevronDown, ChevronRight, Trash2 } from 'lucide-react';
+import { t } from '@/lib/i18n';
+
 import { Button } from '@/components/ui/button';
 import { countSummary, COUNT_STATUS } from '@/lib/counts';
 
@@ -26,7 +28,7 @@ export default function CountCard({ session, expanded, onToggle, onCancel, onDel
           <p className="mt-1 truncate text-sm">{session.scope_note || session.location_name}</p>
           <p className="mt-0.5 text-xs text-muted-foreground">
             {[
-              session.started_by ? `Started by ${session.started_by}` : '',
+              session.started_by ? t('counts.startedBy', { name: session.started_by }) : '',
               session.started_at ? new Date(session.started_at).toLocaleDateString() : '',
               session.notes,
             ]
@@ -36,10 +38,11 @@ export default function CountCard({ session, expanded, onToggle, onCancel, onDel
         </div>
         <div className="text-right text-xs text-muted-foreground">
           <p>
-            <span className="numeric text-foreground">{summary.counted}</span>/{summary.total} counted
+            <span className="numeric text-foreground">{summary.counted}</span>
+            {t('counts.countedOf', { total: summary.total })}
           </p>
           <p>
-            <span className="numeric text-foreground">{summary.differing}</span> differences
+            <span className="numeric text-foreground">{summary.differing}</span> {t('counts.differencesLabel')}
           </p>
         </div>
       </div>
@@ -47,11 +50,11 @@ export default function CountCard({ session, expanded, onToggle, onCancel, onDel
       <div className="mt-3 flex flex-wrap gap-1.5">
         <Button size="sm" variant={expanded ? 'secondary' : 'outline'} onClick={onToggle}>
           {expanded ? <ChevronDown className="mr-1 h-3.5 w-3.5" /> : <ChevronRight className="mr-1 h-3.5 w-3.5" />}
-          {expanded ? 'Hide sheet' : 'Open sheet'}
+          {expanded ? t('counts.hideSheet') : t('counts.openSheet')}
         </Button>
         {['open', 'review'].includes(session.status) && (
           <Button size="sm" variant="ghost" disabled={busy} onClick={onCancel}>
-            Cancel session
+            {t('counts.cancelSession')}
           </Button>
         )}
         {session.status !== 'applied' && (
@@ -61,7 +64,7 @@ export default function CountCard({ session, expanded, onToggle, onCancel, onDel
             className="text-muted-foreground"
             disabled={busy}
             onClick={onDelete}
-            aria-label={`Delete ${session.number}`}
+            aria-label={t('counts.deleteSessionAria', { number: session.number })}
           >
             <Trash2 className="h-3.5 w-3.5" />
           </Button>

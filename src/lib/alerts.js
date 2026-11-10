@@ -2,73 +2,74 @@ import { base44 } from '@/api/client';
 import { scoped } from '@/lib/scoped';
 import { descendantIds } from '@/lib/locations';
 import { fetchMovements } from '@/lib/movementHistory';
+import { t } from '@/lib/i18n';
 
 export const ALERT_KINDS = [
   {
     id: 'low_stock',
-    label: 'Running low',
+    get label() { return t('alerts.kindLowStock'); },
     defaultThreshold: 0,
-    thresholdLabel: 'On hand at or below',
-    unit: 'units',
-    hint: 'Counts units on hand. Leave the number at 0 to use each product’s reorder point; empty shelves belong to the out-of-stock alert.',
+    get thresholdLabel() { return t('alerts.kindLowStockThreshold'); },
+    get unit() { return t('alerts.unitUnits'); },
+    get hint() { return t('alerts.kindLowStockHint'); },
     sentence: (rule) =>
       Number(rule.threshold) > 0
-        ? `In stock but at or below ${Number(rule.threshold)} units`
-        : 'In stock but at or below the reorder point',
+        ? t('alerts.lowStockSentenceThreshold', { threshold: Number(rule.threshold) })
+        : t('alerts.lowStockSentenceReorder'),
   },
   {
     id: 'out_of_stock',
-    label: 'Out of stock',
+    get label() { return t('alerts.kindOutOfStock'); },
     defaultThreshold: 0,
     thresholdLabel: '',
     unit: '',
-    hint: 'Products whose tracked locations hold none, without waiting for a reorder point.',
-    sentence: () => 'Out of stock',
+    get hint() { return t('alerts.kindOutOfStockHint'); },
+    sentence: () => t('alerts.kindOutOfStock'),
   },
   {
     id: 'overstock',
-    label: 'Overstocked',
+    get label() { return t('alerts.kindOverstock'); },
     defaultThreshold: 25,
-    thresholdLabel: 'On hand at or above',
-    unit: 'units',
-    hint: 'Ties up cash on the shelf — useful for slow sellers and small storage.',
-    sentence: (rule) => `At or above ${Number(rule.threshold) || 25} units`,
+    get thresholdLabel() { return t('alerts.kindOverstockThreshold'); },
+    get unit() { return t('alerts.unitUnits'); },
+    get hint() { return t('alerts.kindOverstockHint'); },
+    sentence: (rule) => t('alerts.overstockSentence', { threshold: Number(rule.threshold) || 25 }),
   },
   {
     id: 'expiring',
-    label: 'Expiring soon',
+    get label() { return t('alerts.kindExpiring'); },
     defaultThreshold: 30,
-    thresholdLabel: 'Expires within',
-    unit: 'days',
-    hint: 'Products with an expiry date and stock on hand.',
-    sentence: (rule) => `Expiring within ${Number(rule.threshold) || 30} days`,
+    get thresholdLabel() { return t('alerts.kindExpiringThreshold'); },
+    get unit() { return t('alerts.unitDays'); },
+    get hint() { return t('alerts.kindExpiringHint'); },
+    sentence: (rule) => t('alerts.expiringSentence', { threshold: Number(rule.threshold) || 30 }),
   },
   {
     id: 'stale',
-    label: 'Slow-moving',
+    get label() { return t('alerts.kindStale'); },
     defaultThreshold: 90,
-    thresholdLabel: 'No movement in',
-    unit: 'days',
-    hint: 'Stock on hand with no movement in the period. A product added inside the period is measured from its added date, not from an empty ledger.',
-    sentence: (rule) => `No movement in ${Number(rule.threshold) || 90} days`,
+    get thresholdLabel() { return t('alerts.kindStaleThreshold'); },
+    get unit() { return t('alerts.unitDays'); },
+    get hint() { return t('alerts.kindStaleHint'); },
+    sentence: (rule) => t('alerts.staleSentence', { threshold: Number(rule.threshold) || 90 }),
   },
   {
     id: 'unscanned',
-    label: 'Not scanned',
+    get label() { return t('alerts.kindUnscanned'); },
     defaultThreshold: 60,
-    thresholdLabel: 'Not scanned in',
-    unit: 'days',
-    hint: 'Uses the scanned code kept on each stock change, so only stock handled with a scan counts. Products added inside the period are measured from their added date.',
-    sentence: (rule) => `Not scanned in ${Number(rule.threshold) || 60} days`,
+    get thresholdLabel() { return t('alerts.kindUnscannedThreshold'); },
+    get unit() { return t('alerts.unitDays'); },
+    get hint() { return t('alerts.kindUnscannedHint'); },
+    sentence: (rule) => t('alerts.unscannedSentence', { threshold: Number(rule.threshold) || 60 }),
   },
 ];
 
 export const ALERT_KIND_BY_ID = Object.fromEntries(ALERT_KINDS.map((kind) => [kind.id, kind]));
 
 export const ALERT_PRESETS = [
-  { name: 'Low stock', kind: 'low_stock', threshold: 0 },
-  { name: 'Out of stock', kind: 'out_of_stock', threshold: 0 },
-  { name: 'Expiring within 30 days', kind: 'expiring', threshold: 30 },
+  { get name() { return t('alerts.presetLowStock'); }, kind: 'low_stock', threshold: 0 },
+  { get name() { return t('alerts.presetOutOfStock'); }, kind: 'out_of_stock', threshold: 0 },
+  { get name() { return t('alerts.presetExpiring'); }, kind: 'expiring', threshold: 30 },
 ];
 
 export function ruleCondition(rule) {
@@ -83,7 +84,7 @@ export function ruleScope(rule) {
     ? names.length <= 3
       ? names.join(', ')
       : `${names.slice(0, 3).join(', ')} +${names.length - 3}`
-    : rule.location_name || 'All locations';
+    : rule.location_name || t('alerts.allLocations');
   return rule.category ? `${place} · ${rule.category}` : place;
 }
 
@@ -153,7 +154,7 @@ export function evaluateRule(rule, source) {
   const items = [];
   const now = Date.now();
   const onHand = (product) => quantity.get(product.id) || 0;
-  const sku = (product) => product.sku || 'No SKU';
+  const sku = (product) => product.sku || t('alerts.noSku');
 
   if (kind === 'low_stock') {
     products.forEach((product) => {
@@ -166,7 +167,7 @@ export function evaluateRule(rule, source) {
       items.push({
         key: product.id,
         title: product.name,
-        detail: `${sku(product)} · ${qty} on hand / ${point} minimum`,
+        detail: t('alerts.detailLowStock', { sku: sku(product), qty, point }),
         value: qty,
         tone: 'default',
       });
@@ -181,7 +182,9 @@ export function evaluateRule(rule, source) {
       items.push({
         key: product.id,
         title: product.name,
-        detail: `${sku(product)} · nothing on hand${product.supplier_name ? ` · ${product.supplier_name}` : ''}`,
+        detail: product.supplier_name
+          ? t('alerts.detailOutOfStockSupplier', { sku: sku(product), supplier: product.supplier_name })
+          : t('alerts.detailOutOfStock', { sku: sku(product) }),
         value: 0,
         tone: 'warn',
       });
@@ -196,7 +199,7 @@ export function evaluateRule(rule, source) {
       items.push({
         key: product.id,
         title: product.name,
-        detail: `${sku(product)} · ${qty} on hand / ${threshold} ceiling · ${product.category || 'Uncategorized'}`,
+        detail: t('alerts.detailOverstock', { sku: sku(product), qty, threshold, category: product.category || t('alerts.uncategorized') }),
         value: qty,
         tone: 'default',
       });
@@ -214,13 +217,15 @@ export function evaluateRule(rule, source) {
       if (qty <= 0) return;
       const days = Math.ceil((stamp - now) / day);
       const when =
-        days < 0 ? `past by ${Math.abs(days)} day${Math.abs(days) === 1 ? '' : 's'}`
-          : days === 0 ? 'expires today'
-          : `in ${days} day${days === 1 ? '' : 's'}`;
+        days < 0
+          ? t('alerts.expiredPastBy', { count: Math.abs(days), s: Math.abs(days) === 1 ? '' : 's' })
+          : days === 0
+            ? t('alerts.expiresToday')
+            : t('alerts.expiresIn', { count: days, s: days === 1 ? '' : 's' });
       items.push({
         key: product.id,
         title: product.name,
-        detail: `${sku(product)} · ${product.expiration_date} · ${when} · ${qty} on hand`,
+        detail: t('alerts.detailExpiring', { sku: sku(product), date: product.expiration_date, when, qty }),
         value: days,
         tone: days <= 0 ? 'warn' : 'default',
       });
@@ -256,15 +261,15 @@ export function evaluateRule(rule, source) {
       const age = Math.floor((now - anchor) / day);
       const history = last
         ? scanned
-          ? `last scanned ${age} day${age === 1 ? '' : 's'} ago`
-          : `last moved ${age} day${age === 1 ? '' : 's'} ago`
+          ? t('alerts.lastScannedAgo', { age, s: age === 1 ? '' : 's' })
+          : t('alerts.lastMovedAgo', { age, s: age === 1 ? '' : 's' })
         : scanned
-          ? `added ${age} day${age === 1 ? '' : 's'} ago, no scan yet`
-          : `added ${age} day${age === 1 ? '' : 's'} ago, no movement yet`;
+          ? t('alerts.addedNoScanYet', { age, s: age === 1 ? '' : 's' })
+          : t('alerts.addedNoMovementYet', { age, s: age === 1 ? '' : 's' });
       items.push({
         key: product.id,
         title: product.name,
-        detail: `${sku(product)} · ${qty} on hand · ${history}`,
+        detail: t('alerts.detailStale', { sku: sku(product), qty, history }),
         value: age,
         tone: 'default',
       });

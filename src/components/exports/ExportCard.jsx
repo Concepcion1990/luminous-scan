@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Download, FileSpreadsheet, Loader2 } from 'lucide-react';
+import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { apiDownload } from '@/api/client';
@@ -32,16 +33,20 @@ export default function ExportCard({ dataset, businessId, businessName, profile 
       URL.revokeObjectURL(url);
       setDone({ count: rows, filename });
       toast({
-        title: `${dataset.title} exported`,
+        title: t('exports.exportedTitle', { title: dataset.title }),
         description:
           rows != null
-            ? `${rows} row${rows === 1 ? '' : 's'} saved as ${filename}${truncated ? ' — stopped at 20,000 rows' : ''}`
-            : `Saved as ${filename}${truncated ? ' — stopped at 20,000 rows' : ''}`,
+            ? t(truncated ? 'exports.exportedRowsTruncated' : 'exports.exportedRows', {
+                count: rows,
+                s: rows === 1 ? '' : 's',
+                filename,
+              })
+            : t(truncated ? 'exports.savedAsTruncated' : 'exports.savedAs', { filename }),
       });
     } catch {
       toast({
-        title: 'Export failed',
-        description: `Could not build ${dataset.title.toLowerCase()}. Try again.`,
+        title: t('exports.exportFailed'),
+        description: t('exports.exportFailedDesc', { title: dataset.title.toLowerCase() }),
         variant: 'destructive',
       });
     } finally {
@@ -64,7 +69,7 @@ export default function ExportCard({ dataset, businessId, businessName, profile 
             ) : (
               <FileSpreadsheet className="mr-1.5 h-3.5 w-3.5" />
             )}
-            {dataset.buildSheets ? 'Excel workbook' : 'Excel'}
+            {dataset.buildSheets ? t('exports.excelWorkbook') : t('exports.excel')}
           </Button>
           {!dataset.buildSheets && (
             <Button
@@ -84,7 +89,7 @@ export default function ExportCard({ dataset, businessId, businessName, profile 
         </div>
         {done && done.count != null && (
           <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-            {done.count} rows
+            {t('exports.rowsDone', { count: done.count })}
           </span>
         )}
       </div>

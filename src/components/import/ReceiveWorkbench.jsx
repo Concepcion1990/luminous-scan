@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { base44 } from '@/api/client';
 import { CheckCircle2, Loader2, RotateCcw, TriangleAlert, Upload } from 'lucide-react';
+import { t } from '@/lib/i18n';
 import useImportSheet from '@/hooks/useImportSheet';
 import { evaluateReceipts, guessReceiveField, RECEIVE_FIELDS } from '@/lib/importModes';
 import { applyReceipts } from '@/lib/importCommit';
@@ -151,7 +152,7 @@ export default function ReceiveWorkbench({ businessId }) {
       sheet.reset();
       setDryRun(null);
     } catch (err) {
-      setError(err?.message || 'The receipt could not be finished.');
+      setError(err?.message || t('import.receiveFailed'));
     } finally {
       setBusy(false);
     }
@@ -160,7 +161,7 @@ export default function ReceiveWorkbench({ businessId }) {
   const pickFile = (
     <div className="mt-4 flex flex-wrap items-center gap-2">
       <label className="inline-flex cursor-pointer items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">
-        <Upload className="h-4 w-4" /> Choose CSV or Excel file
+        <Upload className="h-4 w-4" /> {t('import.chooseFile')}
         <input
           type="file"
           accept=".csv,.txt,.xlsx,.xlsm,.xls,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
@@ -173,13 +174,13 @@ export default function ReceiveWorkbench({ businessId }) {
         />
       </label>
       <Button variant="outline" onClick={() => downloadTemplateCsv('stock-receipt-template.csv', RECEIVE_FIELDS, EXAMPLE)}>
-        CSV template
+        {t('import.csvTemplate')}
       </Button>
       <Button
         variant="outline"
         onClick={() => downloadTemplateXlsx('stock-receipt-template.xlsx', RECEIVE_FIELDS, EXAMPLE)}
       >
-        Excel template
+        {t('import.excelTemplate')}
       </Button>
     </div>
   );
@@ -187,7 +188,7 @@ export default function ReceiveWorkbench({ businessId }) {
   const locationPicker = (
     <div className="grid gap-2">
       <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-        Stock arrives at
+        {t('import.stockArrivesAt')}
       </p>
       <Select
         value={locationId}
@@ -197,7 +198,7 @@ export default function ReceiveWorkbench({ businessId }) {
         }}
       >
         <SelectTrigger>
-          <SelectValue placeholder="Choose a location" />
+          <SelectValue placeholder={t('import.chooseLocation')} />
         </SelectTrigger>
         <SelectContent>
           {locations.map((location) => (
@@ -213,13 +214,18 @@ export default function ReceiveWorkbench({ businessId }) {
   const resultPanel = result && (
     <div className="mt-3 rounded-lg border border-ok/30 bg-ok/10 p-3 text-sm">
       <p className="font-medium">
-        Received {result.units} unit{result.units === 1 ? '' : 's'} across {result.received} product
-        {result.received === 1 ? '' : 's'} at {place?.name || 'the chosen location'}.
+        {t('import.receivedResult', {
+          units: result.units,
+          us: result.units === 1 ? '' : 's',
+          received: result.received,
+          ps: result.received === 1 ? '' : 's',
+          place: place?.name || t('import.chosenLocation'),
+        })}
       </p>
       <p className="mt-1 text-xs text-muted-foreground">
-        Import {result.batchRef} is in the movement ledger
-        {result.reference ? ` under reference ${result.reference}` : ''}. Uploading the same sheet again will
-        be refused so nothing is received twice.
+        {result.reference
+          ? t('import.receivedLedgerRef', { batchRef: result.batchRef, reference: result.reference })
+          : t('import.receivedLedger', { batchRef: result.batchRef })}
       </p>
     </div>
   );
@@ -227,10 +233,9 @@ export default function ReceiveWorkbench({ businessId }) {
   if (!sheet.table) {
     return (
       <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
-        <p className="text-sm font-semibold">Receive stock from a spreadsheet</p>
+        <p className="text-sm font-semibold">{t('import.receiveTitle')}</p>
         <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-          Each row adds a quantity to what is already on hand at the location you pick — it never sets an
-          exact count and never edits a product. Every line is written to the movement ledger as a receipt.
+          {t('import.receiveIntro')}
         </p>
         {pickFile}
         {sheet.error && (
@@ -240,7 +245,7 @@ export default function ReceiveWorkbench({ businessId }) {
         )}
         {sheet.reading && (
           <p className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
-            <Loader2 className="h-3.5 w-3.5 animate-spin" /> Reading the file…
+            <Loader2 className="h-3.5 w-3.5 animate-spin" /> {t('import.readingFile')}
           </p>
         )}
         {resultPanel}
@@ -253,11 +258,16 @@ export default function ReceiveWorkbench({ businessId }) {
       <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="numeric text-xs text-muted-foreground">
-            {sheet.fileName} · {sheet.table.rows.length} row{sheet.table.rows.length === 1 ? '' : 's'} ·{' '}
-            {sheet.table.headers.length} column{sheet.table.headers.length === 1 ? '' : 's'}
+            {t('import.fileSummary', {
+              file: sheet.fileName,
+              rows: sheet.table.rows.length,
+              rs: sheet.table.rows.length === 1 ? '' : 's',
+              columns: sheet.table.headers.length,
+              cs: sheet.table.headers.length === 1 ? '' : 's',
+            })}
           </p>
           <Button variant="ghost" size="sm" onClick={startOver}>
-            <RotateCcw className="mr-1.5 h-3.5 w-3.5" /> Start over
+            <RotateCcw className="mr-1.5 h-3.5 w-3.5" /> {t('import.startOver')}
           </Button>
         </div>
 
@@ -265,7 +275,7 @@ export default function ReceiveWorkbench({ businessId }) {
           {sheet.sheets.length > 1 && (
             <div className="grid gap-2">
               <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                Worksheet
+                {t('import.worksheet')}
               </p>
               <Select
                 value={sheet.sheetName}
@@ -275,12 +285,12 @@ export default function ReceiveWorkbench({ businessId }) {
                 }}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Choose a worksheet" />
+                  <SelectValue placeholder={t('import.chooseWorksheet')} />
                 </SelectTrigger>
                 <SelectContent>
                   {sheet.sheets.map((entry) => (
                     <SelectItem key={entry.name} value={entry.name}>
-                      {entry.name} · {entry.rows.length} rows
+                      {t('import.sheetRows', { name: entry.name, rows: entry.rows.length })}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -291,7 +301,7 @@ export default function ReceiveWorkbench({ businessId }) {
           {sheet.warnings.length > 0 && (
             <div className="rounded-lg border border-warn/30 bg-warn/10 p-3 text-xs">
               <p className="flex items-center gap-1.5 font-medium text-foreground">
-                <TriangleAlert className="h-3.5 w-3.5 text-warn" /> Codes this workbook has already changed
+                <TriangleAlert className="h-3.5 w-3.5 text-warn" /> {t('import.codesChanged')}
               </p>
               <ul className="mt-1.5 space-y-1 text-muted-foreground">
                 {sheet.warnings.map((warning) => (
@@ -310,7 +320,7 @@ export default function ReceiveWorkbench({ businessId }) {
             }}
             fields={RECEIVE_FIELDS}
             requiredKeys={['sku', 'id']}
-            missingMessage="Match a column to SKU or Record ID, and one to Quantity received."
+            missingMessage={t('import.receiveMissingMessage')}
           />
 
           {locationPicker}
@@ -318,7 +328,7 @@ export default function ReceiveWorkbench({ businessId }) {
           <div className="grid gap-2 sm:grid-cols-2">
             <div className="grid gap-1">
               <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                Reference for these receipts (optional)
+                {t('import.receiveReference')}
               </p>
               <Input
                 value={reference}
@@ -331,7 +341,7 @@ export default function ReceiveWorkbench({ businessId }) {
             </div>
             <div className="grid gap-1">
               <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                Note (optional)
+                {t('import.receiveNote')}
               </p>
               <Input
                 value={note}
@@ -354,29 +364,30 @@ export default function ReceiveWorkbench({ businessId }) {
           >
             <p className="flex items-center gap-1.5 font-semibold text-foreground">
               {!dryRun ? (
-                <>Dry run</>
+                <>{t('import.dryRunTitle')}</>
               ) : needsCheck ? (
                 <>
-                  <TriangleAlert className="h-3.5 w-3.5 text-warn" /> The setup changed since the dry run
+                  <TriangleAlert className="h-3.5 w-3.5 text-warn" /> {t('import.dryRunStale')}
                 </>
               ) : (
                 <>
-                  <CheckCircle2 className="h-3.5 w-3.5 text-ok" /> Dry run passed
+                  <CheckCircle2 className="h-3.5 w-3.5 text-ok" /> {t('import.dryRunPassed')}
                 </>
               )}
             </p>
             <p className="mt-1 text-foreground">
-              <span className="numeric font-semibold">{report.ready}</span> product
-              {report.ready === 1 ? '' : 's'} would be received ·{' '}
-              <span className="numeric font-semibold">{report.units}</span> units ·{' '}
-              <span className="numeric font-semibold">{report.skipped}</span> skipped
+              <span className="numeric font-semibold">{report.ready}</span>{' '}
+              {t('import.receiveDryRunProducts', { s: report.ready === 1 ? '' : 's' })} ·{' '}
+              <span className="numeric font-semibold">{report.units}</span> {t('import.receiveDryRunUnits')} ·{' '}
+              <span className="numeric font-semibold">{report.skipped}</span>{' '}
+              {t('import.receiveDryRunSkipped')}
             </p>
             <p className="mt-2 text-[11px] text-muted-foreground">
               {!dryRun
-                ? 'Run a dry run to check every row. It saves nothing.'
+                ? t('import.receiveDryRunIntro')
                 : needsCheck
-                  ? 'Run the dry run again before receiving.'
-                  : 'Nothing has been saved — this was only a check.'}
+                  ? t('import.receiveDryRunAgain')
+                  : t('import.dryRunNothingSaved')}
             </p>
           </div>
 
@@ -386,19 +397,22 @@ export default function ReceiveWorkbench({ businessId }) {
               onClick={runCheck}
               disabled={!matchKey || !locationId || !sheet.table.rows.length || busy}
             >
-              {needsCheck ? 'Run dry run' : 'Re-run dry run'}
+              {needsCheck ? t('import.runDryRun') : t('import.rerunDryRun')}
             </Button>
             <Button onClick={receive} disabled={busy || !businessId || !locationId || needsCheck || !report.ready}>
               {busy ? (
                 <>
-                  <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> Receiving…
+                  <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> {t('import.receiving')}
                 </>
               ) : (
-                `Receive ${report.units} unit${report.units === 1 ? '' : 's'}`
+                t('import.receiveUnits', {
+                  units: report.units,
+                  s: report.units === 1 ? '' : 's',
+                })
               )}
             </Button>
             {!locationId && (
-              <span className="text-xs text-muted-foreground">Choose the location the stock arrived at.</span>
+              <span className="text-xs text-muted-foreground">{t('import.chooseArrivalLocation')}</span>
             )}
           </div>
 

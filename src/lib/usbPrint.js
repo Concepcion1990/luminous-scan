@@ -28,9 +28,12 @@
  * here — that needs a live check with the owner and a real printer.
  */
 import { escPosLabelsBytes } from './escPos.js';
+import { t } from './i18n.js';
 
-export const USB_UNAVAILABLE_COPY =
-  'USB printing from the website needs Android Chrome and a USB OTG cable. On a desktop, plug the printer into the computer and use the Print button — it prints through the printer installed there. iPhones cannot print over USB directly — use Wi-Fi with AirPrint, or Bluetooth from the mobile app (coming with the mobile app).';
+// Plain module-level t(): this copy is exported as a bare string — the print
+// page renders it directly and the node tests match against it — so it cannot
+// be a getter the way the label tables are. It resolves at import time.
+export const USB_UNAVAILABLE_COPY = t('printLib.usbUnavailable');
 
 export const USB_NO_ENDPOINT_COPY =
   'That printer did not offer a USB channel the browser can write to. Use the Print button instead — it prints through the printer installed on this computer.';

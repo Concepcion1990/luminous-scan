@@ -6,6 +6,8 @@
  * `can('suppliers')` rather than testing the plan name.
  */
 
+import { t } from './i18n.js';
+
 export const PLANS = {
   essentials: {
     key: 'essentials',
@@ -15,51 +17,59 @@ export const PLANS = {
     // StaffMember records (active + invited) only, so 3 seats sit on top
     // of the owner. See Finding 15 and staffSeatCount in
     // base44/shared/planLimits.ts.
-    blurb: 'One store, fifty products, three additional staff.',
+    // T6.3: blurb/includes are getters, not import-time t() calls, so a
+    // language switch re-renders the plan copy live instead of freezing
+    // the locale that was active when this module first loaded.
+    get blurb() { return t('plansLib.essentialsBlurb'); },
     limits: { businesses: 1, sites: 1, products: 50, staff: 3, customRoles: false },
-    includes: [
-      'Product catalog, categories and tags',
-      'CSV and Excel product imports',
-      'Barcode, UPC, ISBN and QR scanning',
-      'Manual receiving, counts and adjustments',
-      'Customer orders, returns and listings',
-      'Product labels and customer documents',
-      'Up to 3 additional staff',
-      'The five built-in staff roles',
-    ],
+    get includes() {
+      return [
+        t('plansLib.essentialsIncludes.catalog'),
+        t('plansLib.essentialsIncludes.imports'),
+        t('plansLib.essentialsIncludes.scanning'),
+        t('plansLib.essentialsIncludes.receiving'),
+        t('plansLib.essentialsIncludes.orders'),
+        t('plansLib.essentialsIncludes.labels'),
+        t('plansLib.essentialsIncludes.staff'),
+        t('plansLib.essentialsIncludes.roles'),
+      ];
+    },
   },
   business: {
     key: 'business',
     name: 'Business',
     price: 29.99,
-    blurb: 'Five businesses, unlimited products and staff.',
+    get blurb() { return t('plansLib.businessBlurb'); },
     limits: { businesses: 5, sites: 5, products: null, staff: null, customRoles: true },
-    includes: [
-      'Everything in Essentials',
-      'Unlimited products and staff',
-      'Custom staff roles',
-      'Up to 5 businesses and 5 sites',
-      'Stock valuation and advanced reports',
-      'Low-stock alerts',
-      'CSV and Excel exports',
-      'Suppliers, purchasing and PO receiving',
-      'Bundles, recipes and builds',
-      'Supplier purchasing documents',
-    ],
+    get includes() {
+      return [
+        t('plansLib.businessIncludes.everything'),
+        t('plansLib.businessIncludes.unlimited'),
+        t('plansLib.businessIncludes.roles'),
+        t('plansLib.businessIncludes.businesses'),
+        t('plansLib.businessIncludes.valuation'),
+        t('plansLib.businessIncludes.alerts'),
+        t('plansLib.businessIncludes.exports'),
+        t('plansLib.businessIncludes.suppliers'),
+        t('plansLib.businessIncludes.bundles'),
+        t('plansLib.businessIncludes.supplierDocs'),
+      ];
+    },
   },
 };
 
 /** Business-only modules, by the key used in navigation and the gate. */
+// T6.3: getters (see PLANS above) — the labels follow the live locale.
 export const FEATURES = {
-  valuation: 'Stock valuation',
-  reports: 'Advanced reports',
-  alerts: 'Low-stock alerts',
-  exports: 'CSV and Excel exports',
-  suppliers: 'Suppliers',
-  purchasing: 'Purchasing',
-  builds: 'Bundles & builds',
-  supplierPrint: 'Supplier purchasing documents',
-  crossStore: 'Cross-store requests',
+  get valuation() { return t('plansLib.feature.valuation'); },
+  get reports() { return t('plansLib.feature.reports'); },
+  get alerts() { return t('plansLib.businessIncludes.alerts'); },
+  get exports() { return t('plansLib.businessIncludes.exports'); },
+  get suppliers() { return t('plansLib.feature.suppliers'); },
+  get purchasing() { return t('plansLib.feature.purchasing'); },
+  get builds() { return t('plansLib.feature.builds'); },
+  get supplierPrint() { return t('plansLib.businessIncludes.supplierDocs'); },
+  get crossStore() { return t('plansLib.feature.crossStore'); },
 };
 
 /**
@@ -150,7 +160,7 @@ export function businessLimitForPlan(planKey, plansKnown) {
 }
 
 export function formatLimit(limit) {
-  return limit == null ? 'Unlimited' : String(limit);
+  return limit == null ? t('plansLib.unlimited') : String(limit);
 }
 
 /**
@@ -164,98 +174,103 @@ export const MOBILE_PLAN = {
   key: 'mobile',
   name: 'Luminous StockHaven Mobile',
   price: 4.99,
-  blurb:
-    'Keep inventory management simple and convenient. Scan products, manage quantities, receive stock, and stay organized directly from your phone.',
+  get blurb() { return t('plansLib.mobileBlurb'); },
   available: false,
-  includes: [
-    'Simplified inventory management',
-    'Barcode and QR scanning',
-    'Product lookup by SKU, UPC, ISBN or name',
-    'Product creation, editing, descriptions and photos',
-    'Viewing current quantities',
-    'Manual receiving and basic adjustments',
-    'Stock counts',
-    'Recording ordinary sales and deductions',
-    'Basic movement history',
-    'Basic customer orders where supported',
-    'Seven-day free trial',
-  ],
+  get includes() {
+    return [
+      t('plansLib.mobileIncludes.simplified'),
+      t('plansLib.mobileIncludes.scanning'),
+      t('plansLib.mobileIncludes.lookup'),
+      t('plansLib.mobileIncludes.creation'),
+      t('plansLib.mobileIncludes.quantities'),
+      t('plansLib.mobileIncludes.receiving'),
+      t('plansLib.mobileIncludes.counts'),
+      t('plansLib.mobileIncludes.sales'),
+      t('plansLib.mobileIncludes.history'),
+      t('plansLib.mobileIncludes.orders'),
+      t('plansLib.mobileIncludes.trial'),
+    ];
+  },
 };
 
 /** The three choices the first-launch screen presents, in order. */
+// T6.3: blurb/includes are getters (see PLANS above) — the copy follows
+// the live locale instead of freezing at import time.
 export const WELCOME_OPTIONS = [
   MOBILE_PLAN,
   {
     key: 'essentials',
     name: 'Luminous StockHaven Essentials',
     price: 14.99,
-    blurb:
-      'Need a more complete inventory workspace? Our website Essentials Plan gives you additional inventory-management tools for one business.',
+    get blurb() { return t('plansLib.welcomeEssentialsBlurb'); },
     available: true,
-    includes: [
-      'One business',
-      'One operating site',
-      'Up to 50 distinct products',
-      'Unlimited quantities of those products',
-      'Three additional staff members',
-      'Core inventory tools',
-      'Desktop and laptop access',
-      'Mobile companion included',
-      'One seven-day trial for eligible new website customers (not per plan)',
-    ],
+    get includes() {
+      return [
+        t('plansLib.welcomeEssentialsIncludes.oneBusiness'),
+        t('plansLib.welcomeEssentialsIncludes.oneSite'),
+        t('plansLib.welcomeEssentialsIncludes.products'),
+        t('plansLib.welcomeEssentialsIncludes.quantities'),
+        t('plansLib.welcomeEssentialsIncludes.staff'),
+        t('plansLib.welcomeEssentialsIncludes.tools'),
+        t('plansLib.welcomeEssentialsIncludes.desktop'),
+        t('plansLib.welcomeEssentialsIncludes.mobile'),
+        t('plansLib.welcomeEssentialsIncludes.trial'),
+      ];
+    },
   },
   {
     key: 'business',
     name: 'Luminous StockHaven Business',
     price: 29.99,
-    blurb:
-      'Ready for advanced inventory management? Explore our complete Business Plan for growing businesses, multiple sites, purchasing, reporting and more.',
+    get blurb() { return t('plansLib.welcomeBusinessBlurb'); },
     available: true,
-    includes: [
-      'Up to five businesses',
-      'Up to five operating sites in total',
-      'Unlimited products and quantities',
-      'Unlimited staff',
-      'Stock valuation reports',
-      'Low-stock alerts',
-      'CSV and Excel exports',
-      'Suppliers and purchase orders',
-      'Bundles & Builds',
-      'Advanced business reports',
-      'Mobile companion included',
-      'One seven-day trial for eligible new website customers (not per plan)',
-    ],
+    get includes() {
+      return [
+        t('plansLib.welcomeBusinessIncludes.businesses'),
+        t('plansLib.welcomeBusinessIncludes.sites'),
+        t('plansLib.welcomeBusinessIncludes.products'),
+        t('plansLib.welcomeBusinessIncludes.staff'),
+        t('plansLib.welcomeBusinessIncludes.valuation'),
+        t('plansLib.businessIncludes.alerts'),
+        t('plansLib.businessIncludes.exports'),
+        t('plansLib.welcomeBusinessIncludes.suppliers'),
+        t('plansLib.welcomeBusinessIncludes.bundles'),
+        t('plansLib.welcomeBusinessIncludes.reports'),
+        t('plansLib.welcomeEssentialsIncludes.mobile'),
+        t('plansLib.welcomeEssentialsIncludes.trial'),
+      ];
+    },
   },
 ];
 
-/** Where a plan's allowances are not approved yet, say so instead of guessing. */
-const UNSET = 'Set at launch';
-
 /** Row-per-feature comparison, plus the mobile-only column. */
+// T6.3: every string cell is a getter (see PLANS above). Where a plan's
+// allowances are not approved yet, say so instead of guessing — the
+// "unset" wording is a getter too, so it follows the live locale.
 export const COMPARISON_ROWS = [
-  { label: 'Businesses', mobile: UNSET, essentials: 'One', business: 'Up to five' },
-  { label: 'Operating sites', mobile: UNSET, essentials: 'One', business: 'Up to five in total' },
-  { label: 'Distinct active products', mobile: UNSET, essentials: 'Up to 50', business: 'Unlimited' },
-  { label: 'Inventory quantities', mobile: 'Unlimited', essentials: 'Unlimited', business: 'Unlimited' },
-  { label: 'Additional staff', mobile: UNSET, essentials: 'Up to three', business: 'Unlimited' },
-  { label: 'Custom staff roles', mobile: UNSET, essentials: false, business: true },
-  { label: 'Barcode, UPC, ISBN and QR scanning', mobile: true, essentials: true, business: true },
-  { label: 'Product creation, editing and photos', mobile: true, essentials: true, business: true },
-  { label: 'Receiving, counts and adjustments', mobile: true, essentials: true, business: true },
-  { label: 'Movement history', mobile: 'Basic', essentials: 'Full', business: 'Full' },
-  { label: 'Customer orders', mobile: 'Basic, where supported', essentials: true, business: true },
-  { label: 'Desktop and laptop workspace', mobile: false, essentials: true, business: true },
-  { label: 'Stock valuation reports', mobile: false, essentials: false, business: true },
+  { get label() { return t('plansLib.compare.businesses'); }, get mobile() { return t('plansLib.unset'); }, get essentials() { return t('plansLib.compare.one'); }, get business() { return t('plansLib.compare.upToFive'); } },
+  { get label() { return t('plansLib.compare.sites'); }, get mobile() { return t('plansLib.unset'); }, get essentials() { return t('plansLib.compare.one'); }, get business() { return t('plansLib.compare.upToFiveTotal'); } },
+  { get label() { return t('plansLib.compare.products'); }, get mobile() { return t('plansLib.unset'); }, get essentials() { return t('plansLib.compare.upToFifty'); }, get business() { return t('plansLib.unlimited'); } },
+  { get label() { return t('plansLib.compare.quantities'); }, get mobile() { return t('plansLib.unlimited'); }, get essentials() { return t('plansLib.unlimited'); }, get business() { return t('plansLib.unlimited'); } },
+  { get label() { return t('plansLib.compare.staff'); }, get mobile() { return t('plansLib.unset'); }, get essentials() { return t('plansLib.compare.upToThree'); }, get business() { return t('plansLib.unlimited'); } },
+  { get label() { return t('plansLib.compare.customRoles'); }, get mobile() { return t('plansLib.unset'); }, essentials: false, business: true },
+  { get label() { return t('plansLib.essentialsIncludes.scanning'); }, mobile: true, essentials: true, business: true },
+  { get label() { return t('plansLib.compare.creation'); }, mobile: true, essentials: true, business: true },
+  { get label() { return t('plansLib.compare.receiving'); }, mobile: true, essentials: true, business: true },
+  { get label() { return t('plansLib.compare.history'); }, get mobile() { return t('plansLib.compare.basic'); }, get essentials() { return t('plansLib.compare.full'); }, get business() { return t('plansLib.compare.full'); } },
+  { get label() { return t('plansLib.compare.orders'); }, get mobile() { return t('plansLib.compare.basicWhereSupported'); }, essentials: true, business: true },
+  { get label() { return t('plansLib.compare.desktop'); }, mobile: false, essentials: true, business: true },
+  { get label() { return t('plansLib.welcomeBusinessIncludes.valuation'); }, mobile: false, essentials: false, business: true },
   // Low-stock counts are core, not an alert: every page shows them on
   // both plans (Products, Inventory, Categories) — only the alerts and
   // notifications are Business. Stated here so the row above is never
   // read as "Essentials cannot see low stock at all".
-  { label: 'Low-stock counts', mobile: UNSET, essentials: 'On every page', business: 'On every page' },
-  { label: 'Low-stock alerts', mobile: false, essentials: false, business: true },
-  { label: 'CSV and Excel exports', mobile: false, essentials: false, business: true },
-  { label: 'Suppliers and purchase orders', mobile: false, essentials: false, business: true },
-  { label: 'Bundles & Builds', mobile: false, essentials: false, business: true },
-  { label: 'Mobile companion included', mobile: false, essentials: true, business: true },
+  { get label() { return t('plansLib.compare.lowStockCounts'); }, get mobile() { return t('plansLib.unset'); }, get essentials() { return t('plansLib.compare.onEveryPage'); }, get business() { return t('plansLib.compare.onEveryPage'); } },
+  { get label() { return t('plansLib.businessIncludes.alerts'); }, mobile: false, essentials: false, business: true },
+  { get label() { return t('plansLib.businessIncludes.exports'); }, mobile: false, essentials: false, business: true },
+  { get label() { return t('plansLib.welcomeBusinessIncludes.suppliers'); }, mobile: false, essentials: false, business: true },
+  { get label() { return t('plansLib.welcomeBusinessIncludes.bundles'); }, mobile: false, essentials: false, business: true },
+  { get label() { return t('plansLib.welcomeEssentialsIncludes.mobile'); }, mobile: false, essentials: true, business: true },
 ];
 
 export function formatPrice(value) {

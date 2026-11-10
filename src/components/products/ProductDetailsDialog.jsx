@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import PhotoGallery from '@/components/products/PhotoGallery';
 import { buildLocationTree, locationPath } from '@/lib/locations';
 import { formatMoney, getLevelsForProduct } from '@/lib/inventory';
+import { t } from '@/lib/i18n';
+
 import {
   Dialog,
   DialogContent,
@@ -42,16 +44,16 @@ export default function ProductDetailsDialog({ product, locations = [], currency
     .filter((level) => (level.quantity || 0) > 0)
     .map((level) => ({
       quantity: level.quantity,
-      path: locationPath(byId.get(level.location_id), byId) || 'Unknown location',
+      path: locationPath(byId.get(level.location_id), byId) || t('productDetails.unknownLocation'),
     }))
     .sort((a, b) => a.path.localeCompare(b.path));
 
   const codes = [
-    product.sku ? `SKU ${product.sku}` : '',
-    product.upc ? `UPC ${product.upc}` : '',
-    product.barcode ? `Barcode ${product.barcode}` : '',
-    product.isbn ? `ISBN ${product.isbn}` : '',
-    product.qr_code ? `QR ${product.qr_code}` : '',
+    product.sku ? t('productDetails.codeSku', { sku: product.sku }) : '',
+    product.upc ? t('productDetails.codeUpc', { upc: product.upc }) : '',
+    product.barcode ? t('productDetails.codeBarcode', { barcode: product.barcode }) : '',
+    product.isbn ? t('productDetails.codeIsbn', { isbn: product.isbn }) : '',
+    product.qr_code ? t('productDetails.codeQr', { code: product.qr_code }) : '',
   ].filter(Boolean);
 
   return (
@@ -65,24 +67,24 @@ export default function ProductDetailsDialog({ product, locations = [], currency
           <PhotoGallery photos={product.photo_urls || []} name={product.name} />
 
           <div className="min-w-0">
-            <p className="numeric text-xs text-muted-foreground">{codes.join(' · ') || 'No codes'}</p>
+            <p className="numeric text-xs text-muted-foreground">{codes.join(' · ') || t('productDetails.noCodes')}</p>
             <div className="mt-2 flex flex-wrap gap-x-5 gap-y-3">
               <div>
-                <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">Price</p>
+                <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">{t('productDetails.priceLabel')}</p>
                 <p className="numeric text-base font-semibold">{formatMoney(product.price, currency)}</p>
               </div>
               <div>
-                <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">Cost</p>
+                <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">{t('productDetails.costLabel')}</p>
                 <p className="numeric text-base font-semibold">{formatMoney(product.cost, currency)}</p>
               </div>
               <div>
-                <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">On hand</p>
+                <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">{t('productDetails.onHandLabel')}</p>
                 <p className="numeric text-base font-semibold">
                   {levels.reduce((sum, level) => sum + (level.quantity || 0), 0)}
                 </p>
               </div>
               <div>
-                <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">Reorder</p>
+                <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">{t('productDetails.reorderLabel')}</p>
                 <p className="numeric text-base font-semibold">{product.reorder_point || 0}</p>
               </div>
             </div>
@@ -90,10 +92,10 @@ export default function ProductDetailsDialog({ product, locations = [], currency
 
           <div className="rounded-lg border border-border p-3">
             <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-              Where it is
+              {t('productDetails.whereTitle')}
             </p>
             {stock.length === 0 && (
-              <p className="mt-1 text-sm text-muted-foreground">No stock recorded at any location.</p>
+              <p className="mt-1 text-sm text-muted-foreground">{t('productDetails.noStock')}</p>
             )}
             <div className="mt-1 space-y-0.5">
               {stock.map((entry) => (
@@ -106,32 +108,39 @@ export default function ProductDetailsDialog({ product, locations = [], currency
           </div>
 
           <div className="rounded-lg border border-border p-3">
-            <Row label="Status" value={product.status || 'active'} />
-            <Row label="Category" value={[product.category, product.subcategory].filter(Boolean).join(' · ')} />
-            <Row label="Tags" value={(product.tags || []).map((tag) => `#${tag}`).join(' ')} />
-            <Row label="Brand" value={product.brand} />
-            <Row label="Manufacturer" value={product.manufacturer} />
-            <Row label="Author" value={product.author} />
-            <Row label="Publisher" value={[product.publisher, product.edition].filter(Boolean).join(' · ')} />
-            <Row label="Condition" value={product.condition} />
-            <Row label="Unit" value={product.unit} />
+            <Row label={t('productDetails.rowStatus')} value={product.status || t('productDetails.statusActive')} />
+            <Row label={t('productDetails.rowCategory')} value={[product.category, product.subcategory].filter(Boolean).join(' · ')} />
+            <Row label={t('productDetails.rowTags')} value={(product.tags || []).map((tag) => `#${tag}`).join(' ')} />
+            <Row label={t('productDetails.rowBrand')} value={product.brand} />
+            <Row label={t('productDetails.rowManufacturer')} value={product.manufacturer} />
+            <Row label={t('productDetails.rowAuthor')} value={product.author} />
+            <Row label={t('productDetails.rowPublisher')} value={[product.publisher, product.edition].filter(Boolean).join(' · ')} />
+            <Row label={t('productDetails.rowCondition')} value={product.condition} />
+            <Row label={t('productDetails.rowUnit')} value={product.unit} />
             <Row
-              label="Reorder at"
-              value={product.reorder_point ? `${product.reorder_point} ${product.unit || 'each'}` : ''}
+              label={t('productDetails.rowReorderAt')}
+              value={
+                product.reorder_point
+                  ? t('productDetails.reorderAtValue', {
+                      point: product.reorder_point,
+                      unit: product.unit || t('productDetails.unitEach'),
+                    })
+                  : ''
+              }
             />
-            <Row label="Supplier" value={product.supplier_name} />
-            <Row label="Fulfillment" value={product.fulfillment_method} />
-            <Row label="Batch / lot" value={product.batch_lot} />
-            <Row label="Serial" value={product.serial_number} />
-            <Row label="Warranty" value={product.warranty} />
-            <Row label="Weight" value={product.weight} />
-            <Row label="Dimensions" value={product.dimensions} />
+            <Row label={t('productDetails.rowSupplier')} value={product.supplier_name} />
+            <Row label={t('productDetails.rowFulfillment')} value={product.fulfillment_method} />
+            <Row label={t('productDetails.rowBatch')} value={product.batch_lot} />
+            <Row label={t('productDetails.rowSerial')} value={product.serial_number} />
+            <Row label={t('productDetails.rowWarranty')} value={product.warranty} />
+            <Row label={t('productDetails.rowWeight')} value={product.weight} />
+            <Row label={t('productDetails.rowDimensions')} value={product.dimensions} />
           </div>
 
           {product.description && (
             <div>
               <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-                Description
+                {t('productDetails.descriptionTitle')}
               </p>
               <p className="mt-1 text-sm">{product.description}</p>
             </div>
@@ -139,7 +148,7 @@ export default function ProductDetailsDialog({ product, locations = [], currency
 
           {product.notes && (
             <div>
-              <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Notes</p>
+              <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{t('productDetails.notesTitle')}</p>
               <p className="mt-1 text-sm">{product.notes}</p>
             </div>
           )}

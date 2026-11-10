@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { base44 } from '@/api/client';
 import { CANCELLATION_GRACE_DAYS, CANCELLATION_WIPE_SENTENCE } from '@/lib/cancellationGrace';
+import { t } from '@/lib/i18n';
 
 const SUPPORT_CONTACT = 'theluminousbookshop@outlook.com';
 
@@ -22,21 +23,21 @@ const SUPPORT_CONTACT = 'theluminousbookshop@outlook.com';
  * code to support" line. Nothing here changes the cancel mechanism.
  */
 const CANCEL_ERROR_DETAILS = {
-  method_not_allowed: 'Something went wrong on our side. Nothing was changed — please try again, or contact support.',
-  sign_in_required: 'You need to be signed in to cancel. Please sign in and try again.',
-  invalid_request: 'We could not work out which subscription to cancel. Nothing was changed — please try again, or contact support.',
-  business_id_required: 'We could not work out which subscription to cancel. Nothing was changed — please try again, or contact support.',
-  subscription_owner_required: 'Only the business owner can cancel this subscription. Nothing was changed.',
-  billing_records_need_review: 'Your billing records need a review before this can be canceled. Nothing was changed — please contact support.',
-  complimentary_access_protected: 'This workspace has complimentary access, so there is no paid subscription to cancel. Nothing was changed.',
-  no_verified_subscription_record: 'We could not find a verified subscription for this business. Nothing was changed — please contact support.',
-  purchase_contract_mismatch: 'The billing record does not match this business, so we cannot cancel it here. Nothing was changed — please contact support.',
-  stripe_not_configured: 'Payments could not be reached. Nothing has changed — please try again, or contact support.',
-  subscription_paid_through_unverified: 'We could not confirm your paid-through date. Nothing was changed — please try again, or contact support.',
-  already_ended: 'This subscription has already ended, so there is nothing more to cancel.',
-  subscription_event_history_incomplete: 'Your billing history needs a review before this can be canceled. Nothing was changed — please contact support.',
-  event_requires_review: 'Your billing history needs a review before this can be canceled. Nothing was changed — please contact support.',
-  subscription_cancellation_unavailable: 'The cancellation could not be completed. Nothing was changed — your subscription and access are exactly as they were. Please try again, or contact support.',
+  get method_not_allowed() { return t('billing.cancelError.methodNotAllowed'); },
+  get sign_in_required() { return t('billing.cancelError.signInRequired'); },
+  get invalid_request() { return t('billing.cancelError.invalidRequest'); },
+  get business_id_required() { return t('billing.cancelError.businessIdRequired'); },
+  get subscription_owner_required() { return t('billing.cancelError.subscriptionOwnerRequired'); },
+  get billing_records_need_review() { return t('billing.cancelError.billingRecordsNeedReview'); },
+  get complimentary_access_protected() { return t('billing.cancelError.complimentaryAccessProtected'); },
+  get no_verified_subscription_record() { return t('billing.cancelError.noVerifiedSubscriptionRecord'); },
+  get purchase_contract_mismatch() { return t('billing.cancelError.purchaseContractMismatch'); },
+  get stripe_not_configured() { return t('billing.cancelError.stripeNotConfigured'); },
+  get subscription_paid_through_unverified() { return t('billing.cancelError.subscriptionPaidThroughUnverified'); },
+  get already_ended() { return t('billing.cancelError.alreadyEnded'); },
+  get subscription_event_history_incomplete() { return t('billing.cancelError.subscriptionEventHistoryIncomplete'); },
+  get event_requires_review() { return t('billing.cancelError.eventRequiresReview'); },
+  get subscription_cancellation_unavailable() { return t('billing.cancelError.subscriptionCancellationUnavailable'); },
 };
 
 function formatDate(value) {
@@ -142,94 +143,79 @@ export default function CancelSubscriptionDialog({
     <AlertDialog open={open} onOpenChange={handleOpenChange}>
       <AlertDialogContent className="max-h-[calc(100dvh-2rem)] max-w-[calc(100vw-2rem)] overflow-y-auto sm:max-w-lg">
         <AlertDialogHeader>
-          <AlertDialogTitle>Cancel subscription</AlertDialogTitle>
+          <AlertDialogTitle>{t('billing.cancel.title')}</AlertDialogTitle>
           <AlertDialogDescription>
-            Unsubscribe from {planLabel || 'your plan'}. Canceling stops
-            future renewals at the end of your paid period — it never ends
-            your access at once.
+            {t('billing.cancel.description', { plan: planLabel || t('billing.cancel.yourPlan') })}
           </AlertDialogDescription>
         </AlertDialogHeader>
 
         {phase === 'done' && result ? (
           <div role="status" className="space-y-2 rounded-lg border border-border bg-muted/40 px-3 py-3 text-sm">
-            <p className="font-semibold">Your subscription is canceled.</p>
+            <p className="font-semibold">{t('billing.cancel.doneTitle')}</p>
             <p className="text-muted-foreground">
               {confirmedEndLabel
-                ? `You keep full access until ${confirmedEndLabel}. After that date you have a ${CANCELLATION_GRACE_DAYS}-day read-only grace period — you can still log in and see your products, but you cannot add, edit, delete, scan, import, export or change anything. ${graceEndLabel ? `After the 15-day grace period ends on ${graceEndLabel}, your account and all its information are permanently deleted and cannot be recovered.` : CANCELLATION_WIPE_SENTENCE}`
-                : `You keep full access until the end of your paid period. After that, a 15-day read-only grace period applies. ${CANCELLATION_WIPE_SENTENCE}`}
+                ? t('billing.cancel.doneWithEnd', { endDate: confirmedEndLabel, graceDays: CANCELLATION_GRACE_DAYS, gracePart: graceEndLabel ? t('billing.cancel.graceEndsOn', { date: graceEndLabel }) : CANCELLATION_WIPE_SENTENCE })
+                : t('billing.cancel.doneNoEnd', { wipeSentence: CANCELLATION_WIPE_SENTENCE })}
             </p>
             {result.refund_window_open ? (
               <p className="text-muted-foreground">
-                You canceled within 3 days of your first paid charge, so you may be eligible
-                for a refund of that first payment. Canceling does not issue the refund
-                itself — request it through {SUPPORT_CONTACT}.
+                {t('billing.cancel.refundWindowOpen', { contact: SUPPORT_CONTACT })}
               </p>
             ) : (
               <p className="text-muted-foreground">
-                Canceling does not by itself issue a refund. Refunds apply only within
-                3 days of the first successful paid charge, requested through {SUPPORT_CONTACT}.
+                {t('billing.cancel.refundWindowClosed', { contact: SUPPORT_CONTACT })}
               </p>
             )}
           </div>
         ) : phase === 'error' ? (
           <div role="alert" className="space-y-2 rounded-lg border border-destructive/40 bg-destructive/5 px-3 py-3 text-sm">
-            <p className="font-semibold">Your subscription was NOT canceled.</p>
+            <p className="font-semibold">{t('billing.cancel.notCanceledTitle')}</p>
             <p className="text-muted-foreground">
               {CANCEL_ERROR_DETAILS[error] || CANCEL_ERROR_DETAILS.subscription_cancellation_unavailable}
             </p>
             <p className="text-xs text-muted-foreground">
-              If you contact {SUPPORT_CONTACT}, mention this code: {error}
+              {t('billing.cancel.contactCode', { contact: SUPPORT_CONTACT, code: error })}
             </p>
           </div>
         ) : alreadyCanceled ? (
           <div role="status" className="space-y-2 rounded-lg border border-border bg-muted/40 px-3 py-3 text-sm">
-            <p className="font-semibold">This subscription is already canceled.</p>
+            <p className="font-semibold">{t('billing.cancel.alreadyCanceledTitle')}</p>
             <p className="text-muted-foreground">
               {periodLabel
-                ? `It ends on ${periodLabel}. You keep full access until then. After that date you have a ${CANCELLATION_GRACE_DAYS}-day read-only grace period to see your products. ${CANCELLATION_WIPE_SENTENCE}`
-                : 'It ends at the end of the current paid period. You keep full access until then.'}
+                ? t('billing.cancel.alreadyCanceledWithEnd', { date: periodLabel, graceDays: CANCELLATION_GRACE_DAYS, wipeSentence: CANCELLATION_WIPE_SENTENCE })
+                : t('billing.cancel.alreadyCanceledNoEnd')}
             </p>
           </div>
         ) : (
           <div className="space-y-3 text-sm">
             <p className="text-muted-foreground">
-              If you ever subscribe through Google Play or the Apple App Store,
-              you may need to cancel it through that store's subscription settings.
-              This dialog cannot stop app-store billing. Uninstalling the app or deleting
-              your StockHaven account does not cancel a store subscription.
+              {t('billing.cancel.appStoreNote')}
             </p>
             {status === 'trialing' && (
               <p className="text-muted-foreground">
                 {trialEndLabel || periodLabel
-                  ? `Cancelling during your trial keeps your full 7 days — access ends on ${trialEndLabel || periodLabel}, and you will not be charged.`
-                  : 'Cancelling during your trial keeps your full 7 days, and you will not be charged.'}
+                  ? t('billing.cancel.trialNote', { date: trialEndLabel || periodLabel })
+                  : t('billing.cancel.trialNoteNoDate')}
               </p>
             )}
             <ul className="list-disc space-y-2 pl-5 leading-relaxed">
               <li>
-                <strong>You keep full access until {periodLabel || 'the end of your paid period'}.</strong>{' '}
-                Canceling stops future renewals only — it never ends your access at once,
-                and no extra free month is added.
+                <strong>{t('billing.cancel.keepAccessUntil', { date: periodLabel || t('billing.cancel.endOfPaidPeriod') })}</strong>{' '}
+                {t('billing.cancel.keepAccessRest')}
               </li>
               <li>
-                <strong>After that date, a {CANCELLATION_GRACE_DAYS}-day read-only grace period.</strong>{' '}
-                You can still log in and see your products, so you can look at what you had
-                and write it down. Everything else is blocked: no adding, editing, deleting,
-                scanning, importing, exporting or migrating, no settings, no staff.
+                <strong>{t('billing.cancel.gracePeriodTitle', { graceDays: CANCELLATION_GRACE_DAYS })}</strong>{' '}
+                {t('billing.cancel.gracePeriodRest')}
               </li>
               <li>
                 <strong>{CANCELLATION_WIPE_SENTENCE}</strong>{' '}
-                Resubscribing starts fresh.
+                {t('billing.cancel.resubscribeFresh')}
               </li>
               <li>
-                <strong>Refunds are separate.</strong> Canceling does not by itself issue a
-                refund. A refund of the first payment applies only if you cancel within
-                3 days (72 hours) of the first successful paid charge, requested through{' '}
-                {SUPPORT_CONTACT}.
+                <strong>{t('billing.cancel.refundsSeparate')}</strong> {t('billing.cancel.refundsRest', { contact: SUPPORT_CONTACT })}
               </li>
               <li>
-                <strong>One free trial.</strong> Canceling a trial or subscription does not
-                grant another trial; returning customers must choose a paid subscription.
+                <strong>{t('billing.cancel.oneTrialTitle')}</strong> {t('billing.cancel.oneTrialRest')}
               </li>
             </ul>
           </div>
@@ -238,12 +224,12 @@ export default function CancelSubscriptionDialog({
         <AlertDialogFooter>
           {phase === 'done' ? (
             <Button type="button" onClick={() => handleOpenChange(false)}>
-              Done
+              {t('billing.cancel.done')}
             </Button>
           ) : (
             <>
               <AlertDialogCancel disabled={phase === 'confirming'}>
-                Keep Subscription / Close
+                {t('billing.cancel.keepOrClose')}
               </AlertDialogCancel>
               {!alreadyCanceled && phase !== 'error' && (
                 <Button
@@ -255,16 +241,16 @@ export default function CancelSubscriptionDialog({
                   {phase === 'confirming' ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-                      Canceling…
+                      {t('billing.cancel.canceling')}
                     </>
                   ) : (
-                    'Confirm Cancellation'
+                    t('billing.cancel.confirm')
                   )}
                 </Button>
               )}
               {phase === 'error' && (
                 <Button type="button" onClick={() => handleOpenChange(false)}>
-                  Close
+                  {t('billing.cancel.close')}
                 </Button>
               )}
             </>

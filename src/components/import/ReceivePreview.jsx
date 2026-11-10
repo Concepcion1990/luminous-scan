@@ -1,3 +1,5 @@
+import { t } from '@/lib/i18n';
+
 const PREVIEW_ROWS = 10;
 
 /** On hand before, what is arriving, and the quantity this receipt would leave. */
@@ -8,18 +10,18 @@ export default function ReceivePreview({ report }) {
   return (
     <div className="space-y-1">
       <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-        Receipt preview
+        {t('import.receivePreviewTitle')}
       </p>
       <div className="overflow-x-auto rounded-lg border border-border">
         <table className="w-full min-w-[460px] text-xs">
           <thead className="bg-muted/40 text-left font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
             <tr>
-              <th className="px-2 py-1.5 font-medium">Row</th>
-              <th className="px-2 py-1.5 font-medium">Product</th>
-              <th className="px-2 py-1.5 font-medium">On hand</th>
-              <th className="px-2 py-1.5 font-medium">Arriving</th>
-              <th className="px-2 py-1.5 font-medium">After</th>
-              <th className="px-2 py-1.5 font-medium">Check</th>
+              <th className="px-2 py-1.5 font-medium">{t('import.colRow')}</th>
+              <th className="px-2 py-1.5 font-medium">{t('import.colProduct')}</th>
+              <th className="px-2 py-1.5 font-medium">{t('import.colOnHand')}</th>
+              <th className="px-2 py-1.5 font-medium">{t('import.colArriving')}</th>
+              <th className="px-2 py-1.5 font-medium">{t('import.colAfter')}</th>
+              <th className="px-2 py-1.5 font-medium">{t('import.colCheck')}</th>
             </tr>
           </thead>
           <tbody>
@@ -35,10 +37,10 @@ export default function ReceivePreview({ report }) {
                 <td className="numeric px-2 py-1.5 font-medium">{row.status === 'ready' ? row.next : '—'}</td>
                 <td className="px-2 py-1.5">
                   {row.status === 'ready' ? (
-                    <span className="text-ok">Ready</span>
+                    <span className="text-ok">{t('import.ready')}</span>
                   ) : (
                     <span className="text-warn" title={row.problem}>
-                      Skip
+                      {t('import.skip')}
                     </span>
                   )}
                 </td>
@@ -49,7 +51,7 @@ export default function ReceivePreview({ report }) {
       </div>
       {report.rows.length > PREVIEW_ROWS && (
         <p className="text-[11px] text-muted-foreground">
-          Showing the first {PREVIEW_ROWS} of {report.rows.length} rows.
+          {t('import.showingFirst', { first: PREVIEW_ROWS, total: report.rows.length })}
         </p>
       )}
     </div>

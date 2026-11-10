@@ -12,12 +12,15 @@ import { downloadCsv, fileSlug, fileStamp, toCsv } from '@/lib/csv';
 import { scoped, withBusiness } from '@/lib/scoped';
 import { useBusiness } from '@/hooks/useBusiness';
 import useEntitlements from '@/hooks/useEntitlements';
+import { t } from '@/lib/i18n';
 
 // The columns for both download formats — CSV and Excel carry the same rows.
+// Labels are getters so they resolve in the active locale at export time,
+// not the locale active when this module was first imported (see Layout.jsx).
 const ALERT_EXPORT_COLUMNS = [
-  { label: 'Alert', value: (row) => row.alert },
-  { label: 'Product', value: (row) => row.product },
-  { label: 'Detail', value: (row) => row.detail },
+  { get label() { return t('alerts.exportAlert'); }, value: (row) => row.alert },
+  { get label() { return t('alerts.exportProduct'); }, value: (row) => row.product },
+  { get label() { return t('alerts.exportDetail'); }, value: (row) => row.detail },
 ];
 
 export default function Alerts() {
@@ -82,11 +85,11 @@ export default function Alerts() {
       else await base44.entities.AlertRule.create(withBusiness(values, activeId));
       setDialog(null);
       await load();
-      toast({ title: dialog?.id ? 'Alert updated' : 'Alert created' });
+      toast({ title: dialog?.id ? t('alerts.updated') : t('alerts.created') });
     } catch (error) {
       toast({
-        title: 'Could not save the alert',
-        description: error?.message || 'Try again.',
+        title: t('alerts.saveFailed'),
+        description: error?.message || t('alerts.tryAgain'),
         variant: 'destructive',
       });
     }
@@ -100,8 +103,8 @@ export default function Alerts() {
       await load();
     } catch (error) {
       toast({
-        title: 'Could not add the alert',
-        description: error?.message || 'Try again.',
+        title: t('alerts.addFailed'),
+        description: error?.message || t('alerts.tryAgain'),
         variant: 'destructive',
       });
     }
@@ -113,23 +116,23 @@ export default function Alerts() {
       await load();
     } catch (error) {
       toast({
-        title: 'Could not change the alert',
-        description: error?.message || 'Try again.',
+        title: t('alerts.toggleFailed'),
+        description: error?.message || t('alerts.tryAgain'),
         variant: 'destructive',
       });
     }
   };
 
   const remove = async (rule) => {
-    if (!window.confirm(`Delete the alert “${rule.name}”?`)) return;
+    if (!window.confirm(t('alerts.deleteConfirm', { name: rule.name }))) return;
     try {
       await base44.entities.AlertRule.delete(rule.id);
       await load();
-      toast({ title: 'Alert deleted' });
+      toast({ title: t('alerts.deleted') });
     } catch (error) {
       toast({
-        title: 'Could not delete the alert',
-        description: error?.message || 'Try again.',
+        title: t('alerts.deleteFailed'),
+        description: error?.message || t('alerts.tryAgain'),
         variant: 'destructive',
       });
     }
@@ -151,7 +154,7 @@ export default function Alerts() {
     const csv = toCsv(ALERT_EXPORT_COLUMNS, lines);
     const filename = `${fileSlug(profile.name) || 'business'}-alerts-${fileStamp()}.csv`;
     downloadCsv(filename, csv);
-    toast({ title: 'Alert list exported', description: `${lines.length} flagged products` });
+    toast({ title: t('alerts.exported'), description: t('alerts.exportedDescription', { count: lines.length }) });
   };
 
   // Same CSV + Excel choice as Reports — Alerts used to offer only the CSV.
@@ -161,17 +164,17 @@ export default function Alerts() {
       const lines = exportLines();
       const { downloadSheets } = await import('@/lib/xlsx');
       const filename = downloadSheets(
-        [{ name: 'Alerts', columns: ALERT_EXPORT_COLUMNS, rows: lines }],
+        [{ name: t('alerts.sheetName'), columns: ALERT_EXPORT_COLUMNS, rows: lines }],
         `${fileSlug(profile.name) || 'business'}-alerts-${fileStamp()}.xlsx`
       );
       toast({
-        title: 'Alert list exported',
-        description: `${lines.length} flagged products saved as ${filename}`,
+        title: t('alerts.exported'),
+        description: t('alerts.exportedExcelDescription', { count: lines.length, filename }),
       });
     } catch {
       toast({
-        title: 'Export failed',
-        description: 'Could not build the file. Try again.',
+        title: t('alerts.exportFailed'),
+        description: t('alerts.exportBuildFailed'),
         variant: 'destructive',
       });
     }
@@ -184,70 +187,68 @@ export default function Alerts() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-            {profile.name} · Alerts
+            {t('alerts.eyebrow', { name: profile.name })}
           </p>
-          <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">Alerts</h1>
+          <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">{t('alerts.title')}</h1>
           <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-            Watch the things that cost you money: stock running low, shelves empty, stock that never
-            moves or is never scanned, and products about to expire. Each alert can watch any number of
-            locations, one category, or everything.
+            {t('alerts.intro')}
           </p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={downloadExcel} disabled={!flagged}>
             <FileSpreadsheet className="mr-1.5 h-4 w-4" />
-            Download Excel
+            {t('alerts.downloadExcel')}
           </Button>
           <Button variant="outline" onClick={runExport} disabled={!flagged}>
             <Download className="mr-1.5 h-4 w-4" />
-            Download CSV
+            {t('alerts.downloadCsv')}
           </Button>
           <Button onClick={() => setDialog({})} disabled={!activeId}>
             <Plus className="mr-1.5 h-4 w-4" />
-            New alert
+            {t('alerts.newAlert')}
           </Button>
         </div>
       </div>
 
       {loading && (
-        <p className="text-sm text-muted-foreground">Checking your stock…</p>
+        <p className="text-sm text-muted-foreground">{t('alerts.checkingStock')}</p>
       )}
 
       {!loading && !activeId && (
         <p className="rounded-lg border border-warn/30 bg-warn/10 px-3 py-2 text-sm">
-          Create a business first — alerts are watched per business.
+          {t('alerts.createBusinessFirst')}
         </p>
       )}
 
       {!loading && activeId && (
         <>
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <StatCard label="Watching" value={watching.length} hint="Active alerts" />
+            <StatCard label={t('alerts.watching')} value={watching.length} hint={t('alerts.activeAlertsHint')} />
             <StatCard
-              label="Flagged products"
+              label={t('alerts.flaggedProducts')}
               value={distinctFlagged}
               tone={distinctFlagged ? 'warn' : 'default'}
-              hint={`${flagged} match${flagged === 1 ? '' : 'es'} across every active alert`}
+              hint={t('alerts.flaggedHint', { count: flagged, s: flagged === 1 ? '' : 'es' })}
             />
             <StatCard
-              label="Tripping now"
+              label={t('alerts.trippingNow')}
               value={tripping}
               tone={tripping ? 'warn' : 'ok'}
-              hint={`${watching.length - tripping} quiet`}
+              hint={t('alerts.quietHint', { count: watching.length - tripping })}
             />
             <StatCard
-              label="Alerts set up"
+              label={t('alerts.alertsSetUp')}
               value={rules.length}
-              hint="Including paused ones"
+              hint={t('alerts.includingPaused')}
             />
           </div>
 
           {rules.length === 0 ? (
             <section className="rounded-xl border border-border bg-card p-6 text-center">
               <BellRing className="mx-auto h-6 w-6 text-muted-foreground" />
-              <p className="mt-3 text-sm font-medium">No alerts set up yet.</p>
+              <p className="mt-3 text-sm font-medium">{t('alerts.noAlertsYet')}</p>
               <p className="mx-auto mt-1 max-w-sm text-xs text-muted-foreground">
-                Start with one of these, then tune the numbers and narrow them to a location or category.
+                {t('alerts.noAlertsHint')}
               </p>
               <div className="mt-4 flex flex-wrap justify-center gap-2">
                 {ALERT_PRESETS.map((preset) => (
@@ -273,8 +274,7 @@ export default function Alerts() {
           )}
 
           <p className="text-xs text-muted-foreground">
-            Alerts are checked whenever this page loads, so they always reflect the stock on the shelf
-            right now. They stay inside the app — nothing is emailed or pushed.
+            {t('alerts.footerNote')}
           </p>
         </>
       )}

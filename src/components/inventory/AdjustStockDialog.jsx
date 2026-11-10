@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Check } from 'lucide-react';
+import { t } from '@/lib/i18n';
+
 import { useAuth } from '@/lib/AuthContext';
 import { recordMovement } from '@/lib/inventory';
 import QuantityStepper from '@/components/inventory/QuantityStepper';
@@ -22,12 +24,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-const MODES = [
-  { key: 'receive', label: 'Add stock', hint: 'Stock that arrived' },
-  { key: 'sale', label: 'Remove stock', hint: 'Sold or used' },
-  { key: 'count', label: 'Set exact count', hint: 'Counted on the shelf' },
-];
-
 /**
  * One product, one place, one movement: the fast way to correct what is on the
  * shelf from the inventory screen. Every change is written to the ledger.
@@ -49,6 +45,12 @@ export default function AdjustStockDialog({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
+  const MODES = [
+    { key: 'receive', label: t('inventory.modeReceive'), hint: t('inventory.modeReceiveHint') },
+    { key: 'sale', label: t('inventory.modeSale'), hint: t('inventory.modeSaleHint') },
+    { key: 'count', label: t('inventory.modeCount'), hint: t('inventory.modeCountHint') },
+  ];
+
   useEffect(() => {
     if (!open) return;
     setMode('receive');
@@ -66,11 +68,11 @@ export default function AdjustStockDialog({
   const save = async () => {
     const qty = Number(quantity) || 0;
     if (!location) {
-      setError('Choose where this stock sits.');
+      setError(t('inventory.chooseLocation'));
       return;
     }
     if (mode === 'count' ? qty < 0 : qty < 1) {
-      setError(mode === 'count' ? 'Enter the counted quantity.' : 'Enter how many.');
+      setError(mode === 'count' ? t('inventory.enterCounted') : t('inventory.enterQuantity'));
       return;
     }
     setBusy(true);
@@ -88,7 +90,7 @@ export default function AdjustStockDialog({
       onOpenChange(false);
       onDone?.();
     } catch (err) {
-      setError(err?.message || 'That change could not be saved.');
+      setError(err?.message || t('inventory.saveFailed'));
     } finally {
       setBusy(false);
     }
@@ -98,15 +100,15 @@ export default function AdjustStockDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="truncate">Adjust {product.name}</DialogTitle>
+          <DialogTitle className="truncate">{t('inventory.adjustTitle', { name: product.name })}</DialogTitle>
           <DialogDescription>
-            {product.sku ? `SKU ${product.sku} · ` : ''}Every change is recorded in the movement ledger.
+            {product.sku ? t('inventory.adjustSku', { sku: product.sku }) : ''}{t('inventory.adjustDescription')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4">
           <div className="grid gap-2">
-            <Label>What happened</Label>
+            <Label>{t('inventory.whatHappened')}</Label>
             <div className="grid grid-cols-3 gap-1.5">
               {MODES.map((option) => (
                 <button
@@ -129,10 +131,10 @@ export default function AdjustStockDialog({
           </div>
 
           <div className="grid gap-2">
-            <Label>Location</Label>
+            <Label>{t('inventory.locationLabel')}</Label>
             <Select value={locationId} onValueChange={setLocationId}>
               <SelectTrigger>
-                <SelectValue placeholder="Choose a location" />
+                <SelectValue placeholder={t('inventory.chooseLocationPlaceholder')} />
               </SelectTrigger>
               <SelectContent>
                 {locations.map((place) => (
@@ -145,17 +147,17 @@ export default function AdjustStockDialog({
           </div>
 
           <div className="grid gap-2">
-            <Label>{mode === 'count' ? 'Counted quantity' : 'Quantity'}</Label>
+            <Label>{mode === 'count' ? t('inventory.countedQuantity') : t('inventory.quantityLabel')}</Label>
             <QuantityStepper value={quantity} onChange={setQuantity} allowZero={mode === 'count'} />
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="adjust-note">Note</Label>
+            <Label htmlFor="adjust-note">{t('inventory.noteLabel')}</Label>
             <Input
               id="adjust-note"
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              placeholder="Optional"
+              placeholder={t('inventory.notePlaceholder')}
             />
           </div>
 
@@ -164,11 +166,11 @@ export default function AdjustStockDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t('inventory.cancel')}
           </Button>
           <Button onClick={save} disabled={busy}>
             <Check className="mr-1.5 h-4 w-4" />
-            {busy ? 'Saving…' : 'Save change'}
+            {busy ? t('inventory.saving') : t('inventory.saveChange')}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { base44 } from '@/api/client';
 import { CheckCircle2, Loader2, RotateCcw, TriangleAlert, Upload } from 'lucide-react';
+import { t } from '@/lib/i18n';
 import useImportSheet from '@/hooks/useImportSheet';
 import { evaluateUpdates, guessUpdateField, UPDATE_FIELDS } from '@/lib/importModes';
 import { applyProductUpdates } from '@/lib/importCommit';
@@ -132,7 +133,7 @@ export default function UpdateWorkbench({ businessId }) {
       sheet.reset();
       dropChecks();
     } catch (err) {
-      setError(err?.message || 'The update could not be finished.');
+      setError(err?.message || t('import.updateFailed'));
     } finally {
       setBusy(false);
     }
@@ -141,7 +142,7 @@ export default function UpdateWorkbench({ businessId }) {
   const pickFile = (
     <div className="mt-4 flex flex-wrap items-center gap-2">
       <label className="inline-flex cursor-pointer items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">
-        <Upload className="h-4 w-4" /> Choose CSV or Excel file
+        <Upload className="h-4 w-4" /> {t('import.chooseFile')}
         <input
           type="file"
           accept=".csv,.txt,.xlsx,.xlsm,.xls,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
@@ -154,13 +155,13 @@ export default function UpdateWorkbench({ businessId }) {
         />
       </label>
       <Button variant="outline" onClick={() => downloadTemplateCsv('product-update-template.csv', UPDATE_FIELDS, EXAMPLE)}>
-        CSV template
+        {t('import.csvTemplate')}
       </Button>
       <Button
         variant="outline"
         onClick={() => downloadTemplateXlsx('product-update-template.xlsx', UPDATE_FIELDS, EXAMPLE)}
       >
-        Excel template
+        {t('import.excelTemplate')}
       </Button>
     </div>
   );
@@ -168,17 +169,26 @@ export default function UpdateWorkbench({ businessId }) {
   const resultPanel = result && (
     <div className="mt-3 rounded-lg border border-ok/30 bg-ok/10 p-3 text-sm">
       <p className="font-medium">
-        Updated {result.updated} product{result.updated === 1 ? '' : 's'}
         {result.fields > 0
-          ? ` · ${result.fields} field change${result.fields === 1 ? '' : 's'}`
-          : ''}
-        .
+          ? t('import.updatedResultFields', {
+              updated: result.updated,
+              s: result.updated === 1 ? '' : 's',
+              fields: result.fields,
+              fs: result.fields === 1 ? '' : 's',
+            })
+          : t('import.updatedResult', {
+              updated: result.updated,
+              s: result.updated === 1 ? '' : 's',
+            })}
       </p>
       <p className="mt-1 text-xs text-muted-foreground">
         {result.same > 0
-          ? `${result.same} row${result.same === 1 ? '' : 's'} already matched their values and were left as they were. `
+          ? `${t('import.updateSameRows', {
+              same: result.same,
+              s: result.same === 1 ? '' : 's',
+            })} `
           : ''}
-        Quantities were not touched.
+        {t('import.quantitiesUntouched')}
       </p>
     </div>
   );
@@ -186,11 +196,9 @@ export default function UpdateWorkbench({ businessId }) {
   if (!sheet.table) {
     return (
       <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
-        <p className="text-sm font-semibold">Update products from a spreadsheet</p>
+        <p className="text-sm font-semibold">{t('import.updateWorkbenchTitle')}</p>
         <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-          Every row needs a SKU or a record ID so it can be matched to the product it belongs to. You will
-          see each old value beside its proposed new value, then run a dry run, then confirm before anything
-          is saved. Blank cells leave the existing value alone.
+          {t('import.updateIntro')}
         </p>
         {pickFile}
         {sheet.error && (
@@ -200,7 +208,7 @@ export default function UpdateWorkbench({ businessId }) {
         )}
         {sheet.reading && (
           <p className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
-            <Loader2 className="h-3.5 w-3.5 animate-spin" /> Reading the file…
+            <Loader2 className="h-3.5 w-3.5 animate-spin" /> {t('import.readingFile')}
           </p>
         )}
         {resultPanel}
@@ -213,11 +221,16 @@ export default function UpdateWorkbench({ businessId }) {
       <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="numeric text-xs text-muted-foreground">
-            {sheet.fileName} · {sheet.table.rows.length} row{sheet.table.rows.length === 1 ? '' : 's'} ·{' '}
-            {sheet.table.headers.length} column{sheet.table.headers.length === 1 ? '' : 's'}
+            {t('import.fileSummary', {
+              file: sheet.fileName,
+              rows: sheet.table.rows.length,
+              rs: sheet.table.rows.length === 1 ? '' : 's',
+              columns: sheet.table.headers.length,
+              cs: sheet.table.headers.length === 1 ? '' : 's',
+            })}
           </p>
           <Button variant="ghost" size="sm" onClick={startOver}>
-            <RotateCcw className="mr-1.5 h-3.5 w-3.5" /> Start over
+            <RotateCcw className="mr-1.5 h-3.5 w-3.5" /> {t('import.startOver')}
           </Button>
         </div>
 
@@ -225,7 +238,7 @@ export default function UpdateWorkbench({ businessId }) {
           {sheet.sheets.length > 1 && (
             <div className="grid gap-2">
               <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                Worksheet
+                {t('import.worksheet')}
               </p>
               <Select
                 value={sheet.sheetName}
@@ -235,12 +248,12 @@ export default function UpdateWorkbench({ businessId }) {
                 }}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Choose a worksheet" />
+                  <SelectValue placeholder={t('import.chooseWorksheet')} />
                 </SelectTrigger>
                 <SelectContent>
                   {sheet.sheets.map((entry) => (
                     <SelectItem key={entry.name} value={entry.name}>
-                      {entry.name} · {entry.rows.length} rows
+                      {t('import.sheetRows', { name: entry.name, rows: entry.rows.length })}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -251,7 +264,7 @@ export default function UpdateWorkbench({ businessId }) {
           {sheet.warnings.length > 0 && (
             <div className="rounded-lg border border-warn/30 bg-warn/10 p-3 text-xs">
               <p className="flex items-center gap-1.5 font-medium text-foreground">
-                <TriangleAlert className="h-3.5 w-3.5 text-warn" /> Codes this workbook has already changed
+                <TriangleAlert className="h-3.5 w-3.5 text-warn" /> {t('import.codesChanged')}
               </p>
               <ul className="mt-1.5 space-y-1 text-muted-foreground">
                 {sheet.warnings.map((warning) => (
@@ -270,16 +283,19 @@ export default function UpdateWorkbench({ businessId }) {
             }}
             fields={UPDATE_FIELDS}
             requiredKeys={['sku', 'id']}
-            missingMessage="Match a column to SKU or Record ID — every row is found by one of them."
+            missingMessage={t('import.updateMissingMessage')}
           />
 
           <p className="text-[11px] text-muted-foreground">
             {matchKey === 'id'
-              ? 'Rows are matched by record ID.'
+              ? t('import.matchById')
               : matchKey === 'sku'
-                ? 'Rows are matched by SKU.'
-                : 'No match column yet.'}
-            {loadingProducts ? ' Reading the catalog…' : ` ${products.length} products in this business.`}
+                ? t('import.matchBySku')
+                : t('import.noMatchColumn')}
+            {' '}
+            {loadingProducts
+              ? t('import.readingCatalog')
+              : t('import.productsInBusiness', { count: products.length })}
           </p>
 
           <label className="flex items-start gap-2 rounded-lg border border-border p-2.5 text-xs">
@@ -293,10 +309,9 @@ export default function UpdateWorkbench({ businessId }) {
               className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
             />
             <span>
-              Clear fields that are blank in the file
+              {t('import.clearBlanks')}
               <span className="mt-0.5 block text-muted-foreground">
-                Off by default: a blank cell leaves the saved value exactly as it is. Numbers are never
-                blanked.
+                {t('import.clearBlanksHint')}
               </span>
             </span>
           </label>
@@ -311,30 +326,33 @@ export default function UpdateWorkbench({ businessId }) {
           >
             <p className="flex items-center gap-1.5 font-semibold text-foreground">
               {!dryRun ? (
-                <>Dry run</>
+                <>{t('import.dryRunTitle')}</>
               ) : needsCheck ? (
                 <>
-                  <TriangleAlert className="h-3.5 w-3.5 text-warn" /> The setup changed since the dry run
+                  <TriangleAlert className="h-3.5 w-3.5 text-warn" /> {t('import.dryRunStale')}
                 </>
               ) : (
                 <>
-                  <CheckCircle2 className="h-3.5 w-3.5 text-ok" /> Dry run passed
+                  <CheckCircle2 className="h-3.5 w-3.5 text-ok" /> {t('import.dryRunPassed')}
                 </>
               )}
             </p>
             <p className="mt-1 text-foreground">
-              <span className="numeric font-semibold">{report.changed}</span> product
-              {report.changed === 1 ? '' : 's'} would change ·{' '}
-              <span className="numeric font-semibold">{report.fieldCount}</span> fields ·{' '}
-              <span className="numeric font-semibold">{report.same}</span> unchanged ·{' '}
-              <span className="numeric font-semibold">{report.skipped}</span> skipped
+              <span className="numeric font-semibold">{report.changed}</span>{' '}
+              {t('import.updateDryRunProducts', { s: report.changed === 1 ? '' : 's' })} ·{' '}
+              <span className="numeric font-semibold">{report.fieldCount}</span>{' '}
+              {t('import.updateDryRunFields')} ·{' '}
+              <span className="numeric font-semibold">{report.same}</span>{' '}
+              {t('import.updateDryRunUnchanged')} ·{' '}
+              <span className="numeric font-semibold">{report.skipped}</span>{' '}
+              {t('import.updateDryRunSkipped')}
             </p>
             <p className="mt-2 text-[11px] text-muted-foreground">
               {!dryRun
-                ? 'Run a dry run to compare every row with the catalog. It saves nothing.'
+                ? t('import.updateDryRunIntro')
                 : needsCheck
-                  ? 'Run the dry run again before updating.'
-                  : 'Nothing has been saved — this was only a check.'}
+                  ? t('import.updateDryRunAgain')
+                  : t('import.dryRunNothingSaved')}
             </p>
           </div>
 
@@ -347,16 +365,16 @@ export default function UpdateWorkbench({ businessId }) {
                 className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
               />
               <span>
-                I have reviewed these changes and want them written to{' '}
-                <span className="font-medium text-foreground">{report.changed}</span> product
-                {report.changed === 1 ? '' : 's'}.
+                {t('import.confirmUpdateStart')}{' '}
+                <span className="font-medium text-foreground">{report.changed}</span>{' '}
+                {t('import.confirmUpdateEnd', { s: report.changed === 1 ? '' : 's' })}
               </span>
             </label>
           )}
 
           <div className="flex flex-wrap items-center gap-2">
             <Button variant="outline" onClick={runCheck} disabled={!matchKey || !sheet.table.rows.length || busy}>
-              {needsCheck ? 'Run dry run' : 'Re-run dry run'}
+              {needsCheck ? t('import.runDryRun') : t('import.rerunDryRun')}
             </Button>
             <Button
               onClick={apply}
@@ -364,13 +382,16 @@ export default function UpdateWorkbench({ businessId }) {
             >
               {busy ? (
                 <>
-                  <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> Updating…
+                  <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> {t('import.updating')}
                 </>
               ) : (
-                `Update ${report.changed} product${report.changed === 1 ? '' : 's'}`
+                t('import.updateProducts', {
+                  count: report.changed,
+                  s: report.changed === 1 ? '' : 's',
+                })
               )}
             </Button>
-            {!businessId && <span className="text-xs text-muted-foreground">Create a business first.</span>}
+            {!businessId && <span className="text-xs text-muted-foreground">{t('import.createBusinessFirstShort')}</span>}
           </div>
 
           {(error || sheet.error) && (

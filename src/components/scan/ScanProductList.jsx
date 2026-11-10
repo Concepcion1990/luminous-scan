@@ -1,6 +1,7 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { base44 } from '@/api/client';
 import { Search } from 'lucide-react';
+import { t } from '@/lib/i18n';
 import { Input } from '@/components/ui/input';
 import { formatMoney, listProducts } from '@/lib/inventory';
 import { buildLocationTree, descendantIds, locationPath } from '@/lib/locations';
@@ -27,7 +28,7 @@ const ScanProductList = forwardRef(function ScanProductList(
     [locations, locationId]
   );
   const { byId } = useMemo(() => buildLocationTree(locations), [locations]);
-  const placeName = locations.find((l) => l.id === locationId)?.name || 'all locations';
+  const placeName = locations.find((l) => l.id === locationId)?.name || t('scan.allLocations');
 
   useEffect(() => {
     const timer = setTimeout(() => setDebounced(search), 300);
@@ -51,7 +52,7 @@ const ScanProductList = forwardRef(function ScanProductList(
       setLevels(levelPage.items ?? []);
     } catch (error) {
       if (latestRequest.current === request) {
-        setLoadError('Could not load products. Pull down to try again.');
+        setLoadError(t('scan.loadProductsFailed'));
       }
       throw error;
     } finally {
@@ -81,26 +82,26 @@ const ScanProductList = forwardRef(function ScanProductList(
     <div className="overflow-hidden rounded-xl border border-border bg-card">
       <div className="flex flex-wrap items-end justify-between gap-3 border-b border-border px-4 py-3">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">On the shelf</p>
-          <h2 className="mt-1 text-base font-semibold">Products at {placeName}</h2>
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">{t('scan.onTheShelf')}</p>
+          <h2 className="mt-1 text-base font-semibold">{t('scan.productsAt', { place: placeName })}</h2>
         </div>
         <div className="relative w-full sm:w-64">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search name, SKU or code"
+            placeholder={t('scan.searchProductsPlaceholder')}
             className="h-9 pl-8"
           />
         </div>
       </div>
 
-      {loading && <p className="px-4 py-8 text-center text-sm text-muted-foreground">Loading products…</p>}
+      {loading && <p className="px-4 py-8 text-center text-sm text-muted-foreground">{t('scan.loadingProducts')}</p>}
       {loadError && <p role="alert" className="px-4 py-2 text-xs text-destructive">{loadError}</p>}
 
       {!loading && items.length === 0 && (
         <p className="px-4 py-8 text-center text-sm text-muted-foreground">
-          {debounced ? 'No products match that search.' : 'Nothing is stored here yet.'}
+          {debounced ? t('scan.noProductsMatchSearch') : t('scan.nothingStoredHere')}
         </p>
       )}
 
@@ -119,7 +120,7 @@ const ScanProductList = forwardRef(function ScanProductList(
                 </button>
                 <p className="numeric text-[11px] text-muted-foreground">{product.sku}</p>
                 <p className="mt-1 flex flex-wrap gap-x-2 gap-y-0.5 text-[11px] text-muted-foreground">
-                  {stock.length === 0 && <span>Not counted here</span>}
+                  {stock.length === 0 && <span>{t('scan.notCountedHere')}</span>}
                   {stock.map((entry) => (
                     <span key={entry.path}>
                       {entry.path} · <span className="numeric font-semibold text-foreground">{entry.quantity}</span>

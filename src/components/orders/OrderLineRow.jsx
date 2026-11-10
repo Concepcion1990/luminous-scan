@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/select';
 import { lineTotal } from '@/lib/orders';
 import { money } from '@/lib/purchasing';
+import { t } from '@/lib/i18n';
 
 export default function OrderLineRow({ line, products, currency, onChange, onRemove }) {
   const pickProduct = (id) => {
@@ -28,10 +29,10 @@ export default function OrderLineRow({ line, products, currency, onChange, onRem
       <div className="flex items-start gap-2">
         <Select value={line.product_id || 'none'} onValueChange={(v) => pickProduct(v === 'none' ? '' : v)}>
           <SelectTrigger className="flex-1">
-            <SelectValue placeholder="Choose a product" />
+            <SelectValue placeholder={t('orders.chooseProduct')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="none">Choose a product</SelectItem>
+            <SelectItem value="none">{t('orders.chooseProduct')}</SelectItem>
             {products.map((p) => (
               <SelectItem key={p.id} value={p.id}>
                 {p.name} · {p.sku}
@@ -39,14 +40,14 @@ export default function OrderLineRow({ line, products, currency, onChange, onRem
             ))}
           </SelectContent>
         </Select>
-        <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0" onClick={onRemove} aria-label="Remove line">
+        <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0" onClick={onRemove} aria-label={t('orders.removeLine')}>
           <Trash2 className="h-3.5 w-3.5" />
         </Button>
       </div>
 
       <div className="grid grid-cols-3 gap-2">
         <div className="grid gap-1">
-          <Label className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Qty</Label>
+          <Label className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">{t('orders.qty')}</Label>
           <Input
             type="number"
             inputMode="numeric"
@@ -56,7 +57,7 @@ export default function OrderLineRow({ line, products, currency, onChange, onRem
           />
         </div>
         <div className="grid gap-1">
-          <Label className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Price</Label>
+          <Label className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">{t('orders.price')}</Label>
           <Input
             type="number"
             inputMode="decimal"
@@ -66,7 +67,7 @@ export default function OrderLineRow({ line, products, currency, onChange, onRem
           />
         </div>
         <div className="grid gap-1">
-          <Label className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Line</Label>
+          <Label className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">{t('orders.line')}</Label>
           <p className="numeric flex h-9 items-center text-sm font-medium">{money(lineTotal(line), currency)}</p>
         </div>
       </div>

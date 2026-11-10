@@ -1,5 +1,6 @@
 import { base44 } from '@/api/client';
 import { DEFAULT_PLAN, featureAllowed, limitFor, planOf } from '@/lib/plans';
+import { t } from './i18n.js';
 
 /** The plan record for one business — a row only exists once it has been set. */
 export async function loadEntitlement(businessId) {
@@ -62,8 +63,10 @@ export function trialWarningDetails(record, now = Date.now()) {
 export function trialLabel(record) {
   const days = trialDaysLeft(record);
   if (days == null) return null;
-  if (days === 0) return 'Trial ended';
-  return days === 1 ? 'Trial · 1 day left' : `Trial · ${days} days left`;
+  if (days === 0) return t('entitlementsLib.trialEnded');
+  return days === 1
+    ? t('entitlementsLib.trialOneDayLeft')
+    : t('entitlementsLib.trialDaysLeft', { days });
 }
 
 /** Missing billing records resolve to restricted Essentials. */

@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Layers, Loader2 } from 'lucide-react';
+import { t } from '@/lib/i18n';
+
 import { base44 } from '@/api/client';
 import { Button } from '@/components/ui/button';
 import { scoped, withBusiness } from '@/lib/scoped';
@@ -71,17 +73,16 @@ export default function CategorySyncPanel({ activeId, rows, products, onSynced }
         <Layers className="mt-0.5 h-4 w-4 shrink-0 text-accent-foreground" />
         <div className="min-w-0">
           <p className="text-sm font-medium">
-            Your products use {entries.length} word{entries.length === 1 ? '' : 's'} this list does not have yet
+            {t('categories.syncTitle', { count: entries.length, plural: entries.length === 1 ? '' : 's' })}
           </p>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            These are already filed on products. Add them here so they appear as suggestions, filters and in
-            reports. Products keep their current classification either way.
+            {t('categories.syncDescription')}
           </p>
 
           <div className="mt-2.5 space-y-2">
-            {categories.length > 0 && <Row label="Categories" entries={categories} />}
-            {subcategories.length > 0 && <Row label="Subcategories" entries={subcategories} />}
-            {tags.length > 0 && <Row label="Tags" entries={tags} prefix="#" />}
+            {categories.length > 0 && <Row label={t('categories.syncCategories')} entries={categories} />}
+            {subcategories.length > 0 && <Row label={t('categories.syncSubcategories')} entries={subcategories} />}
+            {tags.length > 0 && <Row label={t('categories.syncTags')} entries={tags} prefix="#" />}
           </div>
 
           <Button className="mt-3" size="sm" onClick={sync} disabled={saving || !activeId}>
@@ -90,7 +91,7 @@ export default function CategorySyncPanel({ activeId, rows, products, onSynced }
             ) : (
               <Layers className="mr-1.5 h-3.5 w-3.5" />
             )}
-            {saving ? 'Adding…' : `Add ${entries.length} to this list`}
+            {saving ? t('categories.syncAdding') : t('categories.syncButton', { count: entries.length })}
           </Button>
         </div>
       </div>

@@ -2,64 +2,110 @@ import { base44 } from '@/api/client';
 import { scoped, withBusiness } from '@/lib/scoped';
 import { loadEntitlement, resolveEntitlement } from '@/lib/entitlements';
 import { BUNDLE_MOVEMENT_TYPES, featureAllowed } from '@/lib/plans';
+import { t } from './i18n.js';
 
 export const MOVEMENT_TYPES = {
-  receive: { label: 'Received', tone: 'in', direction: 'in', hint: 'Add stock that arrived' },
-  sale: { label: 'Sold', tone: 'out', direction: 'out', hint: 'Remove stock sold or used' },
-  count: { label: 'Count', tone: 'count', direction: 'set', hint: 'Set the exact on-hand quantity' },
-  transfer: { label: 'Transfer', tone: 'move', direction: 'out', hint: 'Move stock to another location' },
-  transfer_in: {
-    label: 'Transfer in',
-    tone: 'move',
+  receive: {
+    get label() { return t('inventoryLib.movementReceived'); },
+    tone: 'in',
     direction: 'in',
-    hint: 'Received from another location',
+    get hint() { return t('inventoryLib.movementReceivedHint'); },
   },
-  returned: { label: 'Returned', tone: 'in', direction: 'in', hint: 'Sold stock came back' },
-  damaged: { label: 'Damaged', tone: 'warn', direction: 'out', hint: 'Unsellable, kept as a record' },
-  lost: { label: 'Lost', tone: 'warn', direction: 'out', hint: 'Missing from the shelf' },
-  found: { label: 'Found', tone: 'in', direction: 'in', hint: 'Turned up again' },
-  write_off: { label: 'Written off', tone: 'warn', direction: 'out', hint: 'Removed from the books' },
-  correction: {
-    label: 'Correction',
+  sale: {
+    get label() { return t('inventoryLib.movementSold'); },
+    tone: 'out',
+    direction: 'out',
+    get hint() { return t('inventoryLib.movementSoldHint'); },
+  },
+  count: {
+    get label() { return t('inventoryLib.movementCount'); },
     tone: 'count',
     direction: 'set',
-    hint: 'Fix a quantity that was recorded wrong',
+    get hint() { return t('inventoryLib.movementCountHint'); },
+  },
+  transfer: {
+    get label() { return t('inventoryLib.movementTransfer'); },
+    tone: 'move',
+    direction: 'out',
+    get hint() { return t('inventoryLib.movementTransferHint'); },
+  },
+  transfer_in: {
+    get label() { return t('inventoryLib.movementTransferIn'); },
+    tone: 'move',
+    direction: 'in',
+    get hint() { return t('inventoryLib.movementTransferInHint'); },
+  },
+  returned: {
+    get label() { return t('inventoryLib.movementReturned'); },
+    tone: 'in',
+    direction: 'in',
+    get hint() { return t('inventoryLib.movementReturnedHint'); },
+  },
+  damaged: {
+    get label() { return t('inventoryLib.movementDamaged'); },
+    tone: 'warn',
+    direction: 'out',
+    get hint() { return t('inventoryLib.movementDamagedHint'); },
+  },
+  lost: {
+    get label() { return t('inventoryLib.movementLost'); },
+    tone: 'warn',
+    direction: 'out',
+    get hint() { return t('inventoryLib.movementLostHint'); },
+  },
+  found: {
+    get label() { return t('inventoryLib.movementFound'); },
+    tone: 'in',
+    direction: 'in',
+    get hint() { return t('inventoryLib.movementFoundHint'); },
+  },
+  write_off: {
+    get label() { return t('inventoryLib.movementWrittenOff'); },
+    tone: 'warn',
+    direction: 'out',
+    get hint() { return t('inventoryLib.movementWrittenOffHint'); },
+  },
+  correction: {
+    get label() { return t('inventoryLib.movementCorrection'); },
+    tone: 'count',
+    direction: 'set',
+    get hint() { return t('inventoryLib.movementCorrectionHint'); },
   },
   reserved: {
-    label: 'Held',
+    get label() { return t('inventoryLib.movementHeld'); },
     tone: 'hold',
     direction: 'hold',
-    hint: 'Reserve stock for an order',
+    get hint() { return t('inventoryLib.movementHeldHint'); },
   },
   released: {
-    label: 'Released',
+    get label() { return t('inventoryLib.movementReleased'); },
     tone: 'hold',
     direction: 'hold',
-    hint: 'Free reserved stock again',
+    get hint() { return t('inventoryLib.movementReleasedHint'); },
   },
   consume: {
-    label: 'Consumed',
+    get label() { return t('inventoryLib.movementConsumed'); },
     tone: 'out',
     direction: 'out',
-    hint: 'Part used up building something',
+    get hint() { return t('inventoryLib.movementConsumedHint'); },
   },
   produce: {
-    label: 'Built',
+    get label() { return t('inventoryLib.movementBuilt'); },
     tone: 'in',
     direction: 'in',
-    hint: 'Finished item put together from parts',
+    get hint() { return t('inventoryLib.movementBuiltHint'); },
   },
   disassemble: {
-    label: 'Taken apart',
+    get label() { return t('inventoryLib.movementTakenApart'); },
     tone: 'out',
     direction: 'out',
-    hint: 'Bundle pulled apart into its parts',
+    get hint() { return t('inventoryLib.movementTakenApartHint'); },
   },
   recovered: {
-    label: 'Part recovered',
+    get label() { return t('inventoryLib.movementPartRecovered'); },
     tone: 'in',
     direction: 'in',
-    hint: 'Part put back on the shelf after a teardown',
+    get hint() { return t('inventoryLib.movementPartRecoveredHint'); },
   },
 };
 
@@ -261,9 +307,7 @@ export async function recordMovement({
     const business = businessId || product.business_id || '';
     const record = await loadEntitlement(business);
     if (!featureAllowed(resolveEntitlement(record, user).planKey, 'builds')) {
-      throw new Error(
-        'Bundle movements are a Business feature — building bundles and taking them apart need the Business plan.'
-      );
+      throw new Error(t('inventoryLib.bundleBusinessOnly'));
     }
   }
 
@@ -279,7 +323,7 @@ export async function recordMovement({
 
   // Stock can never go below zero: a bad count or a double tap must fail loudly.
   if (next < 0) {
-    throw new Error(`Only ${current} on hand at ${location.name}.`);
+    throw new Error(t('inventoryLib.onlyOnHandAt', { current, location: location.name }));
   }
 
   await setLevel(product.id, location.id, next, businessId);
@@ -338,15 +382,20 @@ export async function setReserved({
   reversalOf = null,
 }) {
   const qty = Math.abs(Number(quantity) || 0);
-  if (!qty) throw new Error('Enter how many to hold.');
+  if (!qty) throw new Error(t('inventoryLib.enterHowManyToHold'));
   const levels = await getLevelsForProduct(product.id, businessId);
   const level = levels.find((l) => l.location_id === location.id);
   const onHand = level?.quantity ?? 0;
   const held = level?.reserved ?? 0;
   const next = type === 'reserved' ? held + qty : held - qty;
-  if (next < 0) throw new Error(`Only ${held} held at ${location.name}.`);
+  if (next < 0) throw new Error(t('inventoryLib.onlyHeldAt', { held, location: location.name }));
   if (type === 'reserved' && qty > onHand - held) {
-    throw new Error(`Only ${Math.max(onHand - held, 0)} available to hold at ${location.name}.`);
+    throw new Error(
+      t('inventoryLib.onlyAvailableToHoldAt', {
+        available: Math.max(onHand - held, 0),
+        location: location.name,
+      })
+    );
   }
 
   if (level) await base44.entities.StockLevel.update(level.id, { reserved: next });
@@ -392,20 +441,20 @@ const REVERSIBLE_TYPES = [
 
 /** Why a ledger entry cannot be reversed, or '' when it can. */
 export function reversalBlocker(movement) {
-  if (!movement) return 'Nothing to reverse.';
-  if (movement.reversal_of_id) return 'This entry is already a reversal.';
+  if (!movement) return t('inventoryLib.reversalNothing');
+  if (movement.reversal_of_id) return t('inventoryLib.reversalAlreadyReversal');
   // Bundle entries are checked before the reversible list: they are not in
   // it, and without this order they would get the transfer message below.
   if (
     ['consume', 'produce', 'disassemble', 'recovered'].includes(movement.type)
   ) {
-    return 'This entry came from a build or teardown, which moved several items at once. Adjust the stock directly instead.';
+    return t('inventoryLib.reversalBuildTeardown');
   }
   if (!REVERSIBLE_TYPES.includes(movement.type)) {
-    return 'A transfer touches two places — move the stock back with a new transfer instead.';
+    return t('inventoryLib.reversalTransfer');
   }
   if (movement.type === 'receive' && /^PO-/i.test(movement.reference || '')) {
-    return 'This receipt came from a purchase order. Receive the shortfall or cancel the order in Purchasing instead.';
+    return t('inventoryLib.reversalPurchaseOrder');
   }
   return '';
 }
@@ -443,7 +492,7 @@ export async function reverseMovement(movement, user, businessId = '') {
       location,
       type: movement.type === 'reserved' ? 'released' : 'reserved',
       quantity: movement.quantity,
-      note: `Reverses ${link.label}`,
+      note: t('inventoryLib.reversesLabel', { label: link.label }),
       reference: movement.reference,
       user,
       businessId,
@@ -459,7 +508,7 @@ export async function reverseMovement(movement, user, businessId = '') {
 
   if (target < 0) {
     throw new Error(
-      `Stock at ${location.name} has moved since — only ${current} on hand, so this entry cannot be undone.`
+      t('inventoryLib.cannotUndoMovedSince', { location: location.name, current })
     );
   }
 
@@ -475,7 +524,7 @@ export async function reverseMovement(movement, user, businessId = '') {
     quantity: Math.abs(target - current),
     previous_qty: current,
     new_qty: target,
-    note: `Reverses ${link.label}`,
+    note: t('inventoryLib.reversesLabel', { label: link.label }),
     reference: movement.reference || '',
     user_name: user?.full_name || user?.email || '',
     reversal_of_id: movement.id,
@@ -495,7 +544,7 @@ export const INVENTORY_PRODUCT_LIMIT = 500;
  */
 export function productTruncationNotice(shown, total) {
   if (!total || shown >= total) return '';
-  return `Showing ${shown} of ${total} — refine your search`;
+  return t('inventoryLib.showingOfTotal', { shown, total });
 }
 
 export async function loadInventory(businessId = '') {

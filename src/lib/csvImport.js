@@ -3,25 +3,27 @@
  * importer maps columns to product fields before anything is written.
  */
 
+import { t } from './i18n.js';
+
 export const IMPORT_FIELDS = [
-  { key: 'name', label: 'Product name', required: true },
-  { key: 'sku', label: 'SKU' },
-  { key: 'upc', label: 'UPC / EAN' },
-  { key: 'barcode', label: 'Barcode' },
-  { key: 'isbn', label: 'ISBN' },
-  { key: 'author', label: 'Author' },
-  { key: 'category', label: 'Category' },
-  { key: 'subcategory', label: 'Subcategory' },
-  { key: 'tags', label: 'Tags (comma separated)' },
-  { key: 'brand', label: 'Brand' },
-  { key: 'publisher', label: 'Publisher' },
-  { key: 'condition', label: 'Condition' },
-  { key: 'unit', label: 'Unit of measure' },
-  { key: 'cost', label: 'Unit cost' },
-  { key: 'price', label: 'Retail price' },
-  { key: 'reorder_point', label: 'Reorder point' },
-  { key: 'stock_qty', label: 'Opening stock quantity' },
-  { key: 'description', label: 'Description' },
+  { key: 'name', get label() { return t('importLib.field.name'); }, required: true },
+  { key: 'sku', get label() { return t('importLib.field.sku'); } },
+  { key: 'upc', get label() { return t('importLib.field.upc'); } },
+  { key: 'barcode', get label() { return t('importLib.field.barcode'); } },
+  { key: 'isbn', get label() { return t('importLib.field.isbn'); } },
+  { key: 'author', get label() { return t('importLib.field.author'); } },
+  { key: 'category', get label() { return t('importLib.field.category'); } },
+  { key: 'subcategory', get label() { return t('importLib.field.subcategory'); } },
+  { key: 'tags', get label() { return t('importLib.field.tags'); } },
+  { key: 'brand', get label() { return t('importLib.field.brand'); } },
+  { key: 'publisher', get label() { return t('importLib.field.publisher'); } },
+  { key: 'condition', get label() { return t('importLib.field.condition'); } },
+  { key: 'unit', get label() { return t('importLib.field.unit'); } },
+  { key: 'cost', get label() { return t('importLib.field.cost'); } },
+  { key: 'price', get label() { return t('importLib.field.price'); } },
+  { key: 'reorder_point', get label() { return t('importLib.field.reorderPoint'); } },
+  { key: 'stock_qty', get label() { return t('importLib.field.stockQty'); } },
+  { key: 'description', get label() { return t('importLib.field.description'); } },
 ];
 
 const UNITS = ['each', 'case', 'pair', 'pack', 'kg'];

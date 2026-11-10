@@ -1,3 +1,5 @@
+import { t } from '@/lib/i18n';
+
 const STATUS_TONE = {
   draft: 'bg-muted text-muted-foreground',
   ordered: 'bg-secondary text-secondary-foreground',
@@ -10,13 +12,13 @@ export default function OrderPicker({ orders, value, onChange }) {
   return (
     <div className="rounded-xl border border-border bg-card p-4">
       <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-        Purchase orders
+        {t('print.purchaseOrders')}
       </p>
-      <p className="mt-1 text-[11px] text-muted-foreground">Pick the order to print.</p>
+      <p className="mt-1 text-[11px] text-muted-foreground">{t('print.pickOrderToPrint')}</p>
       <div className="mt-3 max-h-[320px] space-y-1.5 overflow-y-auto pr-1">
         {orders.length === 0 && (
           <p className="py-6 text-center text-xs text-muted-foreground">
-            No purchase orders yet — create one in Purchasing.
+            {t('print.noPurchaseOrders')}
           </p>
         )}
         {orders.map((order) => (
@@ -37,8 +39,11 @@ export default function OrderPicker({ orders, value, onChange }) {
               </span>
             </span>
             <span className="mt-0.5 block truncate text-[11px] text-muted-foreground">
-              {order.supplier_name} · {(order.lines || []).length} line
-              {(order.lines || []).length === 1 ? '' : 's'}
+              {order.supplier_name} ·{' '}
+              {t('print.linesCount', {
+                count: (order.lines || []).length,
+                s: (order.lines || []).length === 1 ? '' : 's',
+              })}
             </span>
           </button>
         ))}

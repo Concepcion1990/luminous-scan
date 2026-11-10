@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { money, openQty, receiveOrder } from '@/lib/purchasing';
+import { t } from '@/lib/i18n';
 
 export default function ReceiveDialog({ open, onOpenChange, order, products, locations, currency, onReceived }) {
   const [qty, setQty] = useState({});
@@ -47,7 +48,7 @@ export default function ReceiveDialog({ open, onOpenChange, order, products, loc
   const submit = async () => {
     const location = locations.find((l) => l.id === locationId);
     if (!location) {
-      setError('Choose where the stock is going.');
+      setError(t('purchasing.chooseLocationError'));
       return;
     }
     setBusy(true);
@@ -58,7 +59,7 @@ export default function ReceiveDialog({ open, onOpenChange, order, products, loc
       onReceived?.(result);
       onOpenChange(false);
     } catch (err) {
-      setError(err?.message || 'Could not receive this order.');
+      setError(err?.message || t('purchasing.receiveFailed'));
     } finally {
       setBusy(false);
     }
@@ -68,21 +69,21 @@ export default function ReceiveDialog({ open, onOpenChange, order, products, loc
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Receive {order.number}</DialogTitle>
+          <DialogTitle>{t('purchasing.receiveTitle', { number: order.number })}</DialogTitle>
           <DialogDescription>
-            {order.supplier_name} · stock is added at the location you pick, with this order's cost.
+            {t('purchasing.receiveDescription', { supplier: order.supplier_name })}
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4">
           <div className="grid gap-2">
-            <Label>Receiving location</Label>
+            <Label>{t('purchasing.receivingLocation')}</Label>
             <Select value={locationId || 'none'} onValueChange={(v) => setLocationId(v === 'none' ? '' : v)}>
               <SelectTrigger>
-                <SelectValue placeholder="Choose a location" />
+                <SelectValue placeholder={t('purchasing.chooseLocation')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">Choose a location</SelectItem>
+                <SelectItem value="none">{t('purchasing.chooseLocation')}</SelectItem>
                 {locations.map((l) => (
                   <SelectItem key={l.id} value={l.id}>
                     {l.name}
@@ -101,7 +102,11 @@ export default function ReceiveDialog({ open, onOpenChange, order, products, loc
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium">{line.product_name}</p>
                       <p className="numeric font-mono text-[10px] text-muted-foreground">
-                        {line.sku} · {money(line.unit_cost, currency)} each · {outstanding} still due
+                        {t('purchasing.lineDetail', {
+                          sku: line.sku,
+                          cost: money(line.unit_cost, currency),
+                          due: outstanding,
+                        })}
                       </p>
                     </div>
                     <Input
@@ -121,12 +126,12 @@ export default function ReceiveDialog({ open, onOpenChange, order, products, loc
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="receive-note">Note (optional)</Label>
+            <Label htmlFor="receive-note">{t('purchasing.noteOptional')}</Label>
             <Input
               id="receive-note"
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              placeholder="Invoice number, damaged carton, short shipment"
+              placeholder={t('purchasing.notePlaceholder')}
             />
           </div>
 
@@ -135,10 +140,10 @@ export default function ReceiveDialog({ open, onOpenChange, order, products, loc
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t('purchasing.cancel')}
           </Button>
           <Button onClick={submit} disabled={busy}>
-            {busy ? 'Receiving…' : 'Receive into stock'}
+            {busy ? t('purchasing.receiving') : t('purchasing.receiveIntoStock')}
           </Button>
         </DialogFooter>
       </DialogContent>

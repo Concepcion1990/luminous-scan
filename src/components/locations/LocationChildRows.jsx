@@ -1,4 +1,6 @@
 import { Pencil, Plus } from 'lucide-react';
+import { t } from '@/lib/i18n';
+
 import { orderedLocations, descendantIds } from '@/lib/locations';
 import { Button } from '@/components/ui/button';
 
@@ -7,6 +9,15 @@ import { Button } from '@/components/ui/button';
  * Each row reports the units held there plus anything nested deeper.
  */
 export default function LocationChildRows({ rootId, locations = [], levels = [], onEdit, onAddChild }) {
+  const KIND_LABELS = {
+    store: t('locations.kindStore'),
+    warehouse: t('locations.kindWarehouse'),
+    van: t('locations.kindVan'),
+    shelf: t('locations.kindShelf'),
+    bin: t('locations.kindBin'),
+    other: t('locations.kindOther'),
+  };
+
   const ids = new Set(descendantIds(locations, rootId));
   const rows = orderedLocations(locations).filter(
     ({ location }) => location.id !== rootId && ids.has(location.id)
@@ -16,7 +27,7 @@ export default function LocationChildRows({ rootId, locations = [], levels = [],
 
   return (
     <div className="mt-3 space-y-1 border-t border-border pt-3">
-      <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">Inside</p>
+      <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">{t('locations.insideLabel')}</p>
       {rows.map(({ location, depth }) => {
         const ownIds = descendantIds(locations, location.id);
         const units = levels
@@ -30,14 +41,14 @@ export default function LocationChildRows({ rootId, locations = [], levels = [],
           >
             <span className="truncate text-xs font-medium">{location.name}</span>
             <span className="font-mono text-[9px] uppercase tracking-wide text-muted-foreground">
-              {location.kind}
+              {KIND_LABELS[location.kind] || location.kind}
             </span>
             <span className="numeric ml-auto text-xs font-semibold">{units}</span>
             <Button
               variant="ghost"
               size="icon"
               className="h-7 w-7"
-              aria-label={`Add location inside ${location.name}`}
+              aria-label={t('locations.addInsideAria', { name: location.name })}
               onClick={() => onAddChild(location)}
             >
               <Plus className="h-3 w-3" />
@@ -46,7 +57,7 @@ export default function LocationChildRows({ rootId, locations = [], levels = [],
               variant="ghost"
               size="icon"
               className="h-7 w-7"
-              aria-label={`Edit ${location.name}`}
+              aria-label={t('locations.editAria', { name: location.name })}
               onClick={() => onEdit(location)}
             >
               <Pencil className="h-3 w-3" />

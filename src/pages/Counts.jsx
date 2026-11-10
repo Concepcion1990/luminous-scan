@@ -11,6 +11,8 @@ import SyncIndicator from '@/components/sync/SyncIndicator';
 import { scoped } from '@/lib/scoped';
 import { productTruncationNotice } from '@/lib/inventory';
 import { cancelCount, COUNT_FILTERS, deleteCount, statusQuery } from '@/lib/counts';
+import { t } from '@/lib/i18n';
+
 
 export default function Counts() {
   const { user, activeId } = useBusiness();
@@ -64,7 +66,7 @@ export default function Counts() {
       setFlash({ ok: true, text: message });
       setReload((n) => n + 1);
     } catch (e) {
-      setFlash({ ok: false, text: e.message || 'That did not work.' });
+      setFlash({ ok: false, text: e.message || t('counts.actionFailed') });
     }
   };
 
@@ -72,14 +74,14 @@ export default function Counts() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Audits</p>
-          <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">Stock counts</h1>
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">{t('counts.eyebrow')}</p>
+          <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">{t('counts.title')}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Count a shelf, review the differences, then approve before stock changes.
+            {t('counts.subtitle')}
           </p>
         </div>
         <Button onClick={() => setDialogOpen(true)}>
-          <Plus className="mr-1.5 h-4 w-4" /> Start a count
+          <Plus className="mr-1.5 h-4 w-4" /> {t('counts.startCount')}
         </Button>
       </div>
 
@@ -98,8 +100,8 @@ export default function Counts() {
 
       {productTruncationNotice(products.length, productTotal) && (
         <p className="rounded-lg border border-warn/30 bg-warn/10 px-3 py-2 text-sm">
-          {productTruncationNotice(products.length, productTotal)} — the count picker lists products
-          alphabetically, so later ones are not offered here.
+          {productTruncationNotice(products.length, productTotal)}{' '}
+          {t('counts.truncationSuffix')}
         </p>
       )}
 
@@ -120,14 +122,14 @@ export default function Counts() {
         ))}
       </div>
 
-      {loading && <p className="text-sm text-muted-foreground">Loading count sessions…</p>}
+      {loading && <p className="text-sm text-muted-foreground">{t('counts.loading')}</p>}
 
       {!loading && !sessions.length && (
         <div className="rounded-xl border border-dashed border-border bg-card p-8 text-center">
           <ClipboardCheck className="mx-auto h-6 w-6 text-muted-foreground" />
-          <p className="mt-2 text-sm font-medium">No count sessions here</p>
+          <p className="mt-2 text-sm font-medium">{t('counts.emptyTitle')}</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Start one to check a shelf against the system, or pick another filter.
+            {t('counts.emptyHint')}
           </p>
         </div>
       )}
@@ -142,14 +144,14 @@ export default function Counts() {
             onCancel={() =>
               run(session, async () => {
                 await cancelCount(session);
-                return `${session.number}: cancelled — nothing was counted into stock.`;
+                return t('counts.cancelledMessage', { number: session.number });
               })
             }
             onDelete={() => {
-              if (!window.confirm(`Delete ${session.number}?`)) return;
+              if (!window.confirm(t('counts.deleteConfirm', { number: session.number }))) return;
               run(session, async () => {
                 await deleteCount(session);
-                return `${session.number}: deleted.`;
+                return t('counts.deletedMessage', { number: session.number });
               });
             }}
           >

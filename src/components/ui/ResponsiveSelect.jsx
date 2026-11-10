@@ -18,6 +18,7 @@ import {
   DrawerTrigger,
 } from '@/components/ui/drawer';
 import { cn } from '@/lib/utils';
+import { t } from '@/lib/i18n';
 
 /**
  * Controlled, single-choice select.
@@ -29,8 +30,8 @@ export default function ResponsiveSelect({
   value,
   onValueChange,
   options = [],
-  title = 'Choose an option',
-  placeholder = 'Select an option',
+  title = t('layout.select.chooseOption'),
+  placeholder = t('layout.select.selectOption'),
   className,
   disabled = false,
   ariaLabel,
@@ -88,14 +89,14 @@ export default function ResponsiveSelect({
           <DrawerClose asChild>
             <button
               type="button"
-              aria-label="Close selection"
+              aria-label={t('layout.select.close')}
               className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <X className="h-5 w-5" aria-hidden="true" />
             </button>
           </DrawerClose>
           <DrawerDescription className="sr-only">
-            Choose one item from the options below.
+            {t('layout.select.chooseOne')}
           </DrawerDescription>
         </DrawerHeader>
         <div

@@ -1,11 +1,12 @@
 import { apiRequest } from '@/api/client';
+import { t } from './i18n.js';
 
 export const PO_STATUS = {
-  draft: { label: 'Draft', tone: 'muted' },
-  ordered: { label: 'On order', tone: 'info' },
-  partial: { label: 'Partly received', tone: 'warn' },
-  received: { label: 'Received', tone: 'ok' },
-  cancelled: { label: 'Cancelled', tone: 'muted' },
+  draft: { get label() { return t('purchasingLib.statusDraft'); }, tone: 'muted' },
+  ordered: { get label() { return t('purchasingLib.statusOnOrder'); }, tone: 'info' },
+  partial: { get label() { return t('purchasingLib.statusPartlyReceived'); }, tone: 'warn' },
+  received: { get label() { return t('purchasingLib.statusReceived'); }, tone: 'ok' },
+  cancelled: { get label() { return t('purchasingLib.statusCancelled'); }, tone: 'muted' },
 };
 
 const STATUS_QUERY = {
@@ -79,9 +80,9 @@ export function blankLine() {
  */
 export async function receiveOrder({ order, receipts, products, location, user, note }) {
   if (!['ordered', 'partial'].includes(order.status)) {
-    throw new Error('This order is no longer open for receiving.');
+    throw new Error(t('purchasingLib.noLongerOpenForReceiving'));
   }
-  if (!location) throw new Error('Choose a receiving location.');
+  if (!location) throw new Error(t('purchasingLib.chooseReceivingLocation'));
   const lines = order.lines || [];
   let receivedNow = 0;
 
@@ -95,14 +96,17 @@ export async function receiveOrder({ order, receipts, products, location, user, 
     const add = Math.max(0, Number(receipts[i]) || 0);
     if (add > outstanding) {
       throw new Error(
-        `Only ${outstanding} still due on ${line.product_name || line.sku || 'a line'} — adjust the quantity.`
+        t('purchasingLib.onlyStillDue', {
+          outstanding,
+          name: line.product_name || line.sku || t('purchasingLib.lineFallback'),
+        })
       );
     }
     if (!add) continue;
     receivedNow += add;
   }
 
-  if (!receivedNow) throw new Error('Enter how many arrived on at least one line.');
+  if (!receivedNow) throw new Error(t('purchasingLib.enterHowManyArrived'));
 
   const businessId = order.business_id || products?.[0]?.business_id || '';
   const result = await apiRequest(

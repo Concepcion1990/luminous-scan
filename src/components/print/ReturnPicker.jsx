@@ -1,4 +1,5 @@
 import { reasonLabel, RETURN_KINDS, RETURN_STATUS } from '@/lib/returns';
+import { t } from '@/lib/i18n';
 
 const TONE = {
   muted: 'bg-muted text-muted-foreground',
@@ -11,13 +12,13 @@ export default function ReturnPicker({ returns, value, onChange }) {
   return (
     <div className="rounded-xl border border-border bg-card p-4">
       <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-        Returns &amp; exchanges
+        {t('print.returnsExchanges')}
       </p>
-      <p className="mt-1 text-[11px] text-muted-foreground">Pick the return to print.</p>
+      <p className="mt-1 text-[11px] text-muted-foreground">{t('print.pickReturnToPrint')}</p>
       <div className="mt-3 max-h-[320px] space-y-1.5 overflow-y-auto pr-1">
         {returns.length === 0 && (
           <p className="py-6 text-center text-xs text-muted-foreground">
-            No returns logged yet — log one in Returns &amp; exchanges.
+            {t('print.noReturns')}
           </p>
         )}
         {returns.map((ret) => {
@@ -39,8 +40,8 @@ export default function ReturnPicker({ returns, value, onChange }) {
                 </span>
               </span>
               <span className="mt-0.5 block truncate text-[11px] text-muted-foreground">
-                {kind?.label || 'Return'} · {reasonLabel(ret.reason)} ·{' '}
-                {ret.customer_name || ret.order_number || 'no customer'}
+                {kind?.label || t('print.returnFallback')} · {reasonLabel(ret.reason)} ·{' '}
+                {ret.customer_name || ret.order_number || t('print.noCustomerLower')}
               </span>
             </button>
           );

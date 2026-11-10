@@ -1,4 +1,6 @@
 import { Input } from '@/components/ui/input';
+import { t } from '@/lib/i18n';
+
 
 export default function CountLineRow({ line, onChange }) {
   const parsed = Number(line.counted);
@@ -23,7 +25,7 @@ export default function CountLineRow({ line, onChange }) {
           className="h-8 w-16 text-center"
           value={line.counted ?? ''}
           placeholder="—"
-          aria-label={`Counted quantity for ${line.product_name}`}
+          aria-label={t('counts.countedAria', { name: line.product_name })}
           onChange={(e) => {
             const raw = e.target.value;
             const next = Number(raw);

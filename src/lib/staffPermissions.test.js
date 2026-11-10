@@ -16,6 +16,8 @@ import {
   BUSINESS_ONLY_PERMISSIONS as SERVER_BUSINESS_ONLY_PERMISSIONS,
   permissionsForPlan,
 } from '../../base44/shared/planLimits.ts';
+import { COMPARISON_ROWS } from './plans.js';
+import { en } from './locales/en.js';
 
 /**
  * Staff permissions: what each plan may offer, and what the server enforces.
@@ -208,10 +210,16 @@ test('create-role refuses Essentials server-side; create-staff-member strips', (
 });
 
 test('Plans page states custom roles as Business-only', () => {
-  const plans = readFileSync('src/lib/plans.js', 'utf8');
-  assert.match(plans, /'Custom staff roles',/);
-  assert.match(plans, /'The five built-in staff roles',/);
-  assert.match(plans, /\{ label: 'Custom staff roles', mobile: UNSET, essentials: false, business: true \}/);
+  // T6.3: the wording moved into en.js and the comparison row cells are
+  // getters — assert the key is referenced and the English value, and the
+  // row's live values, instead of grepping the source for the literal.
+  assert.equal(en['plansLib.compare.customRoles'], 'Custom staff roles');
+  assert.equal(en['plansLib.essentialsIncludes.roles'], 'The five built-in staff roles');
+  const row = COMPARISON_ROWS.find((entry) => entry.label === 'Custom staff roles');
+  assert.deepEqual(
+    { label: row.label, mobile: row.mobile, essentials: row.essentials, business: row.business },
+    { label: 'Custom staff roles', mobile: 'Set at launch', essentials: false, business: true }
+  );
 });
 
 /**

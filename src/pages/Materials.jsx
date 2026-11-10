@@ -17,6 +17,7 @@ import {
 import { useBusiness } from '@/hooks/useBusiness';
 import useEntitlements from '@/hooks/useEntitlements';
 import { scoped } from '@/lib/scoped';
+import { t } from '@/lib/i18n';
 import {
   availabilityAt,
   bundleOnHand,
@@ -26,9 +27,9 @@ import {
 } from '@/lib/bom';
 
 const FILTERS = [
-  { key: 'all', label: 'Everything' },
-  { key: 'bundle', label: 'Bundles & kits' },
-  { key: 'recipe', label: 'Recipes & materials' },
+  { key: 'all', label: t('materials.filterAll') },
+  { key: 'bundle', label: t('materials.filterBundle') },
+  { key: 'recipe', label: t('materials.filterRecipe') },
 ];
 
 export default function Materials() {
@@ -80,9 +81,9 @@ export default function Materials() {
   );
 
   const remove = async (bom) => {
-    if (!window.confirm(`Delete the build list for ${bom.product_name}? Stock is not touched.`)) return;
+    if (!window.confirm(t('materials.deleteConfirm', { name: bom.product_name }))) return;
     await base44.entities.Bom.delete(bom.id);
-    setFlash({ ok: true, text: `${bom.product_name}: build list deleted.` });
+    setFlash({ ok: true, text: t('materials.deleted', { name: bom.product_name }) });
     setReload((n) => n + 1);
   };
 
@@ -95,11 +96,11 @@ export default function Materials() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-            Materials · BOM
+            {t('materials.eyebrow')}
           </p>
-          <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">Bundles &amp; builds</h1>
+          <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">{t('materials.title')}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Pack kits from stock, or use up materials to make a finished item.
+            {t('materials.subtitle')}
           </p>
         </div>
         <Button
@@ -108,7 +109,7 @@ export default function Materials() {
             setBomDialogOpen(true);
           }}
         >
-          <Plus className="mr-1.5 h-4 w-4" /> New build list
+          <Plus className="mr-1.5 h-4 w-4" /> {t('materials.newBuildList')}
         </Button>
       </div>
 
@@ -121,14 +122,14 @@ export default function Materials() {
       <div className="flex flex-wrap items-center gap-2">
         <div className="flex items-center gap-2">
           <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-            Build at
+            {t('materials.buildAt')}
           </span>
           <Select value={locationId || 'none'} onValueChange={(v) => setLocationId(v === 'none' ? '' : v)}>
             <SelectTrigger className="w-[200px] bg-card">
-              <SelectValue placeholder="Choose location" />
+              <SelectValue placeholder={t('materials.chooseLocation')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="none">Choose location</SelectItem>
+              <SelectItem value="none">{t('materials.chooseLocation')}</SelectItem>
               {locations.map((l) => (
                 <SelectItem key={l.id} value={l.id}>
                   {l.name}
@@ -155,14 +156,14 @@ export default function Materials() {
         </div>
       </div>
 
-      {loading && <p className="text-sm text-muted-foreground">Loading build lists…</p>}
+      {loading && <p className="text-sm text-muted-foreground">{t('materials.loading')}</p>}
 
       {!loading && !shown.length && (
         <div className="rounded-xl border border-dashed border-border bg-card p-8 text-center">
           <Boxes className="mx-auto h-6 w-6 text-muted-foreground" />
-          <p className="mt-2 text-sm font-medium">No build lists yet</p>
+          <p className="mt-2 text-sm font-medium">{t('materials.emptyTitle')}</p>
           <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
-            Create one for a kit you pack from existing products, or for an item you make from materials.
+            {t('materials.emptyHint')}
           </p>
         </div>
       )}
@@ -190,7 +191,7 @@ export default function Materials() {
 
       {!loading && shown.length > 0 && (
         <p className="text-xs text-muted-foreground">
-          On-hand and buildable counts are for {locationName || 'the chosen location'} right now.
+          {t('materials.countsNote', { location: locationName || t('materials.chosenLocation') })}
         </p>
       )}
 

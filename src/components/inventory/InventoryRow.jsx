@@ -1,4 +1,6 @@
 import { SlidersHorizontal } from 'lucide-react';
+import { t } from '@/lib/i18n';
+
 import ProductThumb from '@/components/products/ProductThumb';
 import { Button } from '@/components/ui/button';
 
@@ -28,7 +30,7 @@ export default function InventoryRow({ product, levels = [], locations = [], onA
         <div className="mt-1.5 flex flex-wrap gap-1.5">
           {placed.length === 0 ? (
             <span className="font-mono text-[10px] uppercase tracking-wide text-muted-foreground">
-              No stock placed
+              {t('inventory.noStockPlaced')}
             </span>
           ) : (
             placed.map(({ location, level }) => (
@@ -47,12 +49,12 @@ export default function InventoryRow({ product, levels = [], locations = [], onA
         <div className="text-right">
           <p className={`numeric text-lg font-semibold ${atReorder ? 'text-warn' : ''}`}>{total}</p>
           <p className="font-mono text-[9px] uppercase tracking-wide text-muted-foreground">
-            {atReorder ? `Reorder at ${product.reorder_point}` : held ? `${held} held` : 'on hand'}
+            {atReorder ? t('inventory.reorderAt', { point: product.reorder_point }) : held ? t('inventory.heldCount', { count: held }) : t('inventory.onHand')}
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={() => onAdjust(product)}>
           <SlidersHorizontal className="mr-1 h-3.5 w-3.5" />
-          <span className="hidden sm:inline">Adjust</span>
+          <span className="hidden sm:inline">{t('inventory.adjustButton')}</span>
         </Button>
       </div>
     </div>

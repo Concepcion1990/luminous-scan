@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { LEGAL_FOOTER as footer } from '@/lib/trademarkNotice';
+import { t } from '@/lib/i18n';
 
 /**
  * Small, centered copyright / trademark line at the bottom of the pages.
@@ -21,7 +22,7 @@ export default function LegalFooter({ className = '' }) {
     >
       <p>
         <Link to="/about" className="font-medium underline underline-offset-4 hover:text-foreground">
-          About Luminous StockHaven
+          {t('layout.aboutLink')}
         </Link>
       </p>
       <p className="mt-1">{footer.copyrightLine}</p>

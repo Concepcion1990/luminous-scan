@@ -2,6 +2,7 @@ import { Pencil, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { channelLabel, ORDER_STATUS } from '@/lib/orders';
 import { money } from '@/lib/purchasing';
+import { t } from '@/lib/i18n';
 
 const PILL = {
   muted: 'bg-muted text-muted-foreground',
@@ -27,7 +28,7 @@ export default function OrderCard({ order, currency, busy, onEdit, onAction }) {
             </span>
           </div>
           <p className="mt-1 truncate text-sm">
-            {order.customer_name || 'No customer name'}
+            {order.customer_name || t('orders.noCustomerName')}
             {order.customer_ref ? ` · ${order.customer_ref}` : ''}
           </p>
           <p className="mt-0.5 text-xs text-muted-foreground">
@@ -48,8 +49,8 @@ export default function OrderCard({ order, currency, busy, onEdit, onAction }) {
             </span>
             <span className="numeric shrink-0 text-muted-foreground">
               {line.quantity} × {money(line.unit_price, currency)}
-              {Number(line.reserved) > 0 && line.reserved === line.quantity ? ' · held' : ''}
-              {Number(line.shipped) > 0 ? ` · ${line.shipped} shipped` : ''}
+              {Number(line.reserved) > 0 && line.reserved === line.quantity ? t('orders.lineHeld') : ''}
+              {Number(line.shipped) > 0 ? t('orders.lineShipped', { shipped: line.shipped }) : ''}
             </span>
           </li>
         ))}
@@ -57,44 +58,49 @@ export default function OrderCard({ order, currency, busy, onEdit, onAction }) {
 
       {(order.tracking_ref || order.notes) && (
         <p className="mt-2 text-xs text-muted-foreground">
-          {order.tracking_ref ? `${order.carrier || 'Tracking'}: ${order.tracking_ref}` : order.notes}
+          {order.tracking_ref
+            ? t('orders.tracking', {
+                carrier: order.carrier || t('orders.trackingFallback'),
+                ref: order.tracking_ref,
+              })
+            : order.notes}
         </p>
       )}
 
       <div className="mt-3 flex flex-wrap gap-1.5">
         {['new', 'pending'].includes(order.status) && (
           <Button size="sm" className="min-h-11 lg:min-h-0" disabled={busy} onClick={() => onAction('reserve')}>
-            Hold stock
+            {t('orders.holdStock')}
           </Button>
         )}
         {['new', 'pending', 'reserved'].includes(order.status) && (
           <Button size="sm" variant="outline" className="min-h-11 lg:min-h-0" disabled={busy} onClick={() => onAction('pack')}>
-            Packed
+            {t('orders.packButton')}
           </Button>
         )}
         {['reserved', 'packed'].includes(order.status) && (
           <Button size="sm" variant="outline" className="min-h-11 lg:min-h-0" disabled={busy} onClick={() => onAction('release')}>
-            Release hold
+            {t('orders.releaseHold')}
           </Button>
         )}
         {['reserved', 'packed', 'new', 'pending'].includes(order.status) && (
           <Button size="sm" variant="outline" className="min-h-11 lg:min-h-0" disabled={busy} onClick={() => onAction('ship')}>
-            Ship
+            {t('orders.ship')}
           </Button>
         )}
         {order.status === 'shipped' && (
           <Button size="sm" className="min-h-11 lg:min-h-0" disabled={busy} onClick={() => onAction('deliver')}>
-            Mark delivered
+            {t('orders.markDelivered')}
           </Button>
         )}
         {canEdit && (
           <Button size="sm" variant="ghost" className="min-h-11 lg:min-h-0" disabled={busy} onClick={onEdit}>
-            <Pencil className="mr-1 h-3.5 w-3.5" /> Edit
+            <Pencil className="mr-1 h-3.5 w-3.5" /> {t('orders.edit')}
           </Button>
         )}
         {['new', 'pending', 'reserved', 'packed'].includes(order.status) && (
           <Button size="sm" variant="ghost" className="min-h-11 lg:min-h-0" disabled={busy} onClick={() => onAction('cancel')}>
-            Cancel
+            {t('orders.cancel')}
           </Button>
         )}
         {['new', 'pending', 'cancelled'].includes(order.status) && (
@@ -104,7 +110,7 @@ export default function OrderCard({ order, currency, busy, onEdit, onAction }) {
             className="min-h-11 min-w-11 text-muted-foreground lg:min-h-0 lg:min-w-0"
             disabled={busy}
             onClick={() => onAction('delete')}
-            aria-label={`Delete ${order.number}`}
+            aria-label={t('orders.deleteAria', { number: order.number })}
           >
             <Trash2 className="h-3.5 w-3.5" />
           </Button>

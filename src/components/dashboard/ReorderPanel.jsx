@@ -5,6 +5,7 @@ import { ArrowUpRight, Check, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { money, poNumber, poTotals, todayIso } from '@/lib/purchasing';
 import { scoped } from '@/lib/scoped';
+import { t } from '@/lib/i18n';
 
 const keyOf = (item) => `${item.product.id}:${item.level.location_id}`;
 
@@ -67,7 +68,7 @@ export default function ReorderPanel({ items, currency, businessId }) {
   const createOrder = async (group) => {
     const chosen = group.items.filter((item) => picked[keyOf(item)] && Number(qty[keyOf(item)]) > 0);
     if (!chosen.length) {
-      setError('Pick at least one product and a quantity.');
+      setError(t('dashboard.pickAtLeastOne'));
       return;
     }
     // A missing cost is not a cost of zero: a recorded $0 is real and is
@@ -78,7 +79,9 @@ export default function ReorderPanel({ items, currency, businessId }) {
     );
     if (missingCost.length) {
       setError(
-        `Add a cost to ${missingCost.map((item) => item.product.name).join(', ')} before creating this order — a missing cost is not $0.`
+        t('dashboard.addCostBeforeOrder', {
+          names: missingCost.map((item) => item.product.name).join(', '),
+        })
       );
       return;
     }
@@ -124,7 +127,7 @@ export default function ReorderPanel({ items, currency, businessId }) {
         shipping: 0,
         tax: 0,
         total: totals.total,
-        note: 'Created from low-stock suggestions',
+        note: t('dashboard.createdFromSuggestions'),
       });
       setPicked((current) => {
         const next = { ...current };
@@ -140,7 +143,7 @@ export default function ReorderPanel({ items, currency, businessId }) {
         total: totals.total,
       });
     } catch (err) {
-      setError(err?.message || 'Could not create that purchase order.');
+      setError(err?.message || t('dashboard.createOrderFailed'));
     } finally {
       setBusy('');
     }
@@ -150,17 +153,16 @@ export default function ReorderPanel({ items, currency, businessId }) {
     <section className="overflow-hidden rounded-xl border border-border bg-card">
       <div className="flex flex-wrap items-start justify-between gap-2 border-b border-border px-4 py-3 sm:px-5">
         <div>
-          <h2 className="text-sm font-semibold">Reorder suggestions</h2>
+          <h2 className="text-sm font-semibold">{t('dashboard.reorderSuggestions')}</h2>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            Low stock becomes a draft purchase order in one tap, at each product's cost. Nothing is
-            ordered until you review and place the draft in Purchasing.
+            {t('dashboard.reorderIntro')}
           </p>
         </div>
         <Link
           to="/purchasing"
           className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground"
         >
-          Purchase orders <ArrowUpRight className="h-3 w-3" />
+          {t('dashboard.purchaseOrders')} <ArrowUpRight className="h-3 w-3" />
         </Link>
       </div>
 
@@ -168,10 +170,15 @@ export default function ReorderPanel({ items, currency, businessId }) {
         <div className="flex items-start gap-2 border-b border-border bg-ok/8 px-4 py-2.5 text-sm sm:px-5">
           <Check className="mt-0.5 h-4 w-4 shrink-0 text-ok" />
           <span>
-            {flash.number} draft created for {flash.supplier} — {flash.count} line
-            {flash.count === 1 ? '' : 's'}, {money(flash.total, currency)}.{' '}
+            {t('dashboard.draftCreated', {
+              number: flash.number,
+              supplier: flash.supplier,
+              count: flash.count,
+              s: flash.count === 1 ? '' : 's',
+              total: money(flash.total, currency),
+            })}{' '}
             <Link to="/purchasing" className="font-medium underline underline-offset-2">
-              Open
+              {t('dashboard.openLink')}
             </Link>
           </span>
         </div>
@@ -181,7 +188,7 @@ export default function ReorderPanel({ items, currency, businessId }) {
 
       {items.length === 0 && (
         <p className="px-4 py-8 text-center text-sm text-muted-foreground sm:px-5">
-          Nothing is below its reorder point. Suggestions show up here when stock runs low.
+          {t('dashboard.nothingBelowReorderLong')}
         </p>
       )}
 
@@ -192,11 +199,11 @@ export default function ReorderPanel({ items, currency, businessId }) {
             <div className="flex items-center justify-between gap-3 bg-secondary/60 px-4 py-2 sm:px-5">
               <div className="min-w-0">
                 <p className="truncate text-xs font-semibold uppercase tracking-wide">
-                  {group.supplier?.name || 'No supplier set'}
+                  {group.supplier?.name || t('dashboard.noSupplierSet')}
                 </p>
                 {group.supplier?.lead_time_days > 0 && (
                   <p className="font-mono text-[10px] text-muted-foreground">
-                    {group.supplier.lead_time_days}d lead time
+                    {t('dashboard.leadTime', { days: group.supplier.lead_time_days })}
                   </p>
                 )}
               </div>
@@ -207,14 +214,14 @@ export default function ReorderPanel({ items, currency, businessId }) {
                   disabled={busy === group.id || active.length === 0}
                 >
                   <ShoppingCart className="mr-1.5 h-3.5 w-3.5" />
-                  {busy === group.id ? 'Creating…' : `Create draft PO (${active.length})`}
+                  {busy === group.id ? t('dashboard.creating') : t('dashboard.createDraftPo', { count: active.length })}
                 </Button>
               ) : (
                 <Link
                   to="/products"
                   className="shrink-0 text-[11px] font-medium underline underline-offset-2 text-muted-foreground"
                 >
-                  Set a supplier on the product
+                  {t('dashboard.setSupplierOnProduct')}
                 </Link>
               )}
             </div>
@@ -230,15 +237,19 @@ export default function ReorderPanel({ items, currency, businessId }) {
                       checked={on}
                       onChange={(e) => setPicked((p) => ({ ...p, [key]: e.target.checked }))}
                       className="h-4 w-4 shrink-0 accent-primary"
-                      aria-label={`Include ${item.product.name}`}
+                      aria-label={t('dashboard.includeProduct', { name: item.product.name })}
                     />
                     <div className="min-w-0 flex-1">
                       <p className={`truncate text-sm ${on ? 'font-medium' : 'text-muted-foreground'}`}>
                         {item.product.name}
                       </p>
                       <p className="truncate font-mono text-[10px] text-muted-foreground">
-                        {item.product.sku} · {item.location?.name} · {item.quantity} on hand / min{' '}
-                        {item.reorder}
+                        {t('dashboard.reorderRowDetail', {
+                          sku: item.product.sku,
+                          location: item.location?.name,
+                          quantity: item.quantity,
+                          reorder: item.reorder,
+                        })}
                       </p>
                     </div>
                     <input
@@ -248,7 +259,7 @@ export default function ReorderPanel({ items, currency, businessId }) {
                       value={qty[key] ?? ''}
                       onChange={(e) => setQty((q) => ({ ...q, [key]: e.target.value }))}
                       className="numeric w-14 shrink-0 rounded-md border border-input bg-transparent px-2 py-1 text-right text-sm"
-                      aria-label={`Quantity for ${item.product.name}`}
+                      aria-label={t('dashboard.quantityFor', { name: item.product.name })}
                     />
                   </div>
                 );

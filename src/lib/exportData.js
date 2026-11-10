@@ -1,6 +1,7 @@
 import { base44 } from '@/api/client';
 import { downloadCsv, downloadText, fileSlug, fileStamp, toCsv } from '@/lib/csv';
 import { scoped } from '@/lib/scoped';
+import { t } from './i18n.js';
 
 /** Stable UTC timestamps so a spreadsheet can sort them. */
 const iso = (value) => (value ? new Date(value).toISOString() : '');
@@ -44,8 +45,8 @@ const code = (label, pick) => ({ label, value: pick, text: true });
 export const EXPORTS = [
   {
     id: 'products',
-    title: 'Products',
-    description: 'Catalog with every code, cost, price and stock total.',
+    get title() { return t('exportsLib.products.title'); },
+    get description() { return t('exportsLib.products.description'); },
     async build({ businessId }) {
       const [{ rows: products, truncated: productsTruncated }, { rows: levels }, { rows: locations }] =
         await Promise.all([
@@ -94,8 +95,8 @@ export const EXPORTS = [
   },
   {
     id: 'valuation',
-    title: 'Stock valuation',
-    description: 'Every stocked product valued at cost and at retail, with held and available units.',
+    get title() { return t('exportsLib.valuation.title'); },
+    get description() { return t('exportsLib.valuation.description'); },
     async build({ businessId }) {
       const [{ rows: products, truncated: productsTruncated }, { rows: levels }] = await Promise.all([
         fetchAll('Product', businessId, { sort: 'name' }),
@@ -155,8 +156,8 @@ export const EXPORTS = [
   },
   {
     id: 'stock-by-location',
-    title: 'Stock by location',
-    description: 'On-hand quantity for every product in every location.',
+    get title() { return t('exportsLib.stockByLocation.title'); },
+    get description() { return t('exportsLib.stockByLocation.description'); },
     async build({ businessId }) {
       const [{ rows: levels }, { rows: products }, { rows: locations }] = await Promise.all([
         fetchAll('StockLevel', businessId),
@@ -196,8 +197,8 @@ export const EXPORTS = [
   },
   {
     id: 'movements',
-    title: 'Movement ledger',
-    description: 'Every stock movement, with actor, reason and quantities.',
+    get title() { return t('exportsLib.movements.title'); },
+    get description() { return t('exportsLib.movements.description'); },
     async build({ businessId }) {
       const { rows, truncated } = await fetchAll('StockMovement', businessId, { sort: '-created_date' });
       const columns = [
@@ -225,8 +226,8 @@ export const EXPORTS = [
   },
   {
     id: 'suppliers',
-    title: 'Suppliers',
-    description: 'Contact details, account numbers and lead times.',
+    get title() { return t('exportsLib.suppliers.title'); },
+    get description() { return t('exportsLib.suppliers.description'); },
     async build({ businessId }) {
       const { rows, truncated } = await fetchAll('Supplier', businessId, { sort: 'name' });
       const columns = [
@@ -248,8 +249,8 @@ export const EXPORTS = [
   },
   {
     id: 'purchase-orders',
-    title: 'Purchase orders',
-    description: 'One row per order line, with received progress and totals.',
+    get title() { return t('exportsLib.purchaseOrders.title'); },
+    get description() { return t('exportsLib.purchaseOrders.description'); },
     async build({ businessId }) {
       const { rows: orders, truncated } = await fetchAll('PurchaseOrder', businessId, { sort: '-created_date' });
       const rows = orders.flatMap((order) => {
@@ -291,8 +292,8 @@ export const EXPORTS = [
   },
   {
     id: 'locations',
-    title: 'Locations',
-    description: 'Stores, warehouses and bins with what sits in each.',
+    get title() { return t('exportsLib.locations.title'); },
+    get description() { return t('exportsLib.locations.description'); },
     async build({ businessId }) {
       const [{ rows: locations }, { rows: levels }, { rows: products }] = await Promise.all([
         fetchAll('Location', businessId, { sort: 'name' }),
@@ -327,8 +328,8 @@ export const EXPORTS = [
   },
   {
     id: 'categories',
-    title: 'Categories',
-    description: 'Category names with product and unit counts.',
+    get title() { return t('exportsLib.categories.title'); },
+    get description() { return t('exportsLib.categories.description'); },
     async build({ businessId }) {
       const [{ rows: products }, { rows: levels }] = await Promise.all([
         fetchAll('Product', businessId),
@@ -364,8 +365,8 @@ export const EXPORTS = [
   },
   {
     id: 'business-profile',
-    title: 'Business profile',
-    description: 'Name, brand, contact and regional preferences.',
+    get title() { return t('exportsLib.businessProfile.title'); },
+    get description() { return t('exportsLib.businessProfile.description'); },
     async build({ businessId, profile }) {
       const rows = [profile];
       const columns = [
@@ -390,8 +391,8 @@ export const EXPORTS = [
   },
   {
     id: 'inventory-workbook',
-    title: 'Full inventory workbook',
-    description: 'One Excel file with a sheet each for products, stock levels, locations and the movement ledger.',
+    get title() { return t('exportsLib.inventoryWorkbook.title'); },
+    get description() { return t('exportsLib.inventoryWorkbook.description'); },
     async buildSheets({ businessId }) {
       const [{ rows: products }, { rows: levels }, { rows: locations }, { rows: movements, truncated }] =
         await Promise.all([

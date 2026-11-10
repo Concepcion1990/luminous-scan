@@ -1,4 +1,5 @@
 import { Camera, CameraOff, Loader2 } from 'lucide-react';
+import { t } from '@/lib/i18n';
 import useBarcodeCamera from '@/components/scan/useBarcodeCamera';
 
 export default function BarcodeScanner({ onDetect }) {
@@ -25,23 +26,23 @@ export default function BarcodeScanner({ onDetect }) {
           {status === 'starting' && (
             <>
               <Loader2 className="h-5 w-5 animate-spin text-accent" />
-              <p className="text-xs text-primary-foreground/70">Starting camera…</p>
+              <p className="text-xs text-primary-foreground/70">{t('scan.startingCamera')}</p>
             </>
           )}
           {status === 'error' && (
             <>
               <CameraOff className="h-5 w-5 text-accent" />
-              <p className="text-sm font-medium">Camera unavailable</p>
+              <p className="text-sm font-medium">{t('scan.cameraUnavailable')}</p>
               <p className="max-w-[260px] text-xs text-primary-foreground/60">
-                {message || 'Allow camera access, or type the code below — a handheld scanner works too.'}
+                {message || t('scan.cameraFallback')}
               </p>
             </>
           )}
           {status === 'done' && (
             <>
               <Camera className="h-5 w-5 text-accent" />
-              <p className="text-sm font-medium">Code captured</p>
-              <p className="text-xs text-primary-foreground/60">Scan next to capture another.</p>
+              <p className="text-sm font-medium">{t('scan.codeCaptured')}</p>
+              <p className="text-xs text-primary-foreground/60">{t('scan.scanNextHint')}</p>
             </>
           )}
         </div>

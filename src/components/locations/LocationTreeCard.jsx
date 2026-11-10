@@ -1,4 +1,6 @@
 import { Building2, Pencil, Plus, Store, Truck, Warehouse } from 'lucide-react';
+import { t } from '@/lib/i18n';
+
 import LocationChildRows from '@/components/locations/LocationChildRows';
 import { descendantIds } from '@/lib/locations';
 import { Button } from '@/components/ui/button';
@@ -22,6 +24,15 @@ export default function LocationTreeCard({
     const product = productById.get(level.product_id);
     return product && product.reorder_point > 0 && (level.quantity || 0) <= product.reorder_point;
   }).length;
+  const KIND_LABELS = {
+    store: t('locations.kindStore'),
+    warehouse: t('locations.kindWarehouse'),
+    van: t('locations.kindVan'),
+    shelf: t('locations.kindShelf'),
+    bin: t('locations.kindBin'),
+    other: t('locations.kindOther'),
+  };
+
   const Icon = kindIcon[location.kind] || Building2;
 
   return (
@@ -34,7 +45,7 @@ export default function LocationTreeCard({
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold">{location.name}</p>
             <p className="font-mono text-[10px] uppercase tracking-wide text-muted-foreground">
-              {location.code || location.kind}
+              {location.code || KIND_LABELS[location.kind] || location.kind}
             </p>
           </div>
         </div>
@@ -43,7 +54,7 @@ export default function LocationTreeCard({
             variant="ghost"
             size="icon"
             className="h-8 w-8"
-            aria-label={`Add location inside ${location.name}`}
+            aria-label={t('locations.addInsideAria', { name: location.name })}
             onClick={() => onAddChild(location)}
           >
             <Plus className="h-3.5 w-3.5" />
@@ -52,7 +63,7 @@ export default function LocationTreeCard({
             variant="ghost"
             size="icon"
             className="h-8 w-8"
-            aria-label={`Edit ${location.name}`}
+            aria-label={t('locations.editAria', { name: location.name })}
             onClick={() => onEdit(location)}
           >
             <Pencil className="h-3.5 w-3.5" />
@@ -62,15 +73,15 @@ export default function LocationTreeCard({
 
       <div className="mt-4 grid grid-cols-3 gap-2 border-t border-border pt-3">
         <div>
-          <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">Units</p>
+          <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">{t('locations.unitsLabel')}</p>
           <p className="numeric text-lg font-semibold">{units.toLocaleString()}</p>
         </div>
         <div>
-          <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">SKUs</p>
+          <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">{t('locations.skusLabel')}</p>
           <p className="numeric text-lg font-semibold">{skus}</p>
         </div>
         <div>
-          <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">Low</p>
+          <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">{t('locations.lowLabel')}</p>
           <p className={`numeric text-lg font-semibold ${low > 0 ? 'text-warn' : ''}`}>{low}</p>
         </div>
       </div>

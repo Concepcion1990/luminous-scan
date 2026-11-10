@@ -24,15 +24,16 @@ import {
 import { blankLine, money, poNumber, poTotals, todayIso } from '@/lib/purchasing';
 import { useBusiness } from '@/hooks/useBusiness';
 import { withBusiness } from '@/lib/scoped';
+import { t } from '@/lib/i18n';
 
 const STATUSES = ['draft', 'ordered', 'cancelled'];
 
 const STATUS_LABELS = {
-  draft: 'Draft',
-  ordered: 'On order',
-  partial: 'Partly received',
-  received: 'Received',
-  cancelled: 'Cancelled',
+  draft: t('purchasing.statusDraft'),
+  ordered: t('purchasing.statusOrdered'),
+  partial: t('purchasing.statusPartial'),
+  received: t('purchasing.statusReceived'),
+  cancelled: t('purchasing.statusCancelled'),
 };
 
 export default function PurchaseOrderDialog({
@@ -105,7 +106,7 @@ export default function PurchaseOrderDialog({
   const save = async () => {
     const supplier = suppliers.find((s) => s.id === form.supplier_id);
     if (!supplier) {
-      setError('Choose a supplier for this order.');
+      setError(t('purchasing.chooseSupplier'));
       return;
     }
     const lines = form.lines
@@ -119,7 +120,7 @@ export default function PurchaseOrderDialog({
         unit_cost: Number(line.unit_cost) || 0,
       }));
     if (!lines.length) {
-      setError('Add at least one product with a quantity.');
+      setError(t('purchasing.needLine'));
       return;
     }
 
@@ -129,7 +130,7 @@ export default function PurchaseOrderDialog({
     // acknowledgement travels with the save).
     const zeroLines = lines.filter((line) => !(Number(line.unit_cost) > 0));
     if (zeroLines.length && !zeroCost) {
-      setZeroCost(zeroLines.map((line) => line.product_name || line.sku || 'a line'));
+      setZeroCost(zeroLines.map((line) => line.product_name || line.sku || t('purchasing.unnamedLine')));
       return;
     }
 
@@ -139,17 +140,20 @@ export default function PurchaseOrderDialog({
     );
     if (order) {
       if (order.status === 'received' && form.status !== 'received') {
-        setError('This order is fully received — its status stays Received.');
+        setError(t('purchasing.fullyReceived'));
         return;
       }
       if (form.status === 'cancelled' && receivedAlready > 0) {
-        setError('Stock already arrived on this order, so it cannot be cancelled.');
+        setError(t('purchasing.cannotCancel'));
         return;
       }
       const regressed = lines.find((line) => (Number(line.qty_received) || 0) > line.qty_ordered);
       if (regressed) {
         setError(
-          `${regressed.product_name}: ${regressed.qty_received} already received — the ordered quantity cannot be lower.`
+          t('purchasing.cannotLowerQty', {
+            name: regressed.product_name,
+            received: regressed.qty_received,
+          })
         );
         return;
       }
@@ -182,7 +186,7 @@ export default function PurchaseOrderDialog({
       onSaved?.(saved);
       onOpenChange(false);
     } catch (err) {
-      setError(err?.message || 'Could not save this order.');
+      setError(err?.message || t('purchasing.saveFailed'));
     } finally {
       setSaving(false);
     }
@@ -192,25 +196,24 @@ export default function PurchaseOrderDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle>{order ? `Edit ${order.number}` : 'New purchase order'}</DialogTitle>
-          <DialogDescription>
-            Costs entered here become each product's cost when you receive the order. New orders
-            start as drafts — place the order once it has actually gone to the supplier.
-          </DialogDescription>
+          <DialogTitle>
+            {order ? t('purchasing.editTitle', { number: order.number }) : t('purchasing.newTitle')}
+          </DialogTitle>
+          <DialogDescription>{t('purchasing.formDescription')}</DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4">
           <div className="grid gap-2">
-            <Label>Supplier</Label>
+            <Label>{t('purchasing.supplier')}</Label>
             <Select
               value={form.supplier_id || 'none'}
               onValueChange={(v) => setForm((f) => ({ ...f, supplier_id: v === 'none' ? '' : v }))}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Choose a supplier" />
+                <SelectValue placeholder={t('purchasing.chooseSupplierPlaceholder')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">Choose a supplier</SelectItem>
+                <SelectItem value="none">{t('purchasing.chooseSupplierPlaceholder')}</SelectItem>
                 {suppliers.map((s) => (
                   <SelectItem key={s.id} value={s.id}>
                     {s.name}
@@ -222,7 +225,7 @@ export default function PurchaseOrderDialog({
 
           <div className="grid grid-cols-2 gap-3">
             <div className="grid gap-2">
-              <Label htmlFor="po-number">PO number</Label>
+              <Label htmlFor="po-number">{t('purchasing.poNumber')}</Label>
               <Input
                 id="po-number"
                 value={form.number}
@@ -231,7 +234,7 @@ export default function PurchaseOrderDialog({
               />
             </div>
             <div className="grid gap-2">
-              <Label>Status</Label>
+              <Label>{t('purchasing.status')}</Label>
               <Select value={form.status} onValueChange={(v) => setForm((f) => ({ ...f, status: v }))}>
                 <SelectTrigger>
                   <SelectValue />
@@ -249,7 +252,7 @@ export default function PurchaseOrderDialog({
 
           <div className="grid grid-cols-2 gap-3">
             <div className="grid gap-2">
-              <Label htmlFor="order-date">Order date</Label>
+              <Label htmlFor="order-date">{t('purchasing.orderDate')}</Label>
               <Input
                 id="order-date"
                 type="date"
@@ -258,7 +261,7 @@ export default function PurchaseOrderDialog({
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="expected">Expected</Label>
+              <Label htmlFor="expected">{t('purchasing.expected')}</Label>
               <Input
                 id="expected"
                 type="date"
@@ -269,16 +272,16 @@ export default function PurchaseOrderDialog({
           </div>
 
           <div className="grid gap-2">
-            <Label>Receiving location</Label>
+            <Label>{t('purchasing.receivingLocation')}</Label>
             <Select
               value={form.location_id || 'none'}
               onValueChange={(v) => setForm((f) => ({ ...f, location_id: v === 'none' ? '' : v }))}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Choose a location" />
+                <SelectValue placeholder={t('purchasing.chooseLocation')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">Choose a location</SelectItem>
+                <SelectItem value="none">{t('purchasing.chooseLocation')}</SelectItem>
                 {locations.map((l) => (
                   <SelectItem key={l.id} value={l.id}>
                     {l.name}
@@ -290,13 +293,13 @@ export default function PurchaseOrderDialog({
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label>Lines</Label>
+              <Label>{t('purchasing.lines')}</Label>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setForm((f) => ({ ...f, lines: [...f.lines, blankLine()] }))}
               >
-                <Plus className="mr-1 h-3.5 w-3.5" /> Add line
+                <Plus className="mr-1 h-3.5 w-3.5" /> {t('purchasing.addLine')}
               </Button>
             </div>
             {form.lines.map((line, index) => (
@@ -318,7 +321,7 @@ export default function PurchaseOrderDialog({
 
           <div className="grid grid-cols-2 gap-3">
             <div className="grid gap-2">
-              <Label htmlFor="shipping">Shipping</Label>
+              <Label htmlFor="shipping">{t('purchasing.shipping')}</Label>
               <Input
                 id="shipping"
                 type="number"
@@ -329,7 +332,7 @@ export default function PurchaseOrderDialog({
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="tax">Tax</Label>
+              <Label htmlFor="tax">{t('purchasing.tax')}</Label>
               <Input
                 id="tax"
                 type="number"
@@ -343,30 +346,29 @@ export default function PurchaseOrderDialog({
 
           <div className="space-y-1 rounded-lg bg-secondary px-3 py-2.5 text-sm">
             <div className="flex justify-between text-muted-foreground">
-              <span>Subtotal</span>
+              <span>{t('purchasing.subtotal')}</span>
               <span className="numeric">{money(totals.subtotal, currency)}</span>
             </div>
             <div className="flex justify-between font-semibold">
-              <span>Total</span>
+              <span>{t('purchasing.total')}</span>
               <span className="numeric">{money(totals.total, currency)}</span>
             </div>
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="po-note">Note</Label>
+            <Label htmlFor="po-note">{t('purchasing.note')}</Label>
             <Textarea
               id="po-note"
               value={form.note}
               onChange={(e) => setForm((f) => ({ ...f, note: e.target.value }))}
               rows={2}
-              placeholder="Special order, rep name, backorder details"
+              placeholder={t('purchasing.notePlaceholder')}
             />
           </div>
 
           {zeroCost && (
             <p className="rounded-lg border border-warn/30 bg-warn/10 px-3 py-2 text-sm">
-              These lines have no unit cost: {zeroCost.join(', ')}. A missing cost is not $0 — add
-              the cost, or save again to confirm $0 is what you mean.
+              {t('purchasing.zeroCostWarning', { lines: zeroCost.join(', ') })}
             </p>
           )}
 
@@ -375,10 +377,16 @@ export default function PurchaseOrderDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t('purchasing.cancel')}
           </Button>
           <Button onClick={save} disabled={saving}>
-            {saving ? 'Saving…' : zeroCost ? 'Save anyway' : order ? 'Save order' : 'Create order'}
+            {saving
+              ? t('purchasing.saving')
+              : zeroCost
+              ? t('purchasing.saveAnyway')
+              : order
+              ? t('purchasing.saveOrder')
+              : t('purchasing.createOrder')}
           </Button>
         </DialogFooter>
       </DialogContent>

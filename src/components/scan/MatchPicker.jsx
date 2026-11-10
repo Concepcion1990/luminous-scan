@@ -1,5 +1,6 @@
 import { RotateCcw, ScanLine } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { t } from '@/lib/i18n';
 
 /** Shown when one scanned code matches several products, such as ISBN copies. */
 export default function MatchPicker({ matches, onSelect, onDismiss }) {
@@ -8,9 +9,11 @@ export default function MatchPicker({ matches, onSelect, onDismiss }) {
       <div className="flex items-start gap-2">
         <ScanLine className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
         <div>
-          <p className="text-sm font-medium">{matches.length} products match this code</p>
+          <p className="text-sm font-medium">
+            {t('scan.matchesCount', { count: matches.length, s: matches.length === 1 ? '' : 's' })}
+          </p>
           <p className="text-xs text-muted-foreground">
-            Choose the exact copy you are working with. Nothing changes until you record an action.
+            {t('scan.matchPickerHint')}
           </p>
         </div>
       </div>
@@ -33,7 +36,7 @@ export default function MatchPicker({ matches, onSelect, onDismiss }) {
       </ul>
 
       <Button variant="ghost" size="sm" onClick={onDismiss}>
-        <RotateCcw className="mr-1.5 h-3.5 w-3.5" /> Scan next
+        <RotateCcw className="mr-1.5 h-3.5 w-3.5" /> {t('scan.scanNext')}
       </Button>
     </div>
   );

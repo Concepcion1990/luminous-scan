@@ -1,5 +1,6 @@
 import DocHeader from './DocHeader';
 import { formatMoney } from '@/lib/inventory';
+import { t } from '@/lib/i18n';
 
 /**
  * Purchase order and its packing slip. The packing slip deliberately carries no
@@ -14,29 +15,29 @@ export default function PurchaseOrderDoc({ order, business, mode = 'po' }) {
     <div className="print-label print-page-break w-[180mm] bg-white p-2 text-black">
       <DocHeader
         business={business}
-        title={packing ? 'Packing slip' : 'Purchase order'}
+        title={packing ? t('print.packingSlipTitle') : t('print.purchaseOrderTitle')}
         subtitle={[order.number, order.supplier_name, order.status].filter(Boolean).join(' · ')}
         fields={[
-          ['Order date', 'w-[26mm]'],
-          ['Expected', 'w-[26mm]'],
-          [packing ? 'Checked by' : 'Ordered by', 'w-[30mm]'],
+          [t('print.fieldOrderDate'), 'w-[26mm]'],
+          [t('print.fieldExpected'), 'w-[26mm]'],
+          [packing ? t('print.fieldCheckedBy') : t('print.fieldOrderedBy'), 'w-[30mm]'],
         ]}
       />
 
       <div className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-[8pt]">
         <p>
-          <span className="font-mono text-[6.5pt] uppercase tracking-wide text-black/60">Receive into </span>
+          <span className="font-mono text-[6.5pt] uppercase tracking-wide text-black/60">{t('print.receiveInto')} </span>
           {order.location_name || '—'}
         </p>
         {!packing && (
           <p>
-            <span className="font-mono text-[6.5pt] uppercase tracking-wide text-black/60">Total </span>
+            <span className="font-mono text-[6.5pt] uppercase tracking-wide text-black/60">{t('print.total')} </span>
             {money(order.total)}
           </p>
         )}
         {order.note && (
           <p className="w-full">
-            <span className="font-mono text-[6.5pt] uppercase tracking-wide text-black/60">Note </span>
+            <span className="font-mono text-[6.5pt] uppercase tracking-wide text-black/60">{t('print.note')} </span>
             {order.note}
           </p>
         )}
@@ -46,11 +47,11 @@ export default function PurchaseOrderDoc({ order, business, mode = 'po' }) {
         <thead>
           <tr className="border-b border-black text-left font-mono text-[6.5pt] uppercase tracking-wide">
             <th className="w-[26mm] py-1 font-normal">SKU</th>
-            <th className="py-1 font-normal">Item</th>
-            <th className="w-[16mm] py-1 text-right font-normal">Ordered</th>
-            <th className="w-[16mm] py-1 text-right font-normal">Received</th>
-            {!packing && <th className="w-[20mm] py-1 text-right font-normal">Unit cost</th>}
-            {!packing && <th className="w-[22mm] py-1 text-right font-normal">Line total</th>}
+            <th className="py-1 font-normal">{t('print.colItem')}</th>
+            <th className="w-[16mm] py-1 text-right font-normal">{t('print.colOrdered')}</th>
+            <th className="w-[16mm] py-1 text-right font-normal">{t('print.colReceived')}</th>
+            {!packing && <th className="w-[20mm] py-1 text-right font-normal">{t('print.colUnitCost')}</th>}
+            {!packing && <th className="w-[22mm] py-1 text-right font-normal">{t('print.colLineTotal')}</th>}
           </tr>
         </thead>
         <tbody>
@@ -77,7 +78,7 @@ export default function PurchaseOrderDoc({ order, business, mode = 'po' }) {
           {lines.length === 0 && (
             <tr>
               <td colSpan={packing ? 4 : 6} className="py-3 text-center text-[8pt] text-black/60">
-                No lines on this order.
+                {t('print.noLines')}
               </td>
             </tr>
           )}
@@ -87,28 +88,26 @@ export default function PurchaseOrderDoc({ order, business, mode = 'po' }) {
       {!packing && (
         <div className="mt-3 ml-auto w-[70mm] text-[8pt]">
           <div className="flex justify-between border-b border-black/25 py-1">
-            <span>Subtotal</span>
+            <span>{t('print.subtotal')}</span>
             <span className="numeric">{money(order.subtotal)}</span>
           </div>
           <div className="flex justify-between border-b border-black/25 py-1">
-            <span>Shipping</span>
+            <span>{t('print.shipping')}</span>
             <span className="numeric">{money(order.shipping)}</span>
           </div>
           <div className="flex justify-between border-b border-black/25 py-1">
-            <span>Tax</span>
+            <span>{t('print.tax')}</span>
             <span className="numeric">{money(order.tax)}</span>
           </div>
           <div className="flex justify-between py-1 text-[9.5pt] font-semibold">
-            <span>Total</span>
+            <span>{t('print.total')}</span>
             <span className="numeric">{money(order.total)}</span>
           </div>
         </div>
       )}
 
       <p className="mt-3 border-t border-black/25 pt-2 font-mono text-[6.5pt] uppercase tracking-wide text-black/60">
-        {packing
-          ? 'Check each line against the box, then receive it in Purchasing so stock is recorded.'
-          : 'Prices are what this order was placed at. Receiving updates stock and the product cost.'}
+        {packing ? t('print.poFooterPacking') : t('print.poFooter')}
       </p>
     </div>
   );

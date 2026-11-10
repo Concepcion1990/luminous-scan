@@ -1,19 +1,20 @@
 import { LogOut, ShieldAlert } from 'lucide-react';
 import { base44 } from '@/api/client';
 import { Button } from '@/components/ui/button';
+import { t } from '@/lib/i18n';
 
 const COPY = {
   suspended: {
-    title: 'Your access is paused',
-    body: 'An administrator has suspended this staff account for the active business. Ask them to set you back to active, then sign in again.',
+    titleKey: 'staff.access.suspendedTitle',
+    bodyKey: 'staff.access.suspendedBody',
   },
   pending: {
-    title: 'Your invitation is not active yet',
-    body: 'This business has an invitation for your email that has not been activated. Ask the owner to set your staff status to active. Nothing here is visible until then.',
+    titleKey: 'staff.access.pendingTitle',
+    bodyKey: 'staff.access.pendingBody',
   },
   'no-seat': {
-    title: 'This business is not open to your login',
-    body: 'Your account has no staff seat for this business, so its stock stays closed. Ask the owner to add you in Staff & roles.',
+    titleKey: 'staff.access.noSeatTitle',
+    bodyKey: 'staff.access.noSeatBody',
   },
 };
 
@@ -25,12 +26,12 @@ export default function AccessPaused({ reason = 'suspended' }) {
       <div className="mx-auto grid h-10 w-10 place-items-center rounded-full bg-warn/20 text-warn">
         <ShieldAlert className="h-4 w-4" />
       </div>
-      <p className="mt-3 text-sm font-semibold">{copy.title}</p>
+      <p className="mt-3 text-sm font-semibold">{t(copy.titleKey)}</p>
       <p className="mx-auto mt-1 max-w-sm text-xs leading-relaxed text-muted-foreground">
-        {copy.body}
+        {t(copy.bodyKey)}
       </p>
       <Button className="mt-4" variant="outline" onClick={() => base44.auth.logout('/login')}>
-        <LogOut className="mr-1.5 h-4 w-4" /> Sign out
+        <LogOut className="mr-1.5 h-4 w-4" /> {t('staff.access.signOut')}
       </Button>
     </div>
   );

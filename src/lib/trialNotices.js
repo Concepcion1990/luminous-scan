@@ -1,5 +1,5 @@
 /**
- * In-app trial notices — pure, no imports.
+ * In-app trial notices.
  *
  * Concepcion's three notices, shown inside the app (Dashboard banner
  * and Plan summary card), computed from the verified trial end date
@@ -15,14 +15,20 @@
  * they never send email, never change access, and never confirm a
  * scheduled payment. The two reminder EMAILS (day 4 and 24 hours)
  * live separately in base44/shared/trialReminderDelivery.js.
+ *
+ * T6.3: the messages are getters, not import-time t() calls, so a
+ * language switch re-renders them live instead of freezing the locale
+ * that was active when this module first loaded.
  */
+
+import { t } from './i18n.js';
 
 const HOUR_MS = 60 * 60 * 1000;
 
 export const IN_APP_NOTICE_MESSAGES = Object.freeze({
-  'five-day': 'You have 5 more days left on your trial.',
-  'three-day': 'You have 3 more days left on your trial.',
-  'one-day': '24 hours until your trial ends.',
+  get 'five-day'() { return t('plans.trialNoticeFiveDay'); },
+  get 'three-day'() { return t('plans.trialNoticeThreeDay'); },
+  get 'one-day'() { return t('plans.trialNoticeOneDay'); },
 });
 
 /**

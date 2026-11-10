@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { createCodeReader, createFrameGrabber } from '@/lib/codeReader';
+import { t } from '@/lib/i18n';
 
 /** The centre crop is tried first — that is where people hold the code. */
 const CROPS = [0.62, 1];
@@ -40,7 +41,7 @@ export default function useBarcodeCamera(onDetect) {
     const start = async () => {
       if (!navigator.mediaDevices?.getUserMedia) {
         setStatus('error');
-        setMessage('This browser cannot open a camera. Type the code below instead.');
+        setMessage(t('scan.cameraNoBrowser'));
         return;
       }
 
@@ -58,8 +59,8 @@ export default function useBarcodeCamera(onDetect) {
         setStatus('error');
         setMessage(
           error?.name === 'NotAllowedError' || error?.name === 'SecurityError'
-            ? 'Camera access is blocked. Allow the camera in your browser settings, or type the code below.'
-            : 'The camera could not start. Close other apps using it, or type the code below.'
+            ? t('scan.cameraBlocked')
+            : t('scan.cameraStartFailed')
         );
         return;
       }

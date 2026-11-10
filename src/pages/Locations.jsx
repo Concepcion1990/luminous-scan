@@ -13,6 +13,8 @@ import { useToast } from '@/components/ui/use-toast';
 import useEntitlements from '@/hooks/useEntitlements';
 import { displayLimit } from '@/lib/plans';
 import LimitBadge from '@/components/plan/LimitBadge';
+import { t } from '@/lib/i18n';
+
 
 export default function Locations() {
   const { activeId } = useBusiness();
@@ -62,9 +64,8 @@ export default function Locations() {
   const openNew = (parent = null) => {
     if (!parent && atSiteLimit) {
       toast({
-        title: `This plan includes ${siteLimit} site${siteLimit === 1 ? '' : 's'}`,
-        description:
-          'Add shelves, bins or vans inside an existing site, or move to Business for up to five sites.',
+        title: t('locations.limitTitle', { limit: siteLimit, plural: siteLimit === 1 ? '' : 's' }),
+        description: t('locations.limitDescription'),
         variant: 'destructive',
       });
       return;
@@ -84,33 +85,33 @@ export default function Locations() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Network</p>
-          <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">Locations</h1>
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">{t('locations.eyebrow')}</p>
+          <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">{t('locations.title')}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Stores, warehouses and vehicles — with the shelves and bins inside them.
+            {t('locations.subtitle')}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <LimitBadge label="Sites" used={siteCount} limit={siteLimit} />
+          <LimitBadge label={t('locations.limitLabel')} used={siteCount} limit={siteLimit} />
           <Button onClick={() => openNew()}>
-            <Plus className="mr-1.5 h-4 w-4" /> New location
+            <Plus className="mr-1.5 h-4 w-4" /> {t('locations.newLocation')}
           </Button>
         </div>
       </div>
 
-      {loading && <p className="text-sm text-muted-foreground">Loading locations…</p>}
+      {loading && <p className="text-sm text-muted-foreground">{t('locations.loading')}</p>}
 
       {!loading && productTruncationNotice(products.length, productTotal) && (
         <p className="rounded-lg border border-warn/30 bg-warn/10 px-3 py-2 text-sm">
-          {productTruncationNotice(products.length, productTotal)} — location stock cards only cover
-          the first 500 products alphabetically.
+          {productTruncationNotice(products.length, productTotal)}{' '}
+          {t('locations.truncationSuffix')}
         </p>
       )}
 
       {!loading && locations.length === 0 && (
         <div className="rounded-xl border border-dashed border-border bg-card px-6 py-14 text-center">
-          <p className="text-sm font-medium">No locations yet</p>
-          <p className="mt-1 text-xs text-muted-foreground">Add a store or warehouse to start tracking stock.</p>
+          <p className="text-sm font-medium">{t('locations.emptyTitle')}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{t('locations.emptyHint')}</p>
         </div>
       )}
 

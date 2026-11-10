@@ -2,36 +2,37 @@ import { base44 } from '@/api/client';
 import { recordMovement, setReserved } from '@/lib/inventory';
 import { todayIso } from '@/lib/purchasing';
 import { scoped } from '@/lib/scoped';
+import { t } from './i18n.js';
 
 export const ORDER_STATUS = {
-  new: { label: 'New', tone: 'muted' },
-  pending: { label: 'Pending', tone: 'warn' },
-  reserved: { label: 'Stock held', tone: 'hold' },
-  packed: { label: 'Packed', tone: 'info' },
-  shipped: { label: 'Shipped', tone: 'info' },
-  delivered: { label: 'Delivered', tone: 'ok' },
-  cancelled: { label: 'Cancelled', tone: 'muted' },
-  returned: { label: 'Returned', tone: 'warn' },
+  new: { get label() { return t('ordersLib.statusNew'); }, tone: 'muted' },
+  pending: { get label() { return t('ordersLib.statusPending'); }, tone: 'warn' },
+  reserved: { get label() { return t('ordersLib.statusStockHeld'); }, tone: 'hold' },
+  packed: { get label() { return t('ordersLib.statusPacked'); }, tone: 'info' },
+  shipped: { get label() { return t('ordersLib.statusShipped'); }, tone: 'info' },
+  delivered: { get label() { return t('ordersLib.statusDelivered'); }, tone: 'ok' },
+  cancelled: { get label() { return t('ordersLib.statusCancelled'); }, tone: 'muted' },
+  returned: { get label() { return t('ordersLib.statusReturned'); }, tone: 'warn' },
 };
 
 export const CHANNELS = [
-  { value: 'manual', label: 'Manual / other' },
-  { value: 'shopify', label: 'Shopify' },
-  { value: 'ebay', label: 'eBay' },
-  { value: 'amazon', label: 'Amazon' },
-  { value: 'walmart', label: 'Walmart' },
-  { value: 'tiktok_shop', label: 'TikTok Shop' },
-  { value: 'other', label: 'Other channel' },
+  { value: 'manual', get label() { return t('ordersLib.channelManual'); } },
+  { value: 'shopify', get label() { return t('ordersLib.channelShopify'); } },
+  { value: 'ebay', get label() { return t('ordersLib.channelEbay'); } },
+  { value: 'amazon', get label() { return t('ordersLib.channelAmazon'); } },
+  { value: 'walmart', get label() { return t('ordersLib.channelWalmart'); } },
+  { value: 'tiktok_shop', get label() { return t('ordersLib.channelTiktokShop'); } },
+  { value: 'other', get label() { return t('ordersLib.channelOther'); } },
 ];
 
 export const STATUS_FILTERS = [
-  { key: 'open', label: 'Open' },
-  { key: 'reserved', label: 'Stock held' },
-  { key: 'packed', label: 'Packed' },
-  { key: 'shipped', label: 'Shipped' },
-  { key: 'delivered', label: 'Delivered' },
-  { key: 'cancelled', label: 'Cancelled' },
-  { key: 'all', label: 'All' },
+  { key: 'open', get label() { return t('ordersLib.filterOpen'); } },
+  { key: 'reserved', get label() { return t('ordersLib.filterStockHeld'); } },
+  { key: 'packed', get label() { return t('ordersLib.filterPacked'); } },
+  { key: 'shipped', get label() { return t('ordersLib.filterShipped'); } },
+  { key: 'delivered', get label() { return t('ordersLib.filterDelivered'); } },
+  { key: 'cancelled', get label() { return t('ordersLib.filterCancelled'); } },
+  { key: 'all', get label() { return t('ordersLib.filterAll'); } },
 ];
 
 const STATUS_QUERY = {
@@ -49,7 +50,7 @@ export function statusQuery(filter) {
 }
 
 export function channelLabel(value) {
-  return CHANNELS.find((c) => c.value === value)?.label || 'Manual / other';
+  return CHANNELS.find((c) => c.value === value)?.label || t('ordersLib.channelManual');
 }
 
 export function orderNumber() {
@@ -85,8 +86,8 @@ function productIndex(products) {
 }
 
 function orderLocation(order) {
-  if (!order.location_id) throw new Error('Choose where this order ships from first.');
-  return { id: order.location_id, name: order.location_name || 'this location' };
+  if (!order.location_id) throw new Error(t('ordersLib.chooseShipFrom'));
+  return { id: order.location_id, name: order.location_name || t('ordersLib.locationFallback') };
 }
 
 /**
@@ -96,7 +97,7 @@ function orderLocation(order) {
  */
 export async function reserveOrder({ order, products, levels = [], user }) {
   if (!['new', 'pending'].includes(order.status || 'new')) {
-    throw new Error('This order is already holding stock or past that step.');
+    throw new Error(t('ordersLib.alreadyHoldingOrPast'));
   }
   const location = orderLocation(order);
   const lines = order.lines || [];
@@ -109,14 +110,20 @@ export async function reserveOrder({ order, products, levels = [], user }) {
       needed.set(line.product_id, (needed.get(line.product_id) || 0) + qty);
     }
   });
-  if (!needed.size) throw new Error('Every line is already held.');
+  if (!needed.size) throw new Error(t('ordersLib.everyLineAlreadyHeld'));
 
   needed.forEach((qty, productId) => {
     const level = levels.find((l) => l.product_id === productId && l.location_id === location.id);
     const available = (Number(level?.quantity) || 0) - (Number(level?.reserved) || 0);
     if (qty > available) {
-      const name = byProduct.get(productId)?.name || 'a line';
-      throw new Error(`Only ${Math.max(available, 0)} available at ${location.name} for ${name}.`);
+      const name = byProduct.get(productId)?.name || t('ordersLib.lineFallback');
+      throw new Error(
+        t('ordersLib.onlyAvailableFor', {
+          available: Math.max(available, 0),
+          location: location.name,
+          name,
+        })
+      );
     }
   });
 
@@ -138,7 +145,7 @@ export async function reserveOrder({ order, products, levels = [], user }) {
       location,
       type: 'reserved',
       quantity: qty,
-      note: `Order ${order.number}`,
+      note: t('ordersLib.orderNote', { number: order.number }),
       reference: order.number,
       user,
       businessId: order.business_id || '',
@@ -158,7 +165,7 @@ export async function reserveOrder({ order, products, levels = [], user }) {
 export async function releaseHolds({ order, products, user }) {
   const lines = order.lines || [];
   const held = lines.filter((l) => Number(l.reserved) > 0);
-  if (!held.length) throw new Error('This order is not holding any stock.');
+  if (!held.length) throw new Error(t('ordersLib.notHoldingStock'));
   const location = orderLocation(order);
   const byProduct = productIndex(products);
 
@@ -174,7 +181,7 @@ export async function releaseHolds({ order, products, user }) {
       location,
       type: 'released',
       quantity: Number(line.reserved) || 0,
-      note: `Order ${order.number} released`,
+      note: t('ordersLib.orderReleasedNote', { number: order.number }),
       reference: order.number,
       user,
       businessId: order.business_id || '',
@@ -199,7 +206,7 @@ export async function releaseHolds({ order, products, user }) {
  */
 export async function shipOrder({ order, products, user }) {
   if (['shipped', 'delivered', 'cancelled', 'returned'].includes(order.status)) {
-    throw new Error('This order has already left the shelf.');
+    throw new Error(t('ordersLib.alreadyLeftShelf'));
   }
   const location = orderLocation(order);
   const byProduct = productIndex(products);
@@ -219,17 +226,23 @@ export async function shipOrder({ order, products, user }) {
     const remaining = (Number(line.quantity) || 0) - (Number(line.shipped) || 0);
     if (remaining <= 0) return;
     if (!byProduct.get(line.product_id)) {
-      throw new Error(`${line.product_name || 'A line'} is no longer in the catalog.`);
+      throw new Error(
+        t('ordersLib.noLongerInCatalog', { name: line.product_name || t('ordersLib.lineFallback') })
+      );
     }
     needed.set(line.product_id, (needed.get(line.product_id) || 0) + remaining);
   });
-  if (!needed.size) throw new Error('Nothing left to ship on this order.');
+  if (!needed.size) throw new Error(t('ordersLib.nothingLeftToShip'));
 
   needed.forEach((qty, productId) => {
     const available = onHand.get(productId) || 0;
     if (qty > available) {
       throw new Error(
-        `Only ${available} on hand at ${location.name} for ${byProduct.get(productId)?.name || 'a line'}.`
+        t('ordersLib.onlyOnHandFor', {
+          available,
+          location: location.name,
+          name: byProduct.get(productId)?.name || t('ordersLib.lineFallback'),
+        })
       );
     }
   });
@@ -246,7 +259,11 @@ export async function shipOrder({ order, products, user }) {
       continue;
     }
     const product = byProduct.get(line.product_id);
-    if (!product) throw new Error(`${line.product_name || 'A line'} is no longer in the catalog.`);
+    if (!product) {
+      throw new Error(
+        t('ordersLib.noLongerInCatalog', { name: line.product_name || t('ordersLib.lineFallback') })
+      );
+    }
 
     const held = Number(line.reserved) || 0;
     if (held > 0) {
@@ -255,7 +272,7 @@ export async function shipOrder({ order, products, user }) {
         location,
         type: 'released',
         quantity: held,
-        note: `Order ${order.number} shipping`,
+        note: t('ordersLib.orderShippingNote', { number: order.number }),
         reference: order.number,
         user,
         businessId: order.business_id || '',
@@ -266,7 +283,7 @@ export async function shipOrder({ order, products, user }) {
       location,
       type: 'sale',
       quantity: remaining,
-      note: `Order ${order.number}`,
+      note: t('ordersLib.orderNote', { number: order.number }),
       reference: order.number,
       // No code was scanned here, so none is recorded — the not-scanned alert
       // must only count stock that really went past a scanner.
@@ -277,7 +294,7 @@ export async function shipOrder({ order, products, user }) {
     shippedNow += remaining;
   }
 
-  if (!shippedNow) throw new Error('Nothing left to ship on this order.');
+  if (!shippedNow) throw new Error(t('ordersLib.nothingLeftToShip'));
 
   const complete = updated.every((l) => (Number(l.shipped) || 0) >= (Number(l.quantity) || 0));
   await base44.entities.Order.update(order.id, {
@@ -291,7 +308,7 @@ export async function shipOrder({ order, products, user }) {
 
 export async function cancelOrder({ order, products, user }) {
   if (['shipped', 'delivered', 'returned'].includes(order.status)) {
-    throw new Error('Stock already left for this order — record a return instead of cancelling.');
+    throw new Error(t('ordersLib.stockLeftRecordReturn'));
   }
   if (heldUnits(order) > 0) await releaseHolds({ order, products, user });
   await base44.entities.Order.update(order.id, {
@@ -302,20 +319,20 @@ export async function cancelOrder({ order, products, user }) {
 
 export async function markPacked(order) {
   if (!['new', 'pending', 'reserved'].includes(order.status)) {
-    throw new Error('Only an open order can be marked packed.');
+    throw new Error(t('ordersLib.onlyOpenCanPack'));
   }
   await base44.entities.Order.update(order.id, { status: 'packed' });
 }
 
 export async function markDelivered(order) {
-  if (order.status !== 'shipped') throw new Error('Ship the order before marking it delivered.');
+  if (order.status !== 'shipped') throw new Error(t('ordersLib.shipBeforeDelivered'));
   await base44.entities.Order.update(order.id, { status: 'delivered' });
 }
 
 export async function deleteOrder(order) {
   if (['shipped', 'delivered', 'returned'].includes(order.status)) {
-    throw new Error('This order has stock history — cancel it instead of deleting.');
+    throw new Error(t('ordersLib.stockHistoryCancelInstead'));
   }
-  if (heldUnits(order) > 0) throw new Error('Release the held stock before deleting this order.');
+  if (heldUnits(order) > 0) throw new Error(t('ordersLib.releaseHeldBeforeDelete'));
   await base44.entities.Order.delete(order.id);
 }

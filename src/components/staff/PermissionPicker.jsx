@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import useEntitlements from '@/hooks/useEntitlements';
 import { allPermissionsForPlan, permissionGroupsForPlan } from '@/lib/staff';
+import { t } from '@/lib/i18n';
 
 /**
  * Grouped permission checkboxes, with group and whole-list toggles. Only the
@@ -37,14 +38,14 @@ export default function PermissionPicker({ value = [], onChange }) {
     <div className="space-y-2">
       <div className="flex items-center justify-between gap-2">
         <p className="numeric text-[11px] text-muted-foreground">
-          {granted.size} of {offerable.length} permissions
+          {t('staff.permissions.count', { granted: granted.size, total: offerable.length })}
         </p>
         <div className="flex gap-1">
           <Button type="button" size="sm" variant="ghost" className="h-7" onClick={() => onChange(offerable)}>
-            All
+            {t('staff.permissions.all')}
           </Button>
           <Button type="button" size="sm" variant="ghost" className="h-7" onClick={() => onChange([])}>
-            None
+            {t('staff.permissions.none')}
           </Button>
         </div>
       </div>

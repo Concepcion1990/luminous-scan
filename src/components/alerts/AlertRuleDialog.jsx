@@ -20,6 +20,7 @@ import {
 import LocationScopePicker from '@/components/alerts/LocationScopePicker';
 import { ALERT_KINDS, ALERT_KIND_BY_ID } from '@/lib/alerts';
 import { orderedLocations } from '@/lib/locations';
+import { t } from '@/lib/i18n';
 
 const blank = {
   name: '',
@@ -66,7 +67,7 @@ export default function AlertRuleDialog({ open, rule, locations, categories, onC
 
   const submit = async () => {
     if (!form.name.trim()) {
-      setError('Give this alert a name so you can recognise it later.');
+      setError(t('alerts.nameRequired'));
       return;
     }
     setSaving(true);
@@ -86,7 +87,7 @@ export default function AlertRuleDialog({ open, rule, locations, categories, onC
         active: form.active !== false,
       });
     } catch (err) {
-      setError(err?.message || 'Could not save this alert.');
+      setError(err?.message || t('alerts.dialogSaveFailed'));
       setSaving(false);
     }
   };
@@ -95,26 +96,25 @@ export default function AlertRuleDialog({ open, rule, locations, categories, onC
     <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{rule ? 'Edit alert' : 'New alert'}</DialogTitle>
+          <DialogTitle>{rule ? t('alerts.editAlert') : t('alerts.newAlert')}</DialogTitle>
           <DialogDescription>
-            Choose what to watch and where. Alerts are checked every time you open this page, against your
-            live stock and movement history.
+            {t('alerts.dialogDescription')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3">
           <div className="space-y-1.5">
-            <Label htmlFor="alert-name">Name</Label>
+            <Label htmlFor="alert-name">{t('alerts.nameLabel')}</Label>
             <Input
               id="alert-name"
               value={form.name}
               onChange={(event) => patch({ name: event.target.value })}
-              placeholder="e.g. Fiction running low"
+              placeholder={t('alerts.namePlaceholder')}
             />
           </div>
 
           <div className="space-y-1.5">
-            <Label>What to watch</Label>
+            <Label>{t('alerts.whatToWatch')}</Label>
             <Select value={form.kind} onValueChange={pickKind}>
               <SelectTrigger>
                 <SelectValue />
@@ -154,7 +154,7 @@ export default function AlertRuleDialog({ open, rule, locations, categories, onC
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label>Category</Label>
+              <Label>{t('alerts.categoryLabel')}</Label>
               <Select
                 value={form.category || 'all'}
                 onValueChange={(next) => patch({ category: next === 'all' ? '' : next })}
@@ -163,7 +163,7 @@ export default function AlertRuleDialog({ open, rule, locations, categories, onC
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All categories</SelectItem>
+                  <SelectItem value="all">{t('alerts.allCategories')}</SelectItem>
                   {categories.map((category) => (
                     <SelectItem key={category} value={category}>
                       {category}
@@ -181,7 +181,7 @@ export default function AlertRuleDialog({ open, rule, locations, categories, onC
               onChange={(event) => patch({ active: event.target.checked })}
               className="h-4 w-4 accent-primary"
             />
-            Watch this alert
+            {t('alerts.watchThisAlert')}
           </label>
 
           {error && <p className="text-sm text-destructive">{error}</p>}
@@ -189,10 +189,10 @@ export default function AlertRuleDialog({ open, rule, locations, categories, onC
 
         <DialogFooter>
           <Button variant="ghost" onClick={onClose} disabled={saving}>
-            Cancel
+            {t('alerts.cancel')}
           </Button>
           <Button onClick={submit} disabled={saving}>
-            {saving ? 'Saving…' : rule ? 'Save alert' : 'Create alert'}
+            {saving ? t('alerts.saving') : rule ? t('alerts.saveAlert') : t('alerts.createAlert')}
           </Button>
         </DialogFooter>
       </DialogContent>

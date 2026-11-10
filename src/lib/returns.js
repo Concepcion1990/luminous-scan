@@ -2,43 +2,44 @@ import { base44 } from '@/api/client';
 import { recordMovement } from '@/lib/inventory';
 import { todayIso } from '@/lib/purchasing';
 import { scoped } from '@/lib/scoped';
+import { t } from './i18n.js';
 
 export const RETURN_STATUS = {
-  new: { label: 'New', tone: 'warn' },
-  approved: { label: 'Approved', tone: 'info' },
-  completed: { label: 'Completed', tone: 'ok' },
-  rejected: { label: 'Rejected', tone: 'muted' },
+  new: { get label() { return t('returnsLib.statusNew'); }, tone: 'warn' },
+  approved: { get label() { return t('returnsLib.statusApproved'); }, tone: 'info' },
+  completed: { get label() { return t('returnsLib.statusCompleted'); }, tone: 'ok' },
+  rejected: { get label() { return t('returnsLib.statusRejected'); }, tone: 'muted' },
 };
 
 export const RETURN_KINDS = [
-  { value: 'return', label: 'Return' },
-  { value: 'exchange', label: 'Exchange' },
+  { value: 'return', get label() { return t('returnsLib.kindReturn'); } },
+  { value: 'exchange', get label() { return t('returnsLib.kindExchange'); } },
 ];
 
 export const RETURN_REASONS = [
-  { value: 'wrong_item', label: 'Wrong item' },
-  { value: 'damaged', label: 'Damaged in transit' },
-  { value: 'not_as_described', label: 'Not as described' },
-  { value: 'changed_mind', label: 'Changed mind' },
-  { value: 'size_fit', label: 'Size or fit' },
-  { value: 'late', label: 'Arrived late' },
-  { value: 'other', label: 'Other' },
+  { value: 'wrong_item', get label() { return t('returnsLib.reasonWrongItem'); } },
+  { value: 'damaged', get label() { return t('returnsLib.reasonDamaged'); } },
+  { value: 'not_as_described', get label() { return t('returnsLib.reasonNotAsDescribed'); } },
+  { value: 'changed_mind', get label() { return t('returnsLib.reasonChangedMind'); } },
+  { value: 'size_fit', get label() { return t('returnsLib.reasonSizeFit'); } },
+  { value: 'late', get label() { return t('returnsLib.reasonLate'); } },
+  { value: 'other', get label() { return t('returnsLib.reasonOther'); } },
 ];
 
 export const CONDITIONS = [
-  { value: 'sellable', label: 'Sellable as new' },
-  { value: 'inspected', label: 'Good, needs inspection' },
-  { value: 'used', label: 'Used but sellable' },
-  { value: 'damaged', label: 'Damaged' },
-  { value: 'unsellable', label: 'Unsellable' },
+  { value: 'sellable', get label() { return t('returnsLib.conditionSellable'); } },
+  { value: 'inspected', get label() { return t('returnsLib.conditionInspected'); } },
+  { value: 'used', get label() { return t('returnsLib.conditionUsed'); } },
+  { value: 'damaged', get label() { return t('returnsLib.conditionDamaged'); } },
+  { value: 'unsellable', get label() { return t('returnsLib.conditionUnsellable'); } },
 ];
 
 export const RETURN_FILTERS = [
-  { key: 'open', label: 'Open' },
-  { key: 'approved', label: 'Approved' },
-  { key: 'completed', label: 'Completed' },
-  { key: 'rejected', label: 'Rejected' },
-  { key: 'all', label: 'All' },
+  { key: 'open', get label() { return t('returnsLib.filterOpen'); } },
+  { key: 'approved', get label() { return t('returnsLib.filterApproved'); } },
+  { key: 'completed', get label() { return t('returnsLib.filterCompleted'); } },
+  { key: 'rejected', get label() { return t('returnsLib.filterRejected'); } },
+  { key: 'all', get label() { return t('returnsLib.filterAll'); } },
 ];
 
 const STATUS_QUERY = {
@@ -54,11 +55,11 @@ export function statusQuery(filter) {
 }
 
 export function reasonLabel(value) {
-  return RETURN_REASONS.find((r) => r.value === value)?.label || 'Other';
+  return RETURN_REASONS.find((r) => r.value === value)?.label || t('returnsLib.reasonOther');
 }
 
 export function conditionLabel(value) {
-  return CONDITIONS.find((c) => c.value === value)?.label || 'Sellable as new';
+  return CONDITIONS.find((c) => c.value === value)?.label || t('returnsLib.conditionSellable');
 }
 
 export function returnNumber() {
@@ -100,7 +101,7 @@ export function restockUnits(ret) {
 
 export async function approveReturn(ret, user) {
   if (!['new', 'approved'].includes(ret.status)) {
-    throw new Error('Only a new return can be approved.');
+    throw new Error(t('returnsLib.onlyNewCanApprove'));
   }
   await base44.entities.Return.update(ret.id, {
     status: 'approved',
@@ -111,7 +112,7 @@ export async function approveReturn(ret, user) {
 
 export async function rejectReturn(ret) {
   if (['completed'].includes(ret.status)) {
-    throw new Error('A completed return cannot be rejected — reverse the stock entries instead.');
+    throw new Error(t('returnsLib.completedCannotReject'));
   }
   await base44.entities.Return.update(ret.id, { status: 'rejected' });
 }
@@ -122,11 +123,11 @@ export async function rejectReturn(ret) {
  * never restock or deduct twice.
  */
 export async function completeReturn({ ret, products, user, linkedOrder }) {
-  if (ret.status === 'completed') throw new Error('This return is already completed.');
-  if (ret.status !== 'approved') throw new Error('Approve the return before completing it.');
-  if (!ret.location_id) throw new Error('Choose where the goods came back to.');
+  if (ret.status === 'completed') throw new Error(t('returnsLib.alreadyCompleted'));
+  if (ret.status !== 'approved') throw new Error(t('returnsLib.approveBeforeComplete'));
+  if (!ret.location_id) throw new Error(t('returnsLib.chooseReturnLocation'));
 
-  const location = { id: ret.location_id, name: ret.location_name || 'the location' };
+  const location = { id: ret.location_id, name: ret.location_name || t('returnsLib.locationFallback') };
   const byProduct = new Map(products.map((p) => [p.id, p]));
   const businessId = ret.business_id || '';
 
@@ -137,11 +138,13 @@ export async function completeReturn({ ret, products, user, linkedOrder }) {
   // failure halfway would leave the return approved with some stock already
   // moved, and completing it again would restock those lines twice.
   if (!restockLines.length && !exchangeLines.length) {
-    throw new Error('Set at least one line to restock, or add a replacement, before completing.');
+    throw new Error(t('returnsLib.setLineOrReplacement'));
   }
   [...restockLines, ...exchangeLines].forEach((line) => {
     if (!byProduct.get(line.product_id)) {
-      throw new Error(`${line.product_name || 'A line'} is no longer in the catalog.`);
+      throw new Error(
+        t('returnsLib.noLongerInCatalog', { name: line.product_name || t('returnsLib.lineFallback') })
+      );
     }
   });
 
@@ -162,9 +165,11 @@ export async function completeReturn({ ret, products, user, linkedOrder }) {
       const available = onHand.get(productId) || 0;
       if (qty > available) {
         throw new Error(
-          `Only ${available} on hand at ${location.name} for ${
-            byProduct.get(productId)?.name || 'a replacement'
-          }.`
+          t('returnsLib.onlyOnHandFor', {
+            available,
+            location: location.name,
+            name: byProduct.get(productId)?.name || t('returnsLib.replacementFallback'),
+          })
         );
       }
     });
@@ -175,13 +180,17 @@ export async function completeReturn({ ret, products, user, linkedOrder }) {
     const qty = Number(line.quantity) || 0;
     if (!qty || !line.restock) continue;
     const product = byProduct.get(line.product_id);
-    if (!product) throw new Error(`${line.product_name || 'A line'} is no longer in the catalog.`);
+    if (!product) {
+      throw new Error(
+        t('returnsLib.noLongerInCatalog', { name: line.product_name || t('returnsLib.lineFallback') })
+      );
+    }
     await recordMovement({
       product,
       location,
       type: 'returned',
       quantity: qty,
-      note: `Return ${ret.number} · ${conditionLabel(line.condition)}`,
+      note: t('returnsLib.returnNote', { number: ret.number, condition: conditionLabel(line.condition) }),
       reference: ret.number,
       // Completed from a form, not scanned — so no scan is recorded.
       user,
@@ -195,13 +204,19 @@ export async function completeReturn({ ret, products, user, linkedOrder }) {
     const qty = Number(line.quantity) || 0;
     if (!qty) continue;
     const product = byProduct.get(line.product_id);
-    if (!product) throw new Error(`${line.product_name || 'A replacement'} is no longer in the catalog.`);
+    if (!product) {
+      throw new Error(
+        t('returnsLib.noLongerInCatalog', {
+          name: line.product_name || t('returnsLib.replacementFallback'),
+        })
+      );
+    }
     await recordMovement({
       product,
       location,
       type: 'sale',
       quantity: qty,
-      note: `Exchange ${ret.number}`,
+      note: t('returnsLib.exchangeNote', { number: ret.number }),
       reference: ret.number,
       user,
       businessId: businessId || product.business_id || '',
@@ -231,7 +246,7 @@ export async function completeReturn({ ret, products, user, linkedOrder }) {
 
 export async function deleteReturn(ret) {
   if (ret.status === 'completed') {
-    throw new Error('This return has stock entries — reverse them in the ledger instead of deleting.');
+    throw new Error(t('returnsLib.stockEntriesReverseInstead'));
   }
   await base44.entities.Return.delete(ret.id);
 }

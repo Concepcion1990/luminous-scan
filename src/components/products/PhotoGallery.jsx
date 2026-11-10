@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Expand } from 'lucide-react';
 import { Image } from '@/components/ui/image';
+import { t } from '@/lib/i18n';
+
 
 /** Every photo of a product: one large view plus a strip to move between them. */
 export default function PhotoGallery({ photos = [], name = 'Product' }) {
@@ -20,8 +22,8 @@ export default function PhotoGallery({ photos = [], name = 'Product' }) {
   const safeUrl = typeof current === 'string' && /^https?:\/\//i.test(current) ? current : '';
   const FullSize = safeUrl ? 'a' : 'div';
   const fullSizeProps = safeUrl
-    ? { href: safeUrl, target: '_blank', rel: 'noreferrer', title: 'Open this photo at full size' }
-    : { title: 'This photo cannot be opened at full size' };
+    ? { href: safeUrl, target: '_blank', rel: 'noreferrer', title: t('products.photoFullSizeTitle') }
+    : { title: t('products.photoNoFullSize') };
 
   return (
     <div className="space-y-2">
@@ -31,12 +33,12 @@ export default function PhotoGallery({ photos = [], name = 'Product' }) {
       >
         <Image
           src={current}
-          alt={`${name} — photo ${safeIndex + 1}`}
+          alt={t('products.photoAlt', { name, index: safeIndex + 1 })}
           fittingType="fill"
           className="aspect-[16/10] w-full object-cover"
         />
         <span className="pointer-events-none absolute bottom-2 right-2 inline-flex items-center gap-1 rounded-md bg-background/85 px-2 py-1 font-mono text-[10px] uppercase tracking-wide text-foreground opacity-0 transition-opacity group-hover:opacity-100">
-          <Expand className="h-3 w-3" /> Full size
+          <Expand className="h-3 w-3" /> {t('products.photoFullSize')}
         </span>
       </FullSize>
 
@@ -46,7 +48,7 @@ export default function PhotoGallery({ photos = [], name = 'Product' }) {
             key={url}
             type="button"
             onClick={() => setIndex(i)}
-            aria-label={`Show photo ${i + 1}`}
+            aria-label={t('products.photoShowAria', { index: i + 1 })}
             aria-pressed={i === safeIndex}
             className={`h-14 w-14 shrink-0 overflow-hidden rounded-lg border-2 transition-colors ${
               i === safeIndex ? 'border-primary' : 'border-transparent hover:border-border'

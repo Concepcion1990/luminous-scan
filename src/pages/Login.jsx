@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Check, LogIn, Mail, Lock, Loader2 } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import { safeReturnTo } from "@/lib/authReturnTo";
+import { t } from '@/lib/i18n';
 import { readPendingVerificationEmail } from "./Register";
 
 export default function Login() {
@@ -33,7 +34,7 @@ export default function Login() {
       }
       window.location.href = returnTo;
     } catch (err) {
-      setError(err.message || "Invalid email or password");
+      setError(err.message || t('login.invalidCredentials'));
     } finally {
       setLoading(false);
     }
@@ -42,20 +43,20 @@ export default function Login() {
   return (
     <AuthLayout
       icon={LogIn}
-      title="Welcome back"
-      subtitle="Log in to your account"
+      title={t('login.title')}
+      subtitle={t('login.subtitle')}
       footer={
         <>
-          Don't have an account?{" "}
+          {t('login.noAccount')}{" "}
           <Link
             to={"/register" + (returnTo !== "/" ? "?returnTo=" + encodeURIComponent(returnTo) : "")}
             className="text-primary font-medium hover:underline"
           >
-            Create one
+            {t('login.createOne')}
           </Link>{" "}
           ·{" "}
           <Link to="/plans" className="text-primary font-medium hover:underline">
-            See plans
+            {t('login.seePlans')}
           </Link>
         </>
       }
@@ -63,7 +64,7 @@ export default function Login() {
       {resetSuccess && (
         <div className="mb-4 p-3 rounded-lg bg-ok/10 text-sm flex items-start gap-2">
           <Check className="mt-0.5 h-4 w-4 shrink-0 text-ok" />
-          <span>Password changed — log in with your new password.</span>
+          <span>{t('login.resetSuccess')}</span>
         </div>
       )}
 
@@ -75,7 +76,7 @@ export default function Login() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">{t('auth.emailLabel')}</Label>
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
             <Input
@@ -83,7 +84,7 @@ export default function Login() {
               type="email"
               autoComplete="email"
               autoFocus
-              placeholder="you@example.com"
+              placeholder={t('auth.emailPlaceholder')}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="pl-10 h-12"
@@ -93,9 +94,9 @@ export default function Login() {
         </div>
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">{t('auth.passwordLabel')}</Label>
             <Link to="/forgot-password" className="text-xs text-primary hover:underline">
-              Forgot password?
+              {t('login.forgotPassword')}
             </Link>
           </div>
           <div className="relative">
@@ -116,26 +117,26 @@ export default function Login() {
           {loading ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Logging in...
+              {t('login.loggingIn')}
             </>
           ) : (
-            "Log in"
+            t('login.logIn')
           )}
         </Button>
       </form>
       {pendingEmail && (
         <p className="text-center text-sm text-muted-foreground mt-4">
-          Have a verification code for {pendingEmail}?{" "}
+          {t('login.haveCodeFor', { email: pendingEmail })}{" "}
           <Link to="/verify-email" className="text-primary font-medium hover:underline">
-            Verify your email
+            {t('login.verifyEmailLink')}
           </Link>
         </p>
       )}
       {!pendingEmail && (
         <p className="text-center text-sm text-muted-foreground mt-4">
-          Have a verification code?{" "}
+          {t('login.haveCode')}{" "}
           <Link to="/verify-email" className="text-primary font-medium hover:underline">
-            Verify your email
+            {t('login.verifyEmailLink')}
           </Link>
         </p>
       )}

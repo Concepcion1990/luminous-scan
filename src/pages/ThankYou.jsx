@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { t } from '@/lib/i18n';
 import { Link, useSearchParams } from 'react-router-dom';
 import { CheckCircle2, Clock3, ShieldCheck } from 'lucide-react';
 import LegalFooter from '@/components/LegalFooter';
@@ -29,10 +30,10 @@ import {
 const SUCCESS_STATES = new Set(['granted', 'already_active']);
 
 const UNVERIFIED_DETAILS = {
-  not_verified: 'Stripe has not finished setting up this checkout yet. Your payment is safe — nothing has been charged twice. We will keep checking.',
-  trial_not_eligible: 'This email has already used its one free trial, so a trial could not be started. Contact support if you think this is a mistake.',
-  no_pending_checkout_to_reconcile: 'We could not find a pending checkout for this workspace.',
-  default: 'Your purchase is not verified yet. We will keep checking — do not start another checkout.',
+  get not_verified() { return t('thankYou.unverified.notVerified'); },
+  get trial_not_eligible() { return t('thankYou.unverified.trialNotEligible'); },
+  get no_pending_checkout_to_reconcile() { return t('thankYou.unverified.noPendingCheckout'); },
+  get default() { return t('thankYou.unverified.default'); },
 };
 
 export default function ThankYou() {
@@ -116,15 +117,17 @@ export default function ThankYou() {
             <div className="flex justify-center">
               <CheckCircle2 className="h-9 w-9 text-primary" aria-hidden="true" />
             </div>
-            <h1 className="text-3xl font-semibold">You&apos;re in — welcome to your plan.</h1>
+            <h1 className="text-3xl font-semibold">{t('thankYou.grantedTitle')}</h1>
             <p className="text-muted-foreground">
               {result?.status === 'trialing'
-                ? `Your 7-day free trial is running${result?.trial_ends_at ? ` until ${new Date(result.trial_ends_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}` : ''}. You will not be charged until the trial ends.`
-                : 'Your subscription is active. You can start using the app now.'}
+                ? result?.trial_ends_at
+                  ? t('thankYou.trialRunning', { date: new Date(result.trial_ends_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) })
+                  : t('thankYou.trialRunningNoDate')
+                : t('thankYou.subscriptionActive')}
             </p>
             <div className="flex items-center justify-center gap-3">
               <Button asChild>
-                <Link to="/">Open your plan</Link>
+                <Link to="/">{t('thankYou.openPlan')}</Link>
               </Button>
             </div>
           </>
@@ -133,13 +136,13 @@ export default function ThankYou() {
             <div className="flex justify-center">
               <Clock3 className="h-9 w-9 text-primary" aria-hidden="true" />
             </div>
-            <h1 className="text-3xl font-semibold">No checkout to verify here.</h1>
+            <h1 className="text-3xl font-semibold">{t('thankYou.noSessionTitle')}</h1>
             <p className="text-muted-foreground">
-              This page confirms a Stripe checkout. If you were subscribing, start from the plans page — nothing has been charged.
+              {t('thankYou.noSessionBody')}
             </p>
             <div className="flex items-center justify-center gap-3">
               <Link to="/plans" className="inline-block rounded-md bg-primary px-5 py-2 text-primary-foreground">
-                Back to plans
+                {t('thankYou.backToPlans')}
               </Link>
             </div>
           </>
@@ -149,28 +152,27 @@ export default function ThankYou() {
               <Clock3 className="h-9 w-9 text-primary" aria-hidden="true" />
             </div>
             <h1 className="text-3xl font-semibold">
-              {phase === 'checking' ? 'Taking you to your plan…' : 'Your purchase is not verified yet.'}
+              {phase === 'checking' ? t('thankYou.checkingTitle') : t('thankYou.pendingTitle')}
             </h1>
             <p className="text-muted-foreground">
               {phase === 'checking'
-                ? 'We are confirming your subscription with Stripe. This usually takes a few seconds — please keep this page open.'
+                ? t('thankYou.checkingBody')
                 : detail || UNVERIFIED_DETAILS.default}
             </p>
             <p className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
               <ShieldCheck className="h-4 w-4" aria-hidden="true" />
-              Your plan is determined by server-verified provider records.
-              The app is not unlocked until the purchase is verified.
+              {t('thankYou.serverVerified')}
             </p>
             <div className="flex items-center justify-center gap-3">
               <Button type="button" variant="outline" onClick={checkAgain} disabled={phase === 'checking'}>
-                Check again
+                {t('thankYou.checkAgain')}
               </Button>
               <Link to="/plans" className="inline-block rounded-md bg-primary px-5 py-2 text-primary-foreground">
-                Back to plans
+                {t('thankYou.backToPlans')}
               </Link>
             </div>
             <p className="text-xs text-muted-foreground">
-              Do not start another checkout to try again — that would create a second subscription.
+              {t('thankYou.doNotRetry')}
             </p>
           </>
         )}

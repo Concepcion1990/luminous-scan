@@ -1,4 +1,5 @@
 import { TriangleAlert } from 'lucide-react';
+import { t } from '@/lib/i18n';
 import { IMPORT_FIELDS } from '@/lib/csvImport';
 import { IGNORE } from '@/lib/importProducts';
 import {
@@ -16,30 +17,30 @@ export default function ColumnMapper({
   onChange,
   fields = IMPORT_FIELDS,
   requiredKeys = ['name'],
-  missingMessage = 'Map one column to Product name — every imported row needs a name.',
+  missingMessage = t('import.mapNameRequired'),
 }) {
   const missing = !requiredKeys.some((key) => mapping.includes(key));
 
   return (
     <div className="space-y-2">
       <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-        Match the columns
+        {t('import.matchColumns')}
       </p>
       <div className="grid gap-2 sm:grid-cols-2">
         {headers.map((header, column) => (
           <div key={`${header}-${column}`} className="grid gap-1 rounded-lg border border-border p-2">
             <span className="numeric truncate text-[11px] text-muted-foreground" title={header}>
-              {header || `Column ${column + 1}`}
+              {header || t('import.columnFallback', { column: column + 1 })}
             </span>
             <Select
               value={mapping[column] || IGNORE}
               onValueChange={(value) => onChange(column, value === IGNORE ? '' : value)}
             >
               <SelectTrigger className="h-8">
-                <SelectValue placeholder="Ignore this column" />
+                <SelectValue placeholder={t('import.ignoreColumn')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={IGNORE}>Ignore this column</SelectItem>
+                <SelectItem value={IGNORE}>{t('import.ignoreColumn')}</SelectItem>
                 {fields.map((field) => (
                   <SelectItem key={field.key} value={field.key}>
                     {field.label}

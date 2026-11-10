@@ -1,6 +1,7 @@
 import { Hammer, Pencil, Trash2, Unplug } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { BUILD_KINDS, usableLines } from '@/lib/bom';
+import { t } from '@/lib/i18n';
 
 const PILL = {
   blue: 'bg-secondary text-foreground',
@@ -35,12 +36,12 @@ export default function BomCard({
         <div className="flex shrink-0 gap-3 text-right">
           <div>
             <p className="numeric text-lg font-semibold leading-none">{onHand}</p>
-            <p className="font-mono text-[9px] uppercase tracking-wide text-muted-foreground">on hand</p>
+            <p className="font-mono text-[9px] uppercase tracking-wide text-muted-foreground">{t('materials.onHand')}</p>
           </div>
           <div>
             <p className="numeric text-lg font-semibold leading-none text-muted-foreground">{available}</p>
             <p className="font-mono text-[9px] uppercase tracking-wide text-muted-foreground">
-              buildable
+              {t('materials.buildable')}
             </p>
           </div>
         </div>
@@ -48,8 +49,8 @@ export default function BomCard({
 
       <div className="mt-3 flex-1 overflow-hidden rounded-lg border border-border/70">
         <div className="flex items-center justify-between bg-muted/50 px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.12em] text-muted-foreground">
-          <span>Parts in this {kind.label.toLowerCase()}</span>
-          <span>per · have</span>
+          <span>{t('materials.partsIn', { kind: kind.label.toLowerCase() })}</span>
+          <span>{t('materials.perHave')}</span>
         </div>
         <div className="divide-y divide-border/70">
           {parts.map((part) => (
@@ -62,7 +63,7 @@ export default function BomCard({
           ))}
           {!lines.length && (
             <p className="px-2.5 py-2 text-xs text-muted-foreground">
-              No parts yet — edit to add the components.
+              {t('materials.noParts')}
             </p>
           )}
         </div>
@@ -72,20 +73,20 @@ export default function BomCard({
 
       <div className="mt-3 flex flex-wrap gap-1.5">
         <Button size="sm" onClick={onAssemble} disabled={!lines.length}>
-          <Hammer className="mr-1 h-3.5 w-3.5" /> Build
+          <Hammer className="mr-1 h-3.5 w-3.5" /> {t('materials.build')}
         </Button>
         <Button size="sm" variant="outline" onClick={onDisassemble} disabled={!lines.length || onHand < 1}>
-          <Unplug className="mr-1 h-3.5 w-3.5" /> Take apart
+          <Unplug className="mr-1 h-3.5 w-3.5" /> {t('materials.takeApart')}
         </Button>
         <Button size="sm" variant="ghost" onClick={onEdit}>
-          <Pencil className="mr-1 h-3.5 w-3.5" /> Edit
+          <Pencil className="mr-1 h-3.5 w-3.5" /> {t('materials.edit')}
         </Button>
         <Button
           size="sm"
           variant="ghost"
           className="text-muted-foreground"
           onClick={onDelete}
-          aria-label={`Delete build list for ${bom.product_name}`}
+          aria-label={t('materials.deleteAria', { name: bom.product_name })}
         >
           <Trash2 className="h-3.5 w-3.5" />
         </Button>

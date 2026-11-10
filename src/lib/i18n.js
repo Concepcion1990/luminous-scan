@@ -2,14 +2,10 @@
  * Translation framework — T6.
  *
  * One locale file per language (`src/lib/locales/<code>.js`), one
- * registry entry below, one `t()` helper. The UI stays English until
- * the owner picks the first translation language — strings already go
- * through the layer, so adding a language never touches a page.
- *
- * Rules (owner's): languages are added ONE AT A TIME, in ABC order
- * of the language list she approves. The first language has NOT been
- * picked yet — do not add one on a guess. See
- * src/lib/locales/README.md for the how-to.
+ * registry entry below, one `t()` helper. Arabic (ar) is the first
+ * translated locale (T6.3) — the full app flows in it, RTL included.
+ * Languages keep landing ONE AT A TIME, in ABC order of the list the
+ * owner approves. See src/lib/locales/README.md for the how-to.
  *
  * The language comes from the business record (`language` on the
  * business — Settings → Details). An unknown or missing code falls
@@ -18,9 +14,18 @@
  * key instead of crashing the page.
  */
 import { en } from './locales/en.js';
+import { ar } from './locales/ar.js';
 
 /** code -> strings. Add one language at a time, ABC order. */
-export const LOCALES = { en };
+export const LOCALES = { en, ar };
+
+/** Locale codes that read right-to-left (Arabic script family). */
+export const RTL_LOCALES = new Set(['ar', 'fa', 'prs', 'tg', 'ur', 'pa-Arab']);
+
+/** True when the locale reads right-to-left. */
+export function isRTL(code = currentLocale) {
+  return RTL_LOCALES.has(code);
+}
 
 /** The locale codes the app can offer (ABC order). */
 export const SUPPORTED_LOCALES = Object.keys(LOCALES).sort();
@@ -40,6 +45,11 @@ export function getLocale() {
  */
 export function setLocale(code) {
   currentLocale = LOCALES[code] ? code : DEFAULT_LOCALE;
+  // T6.3: RTL locales flip the document direction so the whole layout
+  // flows right-to-left (guarded — the node test env has no document).
+  if (typeof document !== 'undefined' && document.documentElement) {
+    document.documentElement.dir = isRTL(currentLocale) ? 'rtl' : 'ltr';
+  }
   return currentLocale;
 }
 

@@ -1,4 +1,5 @@
 import { code128Rects } from '@/lib/code128';
+import { t } from '@/lib/i18n';
 
 /** A Code 128 barcode drawn as SVG, ready for print. */
 export default function BarcodeSvg({ value, className = 'h-10 w-full' }) {
@@ -12,7 +13,7 @@ export default function BarcodeSvg({ value, className = 'h-10 w-full' }) {
       className={className}
       shapeRendering="crispEdges"
       role="img"
-      aria-label={`Barcode ${value}`}
+      aria-label={t('print.barcodeLabel', { value })}
     >
       <rect x="0" y="0" width={code.width} height="100" fill="#ffffff" />
       {code.rects.map((rect) => (

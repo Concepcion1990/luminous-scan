@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AlertTriangle, Check, Save, ScanLine, Send, Undo2 } from 'lucide-react';
+import { t } from '@/lib/i18n';
+
 import CountLineRow from '@/components/counts/CountLineRow';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -43,7 +45,7 @@ export default function CountSheet({ session, products, levels, user, onChanged 
     setBusy('scan');
     try {
       const matches = await findProductsByCode(code, session.business_id);
-      if (!matches.length) throw new Error(`No product matches ${code}. Add it to the catalog first.`);
+      if (!matches.length) throw new Error(t('counts.noProductMatch', { code }));
       const product = matches[0];
       setLines((prev) => {
         const existing = prev.find((l) => l.product_id === product.id);
@@ -68,7 +70,7 @@ export default function CountSheet({ session, products, levels, user, onChanged 
       setDirty(true);
       setScan('');
     } catch (e) {
-      setError(e.message || 'That code could not be read.');
+      setError(e.message || t('counts.codeReadFailed'));
     } finally {
       setBusy('');
     }
@@ -80,9 +82,9 @@ export default function CountSheet({ session, products, levels, user, onChanged 
     try {
       await saveCounts(session.id, lines);
       setDirty(false);
-      onChanged?.(message || `${session.number}: counts saved — stock unchanged.`);
+      onChanged?.(message || t('counts.savedMessage', { number: session.number }));
     } catch (e) {
-      setError(e.message || 'Could not save the counts.');
+      setError(e.message || t('counts.saveFailed'));
     } finally {
       setBusy('');
     }
@@ -94,9 +96,9 @@ export default function CountSheet({ session, products, levels, user, onChanged 
     try {
       await submitCounts(session.id, lines);
       setDirty(false);
-      onChanged?.(`${session.number}: sent for review — ${summary.differing} differences to approve.`);
+      onChanged?.(t('counts.sentForReview', { number: session.number, count: summary.differing }));
     } catch (e) {
-      setError(e.message || 'Could not send the session for review.');
+      setError(e.message || t('counts.sendReviewFailed'));
     } finally {
       setBusy('');
     }
@@ -106,7 +108,7 @@ export default function CountSheet({ session, products, levels, user, onChanged 
     const differing = discrepancies(lines);
     if (
       differing.length &&
-      !window.confirm(`Apply ${differing.length} differences? Stock will be set to the counted numbers.`)
+      !window.confirm(t('counts.applyConfirm', { count: differing.length }))
     ) {
       return;
     }
@@ -117,11 +119,11 @@ export default function CountSheet({ session, products, levels, user, onChanged 
       setDirty(false);
       onChanged?.(
         applied
-          ? `${session.number}: ${applied} product${applied === 1 ? '' : 's'} corrected.`
-          : `${session.number}: closed — every counted line matched the system, so nothing changed.`
+          ? t('counts.appliedCorrected', { number: session.number, count: applied, plural: applied === 1 ? '' : 's' })
+          : t('counts.appliedClosed', { number: session.number })
       );
     } catch (e) {
-      setError(e.message || 'Could not apply the counts.');
+      setError(e.message || t('counts.applyFailed'));
     } finally {
       setBusy('');
     }
@@ -132,9 +134,9 @@ export default function CountSheet({ session, products, levels, user, onChanged 
     setError('');
     try {
       await reopenCounts(session.id, lines);
-      onChanged?.(`${session.number}: reopened for more counting.`);
+      onChanged?.(t('counts.reopenedMessage', { number: session.number }));
     } catch (e) {
-      setError(e.message || 'Could not reopen the session.');
+      setError(e.message || t('counts.reopenFailed'));
     } finally {
       setBusy('');
     }
@@ -150,31 +152,35 @@ export default function CountSheet({ session, products, levels, user, onChanged 
             onKeyDown={(e) => {
               if (e.key === 'Enter') addByScan();
             }}
-            placeholder="Scan or type a code to count it"
+            placeholder={t('counts.scanPlaceholder')}
             className="font-mono text-xs"
-            aria-label="Scan a product to count"
+            aria-label={t('counts.scanAria')}
           />
           <Button variant="outline" onClick={addByScan} disabled={busy === 'scan'}>
-            <ScanLine className="mr-1 h-4 w-4" /> Add
+            <ScanLine className="mr-1 h-4 w-4" /> {t('counts.addButton')}
           </Button>
         </div>
       )}
 
       <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
         <span>
-          Counted <span className="numeric text-foreground">{summary.counted}</span> of {summary.total}
+          {t('counts.summaryCounted')}{' '}
+          <span className="numeric text-foreground">{summary.counted}</span>{' '}
+          {t('counts.summaryCountedOf', { total: summary.total })}
         </span>
         <span>
-          Differences <span className="numeric text-foreground">{summary.differing}</span>
+          {t('counts.summaryDifferences')}{' '}
+          <span className="numeric text-foreground">{summary.differing}</span>
         </span>
         <span>
-          Net units <span className="numeric text-foreground">{summary.net > 0 ? `+${summary.net}` : summary.net}</span>
+          {t('counts.summaryNetUnits')}{' '}
+          <span className="numeric text-foreground">{summary.net > 0 ? `+${summary.net}` : summary.net}</span>
         </span>
       </div>
 
       {lines.length === 0 ? (
         <p className="text-sm text-muted-foreground">
-          Nothing was on hand here when this session started — scan a product to add it.
+          {t('counts.emptySheet')}
         </p>
       ) : (
         <div className="max-h-[320px] overflow-y-auto pr-1">
@@ -191,10 +197,10 @@ export default function CountSheet({ session, products, levels, user, onChanged 
       {session.status === 'review' && summary.differing > 0 && (
         <div className="rounded-lg border border-warn/30 bg-warn/8 p-2.5 text-xs">
           <p className="flex items-center gap-1.5 font-medium text-warn">
-            <AlertTriangle className="h-3.5 w-3.5" /> Awaiting approval
+            <AlertTriangle className="h-3.5 w-3.5" /> {t('counts.awaitingApproval')}
           </p>
           <p className="mt-1 text-muted-foreground">
-            Applying writes one count entry per differing product. Nothing has changed yet.
+            {t('counts.awaitingHint')}
           </p>
         </div>
       )}
@@ -204,21 +210,21 @@ export default function CountSheet({ session, products, levels, user, onChanged 
       {!locked && (
         <div className="flex flex-wrap gap-1.5">
           <Button size="sm" variant="outline" onClick={() => save()} disabled={busy === 'save' || !dirty}>
-            <Save className="mr-1 h-3.5 w-3.5" /> Save counts
+            <Save className="mr-1 h-3.5 w-3.5" /> {t('counts.saveCounts')}
           </Button>
           {session.status === 'open' && (
             <Button size="sm" onClick={sendReview} disabled={busy === 'review'}>
-              <Send className="mr-1 h-3.5 w-3.5" /> Send for review
+              <Send className="mr-1 h-3.5 w-3.5" /> {t('counts.sendForReview')}
             </Button>
           )}
           {session.status === 'review' && (
             <>
               <Button size="sm" onClick={apply} disabled={busy === 'apply'}>
                 <Check className="mr-1 h-3.5 w-3.5" />{' '}
-                {summary.differing ? 'Apply counts' : 'Close count'}
+                {summary.differing ? t('counts.applyCounts') : t('counts.closeCount')}
               </Button>
               <Button size="sm" variant="ghost" onClick={reopen} disabled={busy === 'reopen'}>
-                <Undo2 className="mr-1 h-3.5 w-3.5" /> Keep counting
+                <Undo2 className="mr-1 h-3.5 w-3.5" /> {t('counts.keepCounting')}
               </Button>
             </>
           )}
@@ -227,14 +233,16 @@ export default function CountSheet({ session, products, levels, user, onChanged 
 
       {session.status === 'applied' && (
         <p className="text-xs text-muted-foreground">
-          Applied {session.applied_by ? `by ${session.applied_by}` : ''} — the sheet is kept as audit history.
+          {session.applied_by
+            ? t('counts.appliedByName', { name: session.applied_by })
+            : t('counts.appliedNoName')}
         </p>
       )}
 
       <p className="text-[11px] text-muted-foreground">
-        Counting never changes stock by itself; ordinary scans elsewhere are unaffected.
+        {t('counts.footerNote')}
       </p>
-      <Label className="sr-only">Count session {session.number}</Label>
+      <Label className="sr-only">{t('counts.sessionLabel', { number: session.number })}</Label>
     </div>
   );
 }

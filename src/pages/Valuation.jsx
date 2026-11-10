@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CircleDollarSign, Download, FileSpreadsheet, Loader2, Lock, TriangleAlert } from 'lucide-react';
+import { t } from '@/lib/i18n';
 import StatCard from '@/components/StatCard';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
@@ -46,13 +47,17 @@ export default function Valuation() {
         format
       );
       toast({
-        title: 'Valuation exported',
-        description: `${count} row${count === 1 ? '' : 's'} saved as ${filename}${truncated ? ' — stopped at 20,000 rows' : ''}`,
+        title: t('valuation.exported'),
+        description: t(truncated ? 'valuation.exportedRowsTruncated' : 'valuation.exportedRows', {
+          count,
+          s: count === 1 ? '' : 's',
+          filename,
+        }),
       });
     } catch {
       toast({
-        title: 'Export failed',
-        description: 'Could not build the file. Try again.',
+        title: t('valuation.exportFailed'),
+        description: t('valuation.exportFailedDesc'),
         variant: 'destructive',
       });
     } finally {
@@ -158,12 +163,11 @@ export default function Valuation() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-            {profile.name} · Valuation
+            {t('valuation.eyebrow', { name: profile.name })}
           </p>
-          <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">Stock value</h1>
+          <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">{t('valuation.title')}</h1>
           <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-            What the shelves are worth at cost, and what they would bring in at retail. Figures come from each
-            product's unit cost and retail price times the quantity on hand.
+            {t('valuation.subtitle')}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -173,7 +177,7 @@ export default function Valuation() {
             ) : (
               <FileSpreadsheet className="mr-1.5 h-4 w-4" />
             )}
-            {exporting === 'xlsx' ? 'Building file…' : 'Download Excel'}
+            {exporting === 'xlsx' ? t('valuation.buildingFile') : t('valuation.downloadExcel')}
           </Button>
           <Button variant="outline" onClick={() => runExport('csv')} disabled={Boolean(exporting) || !activeId}>
             {exporting === 'csv' ? (
@@ -181,7 +185,7 @@ export default function Valuation() {
             ) : (
               <Download className="mr-1.5 h-4 w-4" />
             )}
-            {exporting === 'csv' ? 'Building file…' : 'Download CSV'}
+            {exporting === 'csv' ? t('valuation.buildingFile') : t('valuation.downloadCsv')}
           </Button>
         </div>
       </div>
@@ -191,23 +195,23 @@ export default function Valuation() {
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted">
             <Lock className="h-5 w-5 text-muted-foreground" />
           </div>
-          <h1 className="mt-4 text-xl font-semibold">Stock valuation is a Business feature</h1>
+          <h1 className="mt-4 text-xl font-semibold">{t('valuation.lockedTitle')}</h1>
           <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
-            Your workspace is on the Essentials plan. Business adds stock valuation, unlimited
-            products and staff, suppliers, purchasing, exports and bundles.
+            {t('valuation.lockedDesc')}
           </p>
           <Button asChild className="mt-5">
-            <Link to="/upgrade">See what Business includes</Link>
+            <Link to="/upgrade">{t('valuation.seeBusiness')}</Link>
           </Button>
         </div>
       )}
 
-      {loading && <p className="text-sm text-muted-foreground">Working out the numbers…</p>}
+      {loading && <p className="text-sm text-muted-foreground">{t('valuation.workingOut')}</p>}
 
       {!loading && data?.productsTruncated && !entitlementLoading && can('valuation') && (
         <p className="rounded-lg border border-warn/30 bg-warn/10 px-3 py-2 text-sm">
-          {productTruncationNotice(data.products.length, data.productTotal)} — these figures only
-          cover the first 500 products alphabetically.
+          {t('valuation.truncationNote', {
+            notice: productTruncationNotice(data.products.length, data.productTotal),
+          })}
         </p>
       )}
 
@@ -215,38 +219,44 @@ export default function Valuation() {
         <>
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             <StatCard
-              label={view.costComplete ? 'Value at cost' : 'Known value at cost'}
+              label={view.costComplete ? t('valuation.valueAtCost') : t('valuation.knownValueAtCost')}
               value={money(view.totals.cost)}
               hint={
                 view.costComplete
-                  ? `${view.totals.units} units · ${view.stockedSkus} SKUs`
-                  : `${view.noCost.length} stocked product${view.noCost.length === 1 ? '' : 's'} without a cost`
+                  ? t('valuation.costCompleteHint', { units: view.totals.units, skus: view.stockedSkus })
+                  : t('valuation.withoutCost', {
+                      count: view.noCost.length,
+                      s: view.noCost.length === 1 ? '' : 's',
+                    })
               }
             />
             <StatCard
-              label={view.retailComplete ? 'Value at retail' : 'Known value at retail'}
+              label={view.retailComplete ? t('valuation.valueAtRetail') : t('valuation.knownValueAtRetail')}
               value={money(view.totals.retail)}
               hint={
                 view.retailComplete
-                  ? 'If everything sold at full price'
-                  : `${view.noPrice.length} stocked product${view.noPrice.length === 1 ? '' : 's'} without a price`
+                  ? t('valuation.retailCompleteHint')
+                  : t('valuation.withoutPrice', {
+                      count: view.noPrice.length,
+                      s: view.noPrice.length === 1 ? '' : 's',
+                    })
               }
             />
             <StatCard
-              label="Potential margin"
+              label={t('valuation.potentialMargin')}
               value={view.complete ? money(view.totals.retail - view.totals.cost) : '—'}
               tone={view.complete ? 'ok' : 'default'}
               hint={
-                view.complete
-                  ? 'Retail minus cost, before fees and shipping'
-                  : 'Needs a cost and a price on every stocked product'
+                view.complete ? t('valuation.marginHint') : t('valuation.marginIncompleteHint')
               }
             />
             <StatCard
-              label="Held for orders"
+              label={t('valuation.heldForOrders')}
               value={view.totals.reserved}
               unit="units"
-              hint={`${Math.max(view.totals.units - view.totals.reserved, 0)} units available to sell`}
+              hint={t('valuation.availableToSell', {
+                count: Math.max(view.totals.units - view.totals.reserved, 0),
+              })}
             />
           </div>
 
@@ -254,32 +264,53 @@ export default function Valuation() {
             <div className="flex items-start gap-2 rounded-lg border border-warn/30 bg-warn/10 px-3 py-2 text-sm">
               <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-warn" />
               <div>
-                <p className="font-medium">Incomplete valuation</p>
+                <p className="font-medium">{t('valuation.incompleteTitle')}</p>
                 <p className="mt-0.5 text-xs text-muted-foreground">
-                  Some stocked products have no cost or no selling price recorded, so they are left out of the
-                  figures rather than counted as free. A recorded cost of zero is real and is included.
+                  {t('valuation.incompleteDesc')}
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
                   {view.noCost.length > 0 && (
                     <>
-                      No cost: {view.noCost.slice(0, 4).map((e) => e.product.name).join(', ')}
-                      {view.noCost.length > 4 ? ` +${view.noCost.length - 4} more` : ''}.{' '}
+                      {view.noCost.length > 4
+                        ? t('valuation.noCostMore', {
+                            names: view.noCost.slice(0, 4).map((e) => e.product.name).join(', '),
+                            count: view.noCost.length - 4,
+                          })
+                        : t('valuation.noCost', {
+                            names: view.noCost.slice(0, 4).map((e) => e.product.name).join(', '),
+                          })}{' '}
                     </>
                   )}
                   {view.noPrice.length > 0 && (
                     <>
-                      No price: {view.noPrice.slice(0, 4).map((e) => e.product.name).join(', ')}
-                      {view.noPrice.length > 4 ? ` +${view.noPrice.length - 4} more` : ''}.
+                      {view.noPrice.length > 4
+                        ? t('valuation.noPriceMore', {
+                            names: view.noPrice.slice(0, 4).map((e) => e.product.name).join(', '),
+                            count: view.noPrice.length - 4,
+                          })
+                        : t('valuation.noPrice', {
+                            names: view.noPrice.slice(0, 4).map((e) => e.product.name).join(', '),
+                          })}
                     </>
                   )}{' '}
                   {view.totals.costUnknown + view.totals.retailUnknown > 0 && (
                     <>
-                      {view.totals.costUnknown > 0 &&
-                        `${view.totals.costUnknown} unit${view.totals.costUnknown === 1 ? '' : 's'} have no cost`}
-                      {view.totals.costUnknown > 0 && view.totals.retailUnknown > 0 && ', '}
-                      {view.totals.retailUnknown > 0 &&
-                        `${view.totals.retailUnknown} unit${view.totals.retailUnknown === 1 ? '' : 's'} have no price`}
-                      {' — those units sit outside these totals.'}
+                      {view.totals.costUnknown > 0 && view.totals.retailUnknown > 0
+                        ? t('valuation.unitsNoCostAndPrice', {
+                            costUnits: view.totals.costUnknown,
+                            cs: view.totals.costUnknown === 1 ? '' : 's',
+                            priceUnits: view.totals.retailUnknown,
+                            ps: view.totals.retailUnknown === 1 ? '' : 's',
+                          })
+                        : view.totals.costUnknown > 0
+                          ? t('valuation.unitsNoCostOnly', {
+                              count: view.totals.costUnknown,
+                              s: view.totals.costUnknown === 1 ? '' : 's',
+                            })
+                          : t('valuation.unitsNoPriceOnly', {
+                              count: view.totals.retailUnknown,
+                              s: view.totals.retailUnknown === 1 ? '' : 's',
+                            })}
                     </>
                   )}
                 </p>
@@ -288,10 +319,10 @@ export default function Valuation() {
           )}
 
           <div className="grid gap-4 lg:grid-cols-2">
-            <Panel title="Value by location" hint="Each place with stock on hand.">
+            <Panel title={t('valuation.byLocation')} hint={t('valuation.byLocationHint')}>
               {view.perLocation.length === 0 ? (
                 <p className="px-4 py-10 text-center text-xs text-muted-foreground">
-                  No stock is recorded yet.
+                  {t('valuation.noStockYet')}
                 </p>
               ) : (
                 <div className="divide-y divide-border">
@@ -300,7 +331,7 @@ export default function Valuation() {
                       <div className="min-w-0">
                         <p className="truncate text-sm">{row.location.name}</p>
                         <p className="numeric text-[11px] text-muted-foreground">
-                          {row.units} units · {money(row.retail)} retail
+                          {t('valuation.locationRow', { units: row.units, retail: money(row.retail) })}
                         </p>
                       </div>
                       <p className="numeric shrink-0 text-sm font-semibold">{money(row.cost)}</p>
@@ -311,12 +342,15 @@ export default function Valuation() {
             </Panel>
 
             <Panel
-              title="Every stocked product"
-              hint={`${view.lines.length} line${view.lines.length === 1 ? '' : 's'}, ranked by cost value.`}
+              title={t('valuation.everyProduct')}
+              hint={t('valuation.everyProductHint', {
+                count: view.lines.length,
+                s: view.lines.length === 1 ? '' : 's',
+              })}
             >
               {view.lines.length === 0 ? (
                 <p className="px-4 py-10 text-center text-xs text-muted-foreground">
-                  Nothing stocked yet.
+                  {t('valuation.nothingStocked')}
                 </p>
               ) : (
                 <div className="max-h-[420px] divide-y divide-border overflow-y-auto">
@@ -325,9 +359,17 @@ export default function Valuation() {
                       <div className="min-w-0">
                         <p className="truncate text-sm">{entry.product.name}</p>
                         <p className="numeric text-[11px] text-muted-foreground">
-                          {entry.product.sku} · {entry.units}{' '}
-                          {entry.costKnown ? `at ${money(entry.product.cost)} cost` : 'with no cost recorded'}
-                          {entry.held > 0 ? ` · ${entry.held} held` : ''}
+                          {entry.costKnown
+                            ? t('valuation.productCost', {
+                                sku: entry.product.sku,
+                                units: entry.units,
+                                cost: money(entry.product.cost),
+                              })
+                            : t('valuation.productNoCost', {
+                                sku: entry.product.sku,
+                                units: entry.units,
+                              })}
+                          {entry.held > 0 ? t('valuation.productHeld', { held: entry.held }) : ''}
                         </p>
                       </div>
                       <div className="shrink-0 text-right">
@@ -335,7 +377,9 @@ export default function Valuation() {
                           {entry.costKnown ? money(entry.cost) : '—'}
                         </p>
                         <p className="numeric text-[10px] text-muted-foreground">
-                          {entry.priceKnown ? `${money(entry.retail)} retail` : 'no retail price'}
+                          {entry.priceKnown
+                            ? t('valuation.retailValue', { value: money(entry.retail) })
+                            : t('valuation.noRetailPrice')}
                         </p>
                       </div>
                     </div>
@@ -347,11 +391,7 @@ export default function Valuation() {
 
           <div className="flex items-start gap-2 rounded-xl border border-border bg-card p-4 text-xs text-muted-foreground">
             <CircleDollarSign className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-            <p>
-              Cost value uses each product's current unit cost, so receiving at a new price re-values the whole
-              shelf. Held units are still counted here — they are on hand, just promised to an order. Missing
-              money is never treated as zero; leave a field blank until the figure is known.
-            </p>
+            <p>{t('valuation.footnote')}</p>
           </div>
         </>
       )}

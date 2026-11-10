@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import SettingsCard from './SettingsCard';
+import { t } from '@/lib/i18n';
 import { BRAND_COLORS } from '@/lib/business';
 
 export default function IdentityCard({ values, onChange, onLogoSelected, uploading }) {
@@ -13,33 +14,33 @@ export default function IdentityCard({ values, onChange, onLogoSelected, uploadi
 
   return (
     <SettingsCard
-      title="Business identity"
-      description="Your name, tagline and mark appear on the dashboard, labels and printed documents."
+      title={t('settings.identity.title')}
+      description={t('settings.identity.description')}
     >
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="business-name">Business name</Label>
-          <Input id="business-name" value={values.name} onChange={set('name')} placeholder="Your business" />
+          <Label htmlFor="business-name">{t('settings.identity.nameLabel')}</Label>
+          <Input id="business-name" value={values.name} onChange={set('name')} placeholder={t('settings.identity.namePlaceholder')} />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="business-tagline">Tagline</Label>
+          <Label htmlFor="business-tagline">{t('settings.identity.taglineLabel')}</Label>
           <Input
             id="business-tagline"
             value={values.tagline}
             onChange={set('tagline')}
-            placeholder="A short line about your shop"
+            placeholder={t('settings.identity.taglinePlaceholder')}
           />
         </div>
       </div>
 
       <div className="space-y-2">
-        <Label>Logo</Label>
+        <Label>{t('settings.identity.logoLabel')}</Label>
         <div className="flex items-center gap-3">
           <div className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-lg border border-border bg-secondary">
             {values.logo_url ? (
               <Image
                 src={values.logo_url}
-                alt={`${values.name || 'Business'} logo`}
+                alt={t('settings.identity.logoAlt', { name: values.name || t('settings.identity.businessFallback') })}
                 fittingType="fit"
                 className="h-full w-full object-contain p-1"
               />
@@ -67,7 +68,7 @@ export default function IdentityCard({ values, onChange, onLogoSelected, uploadi
               disabled={uploading}
             >
               {uploading && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
-              {values.logo_url ? 'Replace logo' : 'Upload logo'}
+              {values.logo_url ? t('settings.identity.replaceLogo') : t('settings.identity.uploadLogo')}
             </Button>
             {values.logo_url && (
               <Button
@@ -76,16 +77,16 @@ export default function IdentityCard({ values, onChange, onLogoSelected, uploadi
                 size="sm"
                 onClick={() => onChange({ ...values, logo_url: '' })}
               >
-                <Trash2 className="mr-1.5 h-3.5 w-3.5" /> Remove
+                <Trash2 className="mr-1.5 h-3.5 w-3.5" /> {t('settings.identity.remove')}
               </Button>
             )}
           </div>
         </div>
-        <p className="text-xs text-muted-foreground">PNG or JPG, square works best.</p>
+        <p className="text-xs text-muted-foreground">{t('settings.identity.logoHint')}</p>
       </div>
 
       <div className="space-y-2">
-        <Label>Brand color</Label>
+        <Label>{t('settings.identity.brandColor')}</Label>
         <div className="flex flex-wrap items-center gap-2">
           {BRAND_COLORS.map((color) => (
             <button
@@ -109,7 +110,7 @@ export default function IdentityCard({ values, onChange, onLogoSelected, uploadi
               onChange={set('brand_color')}
               className="h-8 w-10 cursor-pointer rounded border border-border bg-transparent p-0.5"
             />
-            Custom
+            {t('settings.identity.custom')}
           </label>
         </div>
       </div>

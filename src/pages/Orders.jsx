@@ -7,6 +7,7 @@ import OrderFormDialog from '@/components/orders/OrderFormDialog';
 import { Button } from '@/components/ui/button';
 import { useBusiness } from '@/hooks/useBusiness';
 import { scoped } from '@/lib/scoped';
+import { t } from '@/lib/i18n';
 import useIsDesktop from '@/hooks/useIsDesktop';
 import useModalHistory from '@/hooks/useModalHistory';
 import {
@@ -73,10 +74,10 @@ export default function Orders() {
     setFlash(null);
     try {
       const message = await fn();
-      setFlash({ ok: true, text: message || `${order.number} updated.` });
+      setFlash({ ok: true, text: message || t('orders.updated', { number: order.number }) });
       setReload((n) => n + 1);
     } catch (e) {
-      setFlash({ ok: false, text: e.message || 'That did not work.' });
+      setFlash({ ok: false, text: e.message || t('orders.failed') });
     } finally {
       setBusyId('');
     }
@@ -86,35 +87,35 @@ export default function Orders() {
     const shared = { order, products, user };
     if (key === 'reserve') return run(order, key, async () => {
       await reserveOrder({ ...shared, levels });
-      return `${order.number}: stock held.`;
+      return t('orders.reserved', { number: order.number });
     });
     if (key === 'release') return run(order, key, async () => {
       await releaseHolds(shared);
-      return `${order.number}: held stock released.`;
+      return t('orders.released', { number: order.number });
     });
     if (key === 'ship') return run(order, key, async () => {
       const result = await shipOrder(shared);
       return result.complete
-        ? `${order.number}: shipped, stock deducted.`
-        : `${order.number}: ${result.shippedNow} units shipped, the rest still open.`;
+        ? t('orders.shipped', { number: order.number })
+        : t('orders.shippedPartial', { number: order.number, shippedNow: result.shippedNow });
     });
     if (key === 'pack') return run(order, key, async () => {
       await markPacked(order);
-      return `${order.number}: packed.`;
+      return t('orders.packed', { number: order.number });
     });
     if (key === 'deliver') return run(order, key, async () => {
       await markDelivered(order);
-      return `${order.number}: delivered.`;
+      return t('orders.delivered', { number: order.number });
     });
     if (key === 'cancel') return run(order, key, async () => {
       await cancelOrder(shared);
-      return `${order.number}: cancelled.`;
+      return t('orders.cancelled', { number: order.number });
     });
     if (key === 'delete') {
-      if (!window.confirm(`Delete ${order.number}? Only an order with no stock history can go.`)) return null;
+      if (!window.confirm(t('orders.deleteConfirm', { number: order.number }))) return null;
       return run(order, key, async () => {
         await deleteOrder(order);
-        return `${order.number}: deleted.`;
+        return t('orders.deleted', { number: order.number });
       });
     }
     return null;
@@ -124,15 +125,15 @@ export default function Orders() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Orders</p>
-          <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">Customer orders</h1>
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">{t('orders.eyebrow')}</p>
+          <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">{t('orders.title')}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Track orders from any channel. Held stock stays on the shelf; shipping deducts it once.
+            {t('orders.subtitle')}
           </p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" asChild>
-            <Link to="/returns">Returns</Link>
+            <Link to="/returns">{t('orders.returnsLink')}</Link>
           </Button>
           <Button
             onClick={() => {
@@ -140,7 +141,7 @@ export default function Orders() {
               setEditOpen(true);
             }}
           >
-            <Plus className="mr-1.5 h-4 w-4" /> New order
+            <Plus className="mr-1.5 h-4 w-4" /> {t('orders.newOrder')}
           </Button>
         </div>
       </div>
@@ -173,14 +174,14 @@ export default function Orders() {
         ))}
       </div>
 
-      {loading && <p className="text-sm text-muted-foreground">Loading orders…</p>}
+      {loading && <p className="text-sm text-muted-foreground">{t('orders.loading')}</p>}
 
       {!loading && !orders.length && (
         <div className="rounded-xl border border-dashed border-border bg-card p-8 text-center">
           <ShoppingBag className="mx-auto h-6 w-6 text-muted-foreground" />
-          <p className="mt-2 text-sm font-medium">No orders here yet</p>
+          <p className="mt-2 text-sm font-medium">{t('orders.emptyTitle')}</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Add one by hand, or pick a different filter.
+            {t('orders.emptyHint')}
           </p>
         </div>
       )}

@@ -1,3 +1,5 @@
+import { t } from '@/lib/i18n';
+
 const PREVIEW_CHANGES = 12;
 
 /** Old value against proposed new value, exactly as the update would write it. */
@@ -11,17 +13,17 @@ export default function UpdatePreview({ report }) {
   return (
     <div className="space-y-1">
       <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-        Changes to be written
+        {t('import.changesTitle')}
       </p>
       <div className="overflow-x-auto rounded-lg border border-border">
         <table className="w-full min-w-[480px] text-xs">
           <thead className="bg-muted/40 text-left font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
             <tr>
-              <th className="px-2 py-1.5 font-medium">Row</th>
-              <th className="px-2 py-1.5 font-medium">Product</th>
-              <th className="px-2 py-1.5 font-medium">Field</th>
-              <th className="px-2 py-1.5 font-medium">Now</th>
-              <th className="px-2 py-1.5 font-medium">Becomes</th>
+              <th className="px-2 py-1.5 font-medium">{t('import.colRow')}</th>
+              <th className="px-2 py-1.5 font-medium">{t('import.colProduct')}</th>
+              <th className="px-2 py-1.5 font-medium">{t('import.colField')}</th>
+              <th className="px-2 py-1.5 font-medium">{t('import.colNow')}</th>
+              <th className="px-2 py-1.5 font-medium">{t('import.colBecomes')}</th>
             </tr>
           </thead>
           <tbody>
@@ -41,8 +43,11 @@ export default function UpdatePreview({ report }) {
       </div>
       <p className="text-[11px] text-muted-foreground">
         {changes.length > PREVIEW_CHANGES
-          ? `Showing ${PREVIEW_CHANGES} of ${changes.length} field changes.`
-          : `${changes.length} field change${changes.length === 1 ? '' : 's'} in total.`}
+          ? t('import.showingChanges', { shown: PREVIEW_CHANGES, total: changes.length })
+          : t('import.fieldChangesTotal', {
+              count: changes.length,
+              s: changes.length === 1 ? '' : 's',
+            })}
       </p>
     </div>
   );

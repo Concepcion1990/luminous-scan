@@ -1,62 +1,84 @@
 import { Image } from '@/components/ui/image';
 import { formatMoney } from '@/lib/inventory';
 import { toLabel } from '@/lib/labelPayload';
+import { t } from '@/lib/i18n';
 import BarcodeSvg from './BarcodeSvg';
 import QrSvg from './QrSvg';
 
 export const TEMPLATES = [
-  { key: 'price', label: 'Price tag', hint: 'Large price with name and SKU', width: 'w-[52mm]' },
-  { key: 'shelf', label: 'Shelf label', hint: 'Name, price and barcode', width: 'w-[70mm]' },
-  { key: 'barcode', label: 'Barcode / SKU', hint: 'Scannable Code 128', width: 'w-[62mm]' },
-  { key: 'qr', label: 'QR label', hint: 'Scans straight into the app', width: 'w-[44mm]' },
-  { key: 'bin', label: 'Storage bin', hint: 'Big code with QR', width: 'w-[80mm]' },
-  { key: 'sheet', label: 'Product sheet', hint: 'Full details, one per page', width: 'w-[180mm]' },
+  { key: 'price', label: 'Price tag', labelKey: 'print.templatePrice', hint: 'Large price with name and SKU', hintKey: 'print.templatePriceHint', width: 'w-[52mm]' },
+  { key: 'shelf', label: 'Shelf label', labelKey: 'print.templateShelf', hint: 'Name, price and barcode', hintKey: 'print.templateShelfHint', width: 'w-[70mm]' },
+  { key: 'barcode', label: 'Barcode / SKU', labelKey: 'print.templateBarcode', hint: 'Scannable Code 128', hintKey: 'print.templateBarcodeHint', width: 'w-[62mm]' },
+  { key: 'qr', label: 'QR label', labelKey: 'print.templateQr', hint: 'Scans straight into the app', hintKey: 'print.templateQrHint', width: 'w-[44mm]' },
+  { key: 'bin', label: 'Storage bin', labelKey: 'print.templateBin', hint: 'Big code with QR', hintKey: 'print.templateBinHint', width: 'w-[80mm]' },
+  { key: 'sheet', label: 'Product sheet', labelKey: 'print.templateSheet', hint: 'Full details, one per page', hintKey: 'print.templateSheetHint', width: 'w-[180mm]' },
   {
     key: 'count',
     label: 'Stock count sheet',
+    labelKey: 'print.countSheetTitle',
     hint: 'Counted column for each item',
+    hintKey: 'print.templateCountHint',
     kind: 'document',
   },
-  { key: 'pick', label: 'Pick list', hint: 'Tick-off list with quantities', kind: 'document' },
+  {
+    key: 'pick',
+    label: 'Pick list',
+    labelKey: 'print.pickListTitle',
+    hint: 'Tick-off list with quantities',
+    hintKey: 'print.templatePickHint',
+    kind: 'document',
+  },
   {
     key: 'po',
     label: 'Purchase order',
+    labelKey: 'print.purchaseOrderTitle',
     hint: 'Costed order to send the supplier',
+    hintKey: 'print.templatePoHint',
     kind: 'order',
     mode: 'po',
   },
   {
     key: 'packing',
     label: 'Supplier packing slip',
+    labelKey: 'print.templatePacking',
     hint: 'Quantities only, no prices',
+    hintKey: 'print.templatePackingHint',
     kind: 'order',
     mode: 'packing',
   },
   {
     key: 'invoice',
     label: 'Customer invoice',
+    labelKey: 'print.templateInvoice',
     hint: 'Priced order with totals',
+    hintKey: 'print.templateInvoiceHint',
     kind: 'customer',
     mode: 'invoice',
   },
   {
     key: 'receipt',
     label: 'Sales receipt',
+    labelKey: 'print.salesReceiptTitle',
     hint: 'Compact proof of payment',
+    hintKey: 'print.templateReceiptHint',
     kind: 'customer',
     mode: 'receipt',
   },
   {
     key: 'custpacking',
     label: 'Customer packing slip',
+    labelKey: 'print.templateCustPacking',
     hint: 'Quantities only, no prices',
+    hintKey: 'print.templateCustPackingHint',
     kind: 'customer',
     mode: 'packing',
   },
   {
     key: 'returndoc',
     label: 'Return document',
+    labelKey: 'print.templateReturnDoc',
     hint: 'What came back and its condition',
+    hintKey: 'print.templateReturnDocHint',
     kind: 'return',
   },
 ];
@@ -178,11 +200,11 @@ export default function LabelCard({ template, product: productProp, label, busin
     ['SKU', product.sku],
     ['UPC / EAN', product.upc],
     ['ISBN', product.isbn],
-    ['Author', product.author],
-    ['Condition', condition],
-    ['Category', product.category],
-    ['Price', product.price ? price : ''],
-    ['Unit', product.unit],
+    [t('print.factAuthor'), product.author],
+    [t('print.factCondition'), condition],
+    [t('print.factCategory'), product.category],
+    [t('print.factPrice'), product.price ? price : ''],
+    [t('print.factUnit'), product.unit],
   ].filter(([, value]) => value);
 
   return (
@@ -191,7 +213,7 @@ export default function LabelCard({ template, product: productProp, label, busin
         <div>
           <p className="font-mono text-[6pt] uppercase tracking-[0.18em]">{business.name}</p>
           <p className="text-[16pt] font-semibold leading-tight">{product.name}</p>
-          {product.author && <p className="text-[9pt]">by {product.author}</p>}
+          {product.author && <p className="text-[9pt]">{t('print.byAuthor', { author: product.author })}</p>}
         </div>
         {product.photo_urls?.[0] && (
           <Image

@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/select';
 import { useBusiness } from '@/hooks/useBusiness';
 import { assembleBom, availabilityAt, componentRows } from '@/lib/bom';
+import { t } from '@/lib/i18n';
 
 export default function AssembleDialog({ open, onOpenChange, bom, locations, levels, user, onDone }) {
   const { activeId } = useBusiness();
@@ -60,10 +61,16 @@ export default function AssembleDialog({ open, onOpenChange, bom, locations, lev
       });
       onOpenChange(false);
       onDone(
-        `Built ${amount} × ${bom.product_name} at ${location.name} · ${reference}. Now ${next} on hand there.`
+        t('materials.built', {
+          amount,
+          name: bom.product_name,
+          location: location.name,
+          reference,
+          next,
+        })
       );
     } catch (e) {
-      setError(e.message || 'Could not build this.');
+      setError(e.message || t('materials.buildFailed'));
     } finally {
       setBusy(false);
     }
@@ -73,21 +80,19 @@ export default function AssembleDialog({ open, onOpenChange, bom, locations, lev
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Build {bom?.product_name}</DialogTitle>
-          <DialogDescription>
-            The parts come off the shelf and the finished item goes on it, all in one ledger entry set.
-          </DialogDescription>
+          <DialogTitle>{t('materials.buildTitle', { name: bom?.product_name })}</DialogTitle>
+          <DialogDescription>{t('materials.buildDescription')}</DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-3">
           <div className="grid gap-1">
-            <Label className="text-xs">Build at</Label>
+            <Label className="text-xs">{t('materials.buildAt')}</Label>
             <Select value={locationId || 'none'} onValueChange={(v) => setLocationId(v === 'none' ? '' : v)}>
               <SelectTrigger>
-                <SelectValue placeholder="Choose a location" />
+                <SelectValue placeholder={t('materials.chooseLocation')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">Choose a location</SelectItem>
+                <SelectItem value="none">{t('materials.chooseLocation')}</SelectItem>
                 {locations.map((l) => (
                   <SelectItem key={l.id} value={l.id}>
                     {l.name}
@@ -98,7 +103,7 @@ export default function AssembleDialog({ open, onOpenChange, bom, locations, lev
           </div>
 
           <div className="grid gap-1">
-            <Label className="text-xs">How many to build · {available} possible here</Label>
+            <Label className="text-xs">{t('materials.howMany', { available })}</Label>
             <Input
               type="number"
               inputMode="numeric"
@@ -111,8 +116,8 @@ export default function AssembleDialog({ open, onOpenChange, bom, locations, lev
 
           <div className="overflow-hidden rounded-lg border border-border">
             <div className="flex items-center justify-between bg-muted/60 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-              <span>Component</span>
-              <span>Need · on hand</span>
+              <span>{t('materials.component')}</span>
+              <span>{t('materials.needOnHand')}</span>
             </div>
             <div className="divide-y divide-border">
               {rows.map((row) => (
@@ -128,7 +133,7 @@ export default function AssembleDialog({ open, onOpenChange, bom, locations, lev
               ))}
               {!rows.length && (
                 <p className="px-3 py-4 text-sm text-muted-foreground">
-                  This build list has no components yet.
+                  {t('materials.noComponents')}
                 </p>
               )}
             </div>
@@ -136,8 +141,7 @@ export default function AssembleDialog({ open, onOpenChange, bom, locations, lev
 
           {short && (
             <p className="text-sm text-destructive">
-              Some parts are short at {location?.name || 'this location'} — lower the quantity or move stock
-              here first.
+              {t('materials.shortParts', { location: location?.name || t('materials.thisLocation') })}
             </p>
           )}
           {error && <p className="text-sm text-destructive">{error}</p>}
@@ -145,10 +149,10 @@ export default function AssembleDialog({ open, onOpenChange, bom, locations, lev
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t('materials.cancel')}
           </Button>
           <Button onClick={build} disabled={busy || short || !rows.length || !location}>
-            {busy ? 'Building…' : `Build ${amount}`}
+            {busy ? t('materials.building') : t('materials.buildButton', { amount })}
           </Button>
         </DialogFooter>
       </DialogContent>

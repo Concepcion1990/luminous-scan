@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { TRADEMARK_NOTICE as notice, LEGAL_FOOTER as footer } from './trademarkNotice.js';
+import { en } from './locales/en.js';
 
 // The owner's trademark / copyright statement, dictated Nov 9, 2026.
 // Rendered verbatim on Plans + Subscribe (the notice block) and as a
@@ -85,7 +86,11 @@ test('Plans shows the notice before the buttons and the footer at the bottom', (
   assert.match(screen, /import LegalFooter from '@\/components\/LegalFooter'/);
   assert.equal(screen.split('<TrademarkNotice />').length - 1, 1, 'Plans must render the notice exactly once');
   assert.equal(screen.split('<LegalFooter />').length - 1, 1, 'Plans must render the footer exactly once');
-  const reviewAt = screen.indexOf('Before subscribing, please review');
+  // T6.3: the policy-review paragraph moved into en.js (plans.reviewBefore)
+  // — the t() reference is the anchor, and the English value is asserted.
+  assert.match(screen, /t\('plans\.reviewBefore'\)/);
+  assert.equal(en['plans.reviewBefore'], 'Before subscribing, please review the');
+  const reviewAt = screen.indexOf("t('plans.reviewBefore')");
   const noticeAt = screen.indexOf('<TrademarkNotice />');
   const buttonsAt = screen.indexOf('<div className="mt-6 flex flex-col gap-2 sm:flex-row">');
   const footerAt = screen.indexOf('<LegalFooter />');
@@ -103,10 +108,20 @@ test('Subscribe shows the notice as the subscription process starts', () => {
   assert.match(screen, /import LegalFooter from '@\/components\/LegalFooter'/);
   assert.equal(screen.split('<TrademarkNotice />').length - 1, 1, 'Subscribe must render the notice exactly once');
   assert.equal(screen.split('<LegalFooter />').length - 1, 1, 'Subscribe must render the footer exactly once');
-  const priceAt = screen.indexOf('per month, plus any applicable taxes.');
+  // T6.3: the price line and the no-card line moved into en.js
+  // (subscribe.pricePerMonth, subscribe.noCardStored) — the t() references
+  // are the anchors, and the English values are asserted.
+  assert.match(screen, /t\('subscribe\.pricePerMonth', \{ price: `\$\$\{plan\.price\.toFixed\(2\)\}` \}\)/);
+  assert.equal(en['subscribe.pricePerMonth'], '{price} per month, plus any applicable taxes.');
+  assert.match(screen, /t\('subscribe\.noCardStored'\)/);
+  assert.equal(
+    en['subscribe.noCardStored'],
+    'No card details are stored by Luminous StockHaven. Payments are processed by Stripe.'
+  );
+  const priceAt = screen.indexOf("t('subscribe.pricePerMonth'");
   const noticeAt = screen.indexOf('<TrademarkNotice />');
   const accountAt = screen.indexOf('{!isAuthenticated ? (');
-  const noCardAt = screen.indexOf('No card details are stored by Luminous StockHaven');
+  const noCardAt = screen.indexOf("t('subscribe.noCardStored')");
   const footerAt = screen.indexOf('<LegalFooter />');
   assert.ok(priceAt > -1 && noticeAt > priceAt, 'notice comes after the plan price');
   assert.ok(noticeAt < accountAt, 'notice comes before the create-account / workspace step');
@@ -117,7 +132,9 @@ test('Subscribe shows the notice as the subscription process starts', () => {
   assert.doesNotMatch(screen, /PAYMENTS_SWITCHING_NOTICE/);
   assert.doesNotMatch(screen, /switching payments to Stripe/i);
   assert.match(screen, /create-checkout/);
-  assert.match(screen, /Start 7-day free trial/);
+  // T6.3: the trial button label moved into en.js (subscribe.startTrial).
+  assert.match(screen, /t\('subscribe\.startTrial', \{ planName: plan\.name \}\)/);
+  assert.equal(en['subscribe.startTrial'], 'Start 7-day free trial — {planName}');
 });
 
 test('shared Layout puts the footer at the bottom of every protected page', () => {

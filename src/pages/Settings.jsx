@@ -34,17 +34,18 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/components/ui/use-toast';
+import { t } from '@/lib/i18n';
 
 const VERIFIED_STRIPE_STATUS_LABELS = {
-  ACTIVE: 'Active',
-  CANCELED: 'Canceled',
-  CANCELLED: 'Canceled',
-  EXPIRED: 'Expired',
-  ENDED: 'Ended',
-  PAUSED: 'Paused',
-  PAST_DUE: 'Payment past due',
-  TRIALING: 'Trialing',
-  PENDING: 'Pending',
+  ACTIVE: 'settings.billingStatus.active',
+  CANCELED: 'settings.billingStatus.canceled',
+  CANCELLED: 'settings.billingStatus.canceled',
+  EXPIRED: 'settings.billingStatus.expired',
+  ENDED: 'settings.billingStatus.ended',
+  PAUSED: 'settings.billingStatus.paused',
+  PAST_DUE: 'settings.billingStatus.pastDue',
+  TRIALING: 'settings.billingStatus.trialing',
+  PENDING: 'settings.billingStatus.pending',
 };
 
 function verifiedDateLabel(dateValue) {
@@ -54,9 +55,9 @@ function verifiedDateLabel(dateValue) {
 }
 
 const APPEARANCE_OPTIONS = [
-  { value: 'light', label: 'Light', description: 'White background and warm tan header.', icon: Sun },
-  { value: 'dark', label: 'Dark', description: 'Almost-black background and warm tan header.', icon: Moon },
-  { value: 'system', label: 'Automatic', description: 'Follow this device’s appearance setting.', icon: Monitor },
+  { value: 'light', labelKey: 'settings.appearance.light', descriptionKey: 'settings.appearance.lightDesc', icon: Sun },
+  { value: 'dark', labelKey: 'settings.appearance.dark', descriptionKey: 'settings.appearance.darkDesc', icon: Moon },
+  { value: 'system', labelKey: 'settings.appearance.automatic', descriptionKey: 'settings.appearance.automaticDesc', icon: Monitor },
 ];
 
 export default function Settings() {
@@ -195,7 +196,7 @@ export default function Settings() {
         }
       } catch {
         if (mounted) {
-          setDeletionStatusError('Unable to check existing requests right now. You can still try submitting a request.');
+          setDeletionStatusError(t('settings.deletion.checkError'));
         }
       } finally {
         if (mounted) setDeletionLoading(false);
@@ -218,7 +219,7 @@ export default function Settings() {
       });
       const result = response.data;
       if (!result?.success || !['requested', 'under_review'].includes(result.status)) {
-        throw new Error('We could not confirm your deletion request. Please try again.');
+        throw new Error(t('settings.deletion.confirmError'));
       }
 
       setDeletionStatus({
@@ -230,14 +231,14 @@ export default function Settings() {
       setDeletionConfirmation('');
       setDeletionOpen(false);
       toast({
-        title: 'Account deletion request received',
-        description: 'Your account and data have not been deleted.',
+        title: t('settings.deletion.receivedTitle'),
+        description: t('settings.deletion.receivedDesc'),
       });
     } catch (error) {
       setDeletionError(
         error?.response?.data?.error ||
         error?.message ||
-        'Unable to submit your request. Please try again.'
+        t('settings.deletion.submitError')
       );
     } finally {
       setDeletionSubmitting(false);
@@ -258,11 +259,11 @@ export default function Settings() {
     // twin's own endpoint as a data URL and is stored on the business
     // record (no third-party host, nothing leaves the twin's database).
     if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
-      setError('Choose a PNG, JPG or WebP image.');
+      setError(t('settings.logo.typeError'));
       return;
     }
     if (file.size > 2 * 1024 * 1024) {
-      setError('That image is over 2 MB — try a smaller one.');
+      setError(t('settings.logo.sizeError'));
       return;
     }
     setUploading(true);
@@ -270,7 +271,7 @@ export default function Settings() {
       const dataUrl = await new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => resolve(String(reader.result));
-        reader.onerror = () => reject(new Error('Could not read that image.'));
+        reader.onerror = () => reject(new Error(t('settings.logo.readError')));
         reader.readAsDataURL(file);
       });
       const { logo_url } = await apiRequest(
@@ -279,7 +280,7 @@ export default function Settings() {
       );
       setValues((current) => ({ ...current, logo_url }));
     } catch (err) {
-      setError(err?.message || 'Could not upload that image. Try a smaller PNG or JPG.');
+      setError(err?.message || t('settings.logo.uploadError'));
     } finally {
       setUploading(false);
     }
@@ -287,7 +288,7 @@ export default function Settings() {
 
   const save = async () => {
     if (!values.name.trim()) {
-      setError('Add your business name.');
+      setError(t('settings.save.nameError'));
       return;
     }
     setError('');
@@ -296,10 +297,10 @@ export default function Settings() {
       await saveBusiness(record, values);
       await queryClient.invalidateQueries({ queryKey: ['workspace'] });
       setSaved(true);
-      toast({ title: 'Business settings saved' });
+      toast({ title: t('settings.save.savedToast') });
       setTimeout(() => setSaved(false), 2000);
     } catch (err) {
-      setError(err?.message || 'Could not save your settings.');
+      setError(err?.message || t('settings.save.error'));
     } finally {
       setSaving(false);
     }
@@ -319,23 +320,23 @@ export default function Settings() {
   // hardcoded here, so this line cannot go stale when a policy bumps.
   const policyEffectiveLine =
     terms.effectiveDate === policy.effectiveDate
-      ? `The Terms of Service and the Subscription, Cancellation & Refund Policy are effective ${terms.effectiveDate}.`
-      : `The Terms of Service is effective ${terms.effectiveDate}, and the Subscription, Cancellation & Refund Policy is effective ${policy.effectiveDate}.`;
+      ? t('settings.policy.effectiveBoth', { date: terms.effectiveDate })
+      : t('settings.policy.effectiveSplit', { termsDate: terms.effectiveDate, policyDate: policy.effectiveDate });
 
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Business</p>
-          <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">Settings</h1>
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">{t('settings.eyebrow')}</p>
+          <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">{t('settings.title')}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Your shop's name, look, contact details and regional preferences.
+            {t('settings.subtitle')}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button type="button" variant="outline" onClick={() => logout()}>
             <LogOut className="mr-1.5 h-4 w-4" aria-hidden="true" />
-            Log out
+            {t('settings.logout')}
           </Button>
           <Button onClick={save} disabled={saving || uploading}>
             {saving ? (
@@ -345,7 +346,7 @@ export default function Settings() {
             ) : (
               <Save className="mr-1.5 h-4 w-4" />
             )}
-            {saving ? 'Saving…' : saved ? 'Saved' : 'Save changes'}
+            {saving ? t('settings.save.saving') : saved ? t('settings.save.saved') : t('settings.save.save')}
           </Button>
         </div>
       </div>
@@ -381,30 +382,29 @@ export default function Settings() {
       {canShowPrivateBillingDiagnostics && <UpgradeDryRunPanel />}
 
       <SettingsCard
-        title="Subscription & Cancellation"
-        description="Review your subscription cancellation terms before making changes to your account."
+        title={t('settings.subscription.title')}
+        description={t('settings.subscription.description')}
       >
         <p className="mb-3 text-sm leading-relaxed text-muted-foreground">
-          Review the{' '}
+          {t('settings.review.the')}{' '}
           <Link to="/terms-of-service" className="font-medium text-primary underline underline-offset-4">
-            Luminous StockHaven Terms of Service
+            {t('settings.review.termsLink')}
           </Link>
-          , the{' '}
+          {t('settings.review.commaThe')}{' '}
           <Link to="/subscription-policy" className="font-medium text-primary underline underline-offset-4">
-            Subscription, Cancellation &amp; Refund Policy
+            {t('settings.review.policyLink')}
           </Link>
-          {' '}and the{' '}
+          {' '}{t('settings.review.andThe')}{' '}
           <Link to="/privacy-policy" className="font-medium text-primary underline underline-offset-4">
-            Privacy Policy
+            {t('settings.review.privacyLink')}
           </Link>
-          . {policyEffectiveLine} Reading them makes no
-          changes to your account or subscription.
+          {t('settings.review.tail', { line: policyEffectiveLine })}
         </p>
         <div className="space-y-3 text-sm text-foreground">
           {canShowBillingStatus && (
           <div className="rounded-lg border border-border bg-muted/30 px-3 py-3" role="status" aria-live="polite">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <h3 className="font-semibold">Billing status</h3>
+              <h3 className="font-semibold">{t('settings.billing.title')}</h3>
               <Button
                 type="button"
                 size="sm"
@@ -414,112 +414,84 @@ export default function Settings() {
                 onClick={() => setSubscriptionStatusRefresh((count) => count + 1)}
               >
                 <RefreshCw className="h-4 w-4" aria-hidden="true" />
-                Refresh status
+                {t('settings.billing.refresh')}
               </Button>
             </div>
             {subscriptionStatus.businessId !== activeId || subscriptionStatus.state === 'loading' ? (
-              <p className="mt-2 text-sm text-muted-foreground">Checking Stripe subscription status…</p>
+              <p className="mt-2 text-sm text-muted-foreground">{t('settings.billing.checking')}</p>
             ) : subscriptionStatus.state === 'verified' ? (
               <>
                 <p className="mt-2 text-sm font-medium text-foreground">
-                  Stripe reports: {VERIFIED_STRIPE_STATUS_LABELS[subscriptionStatus.billing_status]}
+                  {t('settings.billing.stripeReports', { status: t(VERIFIED_STRIPE_STATUS_LABELS[subscriptionStatus.billing_status]) })}
                 </p>
                 {verifiedDateLabel(subscriptionStatus.checked_at) && (
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Verified {verifiedDateLabel(subscriptionStatus.checked_at)}
+                    {t('settings.billing.verified', { date: verifiedDateLabel(subscriptionStatus.checked_at) })}
                   </p>
                 )}
                 <p className="mt-1 text-xs text-muted-foreground">
-                  This read-only result does not confirm a paid-through date or submit a cancellation request.
+                  {t('settings.billing.readOnlyNote')}
                 </p>
               </>
             ) : (
               <>
-                <p className="mt-2 text-sm font-medium text-foreground">Live billing status unavailable</p>
+                <p className="mt-2 text-sm font-medium text-foreground">{t('settings.billing.unavailable')}</p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  We could not verify a current Stripe subscription for this business. This does
-                  not mean your subscription is canceled, inactive, or free of future charges.
+                  {t('settings.billing.unavailableDetail')}
                 </p>
               </>
             )}
           </div>
           )}
 
-          <h3 className="font-semibold">Cancellation Terms &amp; Conditions</h3>
+          <h3 className="font-semibold">{t('settings.cancelTerms.title')}</h3>
           <p className="text-muted-foreground">
-            These are the terms for paid Luminous StockHaven subscriptions.
-            Website subscription billing is through Stripe.
-            You can cancel your subscription yourself at any time using the
-            Cancel Subscription button below — no staff approval is needed.
-            Cancellation and refund requests can also be handled through the
-            official customer support contact, theluminousbookshop@outlook.com.
+            {t('settings.cancelTerms.intro')}
           </p>
           <ul className="list-disc space-y-2 pl-5 leading-relaxed">
             <li>
-              <strong>Cancel without approval:</strong> You may cancel your subscription
-              yourself at any time. No staff approval is required.
-              Future renewals stop only after the billing provider confirms cancellation.
+              <strong>{t('settings.cancelTerms.noApprovalTitle')}</strong> {t('settings.cancelTerms.noApprovalBody')}
             </li>
             <li>
-              <strong>Remaining access:</strong> If you have already paid for a billing period,
-              you may retain access until that verified paid-through date. Earlier termination
-              requires appropriate provider confirmation and any applicable refund handling.
-              Free-trial access ends according to the provider-confirmed trial termination date.
+              <strong>{t('settings.cancelTerms.remainingTitle')}</strong> {t('settings.cancelTerms.remainingBody')}
             </li>
             <li>
-              <strong>One free trial:</strong> The seven-day trial can be used only once per
-              eligible customer. Canceling a trial or subscription does not grant another trial;
-              returning customers must choose a paid subscription.
+              <strong>{t('settings.cancelTerms.trialTitle')}</strong> {t('settings.cancelTerms.trialBody')}
             </li>
             <li>
-              <strong>Payment method and automatic renewal:</strong> For paid trials,
-              the seven-day trial requires a payment method at signup. Unless canceled
-              within the applicable trial cancellation deadline, the selected monthly plan
-              will be charged automatically after the trial. The price, first billing date,
-              and provider-specific cancellation deadline must be shown during signup.
-              Trial billing is through Stripe.
+              <strong>{t('settings.cancelTerms.paymentTitle')}</strong> {t('settings.cancelTerms.paymentBody')}
             </li>
             <li>
-              <strong>Google Play and Apple App Store subscriptions (if you ever subscribe through a store):</strong> If you ever subscribe
-              through Google Play or the Apple App Store, your subscription
-              is billed and managed by that store. You may need to cancel it directly in
-              the subscriptions section of the same Google or Apple account used to subscribe.
-              Canceling a separate website subscription, uninstalling this app, or requesting
-              Luminous StockHaven account deletion does not automatically cancel a store-billed
-              subscription. Check your purchase receipt to confirm who bills you.
+              <strong>{t('settings.cancelTerms.storesTitle')}</strong> {t('settings.cancelTerms.storesBody')}
               <span className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs">
                 <a href="https://support.google.com/googleplay/answer/7018481" target="_blank" rel="noopener noreferrer"
                    className="underline underline-offset-2 hover:text-foreground">
-                  Google Play cancellation instructions
+                  {t('settings.cancelTerms.googlePlayLink')}
                 </a>
                 <a href="https://support.apple.com/en-us/118428" target="_blank" rel="noopener noreferrer"
                    className="underline underline-offset-2 hover:text-foreground">
-                  Apple cancellation instructions
+                  {t('settings.cancelTerms.appleLink')}
                 </a>
               </span>
             </li>
             <li>
-              <strong>After your paid period ends — 15-day grace, then deletion:</strong>{' '}
+              <strong>{t('settings.cancelTerms.graceTitle')}</strong>{' '}
               {CANCELLATION_GRACE_PARAGRAPH}
             </li>
           </ul>
           {entitlementStatus === 'past_due' && (
             <div role="status" className="rounded-lg border border-destructive/40 bg-destructive/5 px-3 py-3">
-              <h3 className="font-semibold">Payment past due</h3>
+              <h3 className="font-semibold">{t('settings.pastDue.title')}</h3>
               <p className="mt-1 text-muted-foreground">
-                Your last payment did not go through. Update your payment method from the Upgrade page —
-                Stripe will retry on its own schedule, and your subscription will not be canceled early.
-                If you are unsure what to do, contact support
-                at theluminousbookshop@outlook.com.
+                {t('settings.pastDue.body')}
               </p>
               <Button type="button" variant="outline" className="mt-3 min-h-11" asChild>
-                <Link to="/upgrade">Update payment method</Link>
+                <Link to="/upgrade">{t('settings.pastDue.updateButton')}</Link>
               </Button>
             </div>
           )}
           <p className="rounded-lg border border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
-            Subscription cancellation and account deletion are separate decisions.
-            No subscription will be canceled or account deleted by viewing these terms.
+            {t('settings.separateDecisions')}
           </p>
           {canCancel && (
             <Button
@@ -529,17 +501,17 @@ export default function Settings() {
               onClick={() => setCancellationOpen(true)}
             >
               <CreditCard className="h-4 w-4" aria-hidden="true" />
-              Cancel Subscription
+              {t('settings.cancelSubscription')}
             </Button>
           )}
           {entitlementStatus === 'trialing' && trialEndsOn && (
             <p role="status" className="rounded-lg border border-border bg-muted/40 px-3 py-2 text-sm">
-              Cancelling during your trial keeps your full 7 days — access ends on {trialEndsOn}, and you will not be charged.
+              {t('settings.trial.cancelKeeps', { date: trialEndsOn })}
             </p>
           )}
           {cancelEndsOn && (
             <p role="status" className="rounded-lg border border-border bg-muted/40 px-3 py-2 text-sm">
-              This subscription is canceled and ends on {cancelEndsOn}. You keep full access until then.
+              {t('settings.canceled.endsOn', { date: cancelEndsOn })}
             </p>
           )}
           <CancelSubscriptionDialog
@@ -559,13 +531,13 @@ export default function Settings() {
       </SettingsCard>
 
       <SettingsCard
-        title="Appearance"
-        description="Choose the look of Luminous StockHaven on this device. Changes apply immediately across the app."
+        title={t('settings.appearance.title')}
+        description={t('settings.appearance.description')}
       >
         <fieldset disabled={!themeReady}>
-          <legend className="sr-only">Choose an appearance</legend>
+          <legend className="sr-only">{t('settings.appearance.legend')}</legend>
           <div className="grid gap-2 sm:grid-cols-3">
-            {APPEARANCE_OPTIONS.map(({ value, label, description, icon: Icon }) => (
+            {APPEARANCE_OPTIONS.map(({ value, labelKey, descriptionKey, icon: Icon }) => (
               <label
                 key={value}
                 className={[
@@ -587,47 +559,43 @@ export default function Settings() {
                 <span className="flex min-w-0 flex-col gap-1">
                   <span className="flex items-center gap-2 text-sm font-semibold">
                     <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
-                    {label}
+                    {t(labelKey)}
                   </span>
-                  <span className="text-xs leading-relaxed text-muted-foreground">{description}</span>
+                  <span className="text-xs leading-relaxed text-muted-foreground">{t(descriptionKey)}</span>
                 </span>
               </label>
             ))}
           </div>
         </fieldset>
         <p className="text-xs text-muted-foreground">
-          Your selection is remembered in this browser or app. It does not change business records
-          or require saving the form above.
+          {t('settings.appearance.remembered')}
         </p>
       </SettingsCard>
 
       <SettingsCard
-        title="Delete Account"
-        description="Request removal of your Luminous StockHaven sign-in account."
+        title={t('settings.delete.title')}
+        description={t('settings.delete.description')}
       >
         <p className="text-sm leading-relaxed text-muted-foreground">
-          Submitting a request does not immediately delete your account, businesses, or inventory.
-          Requests are reviewed separately before deletion can be completed. This request does
-          not cancel a Stripe subscription or stop future billing; subscription cancellation must
-          be handled separately through the billing provider.
+          {t('settings.delete.intro')}
         </p>
 
         {deletionStatus?.pending ? (
           <div role="status" className="rounded-lg border border-border bg-secondary px-4 py-3 text-sm">
             <p className="font-medium text-foreground">
               {deletionStatus.status === 'under_review'
-                ? 'Your account deletion request is under review.'
-                : 'Your account deletion request has been received.'}
+                ? t('settings.delete.underReview')
+                : t('settings.delete.received')}
             </p>
             <p className="mt-1 text-muted-foreground">
-              Your account and data have not been deleted by this request. Billing has not been canceled.
+              {t('settings.delete.notDeleted')}
             </p>
           </div>
         ) : (
           <>
             {deletionLoading && (
               <p role="status" className="text-xs text-muted-foreground">
-                Checking for an existing deletion request…
+                {t('settings.delete.checking')}
               </p>
             )}
             {deletionStatusError && (
@@ -652,26 +620,24 @@ export default function Settings() {
                   disabled={deletionLoading}
                 >
                   <Trash2 className="h-4 w-4" aria-hidden="true" />
-                  Request Account Deletion
+                  {t('settings.delete.requestButton')}
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-lg">
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Request Account Deletion</AlertDialogTitle>
+                  <AlertDialogTitle>{t('settings.delete.dialogTitle')}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This requests a review of account deletion. It does not immediately remove
-                    your login or inventory, and it does not cancel any Stripe subscription.
-                    Type DELETE to confirm you want to submit the request.
+                    {t('settings.delete.dialogDescription')}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <div className="space-y-2 py-2">
                   <p className="text-sm leading-relaxed text-muted-foreground">
                     {plan?.key === 'business'
-                      ? 'Export your inventory first if you need to keep your records.'
-                      : 'Essentials has no export — write down anything you need before requesting deletion.'}
+                      ? t('settings.delete.exportFirst')
+                      : t('settings.delete.noExport')}
                   </p>
                   <label htmlFor="confirm-account-deletion" className="text-sm font-medium text-foreground">
-                    Enter DELETE to confirm
+                    {t('settings.delete.enterDelete')}
                   </label>
                   <input
                     id="confirm-account-deletion"
@@ -689,7 +655,7 @@ export default function Settings() {
                   )}
                 </div>
                 <AlertDialogFooter>
-                  <AlertDialogCancel disabled={deletionSubmitting}>Keep Account</AlertDialogCancel>
+                  <AlertDialogCancel disabled={deletionSubmitting}>{t('settings.delete.keepAccount')}</AlertDialogCancel>
                   <Button
                     type="button"
                     variant="destructive"
@@ -699,7 +665,7 @@ export default function Settings() {
                     {deletionSubmitting ? (
                       <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
                     ) : null}
-                    {deletionSubmitting ? 'Submitting…' : 'Submit Deletion Request'}
+                    {deletionSubmitting ? t('settings.delete.submitting') : t('settings.delete.submit')}
                   </Button>
                 </AlertDialogFooter>
               </AlertDialogContent>
@@ -712,8 +678,7 @@ export default function Settings() {
 
       <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
         <p className="text-xs leading-relaxed text-muted-foreground">
-          These settings belong to this business only. Each business you own keeps its own products,
-          locations, suppliers and purchase orders — use the business switcher to move between them.
+          {t('settings.footer.note')}
         </p>
         <Button
           variant="outline"
@@ -721,7 +686,7 @@ export default function Settings() {
           className="mt-3"
           onClick={() => setValues(resolveBusiness(record))}
         >
-          Reset to saved values
+          {t('settings.footer.reset')}
         </Button>
       </div>
     </div>

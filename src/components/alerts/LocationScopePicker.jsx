@@ -1,6 +1,7 @@
 import { MapPin } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { orderedLocations } from '@/lib/locations';
+import { t } from '@/lib/i18n';
 
 /** Ticks any number of locations; an empty list means "every location". */
 export default function LocationScopePicker({ locations, value = [], onChange }) {
@@ -10,7 +11,7 @@ export default function LocationScopePicker({ locations, value = [], onChange })
 
   return (
     <div className="space-y-1.5">
-      <Label>Locations</Label>
+      <Label>{t('alerts.locationsLabel')}</Label>
       <div className="max-h-44 overflow-y-auto rounded-md border border-input p-1">
         <button
           type="button"
@@ -20,7 +21,7 @@ export default function LocationScopePicker({ locations, value = [], onChange })
           }`}
         >
           <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
-          All locations
+          {t('alerts.allLocations')}
         </button>
         {places.map(({ location, depth }) => (
           <label
@@ -40,7 +41,7 @@ export default function LocationScopePicker({ locations, value = [], onChange })
         ))}
       </div>
       <p className="text-[11px] text-muted-foreground">
-        Ticked locations are watched together. Leave everything unticked to watch all locations.
+        {t('alerts.locationsHint')}
       </p>
     </div>
   );

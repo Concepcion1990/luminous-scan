@@ -39,21 +39,21 @@ import { Label } from '@/components/ui/label';
 import ResponsiveSelect from '@/components/ui/ResponsiveSelect';
 
 const actions = [
-  { key: 'receive', label: 'Receive', hint: 'Stock that arrived' },
-  { key: 'sale', label: 'Sold', hint: 'Stock that left the shelf' },
-  { key: 'count', label: 'Count', hint: 'Set the exact on-hand' },
-  { key: 'transfer', label: 'Transfer', hint: 'Move to another site' },
+  { key: 'receive', label: 'Receive', labelKey: 'scan.action.receive', hint: 'Stock that arrived', hintKey: 'scan.action.receiveHint' },
+  { key: 'sale', label: 'Sold', labelKey: 'scan.action.sale', hint: 'Stock that left the shelf', hintKey: 'scan.action.saleHint' },
+  { key: 'count', label: 'Count', labelKey: 'scan.action.count', hint: 'Set the exact on-hand', hintKey: 'scan.action.countHint' },
+  { key: 'transfer', label: 'Transfer', labelKey: 'scan.action.transfer', hint: 'Move to another site', hintKey: 'scan.action.transferHint' },
 ];
 
 const adjustments = [
-  { key: 'returned', label: 'Return', hint: 'Came back from a customer' },
-  { key: 'damaged', label: 'Damaged', hint: 'Unsellable, kept on record' },
-  { key: 'lost', label: 'Lost', hint: 'Missing from the shelf' },
-  { key: 'found', label: 'Found', hint: 'Turned up again' },
-  { key: 'write_off', label: 'Write off', hint: 'Taken off the books' },
-  { key: 'correction', label: 'Correction', hint: 'Fix a quantity recorded wrong' },
-  { key: 'reserved', label: 'Hold', hint: 'Reserve stock for an order' },
-  { key: 'released', label: 'Release', hint: 'Free held stock again' },
+  { key: 'returned', label: 'Return', labelKey: 'scan.adjustment.returned', hint: 'Came back from a customer', hintKey: 'scan.adjustment.returnedHint' },
+  { key: 'damaged', label: 'Damaged', labelKey: 'scan.adjustment.damaged', hint: 'Unsellable, kept on record', hintKey: 'scan.adjustment.damagedHint' },
+  { key: 'lost', label: 'Lost', labelKey: 'scan.adjustment.lost', hint: 'Missing from the shelf', hintKey: 'scan.adjustment.lostHint' },
+  { key: 'found', label: 'Found', labelKey: 'scan.adjustment.found', hint: 'Turned up again', hintKey: 'scan.adjustment.foundHint' },
+  { key: 'write_off', label: 'Write off', labelKey: 'scan.adjustment.write_off', hint: 'Taken off the books', hintKey: 'scan.adjustment.write_offHint' },
+  { key: 'correction', label: 'Correction', labelKey: 'scan.adjustment.correction', hint: 'Fix a quantity recorded wrong', hintKey: 'scan.adjustment.correctionHint' },
+  { key: 'reserved', label: 'Hold', labelKey: 'scan.adjustment.reserved', hint: 'Reserve stock for an order', hintKey: 'scan.adjustment.reservedHint' },
+  { key: 'released', label: 'Release', labelKey: 'scan.adjustment.released', hint: 'Free held stock again', hintKey: 'scan.adjustment.releasedHint' },
 ];
 
 const allActions = [...actions, ...adjustments];
@@ -294,7 +294,7 @@ export default function Scan() {
     // the failure is immediate instead of a surprise later.
     if (typeof navigator !== 'undefined' && navigator.onLine === false) {
       if (BUNDLE_MOVEMENT_TYPES.includes(action)) {
-        setError('Bundle movements are a Business feature — building bundles and taking them apart need the Business plan.');
+        setError(t('scan.bundleBusinessOnly'));
         return;
       }
       const queued = newQueuedChange(activeId || '', isHold ? 'reserve' : 'movement', {
@@ -320,7 +320,7 @@ export default function Scan() {
     // Holding stock never touches the on-hand quantity: only the reserved count moves.
     if (isHold) {
       if (amount < 1) {
-        setError('Enter how many to hold.');
+        setError(t('scan.enterHowManyToHold'));
         return;
       }
       savingRef.current = true;
@@ -340,10 +340,16 @@ export default function Scan() {
         setQty('1');
         setNote('');
         setFlash(
-          `${action === 'reserved' ? 'Held' : 'Released'} ${amount} · ${product.name} now ${next} held at ${location.name}`
+          t('scan.holdFlash', {
+            verb: t(action === 'reserved' ? 'scan.flashHeld' : 'scan.flashReleased'),
+            amount,
+            product: product.name,
+            next,
+            location: location.name,
+          })
         );
       } catch (err) {
-        setError(err?.message || 'Could not update the hold.');
+        setError(err?.message || t('scan.holdUpdateFailed'));
       } finally {
         savingRef.current = false;
         setBusy(false);
@@ -381,7 +387,7 @@ export default function Scan() {
           : `${verb} ${amount} · ${product.name} now ${next} at ${location.name}`
       );
     } catch (err) {
-      setError(err?.message || 'Could not record this movement.');
+      setError(err?.message || t('scan.recordFailed'));
     } finally {
       savingRef.current = false;
       setBusy(false);
@@ -446,9 +452,9 @@ export default function Scan() {
           <ResponsiveSelect
             value={locationId}
             onValueChange={setLocationId}
-            title="Choose scan location"
-            ariaLabel="Select scanning location"
-            placeholder="Choose location"
+            title={t('scan.chooseLocation')}
+            ariaLabel={t('scan.selectLocation')}
+            placeholder={t('scan.chooseLocationPlaceholder')}
             className="w-[210px] bg-card"
             options={orderedLocations(locations).map(({ location: l, depth }) => ({
               value: l.id,
@@ -635,7 +641,7 @@ export default function Scan() {
                         key={a.key}
                         type="button"
                         disabled={disabled}
-                        title={disabled ? 'Add a second location to transfer' : a.hint}
+                        title={disabled ? t('scan.addSecondLocation') : t(a.hintKey)}
                         onClick={() => setAction(a.key)}
                         className={`rounded-lg border px-3 py-2 text-left transition-colors ${
                           disabled
@@ -645,7 +651,7 @@ export default function Scan() {
                               : 'border-border hover:bg-muted'
                         }`}
                       >
-                        <span className="block text-sm font-medium">{a.label}</span>
+                        <span className="block text-sm font-medium">{t(a.labelKey)}</span>
                         <span
                           className={`block text-[11px] ${
                             action === a.key && !disabled
@@ -653,7 +659,7 @@ export default function Scan() {
                               : 'text-muted-foreground'
                           }`}
                         >
-                          {disabled ? 'Add a second location to transfer' : a.hint}
+                          {disabled ? t('scan.addSecondLocation') : t(a.hintKey)}
                         </span>
                       </button>
                     );
@@ -662,14 +668,14 @@ export default function Scan() {
 
                 <div className="space-y-1.5">
                   <Label className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                    Adjustments
+                    {t('scan.adjustments')}
                   </Label>
                   <div className="grid grid-cols-3 gap-1.5">
                     {adjustments.map((a) => (
                       <button
                         key={a.key}
                         type="button"
-                        title={a.hint}
+                        title={t(a.hintKey)}
                         onClick={() => setAction(a.key)}
                         className={`rounded-md border px-2 py-1.5 text-xs font-medium transition-colors ${
                           action === a.key
@@ -677,7 +683,7 @@ export default function Scan() {
                             : 'border-border hover:bg-muted'
                         }`}
                       >
-                        {a.label}
+                        {t(a.labelKey)}
                       </button>
                     ))}
                   </div>
@@ -686,12 +692,12 @@ export default function Scan() {
                 <div className="grid gap-2">
                   <Label className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
                     {action === 'reserved'
-                      ? `How many to hold · ${Math.max(onHand - held, 0)} available`
+                      ? t('scan.howManyToHold', { available: Math.max(onHand - held, 0) })
                       : action === 'released'
-                        ? `How many to release · ${held} held`
-                        : `${action === 'count' ? 'Counted quantity'
-                            : action === 'correction' ? 'Corrected quantity'
-                            : 'Quantity'} · ${onHand} on hand here`}
+                        ? t('scan.howManyToRelease', { held })
+                        : `${action === 'count' ? t('scan.countedQuantity')
+                            : action === 'correction' ? t('scan.correctedQuantity')
+                            : t('scan.quantity')} · ${onHand} ${t('scan.onHandHere')}`}
                   </Label>
                   <QuantityStepper
                     value={qty}
@@ -703,14 +709,14 @@ export default function Scan() {
                 {action === 'transfer' && (
                   <div className="grid gap-2">
                     <Label className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                      Destination
+                      {t('scan.destination')}
                     </Label>
                     <ResponsiveSelect
                       value={toLocationId}
                       onValueChange={setToLocationId}
-                      title="Choose transfer destination"
-                      ariaLabel="Select transfer destination"
-                      placeholder="Where is it going?"
+                      title={t('scan.chooseTransferDestination')}
+                      ariaLabel={t('scan.selectTransferDestination')}
+                      placeholder={t('scan.chooseDestination')}
                       options={orderedLocations(locations)
                         .filter(({ location }) => location.id !== locationId)
                         .map(({ location: l, depth }) => ({
@@ -724,13 +730,13 @@ export default function Scan() {
                 <Input
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
-                  placeholder="Note (optional) — PO number, reason, count sheet"
+                  placeholder={t('scan.notePlaceholder')}
                 />
 
                 {action === 'receive' && (
                   <div className="grid gap-2">
                     <Label className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                      Unit cost paid (optional)
+                      {t('scan.unitCostPaid')}
                     </Label>
                     <Input
                       type="number"
@@ -738,7 +744,7 @@ export default function Scan() {
                       step="0.01"
                       value={cost}
                       onChange={(e) => setCost(e.target.value)}
-                      placeholder={product.cost ? `Currently ${product.cost}` : 'What you paid each'}
+                      placeholder={product.cost ? t('scan.currentlyCost', { cost: product.cost }) : t('scan.whatYouPaidEach')}
                     />
                   </div>
                 )}
@@ -748,7 +754,10 @@ export default function Scan() {
                 <Button className="w-full" onClick={apply} disabled={busy}>
                   {busy
                     ? t('scan.recording')
-                    : `${t('scan.record')} ${(allActions.find((a) => a.key === action)?.label || 'movement').toLowerCase()}`}
+                    : `${t('scan.record')} ${(() => {
+                        const found = allActions.find((a) => a.key === action);
+                        return found ? t(found.labelKey) : t('scan.movementFallback');
+                      })().toLowerCase()}`}
                 </Button>
               </div>
 

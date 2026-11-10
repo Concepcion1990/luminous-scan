@@ -1,33 +1,34 @@
 import { base44 } from '@/api/client';
 import { escapeRegex } from '@/lib/inventory';
 import { scoped } from '@/lib/scoped';
+import { t } from './i18n.js';
 
 /** Manual listing tracker: nothing syncs with a marketplace, the owner keeps it true. */
 export const LISTING_CHANNELS = {
-  shopify: { label: 'Shopify', tone: 'green' },
-  ebay: { label: 'eBay', tone: 'blue' },
-  amazon: { label: 'Amazon', tone: 'yellow' },
-  etsy: { label: 'Etsy', tone: 'purple' },
-  walmart: { label: 'Walmart', tone: 'blue' },
-  tiktok_shop: { label: 'TikTok Shop', tone: 'pink' },
-  facebook: { label: 'Facebook', tone: 'blue' },
-  google: { label: 'Google', tone: 'green' },
-  other: { label: 'Other', tone: 'gray' },
+  shopify: { get label() { return t('listingsLib.channelShopify'); }, tone: 'green' },
+  ebay: { get label() { return t('listingsLib.channelEbay'); }, tone: 'blue' },
+  amazon: { get label() { return t('listingsLib.channelAmazon'); }, tone: 'yellow' },
+  etsy: { get label() { return t('listingsLib.channelEtsy'); }, tone: 'purple' },
+  walmart: { get label() { return t('listingsLib.channelWalmart'); }, tone: 'blue' },
+  tiktok_shop: { get label() { return t('listingsLib.channelTiktokShop'); }, tone: 'pink' },
+  facebook: { get label() { return t('listingsLib.channelFacebook'); }, tone: 'blue' },
+  google: { get label() { return t('listingsLib.channelGoogle'); }, tone: 'green' },
+  other: { get label() { return t('listingsLib.channelOther'); }, tone: 'gray' },
 };
 
 export const LISTING_STATUSES = {
-  draft: { label: 'Draft', tone: 'gray' },
-  live: { label: 'Live', tone: 'green' },
-  paused: { label: 'Paused', tone: 'yellow' },
-  ended: { label: 'Ended', tone: 'gray' },
+  draft: { get label() { return t('listingsLib.statusDraft'); }, tone: 'gray' },
+  live: { get label() { return t('listingsLib.statusLive'); }, tone: 'green' },
+  paused: { get label() { return t('listingsLib.statusPaused'); }, tone: 'yellow' },
+  ended: { get label() { return t('listingsLib.statusEnded'); }, tone: 'gray' },
 };
 
 export const LISTING_FILTERS = [
-  { key: 'all', label: 'All' },
-  { key: 'live', label: 'Live' },
-  { key: 'draft', label: 'Draft' },
-  { key: 'paused', label: 'Paused' },
-  { key: 'ended', label: 'Ended' },
+  { key: 'all', get label() { return t('listingsLib.filterAll'); } },
+  { key: 'live', get label() { return t('listingsLib.filterLive'); } },
+  { key: 'draft', get label() { return t('listingsLib.filterDraft'); } },
+  { key: 'paused', get label() { return t('listingsLib.filterPaused'); } },
+  { key: 'ended', get label() { return t('listingsLib.filterEnded'); } },
 ];
 
 export async function listListings({ status = 'all', channel = 'all', search = '', businessId = '' } = {}) {

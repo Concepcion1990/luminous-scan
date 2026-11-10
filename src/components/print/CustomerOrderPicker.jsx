@@ -1,4 +1,5 @@
 import { channelLabel, ORDER_STATUS } from '@/lib/orders';
+import { t } from '@/lib/i18n';
 
 const TONE = {
   muted: 'bg-muted text-muted-foreground',
@@ -12,13 +13,13 @@ export default function CustomerOrderPicker({ orders, value, onChange }) {
   return (
     <div className="rounded-xl border border-border bg-card p-4">
       <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-        Customer orders
+        {t('print.customerOrders')}
       </p>
-      <p className="mt-1 text-[11px] text-muted-foreground">Pick the order to print.</p>
+      <p className="mt-1 text-[11px] text-muted-foreground">{t('print.pickOrderToPrint')}</p>
       <div className="mt-3 max-h-[320px] space-y-1.5 overflow-y-auto pr-1">
         {orders.length === 0 && (
           <p className="py-6 text-center text-xs text-muted-foreground">
-            No customer orders yet — create one in Orders.
+            {t('print.noCustomerOrders')}
           </p>
         )}
         {orders.map((order) => {
@@ -39,8 +40,11 @@ export default function CustomerOrderPicker({ orders, value, onChange }) {
                 </span>
               </span>
               <span className="mt-0.5 block truncate text-[11px] text-muted-foreground">
-                {order.customer_name || 'No customer'} · {channelLabel(order.channel)} ·{' '}
-                {(order.lines || []).length} line{(order.lines || []).length === 1 ? '' : 's'}
+                {order.customer_name || t('print.noCustomer')} · {channelLabel(order.channel)} ·{' '}
+                {t('print.linesCount', {
+                  count: (order.lines || []).length,
+                  s: (order.lines || []).length === 1 ? '' : 's',
+                })}
               </span>
             </button>
           );

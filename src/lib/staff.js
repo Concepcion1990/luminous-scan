@@ -3,48 +3,50 @@
  * usable roles immediately; roles the owner writes are stored per business.
  */
 
+import { t } from './i18n.js';
+
 export const PERMISSION_GROUPS = [
   {
-    area: 'Catalog',
+    get area() { return t('staffLib.area.catalog'); },
     items: [
-      { key: 'products.view', label: 'See products and stock' },
-      { key: 'products.edit', label: 'Add and edit products' },
-      { key: 'locations.manage', label: 'Manage locations' },
-      { key: 'categories.manage', label: 'Manage categories and tags' },
+      { key: 'products.view', get label() { return t('staffLib.perm.productsView'); } },
+      { key: 'products.edit', get label() { return t('staffLib.perm.productsEdit'); } },
+      { key: 'locations.manage', get label() { return t('staffLib.perm.locationsManage'); } },
+      { key: 'categories.manage', get label() { return t('staffLib.perm.categoriesManage'); } },
     ],
   },
   {
-    area: 'Stock',
+    get area() { return t('staffLib.area.stock'); },
     items: [
-      { key: 'scan.use', label: 'Scan and record stock movements' },
-      { key: 'movements.reverse', label: 'Reverse a movement' },
-      { key: 'counts.run', label: 'Run stock counts' },
-      { key: 'builds.manage', label: 'Build and take apart bundles' },
+      { key: 'scan.use', get label() { return t('staffLib.perm.scanUse'); } },
+      { key: 'movements.reverse', get label() { return t('staffLib.perm.movementsReverse'); } },
+      { key: 'counts.run', get label() { return t('staffLib.perm.countsRun'); } },
+      { key: 'builds.manage', get label() { return t('staffLib.perm.buildsManage'); } },
     ],
   },
   {
-    area: 'Sales',
+    get area() { return t('staffLib.area.sales'); },
     items: [
-      { key: 'orders.manage', label: 'Take and pack orders' },
-      { key: 'returns.manage', label: 'Approve and process returns' },
-      { key: 'listings.manage', label: 'Manage channel listings' },
+      { key: 'orders.manage', get label() { return t('staffLib.perm.ordersManage'); } },
+      { key: 'returns.manage', get label() { return t('staffLib.perm.returnsManage'); } },
+      { key: 'listings.manage', get label() { return t('staffLib.perm.listingsManage'); } },
     ],
   },
   {
-    area: 'Buying',
+    get area() { return t('staffLib.area.buying'); },
     items: [
-      { key: 'purchasing.manage', label: 'Raise and receive purchase orders' },
-      { key: 'suppliers.manage', label: 'Manage suppliers' },
+      { key: 'purchasing.manage', get label() { return t('staffLib.perm.purchasingManage'); } },
+      { key: 'suppliers.manage', get label() { return t('staffLib.perm.suppliersManage'); } },
     ],
   },
   {
-    area: 'Reporting & admin',
+    get area() { return t('staffLib.area.reportingAdmin'); },
     items: [
-      { key: 'reports.view', label: 'See reports, value and alerts' },
-      { key: 'print.use', label: 'Print labels and documents' },
-      { key: 'exports.use', label: 'Export and import data' },
-      { key: 'settings.manage', label: 'Change business settings' },
-      { key: 'staff.manage', label: 'Manage staff and roles' },
+      { key: 'reports.view', get label() { return t('staffLib.perm.reportsView'); } },
+      { key: 'print.use', get label() { return t('staffLib.perm.printUse'); } },
+      { key: 'exports.use', get label() { return t('staffLib.perm.exportsUse'); } },
+      { key: 'settings.manage', get label() { return t('staffLib.perm.settingsManage'); } },
+      { key: 'staff.manage', get label() { return t('staffLib.perm.staffManage'); } },
     ],
   },
 ];
@@ -119,26 +121,26 @@ export function allPermissionsForPlan(planKey) {
  * only. Business keeps the full label.
  */
 export function exportPermissionLabel(planKey) {
-  return planKey === 'business' ? 'Export and import data' : 'Import data';
+  return planKey === 'business' ? t('staffLib.perm.exportsUse') : t('staffLib.importOnly');
 }
 
 export const PRESET_ROLES = [
   {
     id: 'preset-owner',
-    name: 'Owner',
-    description: 'Everything, including staff, settings and data.',
+    get name() { return t('staffLib.role.ownerName'); },
+    get description() { return t('staffLib.role.ownerDesc'); },
     permissions: ALL_PERMISSIONS,
   },
   {
     id: 'preset-manager',
-    name: 'Manager',
-    description: 'Runs the shop floor: stock, buying, orders and counts.',
+    get name() { return t('staffLib.role.managerName'); },
+    get description() { return t('staffLib.role.managerDesc'); },
     permissions: ALL_PERMISSIONS.filter((key) => key !== 'staff.manage'),
   },
   {
     id: 'preset-stock',
-    name: 'Stock clerk',
-    description: 'Receives, scans, counts and prints labels.',
+    get name() { return t('staffLib.role.stockClerkName'); },
+    get description() { return t('staffLib.role.stockClerkDesc'); },
     permissions: [
       'products.view',
       'products.edit',
@@ -153,8 +155,8 @@ export const PRESET_ROLES = [
   },
   {
     id: 'preset-sales',
-    name: 'Sales clerk',
-    description: 'Handles orders, returns and listings, with sales and stock reporting.',
+    get name() { return t('staffLib.role.salesClerkName'); },
+    get description() { return t('staffLib.role.salesClerkDesc'); },
     permissions: [
       'products.view',
       'scan.use',
@@ -167,16 +169,16 @@ export const PRESET_ROLES = [
   },
   {
     id: 'preset-viewer',
-    name: 'Viewer',
-    description: 'Read-only access to stock and reports.',
+    get name() { return t('staffLib.role.viewerName'); },
+    get description() { return t('staffLib.role.viewerDesc'); },
     permissions: ['products.view', 'reports.view', 'print.use'],
   },
 ];
 
 export const STATUS_OPTIONS = [
-  { value: 'invited', label: 'Invited', tone: 'border-warn/40 bg-warn/10 text-warn' },
-  { value: 'active', label: 'Active', tone: 'border-ok/40 bg-ok/10 text-ok' },
-  { value: 'suspended', label: 'Suspended', tone: 'border-border bg-muted text-muted-foreground' },
+  { value: 'invited', get label() { return t('staffLib.status.invited'); }, tone: 'border-warn/40 bg-warn/10 text-warn' },
+  { value: 'active', get label() { return t('staffLib.status.active'); }, tone: 'border-ok/40 bg-ok/10 text-ok' },
+  { value: 'suspended', get label() { return t('staffLib.status.suspended'); }, tone: 'border-border bg-muted text-muted-foreground' },
 ];
 
 /** Preset roles plus the business's own roles, in one list. */

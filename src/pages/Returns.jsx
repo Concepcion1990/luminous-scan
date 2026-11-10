@@ -6,6 +6,7 @@ import ReturnFormDialog from '@/components/returns/ReturnFormDialog';
 import { Button } from '@/components/ui/button';
 import { useBusiness } from '@/hooks/useBusiness';
 import { scoped } from '@/lib/scoped';
+import { t } from '@/lib/i18n';
 import {
   approveReturn,
   completeReturn,
@@ -62,10 +63,10 @@ export default function Returns() {
     setFlash(null);
     try {
       const message = await fn();
-      setFlash({ ok: true, text: message || `${record.number} updated.` });
+      setFlash({ ok: true, text: message || t('returns.updated', { number: record.number }) });
       setReload((n) => n + 1);
     } catch (e) {
-      setFlash({ ok: false, text: e.message || 'That did not work.' });
+      setFlash({ ok: false, text: e.message || t('returns.failed') });
     } finally {
       setBusyId('');
     }
@@ -75,13 +76,13 @@ export default function Returns() {
     if (key === 'approve') {
       return run(record, async () => {
         await approveReturn(record, user);
-        return `${record.number}: approved — review the restock choices, then complete.`;
+        return t('returns.approved', { number: record.number });
       });
     }
     if (key === 'reject') {
       return run(record, async () => {
         await rejectReturn(record);
-        return `${record.number}: rejected. Nothing was restocked.`;
+        return t('returns.rejected', { number: record.number });
       });
     }
     if (key === 'complete') {
@@ -89,16 +90,28 @@ export default function Returns() {
         const linkedOrder = orders.find((o) => o.id === record.order_id) || null;
         const result = await completeReturn({ ret: record, products, user, linkedOrder });
         const bits = [];
-        if (result.restocked) bits.push(`${result.restocked} unit${result.restocked === 1 ? '' : 's'} back in stock`);
-        if (result.replaced) bits.push(`${result.replaced} replacement unit${result.replaced === 1 ? '' : 's'} sent out`);
-        return `${record.number}: ${bits.join(', ')}.`;
+        if (result.restocked)
+          bits.push(
+            t('returns.restockedUnits', {
+              count: result.restocked,
+              s: result.restocked === 1 ? '' : 's',
+            })
+          );
+        if (result.replaced)
+          bits.push(
+            t('returns.replacementUnits', {
+              count: result.replaced,
+              s: result.replaced === 1 ? '' : 's',
+            })
+          );
+        return t('returns.completed', { number: record.number, bits: bits.join(', ') });
       });
     }
     if (key === 'delete') {
-      if (!window.confirm(`Delete ${record.number}?`)) return null;
+      if (!window.confirm(t('returns.deleteConfirm', { number: record.number }))) return null;
       return run(record, async () => {
         await deleteReturn(record);
-        return `${record.number}: deleted.`;
+        return t('returns.deleted', { number: record.number });
       });
     }
     return null;
@@ -108,10 +121,10 @@ export default function Returns() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Returns</p>
-          <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">Returns &amp; exchanges</h1>
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">{t('returns.eyebrow')}</p>
+          <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">{t('returns.title')}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Log what came back, decide what may be resold, then complete it once.
+            {t('returns.subtitle')}
           </p>
         </div>
         <Button
@@ -120,7 +133,7 @@ export default function Returns() {
             setEditOpen(true);
           }}
         >
-          <Plus className="mr-1.5 h-4 w-4" /> Log a return
+          <Plus className="mr-1.5 h-4 w-4" /> {t('returns.logReturn')}
         </Button>
       </div>
 
@@ -152,13 +165,13 @@ export default function Returns() {
         ))}
       </div>
 
-      {loading && <p className="text-sm text-muted-foreground">Loading returns…</p>}
+      {loading && <p className="text-sm text-muted-foreground">{t('returns.loading')}</p>}
 
       {!loading && !records.length && (
         <div className="rounded-xl border border-dashed border-border bg-card p-8 text-center">
           <Undo2 className="mx-auto h-6 w-6 text-muted-foreground" />
-          <p className="mt-2 text-sm font-medium">No returns here yet</p>
-          <p className="mt-1 text-sm text-muted-foreground">Log one against an order, or pick another filter.</p>
+          <p className="mt-2 text-sm font-medium">{t('returns.emptyTitle')}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{t('returns.emptyHint')}</p>
         </div>
       )}
 

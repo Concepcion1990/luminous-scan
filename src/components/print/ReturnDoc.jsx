@@ -1,6 +1,7 @@
 import DocHeader from './DocHeader';
 import { conditionLabel, reasonLabel } from '@/lib/returns';
 import { formatMoney } from '@/lib/inventory';
+import { t } from '@/lib/i18n';
 
 function shortDate(value) {
   if (!value) return '';
@@ -24,36 +25,36 @@ export default function ReturnDoc({ ret, business }) {
     <div className="print-label print-page-break w-[180mm] bg-white p-2 text-black">
       <DocHeader
         business={business}
-        title={exchange ? 'Return & exchange' : 'Return'}
+        title={exchange ? t('print.returnExchangeTitle') : t('print.returnTitle')}
         subtitle={[ret.number, ret.status, reasonLabel(ret.reason)].filter(Boolean).join(' · ')}
         fields={[
-          ['Received on', 'w-[24mm]'],
-          ['Approved by', 'w-[30mm]'],
-          ['Processed by', 'w-[30mm]'],
+          [t('print.fieldReceivedOn'), 'w-[24mm]'],
+          [t('print.fieldApprovedBy'), 'w-[30mm]'],
+          [t('print.fieldProcessedBy'), 'w-[30mm]'],
         ]}
       />
 
       <div className="mt-2 grid gap-y-0.5 text-[8pt]">
         <p>
-          <span className="font-mono text-[6.5pt] uppercase tracking-wide text-black/60">Customer </span>
+          <span className="font-mono text-[6.5pt] uppercase tracking-wide text-black/60">{t('print.customer')} </span>
           {ret.customer_name || '—'}
         </p>
         <p>
           <span className="font-mono text-[6.5pt] uppercase tracking-wide text-black/60">
-            Original order{' '}
+            {t('print.originalOrder')}{' '}
           </span>
           {ret.order_number || '—'}
-          {ret.received_date ? ` · received ${shortDate(ret.received_date)}` : ''}
+          {ret.received_date ? t('print.receivedDate', { date: shortDate(ret.received_date) }) : ''}
         </p>
         <p>
           <span className="font-mono text-[6.5pt] uppercase tracking-wide text-black/60">
-            Returned to{' '}
+            {t('print.returnedTo')}{' '}
           </span>
           {ret.location_name || '—'}
         </p>
         {ret.notes && (
           <p className="whitespace-pre-line">
-            <span className="font-mono text-[6.5pt] uppercase tracking-wide text-black/60">Notes </span>
+            <span className="font-mono text-[6.5pt] uppercase tracking-wide text-black/60">{t('print.notes')} </span>
             {ret.notes}
           </p>
         )}
@@ -63,11 +64,11 @@ export default function ReturnDoc({ ret, business }) {
         <thead>
           <tr className="border-b border-black text-left font-mono text-[6.5pt] uppercase tracking-wide">
             <th className="w-[26mm] py-1 font-normal">SKU</th>
-            <th className="py-1 font-normal">Returned item</th>
-            <th className="w-[12mm] py-1 text-right font-normal">Qty</th>
-            <th className="w-[34mm] py-1 font-normal">Condition</th>
-            <th className="w-[18mm] py-1 text-center font-normal">Restock</th>
-            <th className="w-[22mm] py-1 text-right font-normal">Value</th>
+            <th className="py-1 font-normal">{t('print.colReturnedItem')}</th>
+            <th className="w-[12mm] py-1 text-right font-normal">{t('print.colQty')}</th>
+            <th className="w-[34mm] py-1 font-normal">{t('print.colCondition')}</th>
+            <th className="w-[18mm] py-1 text-center font-normal">{t('print.colRestock')}</th>
+            <th className="w-[22mm] py-1 text-right font-normal">{t('print.colValue')}</th>
           </tr>
         </thead>
         <tbody>
@@ -82,7 +83,7 @@ export default function ReturnDoc({ ret, business }) {
               </td>
               <td className="numeric py-1.5 text-right text-[8pt]">{line.quantity ?? 0}</td>
               <td className="truncate py-1.5 pr-1 text-[8pt]">{conditionLabel(line.condition)}</td>
-              <td className="py-1.5 text-center text-[8pt]">{line.restock ? 'Yes' : 'No'}</td>
+              <td className="py-1.5 text-center text-[8pt]">{line.restock ? t('print.yes') : t('print.no')}</td>
               <td className="numeric py-1.5 text-right text-[8pt]">
                 {money((Number(line.unit_price) || 0) * (Number(line.quantity) || 0))}
               </td>
@@ -91,7 +92,7 @@ export default function ReturnDoc({ ret, business }) {
           {lines.length === 0 && (
             <tr>
               <td colSpan={6} className="py-3 text-center text-[8pt] text-black/60">
-                No items on this return.
+                {t('print.noReturnItems')}
               </td>
             </tr>
           )}
@@ -101,15 +102,15 @@ export default function ReturnDoc({ ret, business }) {
       {exchangeLines.length > 0 && (
         <>
           <p className="mt-3 font-mono text-[6.5pt] uppercase tracking-wide text-black/60">
-            Replacement items
+            {t('print.replacementItems')}
           </p>
           <table className="mt-1 w-full table-fixed border-collapse">
             <thead>
               <tr className="border-b border-black text-left font-mono text-[6.5pt] uppercase tracking-wide">
                 <th className="w-[26mm] py-1 font-normal">SKU</th>
-                <th className="py-1 font-normal">Replacement</th>
-                <th className="w-[12mm] py-1 text-right font-normal">Qty</th>
-                <th className="w-[22mm] py-1 text-right font-normal">Value</th>
+                <th className="py-1 font-normal">{t('print.colReplacement')}</th>
+                <th className="w-[12mm] py-1 text-right font-normal">{t('print.colQty')}</th>
+                <th className="w-[22mm] py-1 text-right font-normal">{t('print.colValue')}</th>
               </tr>
             </thead>
             <tbody>
@@ -135,15 +136,14 @@ export default function ReturnDoc({ ret, business }) {
 
       <div className="mt-3 ml-auto w-[80mm] text-[8pt]">
         <div className="flex justify-between border-b border-black/25 py-1">
-          <span>Refund recorded</span>
+          <span>{t('print.refundRecorded')}</span>
           <span className="numeric">{money(ret.refund_amount)}</span>
         </div>
         {ret.refund_note && <p className="py-1 text-[7.5pt] text-black/70">{ret.refund_note}</p>}
       </div>
 
       <p className="mt-3 border-t border-black/25 pt-2 font-mono text-[6.5pt] uppercase tracking-wide text-black/60">
-        The refund amount is what was recorded by hand in this app. No payment processor refund is implied.
-        Only lines marked restock return to sellable stock.
+        {t('print.returnFooter')}
       </p>
     </div>
   );

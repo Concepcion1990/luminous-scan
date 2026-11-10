@@ -1,3 +1,5 @@
+import { t } from '@/lib/i18n';
+
 const PREVIEW_ROWS = 8;
 
 /** First rows of the file with the verdict each one got. */
@@ -8,17 +10,17 @@ export default function ImportPreview({ report }) {
   return (
     <div className="space-y-1">
       <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-        Preview
+        {t('import.previewTitle')}
       </p>
       <div className="overflow-x-auto rounded-lg border border-border">
         <table className="w-full min-w-[420px] text-xs">
           <thead className="bg-muted/40 text-left font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
             <tr>
-              <th className="px-2 py-1.5 font-medium">Row</th>
-              <th className="px-2 py-1.5 font-medium">Name</th>
-              <th className="px-2 py-1.5 font-medium">SKU</th>
-              <th className="px-2 py-1.5 font-medium">Qty</th>
-              <th className="px-2 py-1.5 font-medium">Check</th>
+              <th className="px-2 py-1.5 font-medium">{t('import.colRow')}</th>
+              <th className="px-2 py-1.5 font-medium">{t('import.colName')}</th>
+              <th className="px-2 py-1.5 font-medium">{t('import.colSku')}</th>
+              <th className="px-2 py-1.5 font-medium">{t('import.colQty')}</th>
+              <th className="px-2 py-1.5 font-medium">{t('import.colCheck')}</th>
             </tr>
           </thead>
           <tbody>
@@ -30,10 +32,10 @@ export default function ImportPreview({ report }) {
                 <td className="numeric px-2 py-1.5">{row.draft ? row.quantity || 0 : '—'}</td>
                 <td className="px-2 py-1.5">
                   {row.status === 'ready' ? (
-                    <span className="text-ok">Ready</span>
+                    <span className="text-ok">{t('import.ready')}</span>
                   ) : (
                     <span className="text-warn" title={row.problem}>
-                      Skip
+                      {t('import.skip')}
                     </span>
                   )}
                 </td>
@@ -44,7 +46,7 @@ export default function ImportPreview({ report }) {
       </div>
       {report.rows.length > PREVIEW_ROWS && (
         <p className="text-[11px] text-muted-foreground">
-          Showing the first {PREVIEW_ROWS} of {report.rows.length} rows.
+          {t('import.showingFirst', { first: PREVIEW_ROWS, total: report.rows.length })}
         </p>
       )}
     </div>

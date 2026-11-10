@@ -1,4 +1,6 @@
 import { Plus, Trash2 } from 'lucide-react';
+import { t } from '@/lib/i18n';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -23,24 +25,24 @@ export default function VariationFields({ form, set, setForm }) {
   return (
     <div className="grid gap-3 rounded-lg border border-border bg-card p-3">
       <div>
-        <p className="text-sm font-medium">Copies &amp; variations</p>
+        <p className="text-sm font-medium">{t('productForm.copiesTitle')}</p>
         <p className="mt-0.5 text-xs text-muted-foreground">
-          Keep one record per physical copy. Copies sharing an ISBN are grouped automatically.
+          {t('productForm.copiesHint')}
         </p>
       </div>
 
       <div className="grid gap-2">
-        <Label htmlFor="copy_group">Copy group</Label>
+        <Label htmlFor="copy_group">{t('productForm.copyGroupLabel')}</Label>
         <Input
           id="copy_group"
           value={form.copy_group}
           onChange={set('copy_group')}
-          placeholder="Leave blank to group by ISBN"
+          placeholder={t('productForm.copyGroupPlaceholder')}
         />
       </div>
 
       <div className="grid gap-2">
-        <Label htmlFor="variant_label">Variation label</Label>
+        <Label htmlFor="variant_label">{t('productForm.variantLabel')}</Label>
         <Input
           id="variant_label"
           value={form.variant_label}
@@ -51,7 +53,7 @@ export default function VariationFields({ form, set, setForm }) {
 
       <div className="grid gap-2">
         <div className="flex items-center justify-between">
-          <Label>Variation options</Label>
+          <Label>{t('productForm.variantOptionsLabel')}</Label>
           <Button
             type="button"
             variant="ghost"
@@ -63,11 +65,11 @@ export default function VariationFields({ form, set, setForm }) {
               }))
             }
           >
-            <Plus className="mr-1 h-3.5 w-3.5" /> Add
+            <Plus className="mr-1 h-3.5 w-3.5" /> {t('productForm.addButton')}
           </Button>
         </div>
         {form.variant_options.length === 0 && (
-          <p className="text-xs text-muted-foreground">Size, colour, material, style or packaging.</p>
+          <p className="text-xs text-muted-foreground">{t('productForm.variantOptionsHint')}</p>
         )}
         {form.variant_options.map((row, index) => (
           <div key={index} className="flex gap-2">
@@ -89,7 +91,7 @@ export default function VariationFields({ form, set, setForm }) {
               size="icon"
               className="h-8 w-8 shrink-0 text-muted-foreground"
               onClick={removeOption(index)}
-              aria-label="Remove variation option"
+              aria-label={t('productForm.removeVariationAria')}
             >
               <Trash2 className="h-3.5 w-3.5" />
             </Button>

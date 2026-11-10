@@ -6,6 +6,7 @@ import TrialCountdown from '@/components/plans/TrialCountdown';
 import { Button } from '@/components/ui/button';
 import { WELCOME_OPTIONS } from '@/lib/plans';
 import { markWelcomeSeen } from '@/lib/welcome';
+import { t } from '@/lib/i18n';
 
 /**
  * First launch directs customers to compare plans before entering the app.
@@ -21,29 +22,28 @@ export default function Welcome() {
             to="/plans"
             className="font-mono text-[10px] uppercase tracking-[0.14em] text-primary-foreground/70 hover:text-primary-foreground"
           >
-            Compare plans
+            {t('welcome.comparePlans')}
           </Link>
         </div>
       </header>
 
       <main className="mx-auto max-w-5xl px-4 py-8 sm:px-8 sm:py-12">
         <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-          Welcome
+          {t('welcome.eyebrow')}
         </p>
         <h1 className="mt-2 text-3xl font-semibold leading-tight sm:text-4xl">
-          Welcome to Luminous StockHaven
+          {t('welcome.heading')}
         </h1>
         <p className="mt-2 text-base text-muted-foreground">
-          A home for everything your business carries.
+          {t('auth.tagline')}
         </p>
 
         <div className="mt-5 max-w-2xl space-y-2 text-sm leading-relaxed text-muted-foreground">
-          <p className="font-medium text-foreground">Manage your inventory your way.</p>
+          <p className="font-medium text-foreground">{t('welcome.subheading')}</p>
           <p>
-            Whether you need a simple mobile inventory companion or a complete inventory-management
-            system for your growing business, Luminous StockHaven has options for you.
+            {t('welcome.intro')}
           </p>
-          <p>Explore our available plans before starting your free trial.</p>
+          <p>{t('welcome.explorePlans')}</p>
         </div>
 
         <div className="mt-5">
@@ -59,11 +59,11 @@ export default function Welcome() {
               action={
                 option.available === false ? (
                   <Button variant="outline" className="w-full" disabled>
-                    Available at mobile launch
+                    {t('plans.availableAtLaunch')}
                   </Button>
                 ) : (
                   <Button variant="outline" className="w-full" asChild>
-                    <Link to="/plans">See what's included</Link>
+                    <Link to="/plans">{t('welcome.seeIncluded')}</Link>
                   </Button>
                 )
               }
@@ -74,24 +74,22 @@ export default function Welcome() {
         <div className="mt-6">
           <Button asChild>
             <Link to="/plans" onClick={markWelcomeSeen}>
-              Choose a subscription plan
+              {t('welcome.choosePlan')}
             </Link>
           </Button>
         </div>
 
         <p className="mt-4 flex items-start gap-2 rounded-lg border border-border bg-secondary px-3 py-2.5 text-xs leading-relaxed text-muted-foreground">
           <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-ok" />
-          Opening this screen starts nothing. No trial begins and no card is charged — a seven-day
-          trial starts only when you choose a plan and confirm it. Both website plans include the
-          mobile companion, so you never pay the monthly mobile fee on top of them.
+          {t('welcome.noTrialNote')}
         </p>
 
         <p className="mt-6 text-xs text-muted-foreground">
-          Already have a StockHaven account?{' '}
+          {t('welcome.alreadyHaveAccount')}{' '}
           <Link to="/login" className="underline underline-offset-2 hover:text-foreground">
-            Sign in
+            {t('welcome.signIn')}
           </Link>{' '}
-          and your inventory is right where you left it.
+          {t('welcome.inventoryWaiting')}
         </p>
       </main>
     </div>

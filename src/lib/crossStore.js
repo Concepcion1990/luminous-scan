@@ -13,6 +13,7 @@
  * the `@/` alias — see the note at the top of src/lib/syncClient.js.)
  */
 import { apiRequest } from '../api/client.js';
+import { t } from './i18n.js';
 
 /** { incoming: [...], outgoing: [...] } for one business. */
 export async function listCrossStoreRequests(businessId) {
@@ -42,15 +43,15 @@ export const CROSS_STORE_STATUSES = ['open', 'acknowledged', 'resolved', 'declin
 export function crossStoreStatusLabel(status) {
   switch (status) {
     case 'open':
-      return 'Waiting for an answer';
+      return t('crossStoreLib.status.open');
     case 'acknowledged':
-      return 'Acknowledged — on its way soon';
+      return t('crossStoreLib.status.acknowledged');
     case 'resolved':
-      return 'Done';
+      return t('crossStoreLib.status.resolved');
     case 'declined':
-      return 'Declined';
+      return t('crossStoreLib.status.declined');
     default:
-      return status || 'Unknown';
+      return status || t('crossStoreLib.status.unknown');
   }
 }
 
@@ -61,5 +62,5 @@ export function canAnswerCrossStoreRequest(request) {
 
 /** 'ship' (send it over) or 'bring' (bring it over within ~2 days). */
 export function crossStoreModeLabel(mode) {
-  return mode === 'bring' ? 'Bring it over' : 'Ship it to us';
+  return mode === 'bring' ? t('crossStoreLib.mode.bring') : t('crossStoreLib.mode.ship');
 }

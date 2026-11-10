@@ -9,16 +9,17 @@ import { Button } from '@/components/ui/button';
 import { useBusiness } from '@/hooks/useBusiness';
 import useEntitlements from '@/hooks/useEntitlements';
 import { scoped } from '@/lib/scoped';
+import { t } from '@/lib/i18n';
 import { money, PO_STATUS, poProgress, statusQuery } from '@/lib/purchasing';
 
 const FILTERS = [
-  { key: 'open', label: 'Open' },
-  { key: 'ordered', label: 'On order' },
-  { key: 'partial', label: 'Partly received' },
-  { key: 'received', label: 'Received' },
-  { key: 'draft', label: 'Drafts' },
-  { key: 'cancelled', label: 'Cancelled' },
-  { key: 'all', label: 'All' },
+  { key: 'open', label: t('purchasing.filterOpen') },
+  { key: 'ordered', label: t('purchasing.filterOrdered') },
+  { key: 'partial', label: t('purchasing.filterPartial') },
+  { key: 'received', label: t('purchasing.filterReceived') },
+  { key: 'draft', label: t('purchasing.filterDraft') },
+  { key: 'cancelled', label: t('purchasing.filterCancelled') },
+  { key: 'all', label: t('purchasing.filterAll') },
 ];
 
 const PILL = {
@@ -59,9 +60,9 @@ export default function Purchasing() {
         { method: 'POST' },
       );
       setReload((r) => r + 1);
-      setFlash(`${placed.number} is on order now.`);
+      setFlash(t('purchasing.placed', { number: placed.number }));
     } catch (err) {
-      setError(err?.message || 'Could not place this order.');
+      setError(err?.message || t('purchasing.placeFailed'));
     }
   };
 
@@ -98,15 +99,15 @@ export default function Purchasing() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Purchasing</p>
-          <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">Purchase orders</h1>
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">{t('purchasing.eyebrow')}</p>
+          <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">{t('purchasing.title')}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Order from a supplier, then receive what arrives — stock and cost land on the product.
+            {t('purchasing.subtitle')}
           </p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" asChild>
-            <Link to="/suppliers">Suppliers</Link>
+            <Link to="/suppliers">{t('purchasing.suppliersLink')}</Link>
           </Button>
           <Button
             onClick={() => {
@@ -114,7 +115,7 @@ export default function Purchasing() {
               setEditOpen(true);
             }}
           >
-            <Plus className="mr-1.5 h-4 w-4" /> New order
+            <Plus className="mr-1.5 h-4 w-4" /> {t('purchasing.newOrder')}
           </Button>
         </div>
       </div>
@@ -149,16 +150,16 @@ export default function Purchasing() {
         ))}
       </div>
 
-      {loading && <p className="text-sm text-muted-foreground">Loading purchase orders…</p>}
+      {loading && <p className="text-sm text-muted-foreground">{t('purchasing.loading')}</p>}
 
       {!loading && suppliers.length === 0 && (
         <div className="rounded-xl border border-dashed border-border bg-card px-6 py-12 text-center">
-          <p className="text-sm font-medium">Add a supplier first</p>
+          <p className="text-sm font-medium">{t('purchasing.noSupplierTitle')}</p>
           <p className="mt-1 text-xs text-muted-foreground">
-            Every purchase order is placed with a supplier.
+            {t('purchasing.noSupplierHint')}
           </p>
           <Button className="mt-3" asChild>
-            <Link to="/suppliers">Open suppliers</Link>
+            <Link to="/suppliers">{t('purchasing.openSuppliers')}</Link>
           </Button>
         </div>
       )}
@@ -166,8 +167,8 @@ export default function Purchasing() {
       {!loading && suppliers.length > 0 && orders.length === 0 && (
         <div className="rounded-xl border border-dashed border-border bg-card px-6 py-14 text-center">
           <ClipboardList className="mx-auto h-5 w-5 text-muted-foreground" />
-          <p className="mt-2 text-sm font-medium">No orders here</p>
-          <p className="mt-1 text-xs text-muted-foreground">Raise an order to start tracking what is coming.</p>
+          <p className="mt-2 text-sm font-medium">{t('purchasing.emptyTitle')}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{t('purchasing.emptyHint')}</p>
         </div>
       )}
 
@@ -194,16 +195,19 @@ export default function Purchasing() {
                     {order.supplier_name}
                     {order.location_name ? ` → ${order.location_name}` : ''}
                     {order.status === 'received' && order.received_date
-                      ? ` · received ${order.received_date}`
+                      ? t('purchasing.receivedOn', { date: order.received_date })
                       : order.expected_date
-                      ? ` · expected ${order.expected_date}`
+                      ? t('purchasing.expectedOn', { date: order.expected_date })
                       : ''}
                   </p>
                 </div>
                 <div className="text-right">
                   <p className="numeric text-sm font-semibold">{money(order.total, currency)}</p>
                   <p className="numeric font-mono text-[10px] text-muted-foreground">
-                    {progress.received}/{progress.ordered} received
+                    {t('purchasing.progressReceived', {
+                      received: progress.received,
+                      ordered: progress.ordered,
+                    })}
                   </p>
                 </div>
               </div>
@@ -219,7 +223,7 @@ export default function Purchasing() {
                 ))}
                 {(order.lines || []).length > 4 && (
                   <p className="text-[11px] text-muted-foreground">
-                    +{(order.lines || []).length - 4} more lines
+                    {t('purchasing.moreLines', { count: (order.lines || []).length - 4 })}
                   </p>
                 )}
               </div>
@@ -227,12 +231,12 @@ export default function Purchasing() {
               <div className="mt-3 flex flex-wrap gap-2">
                 {order.status === 'draft' && (
                   <Button size="sm" onClick={() => placeOrder(order)}>
-                    Place order
+                    {t('purchasing.placeOrder')}
                   </Button>
                 )}
                 {canReceive && (
                   <Button size="sm" onClick={() => setReceiving(order)}>
-                    Receive
+                    {t('purchasing.receive')}
                   </Button>
                 )}
                 <Button
@@ -243,11 +247,11 @@ export default function Purchasing() {
                     setEditOpen(true);
                   }}
                 >
-                  <Pencil className="mr-1.5 h-3.5 w-3.5" /> Edit
+                  <Pencil className="mr-1.5 h-3.5 w-3.5" /> {t('purchasing.edit')}
                 </Button>
                 {order.received_by && (
                   <span className="self-center text-[11px] text-muted-foreground">
-                    Received by {order.received_by}
+                    {t('purchasing.receivedBy', { name: order.received_by })}
                   </span>
                 )}
               </div>
@@ -266,7 +270,11 @@ export default function Purchasing() {
         currency={currency}
         onSaved={(saved) => {
           setReload((r) => r + 1);
-          setFlash(`${editing ? 'Updated' : 'Created'} ${saved.number}.`);
+          setFlash(
+            editing
+              ? t('purchasing.orderUpdated', { number: saved.number })
+              : t('purchasing.orderCreated', { number: saved.number })
+          );
         }}
       />
 
@@ -280,9 +288,15 @@ export default function Purchasing() {
         onReceived={(result) => {
           setReload((r) => r + 1);
           setFlash(
-            `Received ${result.receivedNow} unit${result.receivedNow === 1 ? '' : 's'} on ${
-              receiving?.number
-            } — ${result.status === 'received' ? 'order complete' : 'partly received'}.`
+            t('purchasing.receivedFlash', {
+              count: result.receivedNow,
+              s: result.receivedNow === 1 ? '' : 's',
+              number: receiving?.number,
+              status:
+                result.status === 'received'
+                  ? t('purchasing.orderComplete')
+                  : t('purchasing.partlyReceived'),
+            })
           );
         }}
       />

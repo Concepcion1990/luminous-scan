@@ -11,6 +11,8 @@ import InventoryRow from '@/components/inventory/InventoryRow';
 import AdjustStockDialog from '@/components/inventory/AdjustStockDialog';
 import { Input } from '@/components/ui/input';
 import ResponsiveSelect from '@/components/ui/ResponsiveSelect';
+import { t } from '@/lib/i18n';
+
 
 /**
  * The stock this business actually holds, by product and place, with a one-step
@@ -76,12 +78,11 @@ export default function Inventory() {
     <PullToRefresh className="space-y-5" onRefresh={load}>
       <div>
         <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-          {record?.name || 'This business'}
+          {record?.name || t('inventory.thisBusiness')}
         </p>
-        <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">My inventory</h1>
+        <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">{t('inventory.title')}</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          What is on hand in this business right now, place by place. Correct a quantity and the
-          movement is recorded.
+          {t('inventory.subtitle')}
         </p>
       </div>
 
@@ -89,21 +90,21 @@ export default function Inventory() {
 
       {inventory === null ? (
         <div className="rounded-xl border border-border bg-card px-4 py-10 text-center text-sm text-muted-foreground">
-          Loading inventory…
+          {t('inventory.loading')}
         </div>
       ) : (
         <>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <StatCard label="Units on hand" value={units} unit="units" />
-            <StatCard label="Products stocked" value={stocked} unit={`of ${products.length}`} />
-            <StatCard label="Low stock" value={low} tone={low ? 'warn' : 'default'} hint="At or below reorder point" />
-            <StatCard label="Locations" value={locations.length} unit="places" />
+            <StatCard label={t('inventory.statUnits')} value={units} unit={t('inventory.unitUnits')} />
+            <StatCard label={t('inventory.statStocked')} value={stocked} unit={t('inventory.ofProducts', { count: products.length })} />
+            <StatCard label={t('inventory.statLow')} value={low} tone={low ? 'warn' : 'default'} hint={t('inventory.lowHint')} />
+            <StatCard label={t('inventory.statLocations')} value={locations.length} unit={t('inventory.unitPlaces')} />
           </div>
 
           {productTruncationNotice(inventory?.products?.length ?? 0, inventory?.productTotal ?? 0) && (
             <p className="rounded-lg border border-warn/30 bg-warn/10 px-3 py-2 text-sm">
-              {productTruncationNotice(inventory?.products?.length ?? 0, inventory?.productTotal ?? 0)} — this
-              list shows products alphabetically, so later ones are not shown here.
+              {productTruncationNotice(inventory?.products?.length ?? 0, inventory?.productTotal ?? 0)}{' '}
+              {t('inventory.truncationSuffix')}
             </p>
           )}
 
@@ -114,18 +115,18 @@ export default function Inventory() {
                 <Input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search name, SKU or category"
+                  placeholder={t('inventory.searchPlaceholder')}
                   className="pl-8"
                 />
               </div>
               <ResponsiveSelect
-                title="Choose a location"
-                ariaLabel="Filter inventory by location"
+                title={t('inventory.locationTitle')}
+                ariaLabel={t('inventory.locationAria')}
                 className="sm:w-52"
                 value={locationId || 'all'}
                 onValueChange={(value) => setLocationId(value === 'all' ? '' : value)}
                 options={[
-                  { value: 'all', label: 'All locations' },
+                  { value: 'all', label: t('inventory.allLocations') },
                   ...locations.map((location) => ({ value: location.id, label: location.name })),
                 ]}
               />
@@ -135,14 +136,14 @@ export default function Inventory() {
               <div className="px-4 py-10 text-center text-sm text-muted-foreground">
                 {products.length === 0 ? (
                   <>
-                    No products yet.{' '}
+                    {t('inventory.emptyNoProducts')}{' '}
                     <Link to="/products" className="underline underline-offset-2 hover:text-foreground">
-                      Add your first product
+                      {t('inventory.emptyAddProduct')}
                     </Link>{' '}
-                    and its stock will show here.
+                    {t('inventory.emptyAddProductSuffix')}
                   </>
                 ) : (
-                  'Nothing matches that search.'
+                  t('inventory.emptyNoMatch')
                 )}
               </div>
             ) : (
@@ -161,13 +162,13 @@ export default function Inventory() {
           </div>
 
           <p className="text-xs text-muted-foreground">
-            Looking for the full catalog, photos and pricing?{' '}
+            {t('inventory.footerLead')}{' '}
             <Link to="/products" className="underline underline-offset-2 hover:text-foreground">
-              Open products
+              {t('inventory.footerOpenProducts')}
             </Link>
-            . Every change here appears in{' '}
+            {t('inventory.footerMiddle')}{' '}
             <Link to="/movements" className="underline underline-offset-2 hover:text-foreground">
-              movements
+              {t('inventory.footerMovements')}
             </Link>
             .
           </p>

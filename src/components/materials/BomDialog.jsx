@@ -22,6 +22,7 @@ import {
 import { useBusiness } from '@/hooks/useBusiness';
 import { withBusiness } from '@/lib/scoped';
 import { BUILD_KINDS } from '@/lib/bom';
+import { t } from '@/lib/i18n';
 
 const EMPTY_LINE = { component_id: '', component_name: '', sku: '', quantity: 1 };
 
@@ -62,27 +63,27 @@ export default function BomDialog({ open, onOpenChange, bom, products, boms, onS
   const save = async () => {
     setError('');
     if (!product) {
-      setError('Choose the product you are building.');
+      setError(t('materials.chooseProductError'));
       return;
     }
     const clean = lines
       .filter((line) => line.component_id && Number(line.quantity) > 0)
       .map((line) => ({ ...line, quantity: Number(line.quantity) }));
     if (!clean.length) {
-      setError('Add at least one component with a quantity.');
+      setError(t('materials.needComponent'));
       return;
     }
     if (new Set(clean.map((line) => line.component_id)).size !== clean.length) {
-      setError('Each component can only appear once — raise its quantity instead.');
+      setError(t('materials.duplicateComponent'));
       return;
     }
     if (clean.some((line) => line.component_id === productId)) {
-      setError('The product being built cannot also be one of its own components.');
+      setError(t('materials.selfComponent'));
       return;
     }
     const clash = boms.find((b) => b.product_id === productId && b.id !== bom?.id);
     if (clash) {
-      setError(`“${product.name}” already has a build list (${clash.kind}). Edit that one instead.`);
+      setError(t('materials.alreadyHasList', { name: product.name, kind: clash.kind }));
       return;
     }
 
@@ -103,9 +104,13 @@ export default function BomDialog({ open, onOpenChange, bom, products, boms, onS
       if (bom) await base44.entities.Bom.update(bom.id, values);
       else await base44.entities.Bom.create(values);
       onOpenChange(false);
-      onSaved(bom ? `${product.name}: build list saved.` : `${product.name}: build list created.`);
+      onSaved(
+        bom
+          ? t('materials.saved', { name: product.name })
+          : t('materials.created', { name: product.name })
+      );
     } catch (e) {
-      setError(e.message || 'Could not save this build list.');
+      setError(e.message || t('materials.saveFailed'));
     } finally {
       setSaving(false);
     }
@@ -115,24 +120,22 @@ export default function BomDialog({ open, onOpenChange, bom, products, boms, onS
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{bom ? 'Edit build list' : 'New build list'}</DialogTitle>
-          <DialogDescription>
-            A bundle packs existing products together. A recipe lists the materials a made item uses up.
-          </DialogDescription>
+          <DialogTitle>{bom ? t('materials.editTitle') : t('materials.newTitle')}</DialogTitle>
+          <DialogDescription>{t('materials.formDescription')}</DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-3">
           <div className="grid gap-1">
-            <Label className="text-xs">Product you build</Label>
+            <Label className="text-xs">{t('materials.productYouBuild')}</Label>
             <Select
               value={productId || 'none'}
               onValueChange={(v) => setProductId(v === 'none' ? '' : v)}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Choose a product" />
+                <SelectValue placeholder={t('materials.chooseProduct')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">Choose a product</SelectItem>
+                <SelectItem value="none">{t('materials.chooseProduct')}</SelectItem>
                 {products.map((p) => (
                   <SelectItem key={p.id} value={p.id}>
                     {p.sku ? `${p.name} · ${p.sku}` : p.name}
@@ -143,7 +146,7 @@ export default function BomDialog({ open, onOpenChange, bom, products, boms, onS
           </div>
 
           <div className="grid gap-1">
-            <Label className="text-xs">Kind of build</Label>
+            <Label className="text-xs">{t('materials.kindOfBuild')}</Label>
             <div className="grid gap-2 sm:grid-cols-2">
               {Object.entries(BUILD_KINDS).map(([key, meta]) => (
                 <button
@@ -171,14 +174,14 @@ export default function BomDialog({ open, onOpenChange, bom, products, boms, onS
 
           <div className="grid gap-2">
             <div className="flex items-center justify-between">
-              <Label className="text-xs">Components</Label>
+              <Label className="text-xs">{t('materials.components')}</Label>
               <Button
                 type="button"
                 size="sm"
                 variant="ghost"
                 onClick={() => setLines((rows) => [...rows, { ...EMPTY_LINE }])}
               >
-                <Plus className="mr-1 h-3.5 w-3.5" /> Add part
+                <Plus className="mr-1 h-3.5 w-3.5" /> {t('materials.addPart')}
               </Button>
             </div>
 
@@ -190,10 +193,10 @@ export default function BomDialog({ open, onOpenChange, bom, products, boms, onS
                     onValueChange={(v) => chooseComponent(index, v === 'none' ? '' : v)}
                   >
                     <SelectTrigger className="flex-1">
-                      <SelectValue placeholder="Choose a product or material" />
+                      <SelectValue placeholder={t('materials.chooseComponentPlaceholder')} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">Choose a product</SelectItem>
+                      <SelectItem value="none">{t('materials.chooseProduct')}</SelectItem>
                       {products
                         .filter((p) => p.id !== productId)
                         .map((p) => (
@@ -211,7 +214,7 @@ export default function BomDialog({ open, onOpenChange, bom, products, boms, onS
                     value={line.quantity}
                     onChange={(e) => setLine(index, { quantity: e.target.value })}
                     className="numeric w-20"
-                    aria-label="Quantity per unit built"
+                    aria-label={t('materials.quantityPerUnit')}
                   />
                   <Button
                     type="button"
@@ -219,7 +222,7 @@ export default function BomDialog({ open, onOpenChange, bom, products, boms, onS
                     variant="ghost"
                     className="shrink-0 text-muted-foreground"
                     onClick={() => setLines((rows) => rows.filter((_, i) => i !== index))}
-                    aria-label="Remove component"
+                    aria-label={t('materials.removeComponent')}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -227,17 +230,16 @@ export default function BomDialog({ open, onOpenChange, bom, products, boms, onS
               ))}
             </div>
             <p className="text-[11px] text-muted-foreground">
-              Quantities are per one unit built. Materials can be any catalog product, including those sold
-              by weight or case.
+              {t('materials.quantitiesHint')}
             </p>
           </div>
 
           <div className="grid gap-1">
-            <Label className="text-xs">Notes</Label>
+            <Label className="text-xs">{t('materials.notes')}</Label>
             <Input
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Assembly notes, supplier, packaging…"
+              placeholder={t('materials.notesPlaceholder')}
             />
           </div>
 
@@ -246,10 +248,10 @@ export default function BomDialog({ open, onOpenChange, bom, products, boms, onS
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t('materials.cancel')}
           </Button>
           <Button onClick={save} disabled={saving}>
-            {saving ? 'Saving…' : 'Save build list'}
+            {saving ? t('materials.saving') : t('materials.saveBuildList')}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { ABOUT_FOUNDER as about } from './aboutFounder.js';
+import { en } from './locales/en.js';
 
 // The "Luminous StockHaven About" page — About the Founder, dictated
 // Nov 9, 2026. The text lives in src/lib/aboutFounder.js — a single
@@ -77,7 +78,10 @@ test('LegalFooter links to /about, small and subtle', () => {
   const footer = read('src/components/LegalFooter.jsx');
   assert.match(footer, /import \{ Link \} from 'react-router-dom'/);
   assert.match(footer, /<Link to="\/about"/);
-  assert.match(footer, /About Luminous StockHaven/);
+  // T6.3: the link label moved into en.js (layout.aboutLink) — assert the
+  // key is referenced and the English value, not a source literal.
+  assert.match(footer, /t\('layout\.aboutLink'\)/);
+  assert.equal(en['layout.aboutLink'], 'About Luminous StockHaven');
   assert.match(footer, /text-\[11px\]/, 'footer stays small');
   assert.match(footer, /text-center/, 'footer stays centered');
   // The legal text itself is untouched.
@@ -88,7 +92,10 @@ test('LegalFooter links to /about, small and subtle', () => {
 test('Plans links to /about near the trademark notice', () => {
   const screen = read('src/pages/Plans.jsx');
   assert.match(screen, /<Link to="\/about" className="font-medium text-primary underline underline-offset-4">/);
-  assert.match(screen, /About Luminous StockHaven/);
+  // T6.3: the link label moved into en.js (auth.aboutLink) — assert the
+  // key is referenced and the English value, not a source literal.
+  assert.match(screen, /t\('auth\.aboutLink'\)/);
+  assert.equal(en['auth.aboutLink'], 'About Luminous StockHaven');
   const noticeAt = screen.indexOf('<TrademarkNotice />');
   const aboutAt = screen.indexOf('<Link to="/about"');
   const buttonsAt = screen.indexOf('<div className="mt-6 flex flex-col gap-2 sm:flex-row">');
@@ -101,13 +108,23 @@ test('Register shows the trademark notice below the form, with an About link', (
   assert.match(screen, /import TrademarkNotice from ["']@\/components\/TrademarkNotice["']/);
   assert.match(screen, /<TrademarkNotice \/>/);
   assert.match(screen, /<Link to="\/about" className="font-medium text-primary underline underline-offset-4">/);
-  assert.match(screen, /About Luminous StockHaven/);
+  // T6.3: the link label moved into en.js (auth.aboutLink) — assert the
+  // key is referenced and the English value, not a source literal.
+  assert.match(screen, /t\('auth\.aboutLink'\)/);
+  assert.equal(en['auth.aboutLink'], 'About Luminous StockHaven');
   // The notice rides the new AuthLayout `below` slot — under the card,
   // never inside the form — and only on the create-account branch, not
   // the OTP branch (the OTP screen is a second step, not a fresh start).
-  const formReturnAt = screen.indexOf('title="Create your account"');
+  // T6.3: the titles moved into en.js (register.title, verifyEmail.title)
+  // — the t() references are the anchors, and the English values are
+  // asserted alongside.
+  assert.match(screen, /title=\{t\('register\.title'\)\}/);
+  assert.equal(en['register.title'], 'Create your account');
+  assert.match(screen, /title=\{t\('verifyEmail\.title'\)\}/);
+  assert.equal(en['verifyEmail.title'], 'Verify your email');
+  const formReturnAt = screen.indexOf("title={t('register.title')}");
   const noticeAt = screen.indexOf('<TrademarkNotice />');
-  const otpAt = screen.indexOf('title="Verify your email"');
+  const otpAt = screen.indexOf("title={t('verifyEmail.title')}");
   assert.ok(formReturnAt > -1 && noticeAt > formReturnAt, 'notice sits on the create-account branch');
   // The OTP screen is a second step, not a fresh start: its AuthLayout
   // (between the OTP title and the create-account title) carries no
@@ -120,7 +137,7 @@ test('Register shows the trademark notice below the form, with an About link', (
   assert.match(layout, /\{below && <div className="mt-6 pb-10">\{below\}<\/div>\}/);
   // The form itself is untouched: same fields, same submit, same OTP flow.
   assert.match(screen, /<form onSubmit=\{handleSubmit\} className="space-y-4">/);
-  assert.match(screen, /PASSWORD_HINT/);
+  assert.match(screen, /getPasswordHint\(\)/);
 });
 
 test('no policy or trademark wording was touched by this change', () => {

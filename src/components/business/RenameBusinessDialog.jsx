@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { useBusiness } from '@/hooks/useBusiness';
 import { Button } from '@/components/ui/button';
+import { t } from '@/lib/i18n';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -29,7 +30,7 @@ export default function RenameBusinessDialog({ open, onOpenChange, business, onR
   const save = async () => {
     if (!business?.id) return;
     if (!name.trim()) {
-      setError('A business needs a name.');
+      setError(t('settings.rename.nameError'));
       return;
     }
     setBusy(true);
@@ -39,7 +40,7 @@ export default function RenameBusinessDialog({ open, onOpenChange, business, onR
       onRenamed?.(business.id, name.trim());
       onOpenChange(false);
     } catch (err) {
-      setError(err?.message || 'Could not rename that business.');
+      setError(err?.message || t('settings.rename.error'));
     } finally {
       setBusy(false);
     }
@@ -49,31 +50,31 @@ export default function RenameBusinessDialog({ open, onOpenChange, business, onR
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Rename business</DialogTitle>
+          <DialogTitle>{t('settings.rename.title')}</DialogTitle>
           <DialogDescription>
-            Your products, stock and documents stay exactly as they are — only the name changes.
+            {t('settings.rename.description')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-2">
-          <Label htmlFor="rename-biz">Business name</Label>
+          <Label htmlFor="rename-biz">{t('settings.rename.nameLabel')}</Label>
           <Input
             id="rename-biz"
             value={name}
             onChange={(e) => setName(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && save()}
-            placeholder="Harbor & Pine Books"
+            placeholder={t('settings.rename.namePlaceholder')}
           />
           {error && <p className="text-sm text-destructive">{error}</p>}
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t('settings.rename.cancel')}
           </Button>
           <Button onClick={save} disabled={busy}>
             {busy && <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />}
-            {busy ? 'Saving…' : 'Save name'}
+            {busy ? t('settings.rename.saving') : t('settings.rename.save')}
           </Button>
         </DialogFooter>
       </DialogContent>

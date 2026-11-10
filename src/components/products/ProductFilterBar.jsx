@@ -1,4 +1,6 @@
 import { X } from 'lucide-react';
+import { t } from '@/lib/i18n';
+
 import { orderedLocations } from '@/lib/locations';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,18 +12,6 @@ import {
 } from '@/components/ui/select';
 
 const ALL = 'all';
-
-const STATUS_OPTIONS = [
-  { value: 'active', label: 'Active' },
-  { value: 'draft', label: 'Draft' },
-  { value: 'archived', label: 'Archived' },
-  { value: 'discontinued', label: 'Discontinued' },
-];
-
-const CONDITION_OPTIONS = ['New', 'Like new', 'Very good', 'Good', 'Acceptable'].map((name) => ({
-  value: name,
-  label: name,
-}));
 
 export const EMPTY_FILTERS = {
   category: '',
@@ -58,6 +48,21 @@ export default function ProductFilterBar({
   value,
   onChange,
 }) {
+  const STATUS_OPTIONS = [
+    { value: 'active', label: t('products.statusActive') },
+    { value: 'draft', label: t('products.statusDraft') },
+    { value: 'archived', label: t('products.statusArchived') },
+    { value: 'discontinued', label: t('products.statusDiscontinued') },
+  ];
+
+  const CONDITION_OPTIONS = [
+    { value: 'New', label: t('products.conditionNew') },
+    { value: 'Like new', label: t('products.conditionLikeNew') },
+    { value: 'Very good', label: t('products.conditionVeryGood') },
+    { value: 'Good', label: t('products.conditionGood') },
+    { value: 'Acceptable', label: t('products.conditionAcceptable') },
+  ];
+
   const set = (key) => (next) => onChange({ ...value, [key]: next });
   const isFiltered = Boolean(
     value.category || value.tag || value.status || value.condition || value.locationId
@@ -67,31 +72,31 @@ export default function ProductFilterBar({
     <div className="flex flex-wrap items-center gap-2">
       <div className="grid min-w-0 flex-1 grid-cols-2 gap-2 sm:flex sm:flex-none">
         <FilterSelect
-          label="All categories"
+          label={t('products.filterAllCategories')}
           value={value.category}
           onChange={set('category')}
           options={categories.map((name) => ({ value: name, label: name }))}
         />
         <FilterSelect
-          label="All tags"
+          label={t('products.filterAllTags')}
           value={value.tag}
           onChange={set('tag')}
           options={tags.map((name) => ({ value: name, label: name }))}
         />
         <FilterSelect
-          label="All statuses"
+          label={t('products.filterAllStatuses')}
           value={value.status}
           onChange={set('status')}
           options={STATUS_OPTIONS}
         />
         <FilterSelect
-          label="All conditions"
+          label={t('products.filterAllConditions')}
           value={value.condition}
           onChange={set('condition')}
           options={CONDITION_OPTIONS}
         />
         <FilterSelect
-          label="All locations"
+          label={t('products.filterAllLocations')}
           value={value.locationId}
           onChange={set('locationId')}
           options={orderedLocations(locations).map(({ location, depth }) => ({
@@ -108,7 +113,7 @@ export default function ProductFilterBar({
           className="text-muted-foreground"
           onClick={() => onChange(EMPTY_FILTERS)}
         >
-          <X className="mr-1 h-3.5 w-3.5" /> Clear
+          <X className="mr-1 h-3.5 w-3.5" /> {t('products.clearFilters')}
         </Button>
       )}
     </div>

@@ -6,6 +6,7 @@ import { PLANS } from '@/lib/plans';
 import useStaffAccess from '@/hooks/useStaffAccess';
 import RenameBusinessDialog from '@/components/business/RenameBusinessDialog';
 import { Button } from '@/components/ui/button';
+import { t } from '@/lib/i18n';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -46,7 +47,7 @@ export default function BusinessSwitcher({ compact = false }) {
 
   const save = async () => {
     if (!name.trim()) {
-      setError('Give this business a name.');
+      setError(t('settings.switcher.nameError'));
       return;
     }
     setBusy(true);
@@ -57,7 +58,7 @@ export default function BusinessSwitcher({ compact = false }) {
       setTagline('');
       setOpen(false);
     } catch (err) {
-      setError(err?.message || 'Could not create that business.');
+      setError(err?.message || t('settings.switcher.createError'));
     } finally {
       setBusy(false);
     }
@@ -74,11 +75,11 @@ export default function BusinessSwitcher({ compact = false }) {
       <div className={compact ? 'flex items-center gap-2' : 'space-y-2'}>
         <div className={compact ? 'min-w-0 flex-1' : 'space-y-1'}>
           <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-primary-foreground/45">
-            Business
+            {t('settings.switcher.businessLabel')}
           </p>
           <Select value={activeId ?? ''} onValueChange={switchTo} disabled={isLoading || businesses.length < 2}>
             <SelectTrigger className="h-8 w-full border-primary-foreground/20 bg-primary-foreground/10 text-primary-foreground">
-              <SelectValue placeholder="No business yet">{activeName}</SelectValue>
+              <SelectValue placeholder={t('settings.switcher.noBusiness')}>{activeName}</SelectValue>
             </SelectTrigger>
             <SelectContent>
               {businesses.map((business) => {
@@ -111,7 +112,7 @@ export default function BusinessSwitcher({ compact = false }) {
             variant="ghost"
             onClick={() => setRenaming(true)}
             disabled={!record}
-            aria-label="Rename this business"
+            aria-label={t('settings.switcher.renameAria')}
             className="h-8 px-2 text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground"
           >
             <Pencil className="h-3.5 w-3.5" />
@@ -127,7 +128,7 @@ export default function BusinessSwitcher({ compact = false }) {
               disabled={!canCreate}
               className="h-8 px-2 text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground"
             >
-              <Plus className="mr-1 h-3.5 w-3.5" /> New
+              <Plus className="mr-1 h-3.5 w-3.5" /> {t('settings.switcher.new')}
             </Button>
           )}
           <span className="font-mono text-[9px] uppercase tracking-wide text-primary-foreground/40">
@@ -138,9 +139,9 @@ export default function BusinessSwitcher({ compact = false }) {
 
       {atBusinessLimit && (
         <p className="text-[11px] leading-snug text-primary-foreground/60">
-          Business allows up to {PLANS.business.limits.businesses} —{' '}
+          {t('settings.switcher.limitNote', { max: PLANS.business.limits.businesses })}{' '}
           <Link to="/upgrade" className="font-medium text-primary-foreground underline underline-offset-2">
-            Upgrade
+            {t('settings.switcher.upgrade')}
           </Link>
         </p>
       )}
@@ -155,49 +156,50 @@ export default function BusinessSwitcher({ compact = false }) {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>New business</DialogTitle>
+            <DialogTitle>{t('settings.switcher.newTitle')}</DialogTitle>
             <DialogDescription>
-              Each business keeps its own products, locations, suppliers and purchase orders. Nothing is
-              shared between them.
+              {t('settings.switcher.newDescription')}
             </DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="biz-name">Business name</Label>
+              <Label htmlFor="biz-name">{t('settings.switcher.nameLabel')}</Label>
               <Input
                 id="biz-name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Harbor & Pine Books"
+                placeholder={t('settings.switcher.namePlaceholder')}
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="biz-tagline">Tagline</Label>
+              <Label htmlFor="biz-tagline">{t('settings.switcher.taglineLabel')}</Label>
               <Input
                 id="biz-tagline"
                 value={tagline}
                 onChange={(e) => setTagline(e.target.value)}
-                placeholder="Optional"
+                placeholder={t('settings.switcher.taglinePlaceholder')}
               />
             </div>
             <p className="flex items-start gap-2 rounded-lg bg-secondary px-3 py-2 text-[11px] text-muted-foreground">
               <Building2 className="mt-0.5 h-3.5 w-3.5 shrink-0" />
               {limit == null
-                ? 'Your business allowance is still loading.'
-                : `You can own up to ${limit} business${limit === 1 ? '' : 'es'} on this login.`}{' '}
-              This one starts empty and opens immediately.
+                ? t('settings.switcher.allowanceLoading')
+                : limit === 1
+                  ? t('settings.switcher.allowanceOne', { limit })
+                  : t('settings.switcher.allowanceMany', { limit })}{' '}
+              {t('settings.switcher.startsEmpty')}
             </p>
             {error && <p className="text-sm text-destructive">{error}</p>}
           </div>
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>
-              Cancel
+              {t('settings.switcher.cancel')}
             </Button>
             <Button onClick={save} disabled={busy}>
               <Check className="mr-1.5 h-4 w-4" />
-              {busy ? 'Creating…' : 'Create business'}
+              {busy ? t('settings.switcher.creating') : t('settings.switcher.create')}
             </Button>
           </DialogFooter>
         </DialogContent>

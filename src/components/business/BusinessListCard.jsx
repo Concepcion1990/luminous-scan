@@ -4,6 +4,7 @@ import { useBusiness } from '@/hooks/useBusiness';
 import useStaffAccess from '@/hooks/useStaffAccess';
 import RenameBusinessDialog from '@/components/business/RenameBusinessDialog';
 import { Button } from '@/components/ui/button';
+import { t } from '@/lib/i18n';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -34,11 +35,11 @@ export default function BusinessListCard({ onRenamed }) {
   const saveNewBusiness = async () => {
     if (creating) return;
     if (!newName.trim()) {
-      setCreateError('Enter a business name.');
+      setCreateError(t('settings.businesses.nameError'));
       return;
     }
     if (!mayCreate || !canCreate) {
-      setCreateError('Your account has reached its business limit.');
+      setCreateError(t('settings.businesses.limitError'));
       return;
     }
     setCreating(true);
@@ -51,7 +52,7 @@ export default function BusinessListCard({ onRenamed }) {
       setNewTagline('');
       setCreatingOpen(false);
     } catch (error) {
-      setCreateError(error?.message || 'Unable to create this business.');
+      setCreateError(error?.message || t('settings.businesses.createError'));
     } finally {
       setCreating(false);
     }
@@ -61,18 +62,18 @@ export default function BusinessListCard({ onRenamed }) {
     <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <div>
-          <h2 className="text-base font-semibold">Your businesses</h2>
+          <h2 className="text-base font-semibold">{t('settings.businesses.title')}</h2>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            Each one keeps its own catalog, locations and purchasing.
+            {t('settings.businesses.description')}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
             {plansLoading
-              ? 'Loading your plan…'
+              ? t('settings.businesses.loadingPlan')
               : plansError
-                ? 'Plan unavailable'
-                : `${businesses.length} of ${limit}`}
+                ? t('settings.businesses.planUnavailable')
+                : t('settings.businesses.count', { count: businesses.length, limit })}
           </span>
           {mayCreate && (
             <Button
@@ -83,17 +84,17 @@ export default function BusinessListCard({ onRenamed }) {
               disabled={!canCreate || isLoading || creating || plansLoading || plansError}
             >
               <Plus className="h-4 w-4" aria-hidden="true" />
-              Add business
+              {t('settings.businesses.add')}
             </Button>
           )}
         </div>
       </div>
 
       <div className="mt-4 divide-y divide-border">
-        {isLoading && <p className="py-3 text-sm text-muted-foreground">Loading your businesses…</p>}
+        {isLoading && <p className="py-3 text-sm text-muted-foreground">{t('settings.businesses.loading')}</p>}
         {!isLoading && businesses.length === 0 && (
           <p className="py-3 text-sm text-muted-foreground">
-            No businesses yet — add one here or from the sidebar switcher.
+            {t('settings.businesses.empty')}
           </p>
         )}
 
@@ -104,13 +105,13 @@ export default function BusinessListCard({ onRenamed }) {
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">{business.name}</p>
                 <p className="truncate text-xs text-muted-foreground">
-                  {business.tagline || 'No tagline'}
+                  {business.tagline || t('settings.businesses.noTagline')}
                 </p>
               </div>
 
               {active ? (
                 <span className="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.12em] text-primary">
-                  <Check className="h-3 w-3" /> In use
+                  <Check className="h-3 w-3" /> {t('settings.businesses.inUse')}
                 </span>
               ) : (
                 <Button
@@ -119,7 +120,7 @@ export default function BusinessListCard({ onRenamed }) {
                   onClick={() => switchTo(business.id)}
                   className="h-7 px-2 text-xs"
                 >
-                  <ArrowLeftRight className="mr-1 h-3.5 w-3.5" /> Switch
+                  <ArrowLeftRight className="mr-1 h-3.5 w-3.5" /> {t('settings.businesses.switch')}
                 </Button>
               )}
 
@@ -129,7 +130,7 @@ export default function BusinessListCard({ onRenamed }) {
                 onClick={() => setRenaming(business)}
                 className="h-7 px-2 text-xs"
               >
-                <Pencil className="mr-1 h-3.5 w-3.5" /> Rename
+                <Pencil className="mr-1 h-3.5 w-3.5" /> {t('settings.businesses.rename')}
               </Button>
             </div>
           );
@@ -138,10 +139,9 @@ export default function BusinessListCard({ onRenamed }) {
 
       {mayCreate && plansError && (
         <p className="mt-3 text-xs text-muted-foreground" role="status">
-          We couldn&apos;t load your plan allowance, so the business limit is hidden rather than
-          guessed.{' '}
+          {t('settings.businesses.planLoadError')}{' '}
           <button type="button" className="font-medium text-primary underline underline-offset-2" onClick={refetchPlans}>
-            Try again
+            {t('settings.businesses.tryAgain')}
           </button>
         </p>
       )}
@@ -149,8 +149,8 @@ export default function BusinessListCard({ onRenamed }) {
       {mayCreate && limit != null && !canCreate && !isLoading && !plansLoading && (
         <p className="mt-3 text-xs text-muted-foreground" role="status">
           {limit >= 5
-            ? 'You have reached the five-business limit for this account.'
-            : 'Essentials allows one business. Business allows up to five businesses per owner.'}
+            ? t('settings.businesses.limitFive')
+            : t('settings.businesses.limitEssentials')}
         </p>
       )}
 
@@ -165,44 +165,42 @@ export default function BusinessListCard({ onRenamed }) {
         <Dialog open={creatingOpen} onOpenChange={(open) => { if (!creating) setCreatingOpen(open); }}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Add business {businesses.length + 1} of {limit ?? '…'}</DialogTitle>
+              <DialogTitle>{t('settings.businesses.createTitle', { number: businesses.length + 1, limit: limit ?? '…' })}</DialogTitle>
               <DialogDescription>
-                This creates a separate business with its own products, locations,
-                suppliers and purchasing records. Existing businesses will not be changed.
-                Complimentary pre-launch workspaces do not start another free trial.
+                {t('settings.businesses.createDescription')}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="settings-new-business-name">Business name</Label>
+                <Label htmlFor="settings-new-business-name">{t('settings.businesses.nameLabel')}</Label>
                 <Input
                   id="settings-new-business-name"
                   value={newName}
                   maxLength={120}
                   disabled={creating}
                   onChange={(event) => setNewName(event.target.value)}
-                  placeholder="Your second business"
+                  placeholder={t('settings.businesses.namePlaceholder')}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="settings-new-business-tagline">Tagline (optional)</Label>
+                <Label htmlFor="settings-new-business-tagline">{t('settings.businesses.taglineLabel')}</Label>
                 <Input
                   id="settings-new-business-tagline"
                   value={newTagline}
                   maxLength={200}
                   disabled={creating}
                   onChange={(event) => setNewTagline(event.target.value)}
-                  placeholder="A short description"
+                  placeholder={t('settings.businesses.taglinePlaceholder')}
                 />
               </div>
               {createError && <p role="alert" className="text-sm text-destructive">{createError}</p>}
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" disabled={creating} onClick={() => setCreatingOpen(false)}>
-                Cancel
+                {t('settings.businesses.cancel')}
               </Button>
               <Button type="button" disabled={creating || !canCreate || !newName.trim()} onClick={saveNewBusiness}>
-                {creating ? 'Creating…' : 'Create business'}
+                {creating ? t('settings.businesses.creating') : t('settings.businesses.create')}
               </Button>
             </DialogFooter>
           </DialogContent>

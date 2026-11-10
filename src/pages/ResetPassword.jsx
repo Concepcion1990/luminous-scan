@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Lock, Loader2, AlertTriangle } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
-import { PASSWORD_HINT } from "./Register";
+import { getPasswordHint } from "./Register";
+import { t } from '@/lib/i18n';
 
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();
@@ -21,7 +22,7 @@ export default function ResetPassword() {
     e.preventDefault();
     setError("");
     if (newPassword !== confirmPassword) {
-      setError("Passwords do not match");
+      setError(t('auth.passwordsDoNotMatch'));
       return;
     }
     setLoading(true);
@@ -29,7 +30,7 @@ export default function ResetPassword() {
       await base44.auth.resetPassword({ resetToken, newPassword });
       window.location.href = "/login?reset=success";
     } catch (err) {
-      setError(err.message || "Failed to reset password");
+      setError(err.message || t('reset.failed'));
     } finally {
       setLoading(false);
     }
@@ -39,16 +40,16 @@ export default function ResetPassword() {
     return (
       <AuthLayout
         icon={AlertTriangle}
-        title="Invalid reset link"
-        subtitle="This password reset link is missing or invalid"
+        title={t('reset.invalidTitle')}
+        subtitle={t('reset.invalidSubtitle')}
         footer={
           <Link to="/forgot-password" className="text-primary font-medium hover:underline">
-            Request a new link
+            {t('reset.requestNewLink')}
           </Link>
         }
       >
         <p className="text-sm text-foreground text-center">
-          The link you used appears to be incomplete. Please request a new password reset email.
+          {t('reset.invalidBody')}
         </p>
       </AuthLayout>
     );
@@ -57,8 +58,8 @@ export default function ResetPassword() {
   return (
     <AuthLayout
       icon={Lock}
-      title="New password"
-      subtitle="Enter your new password below"
+      title={t('reset.title')}
+      subtitle={t('reset.subtitle')}
     >
       {error && (
         <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
@@ -67,7 +68,7 @@ export default function ResetPassword() {
       )}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="password">New Password</Label>
+          <Label htmlFor="password">{t('reset.newPasswordLabel')}</Label>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
             <Input
@@ -83,10 +84,10 @@ export default function ResetPassword() {
               required
             />
           </div>
-          <p className="text-xs text-muted-foreground">{PASSWORD_HINT}</p>
+          <p className="text-xs text-muted-foreground">{getPasswordHint()}</p>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="confirm">Confirm Password</Label>
+          <Label htmlFor="confirm">{t('reset.confirmPasswordLabel')}</Label>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
             <Input
@@ -105,10 +106,10 @@ export default function ResetPassword() {
           {loading ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Resetting...
+              {t('reset.resetting')}
             </>
           ) : (
-            "Reset password"
+            t('reset.resetPassword')
           )}
         </Button>
       </form>

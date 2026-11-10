@@ -1,20 +1,21 @@
 import { base44 } from '@/api/client';
 import { recordMovement } from '@/lib/inventory';
 import { todayIso } from '@/lib/purchasing';
+import { t } from './i18n.js';
 
 export const COUNT_STATUS = {
-  open: { label: 'Counting', tone: 'warn' },
-  review: { label: 'In review', tone: 'info' },
-  applied: { label: 'Applied', tone: 'ok' },
-  cancelled: { label: 'Cancelled', tone: 'muted' },
+  open: { get label() { return t('countsLib.statusCounting'); }, tone: 'warn' },
+  review: { get label() { return t('countsLib.statusInReview'); }, tone: 'info' },
+  applied: { get label() { return t('countsLib.statusApplied'); }, tone: 'ok' },
+  cancelled: { get label() { return t('countsLib.statusCancelled'); }, tone: 'muted' },
 };
 
 export const COUNT_FILTERS = [
-  { key: 'open', label: 'Open' },
-  { key: 'review', label: 'In review' },
-  { key: 'applied', label: 'Applied' },
-  { key: 'cancelled', label: 'Cancelled' },
-  { key: 'all', label: 'All' },
+  { key: 'open', get label() { return t('countsLib.filterOpen'); } },
+  { key: 'review', get label() { return t('countsLib.filterInReview'); } },
+  { key: 'applied', get label() { return t('countsLib.filterApplied'); } },
+  { key: 'cancelled', get label() { return t('countsLib.filterCancelled'); } },
+  { key: 'all', get label() { return t('countsLib.filterAll'); } },
 ];
 
 const STATUS_QUERY = {
@@ -92,7 +93,7 @@ export async function saveCounts(sessionId, lines) {
 
 export async function submitCounts(sessionId, lines) {
   const summary = countSummary(lines);
-  if (!summary.counted) throw new Error('Count at least one product before sending the session for review.');
+  if (!summary.counted) throw new Error(t('countsLib.countAtLeastOne'));
   await base44.entities.CountSession.update(sessionId, { lines, status: 'review' });
 }
 
@@ -108,11 +109,11 @@ export async function reopenCounts(sessionId, lines) {
  * the system closes with no movements instead of being stuck in review.
  */
 export async function applyCounts({ session, lines, products, user }) {
-  if (session.status === 'applied') throw new Error('This session has already been applied.');
-  if (session.status !== 'review') throw new Error('Send the session for review before applying it.');
+  if (session.status === 'applied') throw new Error(t('countsLib.alreadyApplied'));
+  if (session.status !== 'review') throw new Error(t('countsLib.sendForReviewFirst'));
 
-  const location = { id: session.location_id, name: session.location_name || 'the location' };
-  if (!location.id) throw new Error('This session has no location.');
+  const location = { id: session.location_id, name: session.location_name || t('countsLib.locationFallback') };
+  if (!location.id) throw new Error(t('countsLib.noLocation'));
   const byProduct = new Map(products.map((p) => [p.id, p]));
   const differing = discrepancies(lines);
 
@@ -123,13 +124,19 @@ export async function applyCounts({ session, lines, products, user }) {
     // A half-typed or negative number must never reach the shelf as a count.
     const counted = Number(line.counted);
     if (!Number.isFinite(counted) || counted < 0) {
-      throw new Error(`${line.product_name || 'A line'}: enter a quantity of 0 or more.`);
+      throw new Error(
+        t('countsLib.enterQuantityZeroOrMore', { name: line.product_name || t('countsLib.lineFallback') })
+      );
     }
     let product = byProduct.get(line.product_id);
     if (!product) {
       product = await base44.entities.Product.get(line.product_id).catch(() => null);
     }
-    if (!product) throw new Error(`${line.product_name || 'A line'} is no longer in the catalog.`);
+    if (!product) {
+      throw new Error(
+        t('countsLib.noLongerInCatalog', { name: line.product_name || t('countsLib.lineFallback') })
+      );
+    }
     resolved.push({ line, product, counted });
   }
 
@@ -139,7 +146,10 @@ export async function applyCounts({ session, lines, products, user }) {
       location,
       type: 'count',
       quantity: counted,
-      note: `Count ${session.number} · system said ${line.expected}`,
+      note: t('countsLib.countNote', {
+        number: session.number,
+        expected: line.expected,
+      }),
       reference: session.number,
       scannedCode: product.sku,
       user,
@@ -158,13 +168,13 @@ export async function applyCounts({ session, lines, products, user }) {
 }
 
 export async function cancelCount(session) {
-  if (session.status === 'applied') throw new Error('An applied session is part of the audit trail.');
+  if (session.status === 'applied') throw new Error(t('countsLib.appliedIsAuditTrail'));
   await base44.entities.CountSession.update(session.id, { status: 'cancelled' });
 }
 
 export async function deleteCount(session) {
   if (session.status === 'applied') {
-    throw new Error('Applied sessions are kept as audit history — they cannot be deleted.');
+    throw new Error(t('countsLib.appliedCannotDelete'));
   }
   await base44.entities.CountSession.delete(session.id);
 }

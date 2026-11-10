@@ -31,6 +31,7 @@
  * here — that needs a live check with the owner and a real printer.
  */
 import { escPosLabelsBytes } from './escPos.js';
+import { t } from './i18n.js';
 
 /** BLE services label printers commonly expose (Zebra / Brother / DYMO class). */
 export const BLUETOOTH_PRINTER_SERVICES = [
@@ -40,8 +41,10 @@ export const BLUETOOTH_PRINTER_SERVICES = [
   '49535343-fe7d-4ae5-8fa9-9fafd205e455', // HM-10 / serial module service
 ];
 
-export const BLUETOOTH_UNAVAILABLE_COPY =
-  'Bluetooth printing needs desktop Chrome or Edge, or Android Chrome. It does not work in iOS Safari — on an iPhone, print over Wi-Fi with AirPrint, or use Bluetooth from the mobile app (coming with the mobile app).';
+// Plain module-level t(): this copy is exported as a bare string — the print
+// page renders it directly and the node tests match against it — so it cannot
+// be a getter the way the label tables are. It resolves at import time.
+export const BLUETOOTH_UNAVAILABLE_COPY = t('printLib.bluetoothUnavailable');
 
 export const BLUETOOTH_NO_CHANNEL_COPY =
   'That printer did not offer a writable Bluetooth channel. Use the Print button instead — it prints through the printer installed on this computer.';

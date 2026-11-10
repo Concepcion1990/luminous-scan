@@ -6,6 +6,7 @@ import useEntitlements from '@/hooks/useEntitlements';
 import { scoped } from '@/lib/scoped';
 import { listProducts } from '@/lib/inventory';
 import { assessCancellationGrace, CANCELLATION_GRACE_DAYS, CANCELLATION_GRACE_PARAGRAPH } from '@/lib/cancellationGrace';
+import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 
 function formatDate(value) {
@@ -91,7 +92,7 @@ export default function GraceInventory() {
   if (isLoading) {
     return (
       <div className="flex min-h-dvh items-center justify-center bg-background px-4">
-        <p className="text-sm text-muted-foreground">Loading…</p>
+        <p className="text-sm text-muted-foreground">{t('grace.loading')}</p>
       </div>
     );
   }
@@ -113,54 +114,65 @@ export default function GraceInventory() {
         <header className="space-y-1">
           <p className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
             <Eye className="h-4 w-4" aria-hidden="true" />
-            Luminous StockHaven — read-only view
+            {t('grace.eyebrow')}
           </p>
-          <h1 className="text-2xl font-bold">Your products</h1>
+          <h1 className="text-2xl font-bold">{t('grace.title')}</h1>
         </header>
 
         <div role="status" className="space-y-2 rounded-lg border border-border bg-muted/40 px-4 py-4 text-sm leading-relaxed">
           <p className="font-semibold">
-            Your subscription ended{formatDate(grace.paidThrough) ? ` on ${formatDate(grace.paidThrough)}` : ''}.
-            This is a read-only view until {formatDate(grace.graceEndsAt) || `the end of your ${CANCELLATION_GRACE_DAYS}-day grace period`}.
+            {formatDate(grace.paidThrough)
+              ? t('grace.endedOn', {
+                  date: formatDate(grace.paidThrough),
+                  end:
+                    formatDate(grace.graceEndsAt) ||
+                    t('grace.endOfGrace', { days: CANCELLATION_GRACE_DAYS }),
+                })
+              : t('grace.endedNoDate', {
+                  end:
+                    formatDate(grace.graceEndsAt) ||
+                    t('grace.endOfGrace', { days: CANCELLATION_GRACE_DAYS }),
+                })}
           </p>
           <p className="text-muted-foreground">
-            You can look at your products below and write down anything you need.
-            You cannot add, edit, delete, scan, import, export or move anything here —
-            including export: no plan can export from this view. {CANCELLATION_GRACE_PARAGRAPH}
+            {t('grace.cannotDo', { paragraph: CANCELLATION_GRACE_PARAGRAPH })}
           </p>
           <p>
             <Link to="/plans" className="font-medium text-primary underline underline-offset-4">
-              See plans to subscribe again
+              {t('grace.seePlansLink')}
             </Link>
           </p>
         </div>
 
         {products === null ? (
-          <p className="text-sm text-muted-foreground">Loading your products…</p>
+          <p className="text-sm text-muted-foreground">{t('grace.loadingProducts')}</p>
         ) : products.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No products to show.</p>
+          <p className="text-sm text-muted-foreground">{t('grace.noProducts')}</p>
         ) : (
           <>
             {totalProducts !== null && (
               <p className="mb-2 text-sm text-muted-foreground">
                 {totalProducts > products.length
-                  ? `Showing the first ${products.length} of ${totalProducts} products — subscribe again to see the rest.`
-                  : `${totalProducts} ${totalProducts === 1 ? 'product' : 'products'} in total.`}
+                  ? t('grace.showingFirst', { shown: products.length, total: totalProducts })
+                  : t('grace.totalProducts', {
+                      total: totalProducts,
+                      s: totalProducts === 1 ? '' : 's',
+                    })}
               </p>
             )}
             <div className="overflow-x-auto rounded-lg border border-border">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/40 text-left">
-                    <th scope="col" className="px-3 py-2 font-semibold">Product</th>
-                    <th scope="col" className="px-3 py-2 font-semibold">SKU</th>
-                    <th scope="col" className="px-3 py-2 text-right font-semibold">On hand</th>
+                    <th scope="col" className="px-3 py-2 font-semibold">{t('grace.colProduct')}</th>
+                    <th scope="col" className="px-3 py-2 font-semibold">{t('grace.colSku')}</th>
+                    <th scope="col" className="px-3 py-2 text-right font-semibold">{t('grace.colOnHand')}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {products.map((product) => (
                     <tr key={product.id} className="border-b border-border last:border-0">
-                      <td className="px-3 py-2 font-medium">{product.name || 'Unnamed product'}</td>
+                      <td className="px-3 py-2 font-medium">{product.name || t('grace.unnamedProduct')}</td>
                       <td className="px-3 py-2 text-muted-foreground">{product.sku || '—'}</td>
                       <td className="px-3 py-2 text-right">{onHandByProduct.get(product.id) ?? 0}</td>
                     </tr>
@@ -172,10 +184,10 @@ export default function GraceInventory() {
         )}
 
         <p className="text-xs text-muted-foreground">
-          Read-only. To change anything, subscribe again from the Plans page.
+          {t('grace.readOnlyNote')}
         </p>
         <Button asChild variant="outline">
-          <Link to="/plans">See plans</Link>
+          <Link to="/plans">{t('grace.seePlans')}</Link>
         </Button>
       </div>
     </div>

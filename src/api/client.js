@@ -26,6 +26,7 @@
  */
 
 import { csrfHeadersFor } from '../lib/csrf.js';
+import { t } from '../lib/i18n.js';
 
 const notImplemented = (area) =>
   new Error(`${area} is not yet implemented (T2/T3) — the twin skeleton serves public pages only.`);
@@ -40,7 +41,9 @@ async function request(path, { method = 'GET', body } = {}) {
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
-    const error = new Error(data.message || data.error || data.detail || `Request failed (${response.status})`);
+    const error = new Error(
+      data.message || data.error || data.detail || t('apiLib.requestFailed', { status: response.status })
+    );
     error.status = response.status;
     error.data = data;
     throw error;
@@ -92,7 +95,7 @@ function businessEntityClient() {
       const page = await listBusinesses();
       const found = (page.items ?? []).find((b) => b.id === id);
       if (!found) {
-        const error = new Error('Business not found');
+        const error = new Error(t('apiLib.businessNotFound'));
         error.status = 404;
         throw error;
       }
@@ -144,7 +147,7 @@ export async function apiDownload(path) {
   const response = await fetch(path, { method: 'GET', credentials: 'same-origin' });
   if (!response.ok) {
     const data = await response.json().catch(() => ({}));
-    const error = new Error(data.message || data.error || `Download failed (${response.status})`);
+    const error = new Error(data.message || data.error || t('apiLib.downloadFailed', { status: response.status }));
     error.status = response.status;
     error.data = data;
     throw error;
@@ -182,7 +185,7 @@ export const base44 = {  entities: Object.fromEntries(
     // password only). Rejects plainly instead of redirecting anywhere.
     loginWithProvider: () =>
       Promise.reject(
-        new Error('Google sign-in is not available — please log in with your email and password.'),
+        new Error(t('apiLib.googleSignInUnavailable')),
       ),
     // Cookie sessions: there is no bearer token to store. Kept as a
     // no-op so the ported Register verify path keeps working.
@@ -313,7 +316,7 @@ export const base44 = {  entities: Object.fromEntries(
     inviteUser: async (email) => {
       const me = await request('/api/auth/me');
       const businessId = me?.active_business_id;
-      if (!businessId) throw new Error('Choose a business first.');
+      if (!businessId) throw new Error(t('apiLib.chooseBusinessFirst'));
       return request(`/api/businesses/${businessId}/staff/invite`, {
         method: 'POST',
         body: { email },

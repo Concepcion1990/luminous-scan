@@ -3,6 +3,7 @@ import { useAuth } from '@/lib/AuthContext';
 import useEntitlements from '@/hooks/useEntitlements';
 import { trialDaysLeft } from '@/lib/entitlements';
 import { TRIAL_DAYS } from '@/lib/plans';
+import { t } from '@/lib/i18n';
 
 const shortDate = (value) =>
   new Date(value).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
@@ -13,7 +14,7 @@ function Bar({ value, note, filled }) {
       <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
         <p className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
           <CalendarClock className="h-3.5 w-3.5 text-ok" />
-          Free trial
+          {t('plans.freeTrialLabel')}
         </p>
         <p className="numeric text-lg font-semibold leading-none">{value}</p>
       </div>
@@ -29,8 +30,8 @@ function Bar({ value, note, filled }) {
 function Offer() {
   return (
     <Bar
-      value={`${TRIAL_DAYS} days`}
-      note="Included with both website plans. Nothing is charged today — the countdown starts when you confirm a plan."
+      value={t('plans.trialOfferDays', { days: TRIAL_DAYS })}
+      note={t('plans.trialOfferNote')}
       filled={0}
     />
   );
@@ -46,11 +47,11 @@ function Running() {
 
   return (
     <Bar
-      value={days === 0 ? 'Ended' : days === 1 ? '1 day left' : `${days} days left`}
+      value={days === 0 ? t('plans.trialEnded') : days === 1 ? t('plans.oneDayLeft') : t('plans.daysLeftCount', { count: days, unit: t('plans.days') })}
       note={
         days === 0
-          ? 'Your free trial has ended. Choose a plan to keep the workspace open.'
-          : `Ends ${shortDate(record.trial_ends_at)} · day ${used} of ${TRIAL_DAYS}`
+          ? t('plans.trialEndedNote')
+          : t('plans.trialRunningNote', { date: shortDate(record.trial_ends_at), used, total: TRIAL_DAYS })
       }
       filled={used / TRIAL_DAYS}
     />

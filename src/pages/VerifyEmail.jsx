@@ -10,6 +10,7 @@ import AuthLayout from "@/components/AuthLayout";
 import { toast } from "@/components/ui/use-toast";
 import { safeReturnTo } from "@/lib/authReturnTo";
 import { readPendingVerificationEmail, PENDING_VERIFICATION_KEY } from "./Register";
+import { t } from '@/lib/i18n';
 
 /**
  * "Verify an emailed code" — the Finding 28 resume path as its own
@@ -29,7 +30,7 @@ export default function VerifyEmail() {
   const handleVerify = async () => {
     setError("");
     if (!email.trim()) {
-      setError("Enter the email the code was sent to first.");
+      setError(t('auth.enterEmailFirst'));
       return;
     }
     setLoading(true);
@@ -43,7 +44,7 @@ export default function VerifyEmail() {
       window.location.href = safeReturnTo();
     } catch (err) {
       const message = String(err.message || "");
-      setError(message || "Invalid verification code");
+      setError(message || t('auth.invalidVerificationCode'));
     } finally {
       setLoading(false);
     }
@@ -52,30 +53,30 @@ export default function VerifyEmail() {
   const handleResend = async () => {
     setError("");
     if (!email.trim()) {
-      setError("Enter the email the code was sent to first.");
+      setError(t('auth.enterEmailFirst'));
       return;
     }
     try {
       await base44.auth.resendOtp(email.trim());
       toast({
-        title: "Code sent",
-        description: "Check your email for the new code.",
+        title: t('auth.codeSentTitle'),
+        description: t('auth.codeSentDescription'),
       });
     } catch (err) {
-      setError(err.message || "Failed to resend code");
+      setError(err.message || t('auth.failedToResendCode'));
     }
   };
 
   return (
     <AuthLayout
       icon={Mail}
-      title="Verify your email"
-      subtitle="Enter the code we emailed you"
+      title={t('verifyEmail.title')}
+      subtitle={t('verifyEmail.subtitle')}
       footer={
         <>
-          Already verified?{" "}
+          {t('verifyEmail.alreadyVerified')}{" "}
           <Link to={loginPath} className="text-primary font-medium hover:underline">
-            Log in
+            {t('verifyEmail.logIn')}
           </Link>
         </>
       }
@@ -86,7 +87,7 @@ export default function VerifyEmail() {
           {/already verified/i.test(error) && (
             <div className="mt-2">
               <Link to={loginPath} className="text-primary font-medium hover:underline">
-                Sign in instead
+                {t('verifyEmail.signInInstead')}
               </Link>
             </div>
           )}
@@ -94,7 +95,7 @@ export default function VerifyEmail() {
       )}
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">{t('auth.emailLabel')}</Label>
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
             <Input
@@ -102,7 +103,7 @@ export default function VerifyEmail() {
               type="email"
               autoComplete="email"
               autoFocus
-              placeholder="you@example.com"
+              placeholder={t('auth.emailPlaceholder')}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="pl-10 h-12"
@@ -135,22 +136,20 @@ export default function VerifyEmail() {
           {loading ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Verifying...
+              {t('verifyEmail.verifying')}
             </>
           ) : (
-            "Verify"
+            t('verifyEmail.verify')
           )}
         </Button>
         <p className="text-center text-sm text-muted-foreground">
-          Didn&apos;t receive the code?{" "}
+          {t('verifyEmail.didntReceiveCode')}{" "}
           <button type="button" onClick={handleResend} className="text-primary font-medium hover:underline">
-            Resend
+            {t('verifyEmail.resend')}
           </button>
         </p>
         <p className="text-center text-xs text-muted-foreground">
-          A new code is only sent for a brand-new account. If you created an
-          account with this email before, sign in with the password you set
-          then — no new code will arrive.
+          {t('verifyEmail.newCodeOnlyNote')}
         </p>
       </div>
     </AuthLayout>
