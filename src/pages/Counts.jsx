@@ -6,12 +6,17 @@ import CountSessionDialog from '@/components/counts/CountSessionDialog';
 import CountSheet from '@/components/counts/CountSheet';
 import { Button } from '@/components/ui/button';
 import { useBusiness } from '@/hooks/useBusiness';
+import { useOfflineSync } from '@/hooks/useOfflineSync';
+import SyncIndicator from '@/components/sync/SyncIndicator';
 import { scoped } from '@/lib/scoped';
 import { productTruncationNotice } from '@/lib/inventory';
 import { cancelCount, COUNT_FILTERS, deleteCount, statusQuery } from '@/lib/counts';
 
 export default function Counts() {
   const { user, activeId } = useBusiness();
+  // T6: the queue status shows here too — a count done offline is
+  // still sending until the server confirms it.
+  const sync = useOfflineSync(activeId);
   const [sessions, setSessions] = useState([]);
   const [products, setProducts] = useState([]);
   const [productTotal, setProductTotal] = useState(0);
@@ -88,6 +93,8 @@ export default function Counts() {
           <span>{flash.text}</span>
         </div>
       )}
+
+      <SyncIndicator sync={sync} />
 
       {productTruncationNotice(products.length, productTotal) && (
         <p className="rounded-lg border border-warn/30 bg-warn/10 px-3 py-2 text-sm">

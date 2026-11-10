@@ -16,9 +16,13 @@ import path from 'node:path';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const scanSrc = readFileSync(path.join(root, 'src/pages/Scan.jsx'), 'utf8');
 const printSrc = readFileSync(path.join(root, 'src/pages/PrintCenter.jsx'), 'utf8');
+const enSrc = readFileSync(path.join(root, 'src/lib/locales/en.js'), 'utf8');
 
 test('scanner offers Print shelf tag for the scanned product', () => {
-  assert.match(scanSrc, /Print shelf tag/);
+  // T6 i18n: the button label goes through t() — the English words
+  // live in the locale file, the button carries the key.
+  assert.match(scanSrc, /t\('scan\.printShelfTag'\)/);
+  assert.match(enSrc, /'scan\.printShelfTag': 'Print shelf tag'/);
   // A plain synchronous navigate to /print carrying the product —
   // no pending state, so nothing that can stick (owner quality bar).
   assert.match(scanSrc, /navigate\('\/print', \{ state: \{ product \} \}\)/);
@@ -26,7 +30,7 @@ test('scanner offers Print shelf tag for the scanned product', () => {
   // The button sits on the scanned-product panel (with the product
   // in scope), next to Scan next — not on the empty/idle state.
   const panel = scanSrc.slice(scanSrc.indexOf('{product && ('));
-  assert.match(panel, /Print shelf tag/);
+  assert.match(panel, /scan\.printShelfTag/);
 });
 
 test('print page preselects the product the scanner sends it', () => {

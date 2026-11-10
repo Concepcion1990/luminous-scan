@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { base44 } from '@/api/client';
+import { base44, apiRequest } from '@/api/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { Check, CreditCard, Loader2, LogOut, Monitor, Moon, RefreshCw, Save, Sun, Trash2 } from 'lucide-react';
 import { useTheme } from 'next-themes';
@@ -13,6 +13,7 @@ import { CANCELLATION_GRACE_PARAGRAPH } from '@/lib/cancellationGrace';
 import { STOCKHAVEN_SUBSCRIPTION_POLICY as policy } from '@/lib/stockhavenSubscriptionPolicy';
 import { STOCKHAVEN_TERMS_OF_SERVICE as terms } from '@/lib/stockhavenTermsOfService';
 import { resolveBusiness, saveBusiness } from '@/lib/business';
+import { applyBrandColor } from '@/lib/brandTheme';
 import BusinessListCard from '@/components/business/BusinessListCard';
 import IdentityCard from '@/components/business/IdentityCard';
 import DetailsCard from '@/components/business/DetailsCard';
@@ -243,14 +244,42 @@ export default function Settings() {
     }
   };
 
+  // T6: the brand color applies the moment it is picked. Before T6
+  // the picker only saved a value nothing ever read, so picking a
+  // color changed nothing in the app — this preview is the fix, and
+  // Layout applies the saved color on every page load.
+  useEffect(() => {
+    if (values?.brand_color) applyBrandColor(values.brand_color);
+  }, [values?.brand_color]);
+
   const uploadLogo = async (file) => {
     setError('');
+    // T6: the twin has no Base44 file host — the logo goes to the
+    // twin's own endpoint as a data URL and is stored on the business
+    // record (no third-party host, nothing leaves the twin's database).
+    if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
+      setError('Choose a PNG, JPG or WebP image.');
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setError('That image is over 2 MB — try a smaller one.');
+      return;
+    }
     setUploading(true);
     try {
-      const { file_url } = await base44.integrations.Core.UploadPublicFile({ file });
-      setValues((current) => ({ ...current, logo_url: file_url }));
-    } catch {
-      setError('Could not upload that image. Try a smaller PNG or JPG.');
+      const dataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result));
+        reader.onerror = () => reject(new Error('Could not read that image.'));
+        reader.readAsDataURL(file);
+      });
+      const { logo_url } = await apiRequest(
+        `/api/businesses/${encodeURIComponent(activeId)}/logo`,
+        { method: 'POST', body: { dataUrl } },
+      );
+      setValues((current) => ({ ...current, logo_url }));
+    } catch (err) {
+      setError(err?.message || 'Could not upload that image. Try a smaller PNG or JPG.');
     } finally {
       setUploading(false);
     }

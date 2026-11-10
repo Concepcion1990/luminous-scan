@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { loadInventory, productTruncationNotice } from '@/lib/inventory';
 import { useBusiness } from '@/hooks/useBusiness';
+import { useOfflineSync } from '@/hooks/useOfflineSync';
+import SyncIndicator from '@/components/sync/SyncIndicator';
 import PullToRefresh from '@/components/mobile/PullToRefresh';
 import StatCard from '@/components/StatCard';
 import InventoryRow from '@/components/inventory/InventoryRow';
@@ -17,6 +19,9 @@ import ResponsiveSelect from '@/components/ui/ResponsiveSelect';
  */
 export default function Inventory() {
   const { activeId, record } = useBusiness();
+  // T6: the manager's live view — the convergence check re-reads when
+  // the server version moves (a phone's queued work just landed).
+  const sync = useOfflineSync(activeId, { onConverged: () => load() });
   const [inventory, setInventory] = useState(null);
   const [search, setSearch] = useState('');
   const [locationId, setLocationId] = useState('');
@@ -79,6 +84,8 @@ export default function Inventory() {
           movement is recorded.
         </p>
       </div>
+
+      <SyncIndicator sync={sync} />
 
       {inventory === null ? (
         <div className="rounded-xl border border-border bg-card px-4 py-10 text-center text-sm text-muted-foreground">

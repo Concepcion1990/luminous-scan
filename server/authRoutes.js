@@ -99,7 +99,76 @@ function publicBusiness(row) {
     created_by_id: row.created_by_id,
     created_date: row.created_at,
     updated_date: row.updated_at,
+    // T6 identity fields (migration 006). The app name is NOT here —
+    // Luminous Stockhaven stays the app name and is not changeable.
+    logo_url: row.logo_url || '',
+    brand_color: row.brand_color || '#145042',
+    contact_email: row.contact_email || '',
+    contact_phone: row.contact_phone || '',
+    website: row.website || '',
+    address: row.address || '',
+    timezone: row.timezone || '',
+    date_format: row.date_format || 'MMM d, yyyy',
+    unit_system: row.unit_system || 'imperial',
+    language: row.language || 'en',
   };
+}
+
+// T6: the identity fields Settings may save, and their validation.
+// Languages mirror src/lib/locales/index.js (only 'en' ships in T6;
+// the registry grows one language at a time, ABC order, her call).
+const BUSINESS_UPDATE_FIELDS = [
+  'name', 'tagline', 'logo_url', 'brand_color', 'contact_email',
+  'contact_phone', 'website', 'address', 'currency', 'timezone',
+  'date_format', 'unit_system', 'language',
+];
+const SUPPORTED_LANGUAGES = ['en'];
+const SUPPORTED_CURRENCIES = ['USD', 'CAD', 'GBP', 'EUR', 'AUD', 'NZD', 'MXN', 'JPY'];
+const SUPPORTED_DATE_FORMATS = ['MMM d, yyyy', 'd MMM yyyy', 'M/d/yyyy', 'yyyy-MM-dd'];
+
+function validateBusinessPatch(patch) {
+  const clean = {};
+  for (const [key, value] of Object.entries(patch || {})) {
+    if (!BUSINESS_UPDATE_FIELDS.includes(key)) continue;
+    const text = typeof value === 'string' ? value.trim() : '';
+    if (key === 'name') {
+      if (!text || text.length > 120) return { error: 'Enter a business name (up to 120 characters).' };
+      clean.name = text;
+    } else if (key === 'brand_color') {
+      if (!/^#[0-9a-fA-F]{6}$/.test(text)) return { error: 'Pick a brand color.' };
+      clean.brand_color = text.toLowerCase();
+    } else if (key === 'language') {
+      if (!SUPPORTED_LANGUAGES.includes(text)) return { error: 'That language is not available yet.' };
+      clean.language = text;
+    } else if (key === 'currency') {
+      if (!SUPPORTED_CURRENCIES.includes(text.toUpperCase())) return { error: 'Choose a supported currency.' };
+      clean.currency = text.toUpperCase();
+    } else if (key === 'date_format') {
+      if (!SUPPORTED_DATE_FORMATS.includes(text)) return { error: 'Choose a supported date format.' };
+      clean.date_format = text;
+    } else if (key === 'unit_system') {
+      if (!['imperial', 'metric'].includes(text)) return { error: 'Choose imperial or metric.' };
+      clean.unit_system = text;
+    } else if (key === 'logo_url') {
+      if (text.length > 3_000_000) return { error: 'That logo is too large.' };
+      if (text && !text.startsWith('data:image/') && !text.startsWith('https://')) {
+        return { error: 'A logo must be an uploaded image or a secure link.' };
+      }
+      clean.logo_url = text;
+    } else if (key === 'website') {
+      if (text.length > 200) return { error: 'That website address is too long.' };
+      clean.website = text;
+    } else if (key === 'contact_email') {
+      if (text.length > 200 || (text && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text))) {
+        return { error: 'Enter a valid contact email, or leave it blank.' };
+      }
+      clean.contact_email = text;
+    } else {
+      if (text.length > 500) return { error: `That ${key.replace('_', ' ')} is too long.` };
+      clean[key] = text;
+    }
+  }
+  return { clean };
 }
 
 async function withTx(pool, fn) {
@@ -548,6 +617,36 @@ export function createAuthRouter({ getPool }) {
     } catch (error) {
       console.error('[twin] create business failed:', error.message);
       return res.status(500).json({ error: 'create_failed', message: 'Could not create the business.' });
+    }
+  });
+
+  // T6: Settings save — the business identity (name, logo, brand
+  // color, contact details, language...). Owner-only; the app name is
+  // never part of this payload and cannot be changed here. This is
+  // what entities.Business.update maps to on the client — before T6
+  // it rejected as not-implemented, so no Settings save could land.
+  router.patch('/businesses/:id', authed, async (req, res) => {
+    const pool = getPool();
+    try {
+      const { rows } = await pool.query('SELECT * FROM businesses WHERE id = $1 LIMIT 1', [req.params.id]);
+      const business = rows[0];
+      if (!business) return res.status(404).json({ error: 'not_found', message: 'Business not found.' });
+      if (business.owner_id !== req.user.id) {
+        return res.status(403).json({ error: 'forbidden', message: 'Only the business owner can change these settings.' });
+      }
+      const { clean, error } = validateBusinessPatch(req.body || {});
+      if (error) return res.status(400).json({ error: 'invalid_value', message: error });
+      const columns = Object.keys(clean);
+      if (!columns.length) return res.json(publicBusiness(business));
+      const sets = columns.map((col, i) => `${col} = $${i + 1}`).join(', ');
+      const updated = await pool.query(
+        `UPDATE businesses SET ${sets}, updated_at = NOW() WHERE id = $${columns.length + 1} RETURNING *`,
+        [...columns.map((col) => clean[col]), req.params.id],
+      );
+      return res.json(publicBusiness(updated.rows[0]));
+    } catch (error) {
+      console.error('[twin] update business failed:', error.message);
+      return res.status(500).json({ error: 'update_failed', message: 'Could not save your settings.' });
     }
   });
 

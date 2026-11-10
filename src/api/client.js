@@ -73,7 +73,8 @@ function entityClient(name) {
 
 // T2: the Business entity is real — the workspace loader
 // (src/lib/business.js loadWorkspace) lists the caller's businesses,
-// and Settings renames via update (T6, still fail-closed).
+// and Settings saves via update (T6: PATCH /api/businesses/:id,
+// owner-only, allowlisted fields — see server/authRoutes.js).
 function businessEntityClient() {
   const listBusinesses = () => request('/api/businesses');
   return {
@@ -90,7 +91,7 @@ function businessEntityClient() {
       return found;
     },
     create: () => Promise.reject(notImplemented('entities.Business.create')),
-    update: () => Promise.reject(notImplemented('entities.Business.update')),
+    update: (id, patch) => request(`/api/businesses/${encodeURIComponent(id)}`, { method: 'PATCH', body: patch }),
     delete: () => Promise.reject(notImplemented('entities.Business.delete')),
     count: async () => {
       const page = await listBusinesses();

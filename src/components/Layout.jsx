@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate, useNavigationType } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ArrowLeft, ChevronDown, Loader2, Menu, Search } from 'lucide-react';
@@ -8,12 +8,14 @@ import MerchantMark from '@/components/brand/MerchantMark';
 import BusinessSwitcher from '@/components/business/BusinessSwitcher';
 import { useBusiness } from '@/hooks/useBusiness';
 import { PUBLISHER } from '@/lib/business';
+import { t, setLocale, getLocale } from '@/lib/i18n';
+import { applyBrandColor } from '@/lib/brandTheme';
 import useStaffAccess from '@/hooks/useStaffAccess';
 import useEntitlements from '@/hooks/useEntitlements';
 import FirstLaunchRedirect from '@/components/plans/FirstLaunchRedirect';
 import NoAccess from '@/components/staff/NoAccess';
 import AccessPaused from '@/components/staff/AccessPaused';
-import { NAV_GROUPS, NAV_ITEMS } from '@/components/layout/navGroups';
+import { NAV_GROUPS } from '@/components/layout/navGroups';
 import useIsDesktop from '@/hooks/useIsDesktop';
 import { dismissActiveModal } from '@/hooks/useModalHistory';
 import Dashboard from '@/pages/Dashboard';
@@ -35,6 +37,36 @@ const MOBILE_TAB_SCREENS = {
 
 export default function Layout() {
   const { profile, activeId } = useBusiness();
+  // T6 white-label + i18n: the store's own branding comes from the
+  // business record — its brand color re-skins the chrome, its
+  // language picks the locale. The app name (AppMark, top of the
+  // sidebar and in the footer) is never touched by either.
+  const [locale, setLocaleState] = useState('en');
+  useEffect(() => {
+    if (profile?.brand_color) applyBrandColor(profile.brand_color);
+  }, [profile?.brand_color]);
+  useEffect(() => {
+    const code = profile?.language || 'en';
+    if (code !== getLocale()) setLocale(code);
+    setLocaleState(code);
+  }, [profile?.language]);
+  // T6 i18n: the nav renders through t() (English until the owner
+  // picks the first translation language). The English `label` stays
+  // as the fallback for any entry without a key.
+  const translatedGroups = useMemo(
+    () =>
+      NAV_GROUPS.map((group) => ({
+        ...group,
+        label: group.labelKey ? t(group.labelKey) : group.label,
+        items: group.items.map((item) => ({
+          ...item,
+          label: item.labelKey ? t(item.labelKey) : item.label,
+        })),
+      })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [locale],
+  );
+  const translatedItems = translatedGroups.flatMap((group) => group.items);
   const { loading: accessLoading, blocked, blockedReason, can } = useStaffAccess();
   // AUDIT FINDING 10: while the entitlement row loads, a missing row
   // resolves to restricted Essentials, so a Business login briefly lost
@@ -72,17 +104,17 @@ export default function Layout() {
   const [query, setQuery] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   // Two doors, both must open: the person's role and the plan's entitlements.
-  const allowedItems = NAV_ITEMS.filter(
+  const allowedItems = translatedItems.filter(
     (item) => (!item.perm || can(item.perm)) && (!item.feature || planAllows(item.feature))
   );
   // Mobile tabs and the full module menu use the exact same staff/plan filters as desktop.
   const mobileTabPaths = ['/', '/scan', '/products', '/orders', '/settings'];
   const mobileTabs = allowedItems.filter((item) => mobileTabPaths.includes(item.to));
-  const mobileGroups = NAV_GROUPS.map((group) => ({
+  const mobileGroups = translatedGroups.map((group) => ({
     ...group,
     items: group.items.filter((item) => allowedItems.includes(item)),
   })).filter((group) => group.items.length);
-  const current = NAV_ITEMS.find((item) => item.to === pathname);
+  const current = translatedItems.find((item) => item.to === pathname);
   const allowed = !current?.perm || can(current.perm);
 
   const lastWorkspaceRef = useRef(activeId);
@@ -118,7 +150,7 @@ export default function Layout() {
 
   // The laptop sidebar doubles as a finder: type a few letters to narrow the modules.
   const term = query.trim().toLowerCase();
-  const groups = NAV_GROUPS.map((group) => ({
+  const groups = translatedGroups.map((group) => ({
     ...group,
     items: group.items.filter(
       (item) => allowedItems.includes(item) && (!term || item.label.toLowerCase().includes(term))

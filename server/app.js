@@ -25,6 +25,7 @@ import { fileURLToPath } from 'node:url';
 import { checkDb, getPool } from './db.js';
 import { createAuthRouter } from './authRoutes.js';
 import { createShopRouter } from './shopRoutes.js';
+import { createT6Router } from './t6Routes.js';
 import { createBillingRouter, stripeWebhookHandler } from './billingRoutes.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -40,14 +41,16 @@ export function createApp() {
   // Stripe webhook FIRST, before any JSON parsing: signature
   // verification needs the raw body untouched (T4).
   app.post('/webhooks/stripe', express.raw({ type: 'application/json' }), stripeWebhookHandler);
-  app.use(express.json());
+  // 3 MB JSON bodies: a store logo (up to 2 MB as a data URL) must
+  // reach the logo endpoint's own clear 400, not the parser's 413.
+  app.use(express.json({ limit: '3mb' }));
 
   app.get('/health', async (_req, res) => {
     const db = await checkDb();
     res.json({
       status: 'ok',
       app: 'luminous-stockhaven-twin',
-      phase: 'T5',
+      phase: 'T6',
       uptime_seconds: Math.floor((Date.now() - startedAt) / 1000),
       database: db,
     });
@@ -60,6 +63,8 @@ export function createApp() {
   // without a session cookie. Billing routes carry their own auth
   // where they need it; unmatched /api/* paths fall through to shop.
   app.use('/api', createBillingRouter({ getPool }));
+  // T6: offline sync, name search, cross-store, logo upload.
+  app.use('/api', createT6Router({ getPool }));
   app.use('/api', createShopRouter({ getPool }));
 
   app.use('/api', (_req, res) => {

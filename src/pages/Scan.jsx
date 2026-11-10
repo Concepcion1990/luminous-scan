@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { base44 } from '@/api/client';
+import { base44, apiRequest } from '@/api/client';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowRight, Check, MapPin, PackageSearch, Plus, Printer, RotateCcw, TriangleAlert } from 'lucide-react';
 import BarcodeScanner from '@/components/scan/BarcodeScanner';
 import ExternalCodePanel from '@/components/scan/ExternalCodePanel';
 import MatchPicker from '@/components/scan/MatchPicker';
+import CrossStoreAvailability from '@/components/scan/CrossStoreAvailability';
+import SyncIndicator from '@/components/sync/SyncIndicator';
 import QuantityStepper from '@/components/inventory/QuantityStepper';
 import ProductFormDialog from '@/components/products/ProductFormDialog';
 import ProductDetailsDialog from '@/components/products/ProductDetailsDialog';
@@ -13,9 +15,12 @@ import ScannerListener from '@/components/scan/ScannerListener';
 import useScannerInput from '@/hooks/useScannerInput';
 import useIsDesktop from '@/hooks/useIsDesktop';
 import useModalHistory from '@/hooks/useModalHistory';
+import useEntitlements from '@/hooks/useEntitlements';
+import { useOfflineSync } from '@/hooks/useOfflineSync';
 import PullToRefresh from '@/components/mobile/PullToRefresh';
 import {
   findProductsByCode,
+  formatMoney,
   getLevelsForProduct,
   MOVEMENT_TYPES,
   recordMovement,
@@ -25,6 +30,9 @@ import { classifyScan } from '@/lib/scanCode';
 import { orderedLocations } from '@/lib/locations';
 import { scoped } from '@/lib/scoped';
 import { useBusiness } from '@/hooks/useBusiness';
+import { t } from '@/lib/i18n';
+import { BUNDLE_MOVEMENT_TYPES } from '@/lib/plans';
+import { getOfflineQueue, newQueuedChange } from '@/lib/offlineQueue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -52,6 +60,16 @@ const allActions = [...actions, ...adjustments];
 
 export default function Scan() {
   const { activeId, profile } = useBusiness();
+  const { planKey } = useEntitlements();
+  // T6 offline-first sync: the queue, the visible status, and the
+  // convergence check (the manager's view re-reads when the server
+  // version moves). Polling with a last-seen version — see
+  // src/hooks/useOfflineSync.js for why polling, not SSE.
+  const sync = useOfflineSync(activeId, {
+    onConverged: () => {
+      refreshScanData();
+    },
+  });
   const isDesktop = useIsDesktop();
   const { pathname } = useLocation();
   // A retained mobile Scan tab preserves its form state but must release the camera
@@ -90,6 +108,9 @@ export default function Scan() {
   const [error, setError] = useState('');
   const [details, setDetails] = useState(null);
   const [user, setUser] = useState(null);
+  // Lookup by name, for when a barcode will not scan (Walmart item 6).
+  const [nameQuery, setNameQuery] = useState('');
+  const [nameSearching, setNameSearching] = useState(false);
   const busyRef = useRef(false);
   const savingRef = useRef(false);
   const manualRef = useRef(null);
@@ -128,6 +149,7 @@ export default function Scan() {
   const canTransfer = locations.length > 1;
   const here = levels.find((l) => l.location_id === locationId);
   const onHand = here?.quantity ?? 0;
+  const totalOnHand = levels.reduce((sum, l) => sum + Number(l?.quantity ?? 0), 0);
   const held = here?.reserved ?? 0;
   const isHold = action === 'reserved' || action === 'released';
 
@@ -175,9 +197,43 @@ export default function Scan() {
         }
       }
     } catch {
-      setError('Could not look that code up. Check your connection and try again.');
+      setError(t('scan.lookupFailed'));
     } finally {
       busyRef.current = false;
+    }
+  };
+
+  /**
+   * Lookup by name (Walmart item 6): when a barcode will not scan,
+   * find the product by its name instead. Reuses the match picker —
+   * a name can match more than one product, same as a shared ISBN.
+   */
+  const searchByName = async (raw) => {
+    const q = String(raw || '').trim();
+    if (!q || busyRef.current) return;
+    busyRef.current = true;
+    setError('');
+    setFlash(null);
+    setNameSearching(true);
+    try {
+      const data = await apiRequest(
+        `/api/businesses/${encodeURIComponent(activeId || '')}/products/search?q=${encodeURIComponent(q)}`,
+      );
+      const found = data.products ?? [];
+      if (found.length === 1) {
+        await selectProduct(found[0]);
+      } else if (found.length > 1) {
+        clearResult();
+        setMatches(found);
+      } else {
+        clearResult();
+        setNotFound(q);
+      }
+    } catch {
+      setError(t('scan.lookupFailed'));
+    } finally {
+      busyRef.current = false;
+      setNameSearching(false);
     }
   };
 
@@ -199,31 +255,65 @@ export default function Scan() {
     if (savingRef.current) return;
     setError('');
     if (!location) {
-      setError('Choose a location first.');
+      setError(t('scan.chooseLocationFirst'));
       return;
     }
     const amount = Number(qty);
     if (Number.isNaN(amount) || amount < 0) {
-      setError('Enter a quantity.');
+      setError(t('scan.enterQuantity'));
       return;
     }
     const setsExact = action === 'count' || action === 'correction';
     if (!setsExact && amount < 1) {
-      setError('Quantity must be at least 1.');
+      setError(t('scan.quantityAtLeastOne'));
       return;
     }
     if (action === 'transfer') {
       if (!toLocation) {
-        setError('Choose where the stock is going.');
+        setError(t('scan.chooseDestinationFirst'));
         return;
       }
       if (toLocation.id === location.id) {
-        setError('Pick a different destination location.');
+        setError(t('scan.differentDestination'));
         return;
       }
     }
     if (['sale', 'damaged', 'lost', 'write_off'].includes(action) && amount > onHand) {
-      setError(`Only ${onHand} on hand at ${location.name}.`);
+      setError(t('scan.onlyOnHand', { count: onHand, location: location.name }));
+      return;
+    }
+
+    // T6 offline-first: when the phone is offline, the change is saved
+    // on the device FIRST (the queue) and sent when the connection
+    // returns — the server confirms it, the phone shows it as still
+    // sending until then. The online path below is untouched; only a
+    // change the phone KNOWS is offline takes the queue path, so a
+    // half-finished online write can never be queued twice.
+    // Bundle movements stay Business-only even offline: the server
+    // refuses them at apply time, and the picker refuses them here so
+    // the failure is immediate instead of a surprise later.
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      if (BUNDLE_MOVEMENT_TYPES.includes(action)) {
+        setError('Bundle movements are a Business feature — building bundles and taking them apart need the Business plan.');
+        return;
+      }
+      const queued = newQueuedChange(activeId || '', isHold ? 'reserve' : 'movement', {
+        product_id: product.id,
+        location_id: location.id,
+        type: action,
+        quantity: amount,
+        note,
+        scanned_code: product.upc || product.barcode || product.sku,
+        to_location_id: toLocation?.id || '',
+        unit_cost: action === 'receive' ? cost : '',
+        reference: note,
+      });
+      await getOfflineQueue().add(queued);
+      await sync.refreshQueue();
+      setQty('1');
+      setNote('');
+      setCost('');
+      setFlash(t('scan.savedOffline'));
       return;
     }
 
@@ -348,10 +438,8 @@ export default function Scan() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Scan station</p>
-          <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">Scan an item</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            One scanner for barcodes, UPC, ISBN and QR codes. Point the camera and the app works out what it is.
-          </p>
+          <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">{t('scan.title')}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{t('scan.subtitle')}</p>
         </div>
         <div className="flex items-center gap-2">
           <MapPin className="h-4 w-4 text-muted-foreground" />
@@ -370,6 +458,8 @@ export default function Scan() {
         </div>
       </div>
 
+      <SyncIndicator sync={sync} />
+
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="space-y-4 rounded-xl border border-border bg-card p-4 sm:p-5">
           <div data-pull-refresh-ignore>
@@ -378,7 +468,7 @@ export default function Scan() {
 
           <div className="space-y-2">
             <Label htmlFor="manual" className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-              Or type / use a handheld scanner
+              {t('scan.typeOrScan')}
             </Label>
             <form
               className="flex gap-2"
@@ -395,23 +485,48 @@ export default function Scan() {
                 value={manual}
                 onChange={(e) => setManual(e.target.value)}
                 onFocus={(e) => e.target.select()}
-                placeholder="SKU, UPC, ISBN or barcode"
+                placeholder={t('scan.codePlaceholder')}
                 className="numeric"
                 autoComplete="off"
               />
               <Button type="submit" variant="outline">
-                Find
+                {t('scan.find')}
               </Button>
             </form>
-            <p className="text-[11px] text-muted-foreground">
-              Scanning never changes stock. Receive, sold, count and transfer are always separate actions.
-            </p>
+            <p className="text-[11px] text-muted-foreground">{t('scan.neverChangesStock')}</p>
 
             <ScannerListener
               armed={armed}
               lastCode={lastCode}
               onFocusInput={() => manualRef.current?.focus()}
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="name-search" className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+              {t('scan.searchByName')}
+            </Label>
+            <form
+              className="flex gap-2"
+              onSubmit={(e) => {
+                e.preventDefault();
+                const q = nameQuery;
+                setNameQuery('');
+                searchByName(q);
+              }}
+            >
+              <Input
+                id="name-search"
+                value={nameQuery}
+                onChange={(e) => setNameQuery(e.target.value)}
+                placeholder={t('scan.searchPlaceholder')}
+                autoComplete="off"
+              />
+              <Button type="submit" variant="outline" disabled={nameSearching}>
+                {nameSearching ? 'Searching…' : t('scan.find')}
+              </Button>
+            </form>
+            <p className="text-[11px] text-muted-foreground">{t('scan.searchByNameHint')}</p>
           </div>
 
           {flash && (
@@ -432,11 +547,8 @@ export default function Scan() {
           {idle && (
             <div className="flex h-full flex-col items-center justify-center gap-2 px-6 py-16 text-center">
               <PackageSearch className="h-6 w-6 text-muted-foreground" />
-              <p className="text-sm font-medium">Waiting for a scan</p>
-              <p className="max-w-[260px] text-xs text-muted-foreground">
-                A matched product and its stock actions appear here. Website, text and product-detail codes
-                are shown with their own actions instead.
-              </p>
+              <p className="text-sm font-medium">{t('scan.waiting')}</p>
+              <p className="max-w-[260px] text-xs text-muted-foreground">{t('scan.waitingHint')}</p>
             </div>
           )}
 
@@ -444,15 +556,15 @@ export default function Scan() {
             <div className="space-y-4 px-6 py-12 text-center">
               <TriangleAlert className="mx-auto h-6 w-6 text-warn" />
               <div>
-                <p className="text-sm font-medium">No product matches that code</p>
+                <p className="text-sm font-medium">{t('scan.noMatch')}</p>
                 <p className="numeric mt-1 text-xs text-muted-foreground">{notFound}</p>
               </div>
               <div className="flex flex-wrap justify-center gap-2">
                 <Button onClick={() => setCreateOpen(true)}>
-                  <Plus className="mr-1.5 h-4 w-4" /> Create product
+                  <Plus className="mr-1.5 h-4 w-4" /> {t('scan.createProduct')}
                 </Button>
                 <Button variant="ghost" onClick={reset}>
-                  <RotateCcw className="mr-1.5 h-3.5 w-3.5" /> Scan next
+                  <RotateCcw className="mr-1.5 h-3.5 w-3.5" /> {t('scan.scanNext')}
                 </Button>
               </div>
             </div>
@@ -467,12 +579,18 @@ export default function Scan() {
                     <p className="numeric mt-1 text-xs text-muted-foreground">
                       {[product.sku, product.upc, product.isbn].filter(Boolean).join(' · ')}
                     </p>
+                    {/* Walmart item 1: scan → price + on-hand on the spot. */}
+                    {product.price !== null && product.price !== undefined && (
+                      <p className="numeric mt-1 text-sm font-medium">
+                        {t('scan.price')}: {formatMoney(product.price, profile?.currency || 'USD', 2)}
+                      </p>
+                    )}
                   </div>
                   <Button variant="outline" size="sm" onClick={printShelfTag} className="shrink-0">
-                    <Printer className="mr-1.5 h-3.5 w-3.5" /> Print shelf tag
+                    <Printer className="mr-1.5 h-3.5 w-3.5" /> {t('scan.printShelfTag')}
                   </Button>
                   <Button variant="ghost" size="sm" onClick={reset} className="shrink-0">
-                    <RotateCcw className="mr-1.5 h-3.5 w-3.5" /> Scan next
+                    <RotateCcw className="mr-1.5 h-3.5 w-3.5" /> {t('scan.scanNext')}
                   </Button>
                 </div>
 
@@ -629,10 +747,23 @@ export default function Scan() {
 
                 <Button className="w-full" onClick={apply} disabled={busy}>
                   {busy
-                    ? 'Recording…'
-                    : `Record ${(allActions.find((a) => a.key === action)?.label || 'movement').toLowerCase()}`}
+                    ? t('scan.recording')
+                    : `${t('scan.record')} ${(allActions.find((a) => a.key === action)?.label || 'movement').toLowerCase()}`}
                 </Button>
               </div>
+
+              {/* Cross-store availability (T6, Business only): listed but out
+                  of stock here — show the other stores, and let staff ask
+                  one of them to ship it or bring it over. Essentials never
+                  sees this section (one store, nowhere else to look). */}
+              {totalOnHand === 0 && planKey === 'business' && (
+                <div className="border-t border-border p-4 sm:p-5">
+                  <p className="text-sm font-medium text-warn">{t('scan.outOfStockHere')}</p>
+                  <div className="mt-3">
+                    <CrossStoreAvailability businessId={activeId || ''} product={product} />
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
