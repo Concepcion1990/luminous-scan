@@ -1,0 +1,169 @@
+import { useEffect, useState } from 'react';
+import { base44 } from '@/api/client';
+import { useBusiness } from '@/hooks/useBusiness';
+import { withBusiness } from '@/lib/scoped';
+import { createLocation } from '@/lib/entitlements';
+import { parentCandidates } from '@/lib/locations';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+
+const NONE = 'none';
+
+const KINDS = ['store', 'warehouse', 'van', 'shelf', 'bin', 'other'];
+
+export default function LocationFormDialog({
+  open,
+  onOpenChange,
+  location,
+  locations = [],
+  initialParentId = '',
+  onSaved,
+}) {
+  const { activeId } = useBusiness();
+  const [form, setForm] = useState({ name: '', code: '', kind: 'store', address: '', parent_id: '' });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!open) return;
+    setError('');
+    setForm({
+      name: location?.name || '',
+      code: location?.code || '',
+      kind: location?.kind || (initialParentId ? 'shelf' : 'store'),
+      address: location?.address || '',
+      parent_id: location?.parent_id || initialParentId || '',
+    });
+  }, [open, location, initialParentId]);
+
+  const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e?.target ? e.target.value : e }));
+
+  const parents = parentCandidates(locations, location?.id || '');
+
+  const save = async () => {
+    if (!form.name.trim()) {
+      setError('Give this location a name.');
+      return;
+    }
+    setSaving(true);
+    setError('');
+    const name = form.name.trim();
+    const parent = locations.find((l) => l.id === form.parent_id);
+    const payload = {
+      name,
+      code: form.code.trim().toUpperCase(),
+      kind: form.kind,
+      address: form.address,
+      parent_id: parent?.id || '',
+      parent_name: parent?.name || '',
+    };
+    try {
+      if (location) {
+        await base44.entities.Location.update(location.id, payload);
+        // Children carry a copy of their parent's name for display.
+        if (location.name !== name) {
+          await base44.entities.Location.updateMany(
+            { parent_id: location.id },
+            { $set: { parent_name: name } }
+          );
+        }
+      } else {
+        await createLocation(activeId, withBusiness(payload, activeId));
+      }
+      onSaved?.();
+      onOpenChange(false);
+    } catch (err) {
+      setError(err?.message || 'Could not save this location.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>{location ? 'Edit location' : 'New location'}</DialogTitle>
+        </DialogHeader>
+        <div className="grid gap-4">
+          <div className="grid gap-2">
+            <Label htmlFor="loc-name">Name</Label>
+            <Input id="loc-name" value={form.name} onChange={set('name')} placeholder="Shelf A" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="grid gap-2">
+              <Label htmlFor="loc-code">Short code</Label>
+              <Input id="loc-code" value={form.code} onChange={set('code')} placeholder="SH-A" className="font-mono" />
+            </div>
+            <div className="grid gap-2">
+              <Label>Type</Label>
+              <Select value={form.kind} onValueChange={set('kind')}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {KINDS.map((k) => (
+                    <SelectItem key={k} value={k}>
+                      {k}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="grid gap-2">
+            <Label>Inside location</Label>
+            <Select
+              value={form.parent_id || NONE}
+              onValueChange={(v) => set('parent_id')(v === NONE ? '' : v)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Top level" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={NONE}>Top level (no parent)</SelectItem>
+                {parents.map(({ location: option, depth }) => (
+                  <SelectItem key={option.id} value={option.id}>
+                    {`${'— '.repeat(depth)}${option.name}`}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              Nest a shelf inside a store, or a bin inside a shelf. Stock counted at a parent includes
+              everything inside it.
+            </p>
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="loc-address">Address</Label>
+            <Input id="loc-address" value={form.address} onChange={set('address')} placeholder="Optional" />
+          </div>
+          {error && <p className="text-sm text-destructive">{error}</p>}
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button onClick={save} disabled={saving}>
+            {saving ? 'Saving…' : 'Save location'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
