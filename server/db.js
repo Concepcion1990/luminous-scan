@@ -17,11 +17,28 @@ let pool = null;
 export function getPool() {
   if (pool) return pool;
   if (!config.databaseUrl) return null;
+  if (config.databaseUrl.startsWith('pg-mem:')) {
+    throw new Error(
+      'pg-mem databases are only available through setPoolOverride() (tests / local dev server) — see server.js.',
+    );
+  }
   pool = new Pool({ connectionString: config.databaseUrl });
   pool.on('error', (error) => {
     console.error('[twin] idle Postgres client error:', error.message);
   });
   return pool;
+}
+
+/**
+ * Test / local-dev override: lets the test suite and the local curl
+ * check run the real routes against an in-memory pg-mem Postgres
+ * (DATABASE_URL=pg-mem://...) with zero live infrastructure. The
+ * override is only ever installed by tests or by server.js's explicit
+ * pg-mem branch — never on Fly, where DATABASE_URL is a real Postgres
+ * connection string. The SQL is identical either way.
+ */
+export function setPoolOverride(nextPool) {
+  pool = nextPool;
 }
 
 /** Honest DB status for /health: never throws, never leaks details. */

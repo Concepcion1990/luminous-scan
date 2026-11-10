@@ -1,12 +1,11 @@
 import React, { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { loginWithMfa, continueMfa, loginWithGoogle } from "@/lib/authMfa";
+import { loginWithMfa, continueMfa } from "@/lib/authMfa";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Check, LogIn, Mail, Lock, Loader2 } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
-import GoogleIcon from "@/components/GoogleIcon";
 import { safeReturnTo } from "@/lib/authReturnTo";
 import { readPendingVerificationEmail } from "./Register";
 
@@ -40,11 +39,6 @@ export default function Login() {
     }
   };
 
-  const handleGoogle = async () => {
-    try { await loginWithGoogle(returnTo); }
-    catch (err) { setError(err.message || 'Unable to sign in with Google'); }
-  };
-
   return (
     <AuthLayout
       icon={LogIn}
@@ -66,24 +60,6 @@ export default function Login() {
         </>
       }
     >
-      <Button
-        variant="outline"
-        className="w-full h-12 text-sm font-medium mb-6"
-        onClick={handleGoogle}
-      >
-        <GoogleIcon className="w-5 h-5 mr-2" />
-        Continue with Google
-      </Button>
-
-      <div className="relative mb-6">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-border" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-card px-3 text-muted-foreground">or</span>
-        </div>
-      </div>
-
       {resetSuccess && (
         <div className="mb-4 p-3 rounded-lg bg-ok/10 text-sm flex items-start gap-2">
           <Check className="mt-0.5 h-4 w-4 shrink-0 text-ok" />
@@ -150,7 +126,15 @@ export default function Login() {
       {pendingEmail && (
         <p className="text-center text-sm text-muted-foreground mt-4">
           Have a verification code for {pendingEmail}?{" "}
-          <Link to="/register" className="text-primary font-medium hover:underline">
+          <Link to="/verify-email" className="text-primary font-medium hover:underline">
+            Verify your email
+          </Link>
+        </p>
+      )}
+      {!pendingEmail && (
+        <p className="text-center text-sm text-muted-foreground mt-4">
+          Have a verification code?{" "}
+          <Link to="/verify-email" className="text-primary font-medium hover:underline">
             Verify your email
           </Link>
         </p>

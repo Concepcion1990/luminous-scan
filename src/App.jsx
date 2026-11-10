@@ -46,6 +46,7 @@ import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
+import VerifyEmail from '@/pages/VerifyEmail';
 import ThankYou from './pages/ThankYou';
 import GraceInventory from '@/pages/GraceInventory';
 
@@ -96,6 +97,7 @@ const AuthenticatedApp = () => {
       <Route path="/thankyou" element={<ThankYou />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/verify-email" element={<VerifyEmail />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
 

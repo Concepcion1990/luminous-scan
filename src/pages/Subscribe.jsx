@@ -130,7 +130,7 @@ export default function Subscribe() {
 
         {!isAuthenticated ? (
           <div className="mt-6 space-y-3 rounded-xl border border-border bg-card p-5">
-            <p className="text-sm">First, create your account — with your email and a password, or with Continue with Google. You will come straight back here to finish subscribing.</p>
+            <p className="text-sm">First, create your account — with your email and a password. You will come straight back here to finish subscribing.</p>
             <div className="flex flex-col gap-2 sm:flex-row">
               <Button asChild><Link to={`/register?returnTo=${encodeURIComponent(returnTo)}`}>Create account</Link></Button>
               <Button variant="outline" asChild><Link to={`/login?returnTo=${encodeURIComponent(returnTo)}`}>Sign in</Link></Button>

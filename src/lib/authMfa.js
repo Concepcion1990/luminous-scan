@@ -1,32 +1,58 @@
 /**
- * Sign-in helpers — FAIL-CLOSED STUB (T1).
+ * Sign-in helpers — T2 (email + password only).
  *
  * The Base44 version of this module drove Base44's platform MFA flow
  * (`/api/apps/<id>/auth/...`, `/auth/mfa`) and Google sign-in through
- * the Base44 SDK. None of that exists on the twin: auth (email +
- * password, OTP, password reset, and the Google sign-in decision) is
- * built in T2. Until then every sign-in attempt fails closed with a
- * clear message — never a fake login, never a redirect to a Base44
- * endpoint. The original Base44 implementation stays in the Stockhaven
- * repo's history and in this repo's first T1 commit.
+ * the Base44 SDK. Neither exists on the twin:
  *
- * Same exports as before, so Login/Register keep building unchanged.
+ * - Email + password login is real: `loginWithMfa` POSTs to the
+ *   twin's /api/auth/login and returns the user. The name is kept so
+ *   the ported Login page needs no churn; the twin has no MFA step,
+ *   so the result never carries `mfa_required` and `continueMfa` is
+ *   a plain redirect to the return-to page.
+ * - Google sign-in is NOT built, by the owner's decision (Nov 9):
+ *   email and password only — she thinks it is more secure, with
+ *   fewer doors into the app and no third party in the middle of her
+ *   customers' logins. `loginWithGoogle` / `loginWithSocial` reject
+ *   with that message. No Google OAuth code, client id, or secret
+ *   exists anywhere on the twin. If social login is ever proposed
+ *   again, that decision is the record to revisit.
  */
 
-const NOT_READY = new Error('Sign-in is not available yet — auth is built in T2.');
+const GOOGLE_UNAVAILABLE = new Error(
+  'Google sign-in is not available — please log in with your email and password.',
+);
 
-export async function loginWithMfa() {
-  throw NOT_READY;
+async function loginRequest(email, password) {
+  const response = await fetch('/api/auth/login', {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(data.message || data.error || `Login failed (${response.status})`);
+    error.status = response.status;
+    error.data = data;
+    throw error;
+  }
+  return data;
 }
 
-export async function continueMfa() {
-  throw NOT_READY;
+export async function loginWithMfa(email, password) {
+  const result = await loginRequest(email, password);
+  return { ...result, mfa_required: false };
+}
+
+export async function continueMfa(_result, returnTo) {
+  window.location.assign(returnTo || '/');
 }
 
 export async function loginWithSocial() {
-  throw NOT_READY;
+  throw GOOGLE_UNAVAILABLE;
 }
 
 export function loginWithGoogle() {
-  return Promise.reject(NOT_READY);
+  return Promise.reject(GOOGLE_UNAVAILABLE);
 }

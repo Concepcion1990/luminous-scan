@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Luminous Stockhaven \u2014 Fly.io twin of the Base44 app (skeleton, T1). Vite React app served by Express; Postgres + Stripe land in later phases.",
+  "description": "Luminous Stockhaven — Fly.io twin of the Base44 app (T2: auth + businesses). Vite React app served by Express; Postgres + Stripe land in later phases.",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -11,8 +11,9 @@
     "lint:fix": "eslint . --fix",
     "preview": "vite preview",
     "start": "node server.js",
-    "test": "npm run test:t1",
-    "test:t1": "node --test src/lib/stockhavenSubscriptionPolicy.test.js src/lib/stockhavenTermsOfService.test.js src/lib/stockhavenPrivacyPolicy.test.js src/lib/trademarkNotice.test.js src/lib/aboutFounder.test.js"
+    "test": "npm run test:t1 && npm run test:t2",
+    "test:t1": "node --test src/lib/stockhavenSubscriptionPolicy.test.js src/lib/stockhavenTermsOfService.test.js src/lib/stockhavenPrivacyPolicy.test.js src/lib/trademarkNotice.test.js src/lib/aboutFounder.test.js",
+    "test:t2": "node --test tests/t2/*.test.js"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^17.0.0",
@@ -49,6 +50,7 @@
     "@tanstack/react-query": "^5.84.1",
     "@zxing/browser": "^0.1.5",
     "@zxing/library": "^0.21.3",
+    "bcryptjs": "^3.0.3",
     "canvas-confetti": "^1.9.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -96,6 +98,7 @@
     "eslint-plugin-react-refresh": "^0.4.18",
     "eslint-plugin-unused-imports": "^4.3.0",
     "globals": "^15.14.0",
+    "pg-mem": "^3.0.14",
     "postcss": "^8.5.3",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.8.2",

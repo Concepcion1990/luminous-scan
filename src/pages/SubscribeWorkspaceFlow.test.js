@@ -34,9 +34,9 @@ test('Subscribe no longer links "Open workspace" to the gated workspace', () => 
 
 test('Subscribe flow is create-account, then workspace, then the Stripe switching notice — no checkout', () => {
   const screen = readFileSync('src/pages/Subscribe.jsx', 'utf8');
-  // Step 1 — a new customer creates an account first (email + password, or
-  // Continue with Google as the alternative on the Register page) and is
-  // sent straight back here.
+  // Step 1 — a new customer creates an account first (email + password
+  // only — Google sign-in is not offered on the twin, owner's decision
+  // Nov 9) and is sent straight back here.
   assert.match(screen, /\/register\?returnTo=/);
   assert.match(screen, /Create your account|Create account/);
   assert.match(screen, /\/login\?returnTo=/);

@@ -15,9 +15,11 @@ export const config = {
   port: Number.parseInt(process.env.PORT || '3000', 10),
   databaseUrl: process.env.DATABASE_URL || '',
   sessionSecret: process.env.SESSION_SECRET || '',
+  resendApiKey: process.env.RESEND_API_KEY || process.env.EMAIL_API_KEY || '',
+  emailFrom: process.env.EMAIL_FROM || '',
 };
 
-const SECRET_NAMES = ['DATABASE_URL', 'SESSION_SECRET', 'EMAIL_API_KEY', 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET'];
+const SECRET_NAMES = ['DATABASE_URL', 'SESSION_SECRET', 'RESEND_API_KEY', 'EMAIL_API_KEY', 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET'];
 
 export function configuredSecretNames() {
   return SECRET_NAMES.filter((name) => Boolean(process.env[name]));

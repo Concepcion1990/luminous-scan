@@ -1,6 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { base44 } from '@/api/client';
-import { appParams } from '@/lib/app-params';
 
 const AuthContext = createContext();
 
@@ -25,15 +24,12 @@ export const AuthProvider = ({ children }) => {
       try {
         const publicSettings = await base44.app.getPublicSettings();
         setAppPublicSettings(publicSettings);
-        
-        // If we got the app public settings successfully, check if user is authenticated
-        if (appParams.token) {
-          await checkUserAuth();
-        } else {
-          setIsLoadingAuth(false);
-          setIsAuthenticated(false);
-          setAuthChecked(true);
-        }
+
+        // T2: auth is a session cookie, not a bearer token — there is
+        // no appParams.token on the twin, so the check is unconditional.
+        // A signed-out user gets a 401 here and is treated as signed
+        // out below; public pages do not render on authError.
+        await checkUserAuth();
         setIsLoadingPublicSettings(false);
       } catch (appError) {
         console.error('App state check failed:', appError);
