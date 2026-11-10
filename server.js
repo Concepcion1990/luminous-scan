@@ -17,7 +17,8 @@
 import { createApp } from './server/app.js';
 import { config, configuredSecretNames } from './server/config.js';
 import { runMigrations } from './server/migrate.js';
-import { setPoolOverride } from './server/db.js';
+import { setPoolOverride, getPool } from './server/db.js';
+import { runWipeSweep } from './server/billing.js';
 
 const app = createApp();
 
@@ -40,6 +41,24 @@ async function main() {
     console.warn('[twin] using in-memory pg-mem Postgres (local dev only — data is lost on restart).');
   }
   await runMigrations();
+  // Wipe sweep (T4): the daily job that deletes accounts 15 days after
+  // paid-through (keeping the TrialHistory row). Wired as a server
+  // timer when BILLING_JOBS_ENABLED is exactly 'true' — the future
+  // worker machine will call POST /api/billing/wipe-sweep with the
+  // job secret instead. Off by default; the endpoint is the manual
+  // trigger either way.
+  if (process.env.BILLING_JOBS_ENABLED === 'true') {
+    const runSweep = async () => {
+      try {
+        const pool = getPool();
+        if (pool) await runWipeSweep(pool, { now: new Date() });
+      } catch (error) {
+        console.error('[twin] wipe sweep failed:', error.message);
+      }
+    };
+    setInterval(runSweep, 24 * 60 * 60 * 1000);
+    console.log('[twin] wipe sweep timer enabled (daily).');
+  }
   app.listen(config.port, () => {
     console.log(`[twin] Luminous Stockhaven listening on port ${config.port}`);
   });

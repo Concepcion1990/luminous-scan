@@ -419,9 +419,7 @@ export default function Settings() {
           <h3 className="font-semibold">Cancellation Terms &amp; Conditions</h3>
           <p className="text-muted-foreground">
             These are the terms for paid Luminous Stockhaven subscriptions.
-            Website subscription billing is switching to Stripe — new
-            subscriptions and payment changes will be available once Stripe
-            payments are live.
+            Website subscription billing is through Stripe.
             You can cancel your subscription yourself at any time using the
             Cancel Subscription button below — no staff approval is needed.
             Cancellation and refund requests can also be handled through the
@@ -450,7 +448,7 @@ export default function Settings() {
               within the applicable trial cancellation deadline, the selected monthly plan
               will be charged automatically after the trial. The price, first billing date,
               and provider-specific cancellation deadline must be shown during signup.
-              Trial billing will be through Stripe once Stripe payments are live.
+              Trial billing is through Stripe.
             </li>
             <li>
               <strong>Google Play and Apple App Store subscriptions (if you ever subscribe through a store):</strong> If you ever subscribe
@@ -478,12 +476,16 @@ export default function Settings() {
           </ul>
           {entitlementStatus === 'past_due' && (
             <div role="status" className="rounded-lg border border-destructive/40 bg-destructive/5 px-3 py-3">
-              <h3 className="font-semibold">Payment past due — payment updates return with Stripe</h3>
+              <h3 className="font-semibold">Payment past due</h3>
               <p className="mt-1 text-muted-foreground">
-                Your last payment did not go through. Payment updates will be available once Stripe payments are live.
+                Your last payment did not go through. Update your payment method from the Upgrade page —
+                Stripe will retry on its own schedule, and your subscription will not be canceled early.
                 If you are unsure what to do, contact support
                 at theluminousbookshop@outlook.com.
               </p>
+              <Button type="button" variant="outline" className="mt-3 min-h-11" asChild>
+                <Link to="/upgrade">Update payment method</Link>
+              </Button>
             </div>
           )}
           <p className="rounded-lg border border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">

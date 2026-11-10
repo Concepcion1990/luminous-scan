@@ -33,14 +33,18 @@ function formatDate(value) {
  * After the 15 days, full lockout: this page redirects to /plans and the
  * data is no longer reachable. After the 15-day grace period ends, the
  * account and all its information are permanently deleted and cannot be
- * recovered — resubscribing starts fresh. (Copy only: the wipe itself
- * is not built yet.)
+ * recovered — resubscribing starts fresh. (The wipe sweep runs daily on
+ * the server — server/billing.js runWipeSweep — and keeps the
+ * TrialHistory row.)
  *
- * Enforcement note, stated honestly: like every other plan gate in this
- * app, this is enforced at the UI/routing layer (the same as PlanGate and
- * SubscriptionAccessRoute). The grace decision itself is the shared pure
- * rule in `src/lib/cancellationGrace.js`, mirrored server-side in
- * `base44/shared/cancellationGracePolicy.ts`.
+ * Enforcement note: the grace view itself is a routing decision (the
+ * same as PlanGate and SubscriptionAccessRoute), AND every write is
+ * refused server-side while in grace (server/billing.js
+ * assertNotInGrace, enforced in server/entities.js and
+ * server/shopRoutes.js) — a customer cannot change, scan, import, or
+ * export their way around this page. The grace decision itself is the
+ * shared pure rule in `src/lib/cancellationGrace.js`, mirrored
+ * server-side in server/billing.js graceStateFor.
  */
 export default function GraceInventory() {
   const { status, record, activeId, isLoading } = useEntitlements();

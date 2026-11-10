@@ -59,10 +59,13 @@ test('register stores a bcrypt hash (never plaintext) and mails a 6-digit code',
 
   // No paid access of any kind is created by registration (T4 owns billing):
   // T3 created the entitlements table, but registration writes NO row —
-  // a missing row resolves to Essentials, never to a grant.
+  // a missing row resolves to Essentials, never to a grant. T4 created
+  // the subscriptions table, so the assertion is a count of 0, not
+  // "the table does not exist".
   const entitlementCount = await pool.query('SELECT COUNT(*)::int AS n FROM entitlements');
   assert.equal(entitlementCount.rows[0].n, 0, 'registration creates no entitlement row');
-  await assert.rejects(pool.query('SELECT 1 FROM subscriptions LIMIT 1'));
+  const subscriptionCount = await pool.query('SELECT COUNT(*)::int AS n FROM subscriptions');
+  assert.equal(subscriptionCount.rows[0].n, 0, 'registration creates no subscription row');
 
   const mail = mailTo(email, 'verification code');
   assert.ok(mail, 'verification email captured by the sink');

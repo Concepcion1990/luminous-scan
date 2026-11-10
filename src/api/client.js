@@ -8,9 +8,8 @@
  * Auth (register / verify / login / logout / password reset), the
  * Business entity, the shop entities (products, stock, staff, orders,
  * suppliers, alerts, ...) and the create-* functions are real in T3.
- * The billing APIs that belong to T4 still FAIL CLOSED here: a
- * rejected promise with a clear "not yet implemented" message — never
- * fake data, never a fake success.
+ * The billing APIs are real in T4 (Stripe checkout, reconcile,
+ * cancel, plan changes, status, readiness, publisher gate).
  *
  * Google sign-in is NOT available on the twin (owner's decision,
  * Nov 9 — email + password only; see twin-t2-report.md). `loginWith-
@@ -171,7 +170,9 @@ export const base44 = {
     // T2: createBusiness is real. T3: the shop functions are real too —
     // create-products / create-staff-member / create-role /
     // create-location run through the server routes that enforce the
-    // plan caps. Billing functions stay fail-closed until T4.
+    // plan caps. T4: the billing functions are real — Stripe checkout,
+    // reconcile, cancel, plan changes, status, readiness, and the
+    // publisher gate all run through /api/billing/*.
     invoke: async (name, payload) => {
       if (name === 'createBusiness') {
         const business = await request('/api/businesses', { method: 'POST', body: payload });
@@ -203,6 +204,64 @@ export const base44 = {
           method: 'POST',
           body: payload,
         });
+        return { data };
+      }
+      if (name === 'create-checkout') {
+        const data = await request('/api/billing/checkout', {
+          method: 'POST',
+          body: { plan: payload.plan, business_id: payload.business_id },
+        });
+        return { data };
+      }
+      if (name === 'reconcile-subscription-access') {
+        const data = await request('/api/billing/reconcile', {
+          method: 'POST',
+          body: { business_id: payload.business_id, session_id: payload.session_id },
+        });
+        return { data };
+      }
+      if (name === 'cancel-subscription') {
+        const data = await request('/api/billing/cancel', {
+          method: 'POST',
+          body: { business_id: payload.business_id },
+        });
+        return { data };
+      }
+      if (name === 'get-subscription-status') {
+        const data = await request(`/api/billing/status?business_id=${encodeURIComponent(payload.business_id)}`);
+        return { data };
+      }
+      if (name === 'get-publisher-access') {
+        const data = await request('/api/billing/publisher-access');
+        return { data };
+      }
+      if (name === 'inspect-essentials-checkout-readiness') {
+        const data = await request('/api/billing/readiness');
+        return { data };
+      }
+      if (name === 'preview-plan-change') {
+        const data = await request('/api/billing/plan-change/preview', {
+          method: 'POST',
+          body: { target_plan: payload.target_plan, business_id: payload.business_id },
+        });
+        return { data };
+      }
+      if (name === 'request-plan-upgrade' || name === 'change-subscription-plan') {
+        const data = await request('/api/billing/plan-change', {
+          method: 'POST',
+          body: { target_plan: payload.target_plan, business_id: payload.business_id },
+        });
+        return { data };
+      }
+      if (name === 'update-payment-method') {
+        const data = await request('/api/billing/payment-update', {
+          method: 'POST',
+          body: { business_id: payload.business_id },
+        });
+        return { data };
+      }
+      if (name === 'check-trial-eligibility') {
+        const data = await request(`/api/billing/trial-eligibility?business_id=${encodeURIComponent(payload.business_id)}`);
         return { data };
       }
       return Promise.reject(notImplemented(`functions.${name}`));

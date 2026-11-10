@@ -111,9 +111,13 @@ test('Subscribe shows the notice as the subscription process starts', () => {
   assert.ok(priceAt > -1 && noticeAt > priceAt, 'notice comes after the plan price');
   assert.ok(noticeAt < accountAt, 'notice comes before the create-account / workspace step');
   assert.ok(footerAt > noCardAt, 'footer sits at the bottom of the page');
-  // The Stripe-switching notice is untouched.
-  assert.match(screen, /PAYMENTS_SWITCHING_NOTICE/);
-  assert.match(screen, /We're switching payments to Stripe — subscriptions will be back soon\./);
+  // T4: the Stripe-switching notice is gone — Subscribe now offers
+  // real Stripe checkout (create-checkout) with the trial decided by
+  // the server before checkout.
+  assert.doesNotMatch(screen, /PAYMENTS_SWITCHING_NOTICE/);
+  assert.doesNotMatch(screen, /switching payments to Stripe/i);
+  assert.match(screen, /create-checkout/);
+  assert.match(screen, /Start 7-day free trial/);
 });
 
 test('shared Layout puts the footer at the bottom of every protected page', () => {

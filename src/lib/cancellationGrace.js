@@ -13,8 +13,8 @@
  * deleting, scanning, importing, exporting or migrating, no settings, no
  * staff). After the 15 days → the account and all its information are
  * permanently deleted and cannot be recovered. Resubscribing starts
- * fresh. (Copy only: the wipe itself is not built yet — this module only
- * decides the state.)
+ * fresh. (The wipe sweep runs daily on the server — server/billing.js
+ * runWipeSweep; this module only decides the state.)
  *
  * CANONICAL COPY (audit findings 1/34): use CANCELLATION_WIPE_SENTENCE
  * and CANCELLATION_GRACE_PARAGRAPH verbatim everywhere the rule is

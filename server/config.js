@@ -17,9 +17,16 @@ export const config = {
   sessionSecret: process.env.SESSION_SECRET || '',
   resendApiKey: process.env.RESEND_API_KEY || process.env.EMAIL_API_KEY || '',
   emailFrom: process.env.EMAIL_FROM || '',
+  stripeSecretKey: process.env.STRIPE_SECRET_KEY || '',
+  stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
+  stripeLiveEnabled: process.env.STRIPE_LIVE_ENABLED || '',
+  stripeTestPriceEssentials: process.env.STRIPE_TEST_PRICE_ESSENTIALS || '',
+  stripeTestPriceBusiness: process.env.STRIPE_TEST_PRICE_BUSINESS || '',
+  billingJobSecret: process.env.BILLING_JOB_SECRET || '',
+  billingJobsEnabled: process.env.BILLING_JOBS_ENABLED || '',
 };
 
-const SECRET_NAMES = ['DATABASE_URL', 'SESSION_SECRET', 'RESEND_API_KEY', 'EMAIL_API_KEY', 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET'];
+const SECRET_NAMES = ['DATABASE_URL', 'SESSION_SECRET', 'RESEND_API_KEY', 'EMAIL_API_KEY', 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 'BILLING_JOB_SECRET'];
 
 export function configuredSecretNames() {
   return SECRET_NAMES.filter((name) => Boolean(process.env[name]));

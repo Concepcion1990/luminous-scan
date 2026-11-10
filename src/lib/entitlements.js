@@ -125,11 +125,12 @@ async function invoke(fn, payload) {
  * 'no_completed_stripe_checkout_for_subscription'). Non-2xx responses still carry
  * a state, so surface it instead of throwing it away.
  */
-export async function reconcileSubscriptionAccess(businessId) {
+export async function reconcileSubscriptionAccess(businessId, sessionId = null) {
   try {
     const response = await base44.functions.invoke('reconcile-subscription-access', {
       action: 'reconcile_subscription_access',
       business_id: businessId,
+      session_id: sessionId,
     });
     return response?.data ?? {};
   } catch (error) {

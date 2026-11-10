@@ -31,7 +31,7 @@ const CANCEL_ERROR_DETAILS = {
   complimentary_access_protected: 'This workspace has complimentary access, so there is no paid subscription to cancel. Nothing was changed.',
   no_verified_subscription_record: 'We could not find a verified subscription for this business. Nothing was changed — please contact support.',
   purchase_contract_mismatch: 'The billing record does not match this business, so we cannot cancel it here. Nothing was changed — please contact support.',
-  stripe_not_configured: 'Payments are being switched to Stripe, so subscriptions can\'t be changed right now. Nothing has changed.',
+  stripe_not_configured: 'Payments could not be reached. Nothing has changed — please try again, or contact support.',
   subscription_paid_through_unverified: 'We could not confirm your paid-through date. Nothing was changed — please try again, or contact support.',
   already_ended: 'This subscription has already ended, so there is nothing more to cancel.',
   subscription_event_history_incomplete: 'Your billing history needs a review before this can be canceled. Nothing was changed — please contact support.',
@@ -50,14 +50,11 @@ function formatDate(value) {
  * The one "Unsubscribe" / "Cancel subscription" dialog, shared by Settings
  * and the Upgrade page. Unsubscribe and cancel are the SAME thing here.
  *
- * PAYMENTS SWITCH (Nov 2026): Stripe is not connected yet, so confirming
- * here does NOT cancel anything automatically. The backend records the
- * cancellation request for the owner to review and fails closed with
- * `stripe_not_configured` — access and renewal are unchanged. The Stripe
- * build will make this button really cancel at period end (turning off
- * auto-renewal on the Stripe subscription and only recording the
- * cancellation after Stripe confirms it). Until then this dialog must
- * never tell the customer the cancellation worked.
+ * T4 (Nov 2026): confirming here really cancels at period end — the
+ * server sets cancel_at_period_end on the Stripe subscription and only
+ * records the cancellation after Stripe confirms it. Access and renewal
+ * are unchanged until that confirmation lands. On failure the dialog
+ * says the subscription was NOT canceled.
  *
  * What happens once Stripe is connected, in plain words (the policy,
  * shown before the customer confirms):
@@ -68,8 +65,8 @@ function formatDate(value) {
  *   adding, editing, deleting, scanning, importing, exporting or
  *   migrating, no settings, no staff. After the 15 days, the account
  *   and all its information are permanently deleted and cannot be
- *   recovered — resubscribing starts fresh. (Copy only: the wipe
- *   itself is not built yet.)
+ *   recovered — resubscribing starts fresh. (The wipe sweep runs
+ *   daily on the server.)
  * - Canceling does NOT by itself issue a refund. Refunds follow the
  *   policy: within 3 days (72 hours) after the FIRST successful paid
  *   charge, via the official support contact.
@@ -77,10 +74,9 @@ function formatDate(value) {
  *   can import (no export); Business can import and export to CSV/Excel.
  *   During grace, nobody can export or migrate anything.
  *
- * The confirm step calls the `cancel-subscription` backend function.
- * While payments are being switched to Stripe it records the request
- * for the owner to review and fails closed — nothing is canceled
- * automatically. On failure the dialog shows the named error and the
+ * The confirm step calls the `cancel-subscription` backend function,
+ * which verifies cancel_at_period_end at Stripe before recording
+ * anything. On failure the dialog shows the named error and the
  * support contact — it never pretends the cancellation worked.
  */
 export default function CancelSubscriptionDialog({
@@ -148,10 +144,9 @@ export default function CancelSubscriptionDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>Cancel subscription</AlertDialogTitle>
           <AlertDialogDescription>
-            Unsubscribe from {planLabel || 'your plan'}. While payments are
-            being switched to Stripe, confirming here records your
-            cancellation request for review — nothing is canceled
-            automatically until Stripe is connected.
+            Unsubscribe from {planLabel || 'your plan'}. Canceling stops
+            future renewals at the end of your paid period — it never ends
+            your access at once.
           </AlertDialogDescription>
         </AlertDialogHeader>
 

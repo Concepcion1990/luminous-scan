@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 
 /** Owner-only parent; never opens checkout or changes a plan. */
 const messages = {
+  ready:
+    'Stripe checkout is ready — keys, webhook verification, and attestations are all confirmed.',
   complimentary_owner_must_not_become_a_test_paying_customer:
     'Your complimentary Business workspace is protected. It must not become a paying Essentials test account.',
   stripe_checkout_environment_incomplete:

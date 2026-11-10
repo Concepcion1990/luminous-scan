@@ -53,6 +53,7 @@ import { toCsv, fileSlug, fileStamp } from './csv.js';
 import { buildWorkbookBuffer } from './xlsxExport.js';
 import { EXPORTS, buildValuation, truncatedFilename, EXPORT_ROW_CAP } from './exportData.js';
 import { createStaffMember } from './staff.js';
+import { assertNotInGrace } from './billing.js';
 
 function err(status, code, message) {
   return Object.assign(new Error(message), { status, code });
@@ -137,6 +138,20 @@ export function createShopRouter({ getPool: getPoolFn }) {
   // before createApp, production sets DATABASE_URL at boot).
   const auth = (req, res, next) => requireAuth(getPoolFn())(req, res, next);
   router.use(auth);
+  // Grace guard (T4): a business past its paid period is read-only.
+  // POST/PATCH/DELETE under /businesses/:bid are all writes (the scan
+  // lookup POST is a scanner use, so it is blocked too). Entity writes
+  // are guarded in server/entities.js; export (a GET) is guarded in
+  // its own handler below.
+  router.use('/businesses/:bid', async (req, res, next) => {
+    if (!['POST', 'PATCH', 'DELETE'].includes(req.method)) return next();
+    try {
+      await assertNotInGrace(pool(), req.params.bid);
+      return next();
+    } catch (error) {
+      return handleError(res, error);
+    }
+  });
 
   const pool = () => {
     const p = getPoolFn();
@@ -441,6 +456,9 @@ export function createShopRouter({ getPool: getPoolFn }) {
   // ---- Export (Business only, server-built) ---------------------------
   router.get('/businesses/:bid/export/:dataset', asyncHandler(async (req, res) => {
     const access = await accessOr403(pool(), req.user, req.params.bid, 'exports.use');
+    // Export is blocked in grace for every plan (no plan can export
+    // from the read-only view — the paid-through window was the time).
+    await assertNotInGrace(pool(), req.params.bid);
     if (!featureAllowed(access.planKey, 'exports')) {
       throw err(403, 'exports_business_only', 'Exports are part of the Business plan. Essentials can import, but not export.');
     }

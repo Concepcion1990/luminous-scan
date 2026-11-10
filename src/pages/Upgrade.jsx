@@ -10,19 +10,32 @@ import { Button } from '@/components/ui/button';
 import EssentialsCheckoutReadinessDiagnostic from '@/components/billing/EssentialsCheckoutReadinessDiagnostic';
 import UpgradeDryRunPanel from '@/components/billing/UpgradeDryRunPanel';
 import CancelSubscriptionDialog from '@/components/billing/CancelSubscriptionDialog';
+import { base44 } from '@/api/client';
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
-// Payments are switching to Stripe: no checkout, upgrade, or resubscribe
-// action is offered on this page while the switch is under way. There is
-// deliberately no call to create-checkout, upgrade-to-business, or
-// apply-upgrade-plan-flip here — the first is a fail-closed stub and the
-// other two were deleted with the retired draft flow. The upgrade button is
-// disabled with a plain explanation, and the resubscribe buttons are
-// disabled the same way, so no second simultaneous subscription can ever
-// be started from this page (the audit-fix trap closure stays).
-const PAYMENTS_SWITCHING_NOTICE =
-  "We're switching payments to Stripe — subscriptions will be back soon.";
-const UPGRADE_UNAVAILABLE =
-  'Upgrades will be available once Stripe payments are live.';
+// T4: Stripe plan changes are live. Upgrade and downgrade run on the
+// SAME Stripe subscription — never a second Checkout session. The
+// dialog below fetches a real quote from the server (preview) and
+// only then confirms. Upgrading during a trial carries the trial end
+// explicitly, so the first Business charge lands at trial end.
+// Downgrading is effective next cycle: Business until the paid
+// period ends, then Essentials, no refund — and the dialog warns
+// first, in plain words, about everything lost.
+const DOWNGRADE_WARNING_ITEMS = [
+  'Staff beyond 3 lose access — Essentials includes 3 additional staff.',
+  'Extra businesses and stores (2, 3, 4, 5 — however many beyond the first) are no longer available.',
+  'Export goes away — no CSV/Excel export, import only.',
+  'The Bundles and Suppliers pages go away, along with the other Business-only pages.',
+  'Inventory itself moves smoothly into Essentials — nothing you stocked is deleted.',
+];
 
 function money(value) {
   return `$${value.toFixed(2)}`;
@@ -39,6 +52,14 @@ export default function Upgrade() {
   const { plan, status, record, isLoading, activeId, refetch } = useEntitlements();
   const { user, record: businessRecord } = useBusiness();
   const [cancellationOpen, setCancellationOpen] = useState(false);
+  const [planChangeOpen, setPlanChangeOpen] = useState(false);
+  const [planChangeTarget, setPlanChangeTarget] = useState(null);
+  const [planChangePhase, setPlanChangePhase] = useState('idle');
+  const [planChangePreview, setPlanChangePreview] = useState(null);
+  const [planChangeError, setPlanChangeError] = useState(null);
+  const [planChangeResult, setPlanChangeResult] = useState(null);
+  const [paymentUpdateBusy, setPaymentUpdateBusy] = useState(false);
+  const [paymentUpdateError, setPaymentUpdateError] = useState(null);
   // Only the business owner can cancel its subscription, and only while
   // there is a live paid or trial subscription to cancel. The
   // complimentary (grandfathered) workspace is never cancellable.
@@ -59,6 +80,73 @@ export default function Upgrade() {
   })();
   // This is a UI courtesy only: the backend verifies ownership independently.
   const isOwner = Boolean(user?.id && businessRecord?.created_by_id === user.id);
+
+  const openPlanChange = async (targetPlan) => {
+    if (!activeId || !isOwner) return;
+    setPlanChangeTarget(targetPlan);
+    setPlanChangeOpen(true);
+    setPlanChangePhase('loading');
+    setPlanChangePreview(null);
+    setPlanChangeError(null);
+    setPlanChangeResult(null);
+    try {
+      const response = await base44.functions.invoke('preview-plan-change', {
+        target_plan: targetPlan,
+        business_id: activeId,
+      });
+      setPlanChangePreview(response?.data ?? null);
+      setPlanChangePhase('preview');
+    } catch (error) {
+      setPlanChangeError(error?.message || 'The plan change could not be quoted. Nothing was changed.');
+      setPlanChangePhase('error');
+    }
+  };
+
+  const confirmPlanChange = async () => {
+    if (planChangePhase !== 'preview' || !planChangeTarget || !activeId) return;
+    setPlanChangePhase('confirming');
+    setPlanChangeError(null);
+    try {
+      const response = await base44.functions.invoke('request-plan-upgrade', {
+        target_plan: planChangeTarget,
+        business_id: activeId,
+      });
+      setPlanChangeResult(response?.data ?? null);
+      setPlanChangePhase('done');
+      if (typeof refetch === 'function') refetch();
+    } catch (error) {
+      setPlanChangeError(error?.message || 'The plan change could not be completed. Nothing was changed.');
+      setPlanChangePhase('error');
+    }
+  };
+
+  const closePlanChange = (next) => {
+    if (!next) {
+      setPlanChangeOpen(false);
+      setPlanChangeTarget(null);
+      setPlanChangePhase('idle');
+      setPlanChangePreview(null);
+      setPlanChangeError(null);
+      setPlanChangeResult(null);
+    }
+  };
+
+  const updatePaymentMethod = async () => {
+    if (paymentUpdateBusy || !activeId) return;
+    setPaymentUpdateBusy(true);
+    setPaymentUpdateError(null);
+    try {
+      const response = await base44.functions.invoke('update-payment-method', {
+        business_id: activeId,
+      });
+      const url = response?.data?.url;
+      if (!url) throw new Error('The payment update could not be started.');
+      window.location.assign(url);
+    } catch (error) {
+      setPaymentUpdateError(error?.message || 'The payment update could not be started.');
+      setPaymentUpdateBusy(false);
+    }
+  };
 
   // Keep these private billing diagnostics available in the owner's Base44
   // builder preview/local development, but out of published customer builds.
@@ -95,8 +183,7 @@ export default function Upgrade() {
         <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
           {status === 'pending_checkout' ? (
             <>This new workspace is limited to Essentials until you choose a subscription.
-              Eligible new customers can receive one {TRIAL_DAYS}-day trial per account.
-              Subscription checkout is being finalized. No trial has started and no charge has been made.</>
+              Eligible new customers can receive one {TRIAL_DAYS}-day trial per account.</>
           ) : (
             <>Eligible new customers can receive one {TRIAL_DAYS}-day trial per account,
               not one trial per plan. Changing from Essentials to Business never starts
@@ -109,23 +196,27 @@ export default function Upgrade() {
                   : '.'}</>
           )}
         </p>
-        <p role="status" className="mt-3 max-w-2xl rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm">
-          {PAYMENTS_SWITCHING_NOTICE}
-        </p>
       </div>
 
       {status === 'past_due' && (
         <div role="status" className="space-y-2 rounded-xl border border-border bg-muted/40 px-4 py-3 text-sm">
-          <p className="font-semibold">Payment past due — payment updates return with Stripe</p>
+          <p className="font-semibold">Payment past due</p>
           <p className="leading-relaxed text-muted-foreground">
             Your last payment did not go through, so this subscription is past due.
-            Payment updates will be available once Stripe payments are live. If you need help,
+            Update your payment method below — Stripe will retry on its own schedule,
+            and your subscription will not be canceled early. If you need help,
             email{' '}
             <a className="font-medium text-primary underline underline-offset-4" href="mailto:theluminousbookshop@outlook.com">
               theluminousbookshop@outlook.com
             </a>
             .
           </p>
+          {paymentUpdateError && (
+            <p role="alert" className="text-destructive">{paymentUpdateError}</p>
+          )}
+          <Button type="button" className="min-h-11" disabled={paymentUpdateBusy || !isOwner} onClick={updatePaymentMethod}>
+            {paymentUpdateBusy ? 'Starting payment update…' : 'Update payment method'}
+          </Button>
         </div>
       )}
 
@@ -176,11 +267,11 @@ export default function Upgrade() {
               <div className="mt-5 pt-1">
                 {awaitingSubscription && isOwner ? (
                   <>
-                    <Button className="w-full min-h-11" type="button" disabled>
-                      Start Subscription
+                    <Button className="w-full min-h-11" type="button" asChild>
+                      <Link to={`/subscribe?plan=${entry.key}`}>Start Subscription</Link>
                     </Button>
                     <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                      {PAYMENTS_SWITCHING_NOTICE}
+                      Eligible new customers get one 7-day free trial — checked by the server before checkout.
                     </p>
                   </>
                 ) : canUpgrade && isOwner ? (
@@ -188,13 +279,14 @@ export default function Upgrade() {
                     <Button
                       className="w-full min-h-11"
                       type="button"
-                      disabled
+                      onClick={() => void openPlanChange('business')}
                     >
                       <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
                       Upgrade to Business
                     </Button>
                     <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                      {UPGRADE_UNAVAILABLE}
+                      Same subscription, no second trial, no immediate charge — the price difference lands on your next invoice.
+                      {status === 'trialing' && trialEndsOn ? ` Your trial continues until ${trialEndsOn}, then Business starts at $29.99/month.` : ''}
                     </p>
                   </>
                 ) : current ? (
@@ -203,18 +295,28 @@ export default function Upgrade() {
                   </Button>
                 ) : isCanceled && isOwner ? (
                   <>
-                    <Button className="w-full min-h-11" type="button" disabled>
-                      Subscribe again
+                    <Button className="w-full min-h-11" type="button" asChild>
+                      <Link to={`/subscribe?plan=${entry.key}`}>Subscribe again</Link>
                     </Button>
                     <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                      {PAYMENTS_SWITCHING_NOTICE} This starts a new subscription — a returning email does
+                      This starts a new subscription — a returning email does
                       not get a second free trial.
                     </p>
                   </>
-                ) : isDowngradeCard ? (
-                  <Button className="w-full min-h-11" variant="outline" disabled>
-                    Downgrade not available yet — contact support
-                  </Button>
+                ) : isDowngradeCard && isOwner ? (
+                  <>
+                    <Button
+                      className="w-full min-h-11"
+                      variant="outline"
+                      type="button"
+                      onClick={() => void openPlanChange('essentials')}
+                    >
+                      Downgrade to Essentials
+                    </Button>
+                    <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                      Business continues until the end of your paid period, then Essentials starts at $14.99/month. No refund for downgrading.
+                    </p>
+                  </>
                 ) : isOwner ? (
                   <Button className="w-full min-h-11" variant="outline" disabled>
                     Contact support to change your plan
@@ -253,6 +355,111 @@ export default function Upgrade() {
           );
         })}
       </div>
+
+      <AlertDialog open={planChangeOpen} onOpenChange={closePlanChange}>
+        <AlertDialogContent className="max-h-[calc(100dvh-2rem)] max-w-[calc(100vw-2rem)] overflow-y-auto sm:max-w-lg">
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {planChangeTarget === 'business' ? 'Upgrade to Business' : 'Downgrade to Essentials'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {planChangeTarget === 'business'
+                ? 'Your trial and subscription stay on the same subscription — no second subscription, no new trial.'
+                : 'Downgrading never deletes your data — but some of it becomes inaccessible. Read this first.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          {planChangePhase === 'loading' ? (
+            <p className="flex items-center gap-2 py-4 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" /> Getting your quote…
+            </p>
+          ) : planChangePhase === 'done' && planChangeResult ? (
+            <div role="status" className="space-y-2 rounded-lg border border-border bg-muted/40 px-3 py-3 text-sm">
+              <p className="font-semibold">
+                {planChangeTarget === 'business' ? 'You are on Business now.' : 'Downgrade scheduled.'}
+              </p>
+              <p className="text-muted-foreground">
+                {planChangeTarget === 'business' && planChangeResult.trial_ends_at
+                  ? `Your trial continues until ${formatDate(planChangeResult.trial_ends_at)}, then Business starts at $29.99/month. Your first Business charge is on ${formatDate(planChangeResult.first_charge_at)}.`
+                  : planChangeTarget === 'business'
+                    ? `Business starts now at $29.99/month. The price difference lands on your next invoice — no immediate charge.`
+                    : `You keep Business until ${formatDate(planChangeResult.effective_at)}, then Essentials starts at $14.99/month. No refund for downgrading.`}
+              </p>
+            </div>
+          ) : planChangePhase === 'error' ? (
+            <div role="alert" className="space-y-2 rounded-lg border border-destructive/40 bg-destructive/5 px-3 py-3 text-sm">
+              <p className="font-semibold">The plan change was NOT completed.</p>
+              <p className="text-muted-foreground">{planChangeError || 'Nothing was changed. Please try again.'}</p>
+            </div>
+          ) : planChangePreview ? (
+            <div className="space-y-3 text-sm">
+              {planChangeTarget === 'essentials' && (
+                <ul className="list-disc space-y-2 pl-5 leading-relaxed">
+                  {DOWNGRADE_WARNING_ITEMS.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              )}
+              <dl className="space-y-1 rounded-lg border border-border bg-muted/40 px-3 py-3">
+                <div className="flex justify-between gap-2">
+                  <dt className="text-muted-foreground">From</dt>
+                  <dd className="font-medium">{PLANS[planChangePreview.current_plan]?.name || planChangePreview.current_plan}</dd>
+                </div>
+                <div className="flex justify-between gap-2">
+                  <dt className="text-muted-foreground">To</dt>
+                  <dd className="font-medium">{PLANS[planChangePreview.target_plan]?.name || planChangePreview.target_plan} — ${planChangePreview.target_price.toFixed(2)}/month</dd>
+                </div>
+                <div className="flex justify-between gap-2">
+                  <dt className="text-muted-foreground">Effective</dt>
+                  <dd className="font-medium">{formatDate(planChangePreview.effective_at) || '—'}</dd>
+                </div>
+                <div className="flex justify-between gap-2">
+                  <dt className="text-muted-foreground">First charge at the new price</dt>
+                  <dd className="font-medium">{formatDate(planChangePreview.first_charge_at) || '—'}</dd>
+                </div>
+                {planChangePreview.trial_ends_at && (
+                  <div className="flex justify-between gap-2">
+                    <dt className="text-muted-foreground">Trial ends (unchanged)</dt>
+                    <dd className="font-medium">{formatDate(planChangePreview.trial_ends_at)}</dd>
+                  </div>
+                )}
+              </dl>
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                {planChangeTarget === 'business'
+                  ? 'Upgrading never restarts your free trial, and it never creates a second subscription.'
+                  : 'Downgrading is effective at the end of your paid period. Your lost-feature data is kept but inaccessible — it is never deleted as a side effect of downgrading.'}
+              </p>
+            </div>
+          ) : null}
+
+          <AlertDialogFooter>
+            {planChangePhase === 'done' ? (
+              <Button type="button" onClick={() => closePlanChange(false)}>Done</Button>
+            ) : (
+              <>
+                <AlertDialogCancel disabled={planChangePhase === 'confirming' || planChangePhase === 'loading'}>
+                  Keep my plan
+                </AlertDialogCancel>
+                {planChangePhase === 'preview' && (
+                  <Button type="button" disabled={planChangePhase === 'confirming'} onClick={confirmPlanChange}>
+                    {planChangePhase === 'confirming' ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                        Confirming…
+                      </>
+                    ) : (
+                      'Confirm plan change'
+                    )}
+                  </Button>
+                )}
+                {planChangePhase === 'error' && (
+                  <Button type="button" onClick={() => closePlanChange(false)}>Close</Button>
+                )}
+              </>
+            )}
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <CancelSubscriptionDialog
         open={cancellationOpen}

@@ -31,14 +31,15 @@ test('Settings links all three effective policies and no longer calls them draft
   assert.doesNotMatch(screen, /These are drafts for the upcoming customer billing service/);
 });
 
-test('Settings states billing is switching to Stripe and self-service cancellation is available', () => {
+test('Settings states billing is through Stripe and self-service cancellation is available', () => {
   const screen = readFileSync('src/pages/Settings.jsx', 'utf8');
   assert.doesNotMatch(screen, /Billing and self-service cancellation are not active in this app yet/);
   assert.doesNotMatch(screen, /Trial billing is not active in this app yet/);
   assert.doesNotMatch(screen, /Self-service cancellation inside the app is not yet available/);
   assert.doesNotMatch(screen, /Wix/i);
-  assert.match(screen, /Website subscription billing is switching to Stripe/);
-  assert.match(screen, /Trial billing will be through Stripe once Stripe payments are live/);
+  assert.doesNotMatch(screen, /switching to Stripe/i);
+  assert.match(screen, /Website subscription billing is through Stripe\./);
+  assert.match(screen, /Trial billing is through Stripe\./);
   assert.match(screen, /cancel your subscription yourself at any time using the\s+Cancel Subscription button/i);
   assert.match(screen, /theluminousbookshop@outlook\.com/);
 });

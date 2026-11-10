@@ -44,7 +44,7 @@ export const STOCKHAVEN_PRIVACY_POLICY = Object.freeze({
     {
       id: 'sharing', title: '3. When information is shared',
       paragraphs: [
-        'With the service providers needed to run the application, including Base44, which hosts the application, and Stripe, which processes website subscription payments. Those providers handle information only as needed to provide their services.',
+        'With the service providers needed to run the application, including Fly.io, which hosts the application, and Stripe, which processes website subscription payments. Those providers handle information only as needed to provide their services.',
         'With app stores only as required for store-billed subscriptions, if you ever buy the mobile plan through Google Play or the Apple App Store.',
         'When required by law, or to protect the safety, rights or property of our customers and our business.',
         'Your business data is not shared with other Luminous Stockhaven customers. Staff members you invite can only see the parts of your workspace their permissions allow.',

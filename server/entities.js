@@ -43,6 +43,7 @@ import {
   BUNDLE_MOVEMENT_TYPES,
 } from './plans.js';
 import { createStaffMember, staffSeatCount } from './staff.js';
+import { assertNotInGrace } from './billing.js';
 
 export const T5_STUBS = new Set(['PurchaseOrder', 'Bom']);
 
@@ -432,6 +433,7 @@ export async function createEntity(pool, user, name, values) {
   if (!businessId) throw err(400, 'invalid_value', 'business_id is required.');
   const access = await resolveAccess(pool, user, businessId);
   if (!access) throw err(403, 'forbidden', 'You do not have access to this workspace.');
+  await assertNotInGrace(pool, businessId);
   if (name === 'StaffMember') {
     if (!access.isOwner && !access.can('staff.manage')) {
       throw err(403, 'forbidden', 'You are not allowed to manage staff here.');
@@ -455,6 +457,7 @@ export async function bulkCreateEntities(pool, user, name, rows) {
   }
   const access = await resolveAccess(pool, user, businessId);
   if (!access) throw err(403, 'forbidden', 'You do not have access to this workspace.');
+  await assertNotInGrace(pool, businessId);
   if (name === 'StaffMember') throw err(400, 'invalid_value', 'Invite staff members one at a time.');
   if (name === 'Product') {
     const additional = rows.filter((row) => row.status !== 'archived').length;
@@ -477,6 +480,7 @@ export async function updateEntity(pool, user, name, id, patch) {
   if (!row) throw err(404, 'not_found', 'Not found.');
   const access = await resolveAccess(pool, user, row.business_id);
   if (!access) throw err(403, 'forbidden', 'You do not have access to this workspace.');
+  await assertNotInGrace(pool, row.business_id);
   const publicExisting = publicRow(def, row);
   await guardUpdate(pool, def, name, access, publicExisting, patch);
   // A product re-activated from archived re-enters the cap.
@@ -504,6 +508,7 @@ export async function deleteEntity(pool, user, name, id) {
   if (!row) throw err(404, 'not_found', 'Not found.');
   const access = await resolveAccess(pool, user, row.business_id);
   if (!access) throw err(403, 'forbidden', 'You do not have access to this workspace.');
+  await assertNotInGrace(pool, row.business_id);
   if (name === 'StaffMember') {
     // PR #63 follow-up (b): the owner may delete ANY StaffMember row
     // on their own business — including attacker-created ones.

@@ -13,11 +13,12 @@ import { readFileSync } from 'node:fs';
 // entitlement yet — and the only way to get one is to subscribe. The
 // workspace therefore has to be attached HERE on the Subscribe page.
 //
-// Wix removal (2026-11-08): while payments switch to Stripe there is no
-// checkout at all — Subscribe shows the switching notice and makes no
-// call to create-checkout. The workspace setup stays, so a customer can
+// T4 (2026-11-09): Stripe checkout is live — Subscribe calls
+// create-checkout on the server (which validates the plan, binds the
+// workspace, checks the one-trial-per-email rule, and returns Stripe's
+// hosted checkout URL). The workspace setup stays, so a customer can
 // be ready the moment subscriptions return. Backend assertions about
-// the checkout/catalog/webhook live with the backend removal agent.
+// the checkout/catalog/webhook live in tests/t4/.
 
 test('Subscribe no longer links "Open workspace" to the gated workspace', () => {
   const screen = readFileSync('src/pages/Subscribe.jsx', 'utf8');
@@ -32,7 +33,7 @@ test('Subscribe no longer links "Open workspace" to the gated workspace', () => 
   assert.match(screen, /createBusiness\(\{ name \}\)/);
 });
 
-test('Subscribe flow is create-account, then workspace, then the Stripe switching notice — no checkout', () => {
+test('Subscribe flow is create-account, then workspace, then Stripe checkout', () => {
   const screen = readFileSync('src/pages/Subscribe.jsx', 'utf8');
   // Step 1 — a new customer creates an account first (email + password
   // only — Google sign-in is not offered on the twin, owner's decision
@@ -42,15 +43,13 @@ test('Subscribe flow is create-account, then workspace, then the Stripe switchin
   assert.match(screen, /\/login\?returnTo=/);
   // Step 2 — workspace setup happens on this page, with copy that says so.
   assert.match(screen, /does not open\s*\n?\s*the app, start a trial, or charge anything/);
-  // Step 3 — while payments switch to Stripe there is NO checkout: the
-  // switching notice replaces both checkout buttons, and the page never
-  // calls create-checkout.
-  assert.match(screen, /We're switching payments to Stripe — subscriptions will be back soon\./);
-  assert.doesNotMatch(screen, /base44\.functions\.invoke\('create-checkout'/);
-  assert.doesNotMatch(screen, /functions\.invoke\('create-checkout'/);
-  assert.doesNotMatch(screen, /Start 7-day free trial/);
-  assert.doesNotMatch(screen, /Subscribe monthly/);
-  assert.doesNotMatch(screen, /Opening Wix checkout/);
+  // Step 3 — Stripe checkout is live: the page calls create-checkout
+  // and shows the trial button when the server says the email is
+  // eligible (or the paid button with the plain no-second-trial note).
+  assert.doesNotMatch(screen, /switching payments to Stripe/i);
+  assert.match(screen, /base44\.functions\.invoke\('create-checkout'/);
+  assert.match(screen, /Start 7-day free trial/);
+  assert.match(screen, /has subscribed before, so a new trial is not available/);
   assert.doesNotMatch(screen, /Wix/i);
   // Step 4 — access only after Stripe confirms: the page never renders the
   // workspace itself and never grants access on this screen.

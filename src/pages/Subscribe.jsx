@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import AppMark from '@/components/brand/AppMark';
 import LegalFooter from '@/components/LegalFooter';
@@ -10,16 +10,13 @@ import { useAuth } from '@/lib/AuthContext';
 import { useBusiness } from '@/hooks/useBusiness';
 import useEntitlements from '@/hooks/useEntitlements';
 import { PLANS } from '@/lib/plans';
+import { base44 } from '@/api/client';
 
-// Payments are switching to Stripe: no checkout is offered on this page
-// while the switch is under way. The workspace setup below still works —
-// attaching a workspace here does not open the app, start a trial, or
-// charge anything — so a customer can be ready the moment subscriptions
-// return. There is deliberately no call to create-checkout here: that
-// function is a fail-closed stub until the Stripe build lands.
-const PAYMENTS_SWITCHING_NOTICE =
-  "We're switching payments to Stripe — subscriptions will be back soon.";
-
+// T4: Stripe checkout is live on the twin. The trial and monthly
+// buttons below call create-checkout on the server, which validates
+// the plan, binds the workspace, checks the one-trial-per-email rule,
+// creates the pending purchase, and returns Stripe's hosted checkout
+// URL. No card details ever touch this page.
 export default function Subscribe() {
   const [searchParams] = useSearchParams();
   const selected = searchParams.get('plan');
@@ -53,6 +50,46 @@ export default function Subscribe() {
   const [businessName, setBusinessName] = useState('');
   const [workspaceBusy, setWorkspaceBusy] = useState(false);
   const [workspaceMessage, setWorkspaceMessage] = useState(null);
+  const [trialEligible, setTrialEligible] = useState(null);
+  const [checkoutBusy, setCheckoutBusy] = useState(false);
+  const [checkoutError, setCheckoutError] = useState(null);
+
+  // The server decides whether this email gets a trial (one per email,
+  // checked against TrialHistory and Stripe). Until it answers, both
+  // buttons stay hidden — never show a trial that is not available.
+  useEffect(() => {
+    if (!isAuthenticated || !activeId) {
+      setTrialEligible(null);
+      return;
+    }
+    let mounted = true;
+    base44.functions.invoke('check-trial-eligibility', { business_id: activeId })
+      .then((response) => {
+        if (mounted) setTrialEligible(response?.data?.trial_eligible === true);
+      })
+      .catch(() => {
+        if (mounted) setTrialEligible(null);
+      });
+    return () => { mounted = false; };
+  }, [isAuthenticated, activeId]);
+
+  const startCheckout = async () => {
+    if (checkoutBusy || !activeId || !planKey) return;
+    setCheckoutBusy(true);
+    setCheckoutError(null);
+    try {
+      const response = await base44.functions.invoke('create-checkout', {
+        plan: planKey,
+        business_id: activeId,
+      });
+      const url = response?.data?.url;
+      if (!url) throw new Error('Checkout could not be started. Nothing was charged.');
+      window.location.assign(url);
+    } catch (error) {
+      setCheckoutError(error?.message || 'Checkout could not be started. Nothing was charged.');
+      setCheckoutBusy(false);
+    }
+  };
 
   // Attach an existing workspace to this checkout, or create the customer's
   // first one. Either way the customer stays on /subscribe, where the trial
@@ -141,7 +178,7 @@ export default function Subscribe() {
         ) : hasExistingAccess ? (
           <div className="mt-6 rounded-xl border border-border bg-card p-5">
             {status === 'past_due' ? (
-              <p className="text-sm">Your payment is past due. Payment updates will return once Stripe payments are live — for help, email theluminousbookshop@outlook.com. The plan options page explains more.</p>
+              <p className="text-sm">Your payment is past due. You can update your payment method from the plan options page.</p>
             ) : (
               <p className="text-sm">This account already has subscription access. Plan changes must use the existing subscription flow.</p>
             )}
@@ -199,25 +236,48 @@ export default function Subscribe() {
               </p>
             )}
             <p className="text-xs leading-relaxed text-muted-foreground">
-              {PAYMENTS_SWITCHING_NOTICE} No payment is being taken here, and
-              no trial has started.
+              No payment is being taken here, and no trial has started —
+              choosing a workspace only connects the subscription to it.
             </p>
           </div>
         ) : (
           <div className="mt-6 space-y-4 rounded-xl border border-border bg-card p-5">
-            <p className="text-sm font-medium">{PAYMENTS_SWITCHING_NOTICE}</p>
-            <p className="text-sm text-muted-foreground">
-              Your workspace is ready. When subscriptions return, eligible new
-              customers get one 7-day free trial per account, checked by the
-              server before checkout. A monthly subscription starts paid
-              billing immediately and does not include a trial. No payment is
-              being taken while subscriptions are paused.
+            <p className="text-sm font-medium">Your workspace is ready.</p>
+            {trialEligible === null ? (
+              <p className="text-sm text-muted-foreground">Checking whether a free trial is available for your email…</p>
+            ) : trialEligible ? (
+              <>
+                <p className="text-sm text-muted-foreground">
+                  Eligible new customers get one 7-day free trial. You will not be charged today —
+                  your first payment of ${plan.price.toFixed(2)} is due when the trial ends, unless you cancel first.
+                </p>
+                <Button className="w-full min-h-11" type="button" disabled={checkoutBusy} onClick={startCheckout}>
+                  {checkoutBusy ? 'Starting checkout…' : `Start 7-day free trial — ${plan.name}`}
+                </Button>
+              </>
+            ) : (
+              <>
+                <p className="text-sm text-muted-foreground">
+                  This email has subscribed before, so a new trial is not available — you will be charged ${plan.price.toFixed(2)} today.
+                </p>
+                <Button className="w-full min-h-11" type="button" disabled={checkoutBusy} onClick={startCheckout}>
+                  {checkoutBusy ? 'Starting checkout…' : `Subscribe to ${plan.name} — $${plan.price.toFixed(2)}/month`}
+                </Button>
+              </>
+            )}
+            {checkoutError && (
+              <p role="alert" className="rounded-lg bg-destructive/10 px-3 py-3 text-sm leading-relaxed">
+                {checkoutError}
+              </p>
+            )}
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              Checkout is handled securely by Stripe. You will see the exact total before you approve any charge.
             </p>
           </div>
         )}
 
         <p className="mt-5 text-xs leading-relaxed text-muted-foreground">
-          No card details are stored by Luminous Stockhaven. No payment is being taken while subscriptions are paused for the switch to Stripe.
+          No card details are stored by Luminous Stockhaven. Payments are processed by Stripe.
         </p>
           </>
         )}
