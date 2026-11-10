@@ -97,6 +97,18 @@ export async function sendMail({ to, subject, text, html }) {
   return { id: data.id || 'unknown' };
 }
 
+export function staffInviteEmail({ to, businessName, inviterName }) {
+  return {
+    to,
+    subject: `You have been invited to ${businessName || 'Luminous Stockhaven'}`,
+    text:
+      `You have been invited to help manage ${businessName || 'a business'} on Luminous Stockhaven` +
+      `${inviterName ? ` by ${inviterName}` : ''}.\n\n` +
+      'Create your account with this email address, then sign in — your staff access will be ready. ' +
+      'If you did not expect this invitation, you can ignore this email.',
+  };
+}
+
 export function verificationEmail({ to, code }) {
   return {
     to,

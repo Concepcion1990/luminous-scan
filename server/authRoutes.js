@@ -52,6 +52,7 @@ import {
   verifySignedSessionId,
   parseCookies,
 } from './sessions.js';
+import { activateStaffRowsForEmail } from './staff.js';
 
 /** Essentials business cap until T4 (no entitlements yet — see header). */
 export const ESSENTIALS_BUSINESS_LIMIT = 1;
@@ -245,6 +246,8 @@ export function createAuthRouter({ getPool }) {
           return { status: 400, body: { error: 'invalid_code', message: 'Invalid or expired verification code.' } };
         }
         await client.query('UPDATE users SET email_verified = TRUE, updated_at = NOW() WHERE id = $1', [user.id]);
+        // An invited staff row for this email becomes Active on sign-in (T3).
+        await activateStaffRowsForEmail(client, email);
         const session = await createSession(client, user.id, {
           userAgent: req.headers['user-agent'],
           ipAddress: ip,
@@ -331,6 +334,13 @@ export function createAuthRouter({ getPool }) {
         userAgent: req.headers['user-agent'],
         ipAddress: ip,
       });
+      // An invited staff row for this email becomes Active on sign-in (T3).
+      // Never fail the login if the flip itself errors.
+      try {
+        await activateStaffRowsForEmail(pool, email);
+      } catch (error) {
+        console.error('[twin] staff activation on login failed:', error.message);
+      }
       res.cookie(SESSION_COOKIE, signSessionId(session.id), cookieOptions(req));
       return res.json({ ok: true, user: publicUser(user) });
     } catch (error) {
@@ -493,12 +503,26 @@ export function createAuthRouter({ getPool }) {
       return res.status(400).json({ error: 'invalid_name', message: 'Enter a business name (up to 120 characters).' });
     }
     try {
+      let planLimit = ESSENTIALS_BUSINESS_LIMIT;
       const business = await withTx(pool, async (client) => {
-        const { rows } = await client.query(
-          'SELECT COUNT(*)::int AS count FROM businesses WHERE owner_id = $1',
+        const owned = await client.query(
+          'SELECT id FROM businesses WHERE owner_id = $1 ORDER BY created_at ASC',
           [req.user.id],
         );
-        if (rows[0].count >= ESSENTIALS_BUSINESS_LIMIT) {
+        // The business limit belongs to the login, and the plan belongs
+        // to a business: the OLDEST workspace the login owns decides
+        // (plan §5.2 businessLimitFor). No entitlement row yet means
+        // restricted Essentials (1 business) — never Business.
+        let limit = ESSENTIALS_BUSINESS_LIMIT;
+        if (owned.rows.length) {
+          const entitlement = await client.query(
+            'SELECT plan FROM entitlements WHERE business_id = $1 LIMIT 1',
+            [owned.rows[0].id],
+          );
+          limit = entitlement.rows[0]?.plan === 'business' ? 5 : 1;
+          planLimit = limit;
+        }
+        if (owned.rows.length >= limit) {
           return null;
         }
         const id = crypto.randomUUID();
@@ -517,7 +541,7 @@ export function createAuthRouter({ getPool }) {
       if (!business) {
         return res.status(403).json({
           error: 'business_limit_reached',
-          message: `Your plan allows ${ESSENTIALS_BUSINESS_LIMIT} business. Upgrade to Business in a later phase to add more.`,
+          message: `Your plan allows ${planLimit} ${planLimit === 1 ? 'business' : 'businesses'}. Upgrade to Business in a later phase to add more.`,
         });
       }
       return res.status(201).json(publicBusiness(business));

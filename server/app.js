@@ -1,5 +1,5 @@
 /**
- * Twin Express app (T2: auth + businesses).
+ * Twin Express app (T3: auth + businesses + core shop).
  *
  * Routes:
  *   GET  /health          app + database status; never includes secrets.
@@ -10,16 +10,19 @@
  *   GET  /api/businesses  the caller's businesses.
  *   POST /api/businesses  create a business (Essentials 1-business cap).
  *   POST /api/businesses/:id/switch  switch the active business.
+ *   /api/entities/*       generic Base44-shaped entity API (T3).
+ *   /api/businesses/:id/* scan, movements, import, export, valuation,
+ *                         dashboard, alerts, cross-business move, staff.
  *   GET  /*               the Vite build (dist/) with an SPA fallback.
  *
- * Everything else (/api/*) is T3+. Unknown API paths fail closed
- * with 404 — never a fake success.
+ * Unknown API paths fail closed with 404 — never a fake success.
  */
 import express from 'express';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { checkDb, getPool } from './db.js';
 import { createAuthRouter } from './authRoutes.js';
+import { createShopRouter } from './shopRoutes.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DIST_DIR = path.resolve(__dirname, '..', 'dist');
@@ -38,13 +41,14 @@ export function createApp() {
     res.json({
       status: 'ok',
       app: 'luminous-stockhaven-twin',
-      phase: 'T2',
+      phase: 'T3',
       uptime_seconds: Math.floor((Date.now() - startedAt) / 1000),
       database: db,
     });
   });
 
   app.use('/api', createAuthRouter({ getPool }));
+  app.use('/api', createShopRouter({ getPool }));
 
   app.use('/api', (_req, res) => {
     res.status(404).json({ error: 'not_found', detail: 'API route not implemented yet' });

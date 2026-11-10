@@ -1,13 +1,14 @@
 /**
- * Luminous Stockhaven twin — API client (T2: auth + businesses live).
+ * Luminous Stockhaven twin — API client (T3: auth + businesses + core shop live).
  *
  * Replaces Base44's `src/api/base44Client.js`. Fetch-based, same call
  * shapes where possible, session-cookie auth shape: requests send
  * `credentials: 'same-origin'` and the server reads the session cookie.
  *
- * Auth (register / verify / login / logout / password reset) and the
- * Business entity list + createBusiness function are real in T2. The
- * entity/billing APIs that belong to T3/T4 still FAIL CLOSED here: a
+ * Auth (register / verify / login / logout / password reset), the
+ * Business entity, the shop entities (products, stock, staff, orders,
+ * suppliers, alerts, ...) and the create-* functions are real in T3.
+ * The billing APIs that belong to T4 still FAIL CLOSED here: a
  * rejected promise with a clear "not yet implemented" message — never
  * fake data, never a fake success.
  *
@@ -41,17 +42,33 @@ async function request(path, { method = 'GET', body } = {}) {
 }
 
 function entityClient(name) {
-  const fail = () => Promise.reject(notImplemented(`entities.${name}`));
+  // Real in T3: the twin's generic entity API (server/entities.js)
+  // speaks the same filter/get/create/update/delete/count/bulk
+  // shapes the ported pages used against Base44. Filters use the
+  // Base44 language ($or/$and/$in/$ne/$regex/$exists) and are
+  // evaluated server-side; every write is plan- and permission-
+  // checked there, never trusted from the browser.
+  const base = `/api/entities/${name}`;
+  const encode = (id) => encodeURIComponent(id);
   return {
-    filter: fail,
-    list: fail,
-    get: fail,
-    create: fail,
-    update: fail,
-    delete: fail,
-    count: fail,
-    bulkCreate: fail,
-    bulkUpdate: fail,
+    filter: (query = {}, options = {}) =>
+      request(`${base}/query`, { method: 'POST', body: { filter: query, ...options } }),
+    list: (options = {}) =>
+      request(`${base}/query`, { method: 'POST', body: { filter: {}, ...options } }),
+    get: (id) => request(`${base}/${encode(id)}`),
+    create: (values) => request(base, { method: 'POST', body: values }),
+    update: (id, patch) => request(`${base}/${encode(id)}`, { method: 'PATCH', body: patch }),
+    delete: (id) => request(`${base}/${encode(id)}`, { method: 'DELETE' }),
+    count: async (query = {}) => {
+      const data = await request(`${base}/count`, { method: 'POST', body: { filter: query } });
+      return data.count;
+    },
+    bulkCreate: (rows) => request(`${base}/bulk`, { method: 'POST', body: rows }),
+    bulkUpdate: (rows) => request(`${base}/bulk`, { method: 'PATCH', body: rows }),
+    updateMany: (filter, patch) =>
+      request(`${base}/update-many`, { method: 'POST', body: { filter, patch } }),
+    deleteMany: (filter) =>
+      request(`${base}/delete-many`, { method: 'POST', body: { filter } }),
   };
 }
 
@@ -151,18 +168,62 @@ export const base44 = {
   },
 
   functions: {
-    // T2: only createBusiness is real. Everything else still rejects.
+    // T2: createBusiness is real. T3: the shop functions are real too —
+    // create-products / create-staff-member / create-role /
+    // create-location run through the server routes that enforce the
+    // plan caps. Billing functions stay fail-closed until T4.
     invoke: async (name, payload) => {
       if (name === 'createBusiness') {
         const business = await request('/api/businesses', { method: 'POST', body: payload });
         return { data: { business } };
+      }
+      if (name === 'create-products') {
+        const data = await request(`/api/businesses/${payload.business_id}/products`, {
+          method: 'POST',
+          body: payload,
+        });
+        return { data };
+      }
+      if (name === 'create-staff-member') {
+        const data = await request(`/api/businesses/${payload.business_id}/staff`, {
+          method: 'POST',
+          body: payload,
+        });
+        return { data };
+      }
+      if (name === 'create-role') {
+        const data = await request(`/api/businesses/${payload.business_id}/roles`, {
+          method: 'POST',
+          body: payload,
+        });
+        return { data };
+      }
+      if (name === 'create-location') {
+        const data = await request(`/api/businesses/${payload.business_id}/locations`, {
+          method: 'POST',
+          body: payload,
+        });
+        return { data };
       }
       return Promise.reject(notImplemented(`functions.${name}`));
     },
   },
 
   users: {
-    inviteUser: () => Promise.reject(notImplemented('users.inviteUser')),
+    // Staff invite: the StaffMember row is the invite. The server
+    // sends the invite email when a mailer is configured; the member
+    // activates by signing in with that email. The active business
+    // comes from the signed-in user's record (same source the
+    // workspace loader uses).
+    inviteUser: async (email) => {
+      const me = await request('/api/auth/me');
+      const businessId = me?.active_business_id;
+      if (!businessId) throw new Error('Choose a business first.');
+      return request(`/api/businesses/${businessId}/staff/invite`, {
+        method: 'POST',
+        body: { email },
+      });
+    },
   },
 
   integrations: {

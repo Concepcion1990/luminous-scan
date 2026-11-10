@@ -58,8 +58,10 @@ test('register stores a bcrypt hash (never plaintext) and mails a 6-digit code',
   assert.ok(!String(row.password_hash).includes(password));
 
   // No paid access of any kind is created by registration (T4 owns billing):
-  // the billing tables do not even exist yet in T2.
-  await assert.rejects(pool.query('SELECT 1 FROM entitlements LIMIT 1'));
+  // T3 created the entitlements table, but registration writes NO row —
+  // a missing row resolves to Essentials, never to a grant.
+  const entitlementCount = await pool.query('SELECT COUNT(*)::int AS n FROM entitlements');
+  assert.equal(entitlementCount.rows[0].n, 0, 'registration creates no entitlement row');
   await assert.rejects(pool.query('SELECT 1 FROM subscriptions LIMIT 1'));
 
   const mail = mailTo(email, 'verification code');
