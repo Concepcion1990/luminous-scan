@@ -14,11 +14,10 @@ test('Terms are effective, name Stripe as the payment provider, and never name W
   assert.equal(terms.version, '2026-11-09-v5');
   assert.equal(terms.effectiveDate, 'November 9, 2026');
   assert.equal(terms.lastReviewed, 'November 9, 2026');
-  assert.match(terms.launchNotice, /effective November 8, 2026/i);
-  assert.match(terms.launchNotice, /billed through Stripe/i);
-  assert.match(terms.launchNotice, /being switched to Stripe/i);
-  assert.match(terms.launchNotice, /cancel your subscription yourself in the app/i);
-  assert.doesNotMatch(terms.launchNotice, /draft|not yet effective|Wix/i);
+  // T1 twin: the "switching to Stripe" launchNotice is REMOVED entirely —
+  // the twin IS Stripe from day one, so there is no switch to announce.
+  assert.equal(terms.launchNotice, undefined, 'no launchNotice on the twin');
+  assert.doesNotMatch(JSON.stringify(terms), /launchNotice|being switched to Stripe|subscriptions will be back soon/i);
   assert.doesNotMatch(body, /Wix/i);
   assert.doesNotMatch(body, /draft|not yet effective|proposed terms/i);
 });

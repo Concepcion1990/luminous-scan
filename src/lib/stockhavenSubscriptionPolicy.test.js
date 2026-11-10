@@ -12,12 +12,10 @@ test('Stockhaven policy is effective, names Stripe billing, and never names Wix'
   assert.equal(p.version,'2026-11-09-v5');
   assert.equal(p.effectiveDate,'November 9, 2026');
   assert.equal(p.lastReviewed,'November 9, 2026');
-  assert.match(p.launchNotice,/effective November 8, 2026/i);
-  assert.match(p.launchNotice,/billed through Stripe/i);
-  assert.match(p.launchNotice,/being switched to Stripe/i);
-  assert.match(p.launchNotice,/cancel your subscription yourself in the app/i);
+  // T1 twin: the "switching to Stripe" launchNotice is REMOVED entirely.
+  assert.equal(p.launchNotice, undefined, 'no launchNotice on the twin');
+  assert.doesNotMatch(JSON.stringify(p), /launchNotice|being switched to Stripe|subscriptions will be back soon/i);
   assert.match(body,/15-day read-only grace period/i);
-  assert.doesNotMatch(p.launchNotice,/draft|not yet effective|Wix/i);
   assert.doesNotMatch(p.scope,/proposed policy/i);
   assert.doesNotMatch(body,/Wix/i);
   assert.doesNotMatch(body,/draft|not yet effective/i);

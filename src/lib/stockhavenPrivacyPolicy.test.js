@@ -12,9 +12,9 @@ test('Stockhaven privacy policy is effective November 8, 2026 and never says dra
   assert.equal(p.version, '2026-11-09-v4');
   assert.equal(p.effectiveDate, 'November 9, 2026');
   assert.equal(p.lastReviewed, 'November 9, 2026');
-  assert.match(p.launchNotice, /effective november 8, 2026/i);
-  assert.doesNotMatch(p.launchNotice, /not yet effective/i);
-  assert.doesNotMatch(p.launchNotice, /draft/i);
+  // T1 twin: the "switching to Stripe" launchNotice is REMOVED entirely.
+  assert.equal(p.launchNotice, undefined, 'no launchNotice on the twin');
+  assert.doesNotMatch(JSON.stringify(p), /launchNotice|being switched to Stripe|subscriptions will be back soon/i);
   assert.doesNotMatch(p.scope, /proposed policy/i);
   assert.doesNotMatch(body, /draft|not yet effective/i);
 });

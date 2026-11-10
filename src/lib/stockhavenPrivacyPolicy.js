@@ -1,8 +1,7 @@
 /**
  * Luminous Stockhaven Privacy Policy.
  * Effective November 9, 2026. Website subscription billing is through
- * Stripe. Payments are being switched to Stripe — subscriptions will be
- * back soon. This policy describes
+ * Stripe. This policy describes
  * how information is collected, used, retained and shared to run the
  * application; account deletion requests are handled as a reviewed
  * request from Settings.
@@ -23,7 +22,6 @@ export const STOCKHAVEN_PRIVACY_POLICY = Object.freeze({
   tagline: 'A home for everything your business carries.',
   title: 'Privacy Policy',
   scope: 'This policy describes how Luminous Stockhaven collects, uses, retains and shares information when you create an account, use the application or purchase a website subscription directly from The Luminous Book Shop, LLC. It does not govern physical bookstore products, purchases made through eBay, Shopify, Amazon, Walmart, TikTok Shop, Google Play or the Apple App Store, or information those services collect under their own policies.',
-  launchNotice: 'Effective November 8, 2026. Website subscriptions are billed through Stripe. Payments are being switched to Stripe — subscriptions will be back soon. Account deletion requests are handled as a reviewed request from Settings; requesting deletion does not by itself cancel a paid subscription.',
   sections: Object.freeze([
     {
       id: 'information-we-collect', title: '1. Information we collect',

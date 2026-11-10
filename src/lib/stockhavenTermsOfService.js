@@ -1,8 +1,7 @@
 /**
  * Luminous Stockhaven website Terms of Service.
  * Effective November 9, 2026. Website subscription billing is through
- * Stripe. Payments are being switched to Stripe — subscriptions will be
- * back soon. You can cancel your
+ * Stripe. You can cancel your
  * subscription yourself in the app using the Cancel Subscription button
  * in Settings or on the Upgrade page; cancellation and refund requests
  * can also be handled through the official customer support contact.
@@ -21,7 +20,6 @@ export const STOCKHAVEN_TERMS_OF_SERVICE = Object.freeze({
   tagline: 'A home for everything your business carries.',
   title: 'Terms of Service & Conditions',
   scope: 'These terms govern use of Luminous Stockhaven and website subscriptions purchased directly from The Luminous Book Shop, LLC. They do not override physical-product return policies for our bookstore or transactions made through eBay, Shopify, Amazon, Walmart, TikTok Shop, Google Play, or the Apple App Store. Those services may have their own applicable terms.',
-  launchNotice: 'Effective November 8, 2026. Website subscriptions are billed through Stripe. Payments are being switched to Stripe — subscriptions will be back soon. Cancellation and refund requests are handled through the official customer support contact shown in the application and at checkout; you can also cancel your subscription yourself in the app using the Cancel Subscription button in Settings or on the Upgrade page.',
   sections: Object.freeze([
     {
       id: 'acceptance', title: '1. Acceptance of terms',

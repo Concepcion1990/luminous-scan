@@ -3,8 +3,7 @@
  * policy for The Luminous Book Shop, LLC.
  *
  * Effective November 9, 2026. Website subscription billing is through
- * Stripe. Payments are being switched to Stripe — subscriptions will be
- * back soon. You can cancel your
+ * Stripe. You can cancel your
  * subscription yourself in the app using the Cancel Subscription button
  * in Settings or on the Upgrade page; cancellation and refund requests
  * can also be handled through the official customer support contact.
@@ -93,5 +92,4 @@ export const STOCKHAVEN_SUBSCRIPTION_POLICY = Object.freeze({
       ],
     },
   ]),
-  launchNotice: 'Effective November 8, 2026. Website subscriptions are billed through Stripe. Payments are being switched to Stripe — subscriptions will be back soon. You can cancel your subscription yourself in the app using the Cancel Subscription button in Settings or on the Upgrade page; cancellation and refund requests are also handled through the official Stockhaven support channel published in the app or at checkout.',
 });

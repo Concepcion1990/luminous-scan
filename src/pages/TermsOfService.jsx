@@ -41,7 +41,6 @@ export default function TermsOfService() {
             <div className="space-y-2 text-sm leading-relaxed">
               <p className="font-semibold">Luminous Stockhaven website terms</p>
               <p>{terms.scope}</p>
-              <p className="text-muted-foreground">{terms.launchNotice}</p>
             </div>
           </div>
         </aside>

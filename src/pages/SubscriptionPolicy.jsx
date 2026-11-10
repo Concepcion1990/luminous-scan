@@ -45,7 +45,6 @@ export default function SubscriptionPolicy() {
             <div className="space-y-2 text-sm leading-relaxed">
               <p className="font-semibold">Website subscriptions only</p>
               <p>{policy.scope}</p>
-              <p className="text-muted-foreground">{policy.launchNotice}</p>
             </div>
           </div>
         </aside>
