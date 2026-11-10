@@ -10,7 +10,7 @@
  *       picker is proven to APPLY here: brandTheme turns the hex into
  *       theme variables and the style tag carries them.
  *
- * The app name stays Luminous Stockhaven throughout — no endpoint
+ * The app name stays Luminous StockHaven throughout — no endpoint
  * accepts a new app name, and the test proves an `app_name` field in
  * the patch is ignored, not stored.
  */

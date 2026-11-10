@@ -387,7 +387,7 @@ export default function Settings() {
         <p className="mb-3 text-sm leading-relaxed text-muted-foreground">
           Review the{' '}
           <Link to="/terms-of-service" className="font-medium text-primary underline underline-offset-4">
-            Luminous Stockhaven Terms of Service
+            Luminous StockHaven Terms of Service
           </Link>
           , the{' '}
           <Link to="/subscription-policy" className="font-medium text-primary underline underline-offset-4">
@@ -447,7 +447,7 @@ export default function Settings() {
 
           <h3 className="font-semibold">Cancellation Terms &amp; Conditions</h3>
           <p className="text-muted-foreground">
-            These are the terms for paid Luminous Stockhaven subscriptions.
+            These are the terms for paid Luminous StockHaven subscriptions.
             Website subscription billing is through Stripe.
             You can cancel your subscription yourself at any time using the
             Cancel Subscription button below — no staff approval is needed.
@@ -485,7 +485,7 @@ export default function Settings() {
               is billed and managed by that store. You may need to cancel it directly in
               the subscriptions section of the same Google or Apple account used to subscribe.
               Canceling a separate website subscription, uninstalling this app, or requesting
-              Luminous Stockhaven account deletion does not automatically cancel a store-billed
+              Luminous StockHaven account deletion does not automatically cancel a store-billed
               subscription. Check your purchase receipt to confirm who bills you.
               <span className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs">
                 <a href="https://support.google.com/googleplay/answer/7018481" target="_blank" rel="noopener noreferrer"
@@ -560,7 +560,7 @@ export default function Settings() {
 
       <SettingsCard
         title="Appearance"
-        description="Choose the look of Luminous Stockhaven on this device. Changes apply immediately across the app."
+        description="Choose the look of Luminous StockHaven on this device. Changes apply immediately across the app."
       >
         <fieldset disabled={!themeReady}>
           <legend className="sr-only">Choose an appearance</legend>
@@ -603,7 +603,7 @@ export default function Settings() {
 
       <SettingsCard
         title="Delete Account"
-        description="Request removal of your Luminous Stockhaven sign-in account."
+        description="Request removal of your Luminous StockHaven sign-in account."
       >
         <p className="text-sm leading-relaxed text-muted-foreground">
           Submitting a request does not immediately delete your account, businesses, or inventory.

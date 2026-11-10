@@ -6,7 +6,7 @@
 -- rejected as not-implemented. These columns make the record real.
 -- Printed documents keep carrying the business NAME only (T5
 -- white-label rule); the logo is the store's branding for the app
--- chrome. The app name stays Luminous Stockhaven and is not stored
+-- chrome. The app name stays Luminous StockHaven and is not stored
 -- here — it is not changeable.
 --
 -- sync_changes: idempotency ledger for the offline queue. One row per

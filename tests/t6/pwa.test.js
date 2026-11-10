@@ -16,11 +16,11 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '.
 const manifestPath = path.join(root, 'public', 'manifest.webmanifest');
 const swPath = path.join(root, 'public', 'sw.js');
 
-test('the manifest names the app Luminous Stockhaven', () => {
+test('the manifest names the app Luminous StockHaven', () => {
   assert.ok(existsSync(manifestPath), 'manifest.webmanifest is missing');
   const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
-  assert.equal(manifest.name, 'Luminous Stockhaven');
-  assert.equal(manifest.short_name, 'Stockhaven');
+  assert.equal(manifest.name, 'Luminous StockHaven');
+  assert.equal(manifest.short_name, 'StockHaven');
   assert.equal(manifest.start_url, '/');
   assert.equal(manifest.display, 'standalone');
   assert.ok(manifest.theme_color);

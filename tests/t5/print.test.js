@@ -167,7 +167,7 @@ test('paper carries the store name, never the app name or logo', async () => {
     const text = res.buffer.toString('latin1');
     assert.ok(text.startsWith('%PDF-'), `${path} must be a real PDF`);
     assert.ok(text.includes('Test Shop'), `${path} should carry the store name`);
-    assert.ok(!text.includes('Luminous Stockhaven'), `${path} must not carry the app name`);
+    assert.ok(!text.includes('Luminous StockHaven'), `${path} must not carry the app name`);
     assert.ok(!text.includes('Luminous'), `${path} must not mention the app at all`);
     assert.ok(!text.includes('ScanHaven'), `${path} must not carry the stale app name`);
     assert.ok(!/addImage|logo/i.test(text), `${path} must not carry an app-logo reference`);
@@ -185,7 +185,7 @@ test('paper carries the store name, never the app name or logo', async () => {
     'src/components/print/PickList.jsx',
   ]) {
     const source = readFileSync(file, 'utf8');
-    assert.doesNotMatch(source, /Luminous|ScanHaven|Stockhaven/, `${file} must not name the app`);
+    assert.doesNotMatch(source, /Luminous|ScanHaven|Stockhaven|StockHaven/, `${file} must not name the app`);
     assert.doesNotMatch(source, /addImage|<img/, `${file} must not draw a logo`);
   }
   assert.match(

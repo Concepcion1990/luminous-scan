@@ -1,12 +1,12 @@
 /**
- * Luminous Stockhaven Privacy Policy.
+ * Luminous StockHaven Privacy Policy.
  * Effective November 9, 2026. Website subscription billing is through
  * Stripe. This policy describes
  * how information is collected, used, retained and shared to run the
  * application; account deletion requests are handled as a reviewed
  * request from Settings.
  *
- * Covers the Luminous Stockhaven application and website subscriptions
+ * Covers the Luminous StockHaven application and website subscriptions
  * purchased directly from The Luminous Book Shop, LLC. It does not replace
  * the privacy terms of Google Play, the Apple App Store, eBay, Shopify,
  * Amazon, Walmart or TikTok Shop, which have their own applicable terms.
@@ -18,10 +18,10 @@ export const STOCKHAVEN_PRIVACY_POLICY = Object.freeze({
   effectiveDate: 'November 9, 2026',
   lastReviewed: 'November 9, 2026',
   owner: 'The Luminous Book Shop, LLC',
-  application: 'Luminous Stockhaven',
+  application: 'Luminous StockHaven',
   tagline: 'A home for everything your business carries.',
   title: 'Privacy Policy',
-  scope: 'This policy describes how Luminous Stockhaven collects, uses, retains and shares information when you create an account, use the application or purchase a website subscription directly from The Luminous Book Shop, LLC. It does not govern physical bookstore products, purchases made through eBay, Shopify, Amazon, Walmart, TikTok Shop, Google Play or the Apple App Store, or information those services collect under their own policies.',
+  scope: 'This policy describes how Luminous StockHaven collects, uses, retains and shares information when you create an account, use the application or purchase a website subscription directly from The Luminous Book Shop, LLC. It does not govern physical bookstore products, purchases made through eBay, Shopify, Amazon, Walmart, TikTok Shop, Google Play or the Apple App Store, or information those services collect under their own policies.',
   sections: Object.freeze([
     {
       id: 'information-we-collect', title: '1. Information we collect',
@@ -29,13 +29,13 @@ export const STOCKHAVEN_PRIVACY_POLICY = Object.freeze({
         'Account information you provide when you register, such as your name, email address and business details, including the business name, contact details, currency, timezone and language you choose in Settings.',
         'Business information you enter while using the application, such as products, stock levels, locations, suppliers, purchase orders, movements, counts, listings, materials, staff records and the photographs you upload for your products.',
         'Device and usage information needed to run the application, such as the pages you visit, the features you use, and technical information about your device and browser. The barcode and QR scanner uses your device camera only while you are scanning, and only to read the code you point it at.',
-        'Payment information is not collected or stored by Luminous Stockhaven. Website subscription payments are processed by Stripe. Card numbers and bank details go directly to the payment provider; we do not see or store card numbers. If you ever subscribe through Google Play or the Apple App Store, those subscriptions are billed by those stores under their own terms.',
+        'Payment information is not collected or stored by Luminous StockHaven. Website subscription payments are processed by Stripe. Card numbers and bank details go directly to the payment provider; we do not see or store card numbers. If you ever subscribe through Google Play or the Apple App Store, those subscriptions are billed by those stores under their own terms.',
       ],
     },
     {
       id: 'how-we-use-information', title: '2. How we use information',
       paragraphs: [
-        'To provide Luminous Stockhaven, including your inventory records, scanning, reports, imports and exports (Business plan only), staff permissions and plan features.',
+        'To provide Luminous StockHaven, including your inventory records, scanning, reports, imports and exports (Business plan only), staff permissions and plan features.',
         'To manage your subscription, including confirming that a paid subscription or trial is active, showing your billing status, and handling cancellations, refunds and plan changes under the Subscription, Cancellation & Refund Policy.',
         'To support you when you ask for help, to keep the application secure, to fix problems, and to meet our legal obligations.',
         'We do not sell your personal information or your business data, and we do not use your inventory or customer records for advertising.',
@@ -47,7 +47,7 @@ export const STOCKHAVEN_PRIVACY_POLICY = Object.freeze({
         'With the service providers needed to run the application, including Fly.io, which hosts the application, and Stripe, which processes website subscription payments. Those providers handle information only as needed to provide their services.',
         'With app stores only as required for store-billed subscriptions, if you ever buy the mobile plan through Google Play or the Apple App Store.',
         'When required by law, or to protect the safety, rights or property of our customers and our business.',
-        'Your business data is not shared with other Luminous Stockhaven customers. Staff members you invite can only see the parts of your workspace their permissions allow.',
+        'Your business data is not shared with other Luminous StockHaven customers. Staff members you invite can only see the parts of your workspace their permissions allow.',
       ],
     },
     {
@@ -77,7 +77,7 @@ export const STOCKHAVEN_PRIVACY_POLICY = Object.freeze({
     {
       id: 'children', title: '7. Children',
       paragraphs: [
-        'Luminous Stockhaven is a business application for business owners and their authorized staff. It is not directed at children, and we do not knowingly collect personal information from children under 13.',
+        'Luminous StockHaven is a business application for business owners and their authorized staff. It is not directed at children, and we do not knowingly collect personal information from children under 13.',
         'If you believe a child has provided personal information through the application, contact the official support channel published in the application so we can review it.',
       ],
     },
@@ -91,8 +91,8 @@ export const STOCKHAVEN_PRIVACY_POLICY = Object.freeze({
     {
       id: 'contact', title: '9. Contact',
       paragraphs: [
-        'For questions about this policy, your information, or account deletion, use the official Luminous Stockhaven support channel published in the application or at checkout.',
-        'Luminous Stockhaven is operated by The Luminous Book Shop, LLC. This policy is effective November 9, 2026. For support, contact theluminousbookshop@outlook.com.',
+        'For questions about this policy, your information, or account deletion, use the official Luminous StockHaven support channel published in the application or at checkout.',
+        'Luminous StockHaven is operated by The Luminous Book Shop, LLC. This policy is effective November 9, 2026. For support, contact theluminousbookshop@outlook.com.',
       ],
     },
   ]),

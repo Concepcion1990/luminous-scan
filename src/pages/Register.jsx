@@ -225,7 +225,7 @@ export default function Register() {
           <TrademarkNotice />
           <p className="mt-3 text-center text-sm">
             <Link to="/about" className="font-medium text-primary underline underline-offset-4">
-              About Luminous Stockhaven
+              About Luminous StockHaven
             </Link>
           </p>
         </>

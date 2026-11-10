@@ -25,7 +25,7 @@ test('Terms name Stripe billing and honest cancellation handling', () => {
   assert.match(body, /Payment processing is performed by Stripe/i);
   assert.match(body, /official customer-support channel/i);
 });
-test('Terms apply to Stockhaven website subscriptions only', () => {
+test('Terms apply to StockHaven website subscriptions only', () => {
   assert.match(terms.scope, /website subscriptions purchased directly/i);
   for (const source of ['eBay','Shopify','Amazon','Walmart','TikTok Shop','Google Play','Apple App Store']) {
     assert.ok(terms.scope.includes(source));

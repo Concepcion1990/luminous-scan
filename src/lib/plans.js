@@ -161,7 +161,7 @@ export function formatLimit(limit) {
  */
 export const MOBILE_PLAN = {
   key: 'mobile',
-  name: 'Luminous Stockhaven Mobile',
+  name: 'Luminous StockHaven Mobile',
   price: 4.99,
   blurb:
     'Keep inventory management simple and convenient. Scan products, manage quantities, receive stock, and stay organized directly from your phone.',
@@ -186,7 +186,7 @@ export const WELCOME_OPTIONS = [
   MOBILE_PLAN,
   {
     key: 'essentials',
-    name: 'Luminous Stockhaven Essentials',
+    name: 'Luminous StockHaven Essentials',
     price: 14.99,
     blurb:
       'Need a more complete inventory workspace? Our website Essentials Plan gives you additional inventory-management tools for one business.',
@@ -205,7 +205,7 @@ export const WELCOME_OPTIONS = [
   },
   {
     key: 'business',
-    name: 'Luminous Stockhaven Business',
+    name: 'Luminous StockHaven Business',
     price: 29.99,
     blurb:
       'Ready for advanced inventory management? Explore our complete Business Plan for growing businesses, multiple sites, purchasing, reporting and more.',

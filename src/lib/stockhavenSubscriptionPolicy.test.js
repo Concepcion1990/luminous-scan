@@ -7,7 +7,7 @@ import { CANCELLATION_GRACE_PARAGRAPH, CANCELLATION_WIPE_SENTENCE } from './canc
 const body = p.sections.flatMap(section => [section.title, ...section.paragraphs]).join('\n');
 const read = path => fs.readFileSync(path, 'utf8');
 
-test('Stockhaven policy is effective, names Stripe billing, and never names Wix',()=>{
+test('StockHaven policy is effective, names Stripe billing, and never names Wix',()=>{
   assert.equal(p.status,'effective');
   assert.equal(p.version,'2026-11-09-v5');
   assert.equal(p.effectiveDate,'November 9, 2026');
@@ -20,8 +20,8 @@ test('Stockhaven policy is effective, names Stripe billing, and never names Wix'
   assert.doesNotMatch(body,/Wix/i);
   assert.doesNotMatch(body,/draft|not yet effective/i);
 });
-test('policy covers direct Stockhaven website subscriptions, not five marketplace return policies',()=>{
-  assert.match(p.scope,/only to Luminous Stockhaven website subscriptions/i);
+test('policy covers direct StockHaven website subscriptions, not five marketplace return policies',()=>{
+  assert.match(p.scope,/only to Luminous StockHaven website subscriptions/i);
   assert.match(p.scope,/eBay/);
   assert.match(p.scope,/Shopify/);
   assert.match(p.scope,/Google Play/);
@@ -40,7 +40,7 @@ test('trial is once per eligible customer and no trial restart on plan change',(
   assert.match(body,/does not start or restore another introductory trial/i);
 });
 test('customer can cancel future renewals but existing period is preserved when required',()=>{
-  assert.match(body,/cancel a Luminous Stockhaven website subscription at any time/i);
+  assert.match(body,/cancel a Luminous StockHaven website subscription at any time/i);
   assert.match(body,/Cancel Subscription button in Settings or on the Upgrade page/i);
   assert.match(body,/cancellation stops future automatic renewals/i);
   assert.match(body,/end of the month you already paid for/i);
@@ -55,7 +55,7 @@ test('voluntary cancellation retains only the ALREADY paid period, not an extra 
 });
 test('first successful paid subscription charge starts one three-day refund window',()=>{
   assert.match(body,/within three days \(72 hours\)/i);
-  assert.match(body,/first successful paid Luminous Stockhaven website subscription charge/i);
+  assert.match(body,/first successful paid Luminous StockHaven website subscription charge/i);
   assert.match(body,/not when an eligible seven-day free trial begins/i);
   assert.match(body,/cancel within the three-day window/i);
   assert.match(body,/original charge and the cancellation time/i);
@@ -73,7 +73,7 @@ test('billing error exceptions and statutory refund rights remain protected',()=
   assert.match(body,/statutory rights/i);
 });
 test('upgrades retain original merchant account and require clear informed price and timing',()=>{
-  assert.match(body,/existing Stockhaven customer account/i);
+  assert.match(body,/existing StockHaven customer account/i);
   assert.match(body,/before the customer confirms/i);
   assert.match(body,/does not create a second business workspace/i);
   assert.match(body,/Existing inventory and business records remain/i);

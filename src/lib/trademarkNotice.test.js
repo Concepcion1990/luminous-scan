@@ -20,7 +20,7 @@ test('trademark notice text is the owner\'s exact words, verbatim', () => {
   assert.equal(notice.legalHeading, 'LEGAL NOTICE TO COMPETITORS & IMITATORS:');
   assert.equal(
     notice.legalBody,
-    'Luminous Stockhaven™ and The Luminous Bookshop, LLC® are fully registered legal entities. All application user interfaces, backend structural workflows, original features, text, user role documentation, and digital assets are strictly protected under federal copyright law. We actively monitor the market. Any attempt to scrape our platform, clone our proprietary workflows, or infringe upon our intellectual property will be met with immediate, aggressive legal action and federal statutory damages.',
+    'Luminous StockHaven™ and The Luminous Bookshop, LLC® are fully registered legal entities. All application user interfaces, backend structural workflows, original features, text, user role documentation, and digital assets are strictly protected under federal copyright law. We actively monitor the market. Any attempt to scrape our platform, clone our proprietary workflows, or infringe upon our intellectual property will be met with immediate, aggressive legal action and federal statutory damages.',
   );
   assert.equal(notice.acquisitionHeading, 'TO ACQUISITION FIRMS & BROKERS:');
   assert.equal(
@@ -33,7 +33,7 @@ test('footer text is the owner\'s exact words, verbatim', () => {
   assert.equal(footer.copyrightLine, '© 2026 The Luminous Bookshop, LLC. All rights reserved.');
   assert.equal(
     footer.trademarkLine,
-    'Luminous Stockhaven™ and the Luminous Stockhaven logo are trademarks of The Luminous Bookshop, LLC. All application interfaces, features, workflows, and proprietary text are protected under applicable copyright laws. Unauthorized duplication, cloning, or scraping is strictly prohibited.',
+    'Luminous StockHaven™ and the Luminous StockHaven logo are trademarks of The Luminous Bookshop, LLC. All application interfaces, features, workflows, and proprietary text are protected under applicable copyright laws. Unauthorized duplication, cloning, or scraping is strictly prohibited.',
   );
 });
 
@@ -42,8 +42,8 @@ test('the ® on The Luminous Bookshop, LLC stays exactly as she wrote it', () =>
   // it, this test fails on purpose.
   assert.match(notice.legalBody, /The Luminous Bookshop, LLC®/);
   assert.doesNotMatch(notice.legalBody, /The Luminous Bookshop, LLC™/);
-  assert.match(notice.legalBody, /Luminous Stockhaven™/);
-  assert.match(footer.trademarkLine, /Luminous Stockhaven™/);
+  assert.match(notice.legalBody, /Luminous StockHaven™/);
+  assert.match(footer.trademarkLine, /Luminous StockHaven™/);
   assert.ok(Object.isFrozen(notice), 'notice module must be frozen');
   assert.ok(Object.isFrozen(footer), 'footer module must be frozen');
 });
@@ -106,7 +106,7 @@ test('Subscribe shows the notice as the subscription process starts', () => {
   const priceAt = screen.indexOf('per month, plus any applicable taxes.');
   const noticeAt = screen.indexOf('<TrademarkNotice />');
   const accountAt = screen.indexOf('{!isAuthenticated ? (');
-  const noCardAt = screen.indexOf('No card details are stored by Luminous Stockhaven');
+  const noCardAt = screen.indexOf('No card details are stored by Luminous StockHaven');
   const footerAt = screen.indexOf('<LegalFooter />');
   assert.ok(priceAt > -1 && noticeAt > priceAt, 'notice comes after the plan price');
   assert.ok(noticeAt < accountAt, 'notice comes before the create-account / workspace step');

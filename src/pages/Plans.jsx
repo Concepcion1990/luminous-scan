@@ -59,7 +59,7 @@ export default function Plans() {
         <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
           Plans &amp; features
         </p>
-        <h1 className="mt-2 text-2xl font-semibold sm:text-3xl">Compare Stockhaven plans</h1>
+        <h1 className="mt-2 text-2xl font-semibold sm:text-3xl">Compare StockHaven plans</h1>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
           One account, whichever plan you choose — Business covers up to five businesses. Prices are monthly in US dollars,
           and eligible new website customers can receive one seven-day trial across Essentials
@@ -186,7 +186,7 @@ export default function Plans() {
         <p className="mt-5 text-sm leading-relaxed text-muted-foreground">
           Before subscribing, please review the{' '}
           <Link to="/terms-of-service" className="font-medium text-primary underline underline-offset-4">
-            Luminous Stockhaven Terms of Service
+            Luminous StockHaven Terms of Service
           </Link>
           , the{' '}
           <Link to="/subscription-policy" className="font-medium text-primary underline underline-offset-4">
@@ -203,7 +203,7 @@ export default function Plans() {
 
         <p className="mt-3 text-center text-sm">
           <Link to="/about" className="font-medium text-primary underline underline-offset-4">
-            About Luminous Stockhaven
+            About Luminous StockHaven
           </Link>
         </p>
 

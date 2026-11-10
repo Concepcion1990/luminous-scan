@@ -196,7 +196,7 @@ export default function CancelSubscriptionDialog({
               If you ever subscribe through Google Play or the Apple App Store,
               you may need to cancel it through that store's subscription settings.
               This dialog cannot stop app-store billing. Uninstalling the app or deleting
-              your Stockhaven account does not cancel a store subscription.
+              your StockHaven account does not cancel a store subscription.
             </p>
             {status === 'trialing' && (
               <p className="text-muted-foreground">

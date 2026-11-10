@@ -100,9 +100,9 @@ export async function sendMail({ to, subject, text, html }) {
 export function staffInviteEmail({ to, businessName, inviterName }) {
   return {
     to,
-    subject: `You have been invited to ${businessName || 'Luminous Stockhaven'}`,
+    subject: `You have been invited to ${businessName || 'Luminous StockHaven'}`,
     text:
-      `You have been invited to help manage ${businessName || 'a business'} on Luminous Stockhaven` +
+      `You have been invited to help manage ${businessName || 'a business'} on Luminous StockHaven` +
       `${inviterName ? ` by ${inviterName}` : ''}.\n\n` +
       'Create your account with this email address, then sign in — your staff access will be ready. ' +
       'If you did not expect this invitation, you can ignore this email.',
@@ -112,9 +112,9 @@ export function staffInviteEmail({ to, businessName, inviterName }) {
 export function verificationEmail({ to, code }) {
   return {
     to,
-    subject: 'Your Luminous Stockhaven verification code',
+    subject: 'Your Luminous StockHaven verification code',
     text:
-      `Your Luminous Stockhaven verification code is ${code}.\n\n` +
+      `Your Luminous StockHaven verification code is ${code}.\n\n` +
       'Enter it on the verification screen to finish creating your account. ' +
       'The code expires in 10 minutes and can only be used once.\n\n' +
       'If you did not create an account, you can ignore this email.',
@@ -124,9 +124,9 @@ export function verificationEmail({ to, code }) {
 export function passwordResetEmail({ to, resetUrl, code }) {
   return {
     to,
-    subject: 'Reset your Luminous Stockhaven password',
+    subject: 'Reset your Luminous StockHaven password',
     text:
-      'We received a request to reset your Luminous Stockhaven password.\n\n' +
+      'We received a request to reset your Luminous StockHaven password.\n\n' +
       `Reset it here: ${resetUrl}\n\n` +
       `Your reset code is ${code} — you can also enter it on the reset page. ` +
       'The code expires in 10 minutes and can only be used once.\n\n' +

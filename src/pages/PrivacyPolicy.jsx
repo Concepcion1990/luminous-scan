@@ -39,7 +39,7 @@ export default function PrivacyPolicy() {
           <div className="flex items-start gap-2.5">
             <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
             <div className="space-y-2 text-sm leading-relaxed">
-              <p className="font-semibold">Luminous Stockhaven privacy</p>
+              <p className="font-semibold">Luminous StockHaven privacy</p>
               <p>{policy.scope}</p>
             </div>
           </div>

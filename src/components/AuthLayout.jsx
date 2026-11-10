@@ -11,7 +11,7 @@ export default function AuthLayout({ icon: Icon, title, subtitle, footer, below,
               <ScanLine className="h-4 w-4" aria-hidden="true" />
             </span>
             <span className="font-heading text-sm font-semibold tracking-tight text-foreground">
-              Luminous Stockhaven
+              Luminous StockHaven
             </span>
           </div>
           <p className="mt-2 text-center text-xs text-muted-foreground">

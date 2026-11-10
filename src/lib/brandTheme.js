@@ -10,7 +10,7 @@
  * light and the dark values — so dark mode keeps working (an inline
  * style would have flattened the dark theme).
  *
- * The app name stays Luminous Stockhaven, top and bottom, whatever
+ * The app name stays Luminous StockHaven, top and bottom, whatever
  * the brand color is — the color only re-skins the store's own chrome.
  */
 

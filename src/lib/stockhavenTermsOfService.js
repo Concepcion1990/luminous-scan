@@ -1,12 +1,12 @@
 /**
- * Luminous Stockhaven website Terms of Service.
+ * Luminous StockHaven website Terms of Service.
  * Effective November 9, 2026. Website subscription billing is through
  * Stripe. You can cancel your
  * subscription yourself in the app using the Cancel Subscription button
  * in Settings or on the Upgrade page; cancellation and refund requests
  * can also be handled through the official customer support contact.
  *
- * Direct Luminous Stockhaven website subscriptions only. This does not replace
+ * Direct Luminous StockHaven website subscriptions only. This does not replace
  * storefront merchandise returns, app-store billing terms or a Privacy Policy.
  */
 export const STOCKHAVEN_TERMS_OF_SERVICE = Object.freeze({
@@ -16,17 +16,17 @@ export const STOCKHAVEN_TERMS_OF_SERVICE = Object.freeze({
   effectiveDate: 'November 9, 2026',
   lastReviewed: 'November 9, 2026',
   owner: 'The Luminous Book Shop, LLC',
-  application: 'Luminous Stockhaven',
+  application: 'Luminous StockHaven',
   tagline: 'A home for everything your business carries.',
   title: 'Terms of Service & Conditions',
-  scope: 'These terms govern use of Luminous Stockhaven and website subscriptions purchased directly from The Luminous Book Shop, LLC. They do not override physical-product return policies for our bookstore or transactions made through eBay, Shopify, Amazon, Walmart, TikTok Shop, Google Play, or the Apple App Store. Those services may have their own applicable terms.',
+  scope: 'These terms govern use of Luminous StockHaven and website subscriptions purchased directly from The Luminous Book Shop, LLC. They do not override physical-product return policies for our bookstore or transactions made through eBay, Shopify, Amazon, Walmart, TikTok Shop, Google Play, or the Apple App Store. Those services may have their own applicable terms.',
   sections: Object.freeze([
     {
       id: 'acceptance', title: '1. Acceptance of terms',
       paragraphs: [
-        'Luminous Stockhaven is an inventory management application developed and operated by The Luminous Book Shop, LLC.',
+        'Luminous StockHaven is an inventory management application developed and operated by The Luminous Book Shop, LLC.',
         'By creating an account, using the application or purchasing a paid website subscription, you agree to the applicable Terms of Service, Subscription, Cancellation & Refund Policy and Privacy Policy as published.',
-        'Luminous Stockhaven supplies inventory management software. It does not itself sell, store or ship your physical merchandise.',
+        'Luminous StockHaven supplies inventory management software. It does not itself sell, store or ship your physical merchandise.',
       ],
     },
     {
@@ -73,11 +73,11 @@ export const STOCKHAVEN_TERMS_OF_SERVICE = Object.freeze({
     {
       id: 'refunds', title: '7. Initial-payment refunds and billing errors',
       paragraphs: [
-        'If you cancel within THREE DAYS (72 hours) after the FIRST successful paid Luminous Stockhaven website subscription charge on your account, you may request a refund of that initial payment. For an eligible trial, the 72-hour clock begins with the first successful paid charge AFTER the trial, not with trial registration.',
+        'If you cancel within THREE DAYS (72 hours) after the FIRST successful paid Luminous StockHaven website subscription charge on your account, you may request a refund of that initial payment. For an eligible trial, the 72-hour clock begins with the first successful paid charge AFTER the trial, not with trial registration.',
         'The introductory three-day refund opportunity is available only once. It never restarts on monthly renewals, Essentials-to-Business upgrades, cancellation and reactivation, resubscription or a return to the service.',
         'After that window, ordinary voluntary cancellations are nonrefundable and unused days are not ordinarily refunded in part. Customers canceling without refunds retain paid feature access through the confirmed already-paid billing period.',
         'A confirmed refund of the first payment may cause paid-feature access to end. We will correct confirmed accidental duplicate charges and billing errors and honor any rights, refunds or other remedies required by applicable law. Nothing here limits statutory customer rights.',
-        'To request an eligible initial-payment refund, cancel within the 72-hour window and contact the official Luminous Stockhaven support channel published with the checkout flow. The original successful payment and cancellation time must be verified before a refund decision.',
+        'To request an eligible initial-payment refund, cancel within the 72-hour window and contact the official Luminous StockHaven support channel published with the checkout flow. The original successful payment and cancellation time must be verified before a refund decision.',
       ],
     },
     {
@@ -91,7 +91,7 @@ export const STOCKHAVEN_TERMS_OF_SERVICE = Object.freeze({
     {
       id: 'business-data', title: '9. Business data and accuracy',
       paragraphs: [
-        'Customers retain ownership of the inventory, business records, original photographs and other content they submit. You authorize Luminous Stockhaven to process this information as necessary to provide the application, subject to the published Privacy Policy.',
+        'Customers retain ownership of the inventory, business records, original photographs and other content they submit. You authorize Luminous StockHaven to process this information as necessary to provide the application, subject to the published Privacy Policy.',
         'Customers are responsible for verifying stock quantities, imports, financial estimates, inventory reports and data exports. The software cannot guarantee correctness of customer-entered information or information supplied by outside sources.',
         'We recommend keeping independent business records and appropriate backups. Exports, backup restoration and other features are provided only to the extent actually available in the released product.',
       ],
@@ -107,7 +107,7 @@ export const STOCKHAVEN_TERMS_OF_SERVICE = Object.freeze({
     {
       id: 'ip', title: '11. Intellectual property and acceptable use',
       paragraphs: [
-        'The Luminous Stockhaven name, software, original branding and interface materials are owned by The Luminous Book Shop, LLC or applicable licensors. Customer-provided business content remains the customer’s content.',
+        'The Luminous StockHaven name, software, original branding and interface materials are owned by The Luminous Book Shop, LLC or applicable licensors. Customer-provided business content remains the customer’s content.',
         'The subscription grants permission to access and use the software under these terms, not ownership or resale rights. Do not reproduce, redistribute, misuse or attempt to access another customer’s private information, except as permitted by law or written authorization.',
       ],
     },
@@ -115,7 +115,7 @@ export const STOCKHAVEN_TERMS_OF_SERVICE = Object.freeze({
       id: 'availability', title: '12. Availability and third-party services',
       paragraphs: [
         'The application may experience maintenance, technical interruptions or service limitations, including those caused by infrastructure and authorized service providers.',
-        'Luminous Stockhaven does not guarantee uninterrupted or error-free operation. Nothing in these terms excludes duties or legal remedies that may not lawfully be excluded.',
+        'Luminous StockHaven does not guarantee uninterrupted or error-free operation. Nothing in these terms excludes duties or legal remedies that may not lawfully be excluded.',
       ],
     },
     {
@@ -135,8 +135,8 @@ export const STOCKHAVEN_TERMS_OF_SERVICE = Object.freeze({
     {
       id: 'support', title: '15. Support and contact',
       paragraphs: [
-        'For questions about Luminous Stockhaven, account access, cancellation, refunds, subscriptions or technical support, use the official customer-support channel that will be published within the application and at checkout.',
-        'Luminous Stockhaven is operated by The Luminous Book Shop, LLC. Website subscription billing is through Stripe; use the official customer-support channel published within the application and at checkout.',
+        'For questions about Luminous StockHaven, account access, cancellation, refunds, subscriptions or technical support, use the official customer-support channel that will be published within the application and at checkout.',
+        'Luminous StockHaven is operated by The Luminous Book Shop, LLC. Website subscription billing is through Stripe; use the official customer-support channel published within the application and at checkout.',
       ],
     },
   ]),

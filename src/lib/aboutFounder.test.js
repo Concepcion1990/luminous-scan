@@ -12,7 +12,7 @@ const read = (file) => readFileSync(file, 'utf8');
 
 test('about page title is the owner\'s exact page name, capital H and all', () => {
   // Her exact page name: "Luminous StockHaven About". Do not "correct"
-  // the capital H — the app name elsewhere is "Luminous Stockhaven".
+  // the capital H — the app name reads "Luminous StockHaven" everywhere.
   assert.equal(about.pageTitle, 'Luminous StockHaven About');
   assert.equal(about.sectionHeading, '📖 About the Founder');
   assert.ok(Object.isFrozen(about), 'about module must be frozen');
@@ -23,7 +23,7 @@ test('founder text is the owner\'s exact words, verbatim', () => {
   assert.equal(about.paragraphs.length, 4, 'four paragraphs, as she wrote them');
   assert.equal(
     about.paragraphs[0],
-    "Hey there, I'm Concepcion, the founder of Luminous Stockhaven.",
+    "Hey there, I'm Concepcion, the founder of Luminous StockHaven.",
   );
   assert.equal(
     about.paragraphs[1],
@@ -31,7 +31,7 @@ test('founder text is the owner\'s exact words, verbatim', () => {
   );
   assert.equal(
     about.paragraphs[2],
-    'Frustrated with an industry that gouges independent creators, I decided to build my own solution. I built Luminous Stockhaven out of necessity to run my own businesses cleanly, efficiently, and with total peace of mind.',
+    'Frustrated with an industry that gouges independent creators, I decided to build my own solution. I built Luminous StockHaven out of necessity to run my own businesses cleanly, efficiently, and with total peace of mind.',
   );
   assert.equal(
     about.paragraphs[3],
@@ -77,7 +77,7 @@ test('LegalFooter links to /about, small and subtle', () => {
   const footer = read('src/components/LegalFooter.jsx');
   assert.match(footer, /import \{ Link \} from 'react-router-dom'/);
   assert.match(footer, /<Link to="\/about"/);
-  assert.match(footer, /About Luminous Stockhaven/);
+  assert.match(footer, /About Luminous StockHaven/);
   assert.match(footer, /text-\[11px\]/, 'footer stays small');
   assert.match(footer, /text-center/, 'footer stays centered');
   // The legal text itself is untouched.
@@ -88,7 +88,7 @@ test('LegalFooter links to /about, small and subtle', () => {
 test('Plans links to /about near the trademark notice', () => {
   const screen = read('src/pages/Plans.jsx');
   assert.match(screen, /<Link to="\/about" className="font-medium text-primary underline underline-offset-4">/);
-  assert.match(screen, /About Luminous Stockhaven/);
+  assert.match(screen, /About Luminous StockHaven/);
   const noticeAt = screen.indexOf('<TrademarkNotice />');
   const aboutAt = screen.indexOf('<Link to="/about"');
   const buttonsAt = screen.indexOf('<div className="mt-6 flex flex-col gap-2 sm:flex-row">');
@@ -101,7 +101,7 @@ test('Register shows the trademark notice below the form, with an About link', (
   assert.match(screen, /import TrademarkNotice from ["']@\/components\/TrademarkNotice["']/);
   assert.match(screen, /<TrademarkNotice \/>/);
   assert.match(screen, /<Link to="\/about" className="font-medium text-primary underline underline-offset-4">/);
-  assert.match(screen, /About Luminous Stockhaven/);
+  assert.match(screen, /About Luminous StockHaven/);
   // The notice rides the new AuthLayout `below` slot — under the card,
   // never inside the form — and only on the create-account branch, not
   // the OTP branch (the OTP screen is a second step, not a fresh start).

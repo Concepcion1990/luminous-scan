@@ -146,7 +146,7 @@
   margin: 10mm;
 }
 
-/* Luminous Stockhaven — Mobile WebView compatibility */
+/* Luminous StockHaven — Mobile WebView compatibility */
 /* Part 12 · Step 3 */
 
 /* Prevent unwanted browser overscroll. */
@@ -213,7 +213,7 @@ select,
   }
 }
 
-/* Luminous Stockhaven — approved warm cream-tan theme */
+/* Luminous StockHaven — approved warm cream-tan theme */
 /* Additive theme overrides: original rules and business branding remain intact. */
 /* Exact approved colors:
    Cream-tan #E3D5BF | Ivory #F7F2E9 | Charcoal #302820 | Gold #B99B6A */
@@ -275,7 +275,7 @@ select,
   }
 }
 
-/* Luminous Stockhaven — refined light and dark backgrounds */
+/* Luminous StockHaven — refined light and dark backgrounds */
 @layer base {
   :root {
     --background: 0 0% 100%;

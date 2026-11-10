@@ -28,7 +28,7 @@ export default function About() {
 
       <main className="mx-auto max-w-4xl px-4 py-8 sm:px-8 sm:py-12">
         <div className="mb-5 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          <BookOpen className="h-4 w-4" aria-hidden="true" /> About Luminous Stockhaven
+          <BookOpen className="h-4 w-4" aria-hidden="true" /> About Luminous StockHaven
         </div>
         <h1 className="text-2xl font-semibold leading-tight sm:text-3xl">{about.pageTitle}</h1>
 

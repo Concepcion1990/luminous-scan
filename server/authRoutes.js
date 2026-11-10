@@ -100,7 +100,7 @@ function publicBusiness(row) {
     created_date: row.created_at,
     updated_date: row.updated_at,
     // T6 identity fields (migration 006). The app name is NOT here —
-    // Luminous Stockhaven stays the app name and is not changeable.
+    // Luminous StockHaven stays the app name and is not changeable.
     logo_url: row.logo_url || '',
     brand_color: row.brand_color || '#145042',
     contact_email: row.contact_email || '',

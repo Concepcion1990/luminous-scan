@@ -1,4 +1,4 @@
-# Self-run Postgres for the Luminous Stockhaven twin (T0 decision:
+# Self-run Postgres for the Luminous StockHaven twin (T0 decision:
 # Postgres SELF-RUN, ~$5/mo for the database: 512 MB machine ~$3.69 +
 # 10 GB volume $1.50 — NOT Fly.io Managed Postgres at $38/mo).
 #

@@ -1,5 +1,5 @@
 /**
- * Luminous Stockhaven twin — API client (T3: auth + businesses + core shop live).
+ * Luminous StockHaven twin — API client (T3: auth + businesses + core shop live).
  *
  * Replaces Base44's `src/api/base44Client.js`. Fetch-based, same call
  * shapes where possible, session-cookie auth shape: requests send

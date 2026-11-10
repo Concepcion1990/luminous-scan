@@ -1,7 +1,7 @@
 import { base44 } from '@/api/client';
 import { localTimeZoneName } from '@/lib/dates';
 
-export const APP_NAME = 'Luminous Stockhaven';
+export const APP_NAME = 'Luminous StockHaven';
 export const APP_TAGLINE = 'A home for everything your business carries.';
 export const PUBLISHER = 'The Luminous Book Shop, LLC';
 

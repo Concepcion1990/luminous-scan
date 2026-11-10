@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Luminous Stockhaven — Fly.io twin of the Base44 app (T2: auth + businesses). Vite React app served by Express; Postgres + Stripe land in later phases.",
+  "description": "Luminous StockHaven — Fly.io twin of the Base44 app (T2: auth + businesses). Vite React app served by Express; Postgres + Stripe land in later phases.",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

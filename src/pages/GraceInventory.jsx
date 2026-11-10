@@ -113,7 +113,7 @@ export default function GraceInventory() {
         <header className="space-y-1">
           <p className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
             <Eye className="h-4 w-4" aria-hidden="true" />
-            Luminous Stockhaven — read-only view
+            Luminous StockHaven — read-only view
           </p>
           <h1 className="text-2xl font-bold">Your products</h1>
         </header>

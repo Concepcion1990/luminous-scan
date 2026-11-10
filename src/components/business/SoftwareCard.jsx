@@ -6,7 +6,7 @@ export default function SoftwareCard() {
   return (
     <SettingsCard
       title="About this software"
-      description="Luminous Stockhaven is the application. Your business details elsewhere on this page are your own."
+      description="Luminous StockHaven is the application. Your business details elsewhere on this page are your own."
     >
       <dl className="grid gap-3 sm:grid-cols-3">
         <div>

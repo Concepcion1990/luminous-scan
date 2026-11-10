@@ -31,7 +31,7 @@ export default function Welcome() {
           Welcome
         </p>
         <h1 className="mt-2 text-3xl font-semibold leading-tight sm:text-4xl">
-          Welcome to Luminous Stockhaven
+          Welcome to Luminous StockHaven
         </h1>
         <p className="mt-2 text-base text-muted-foreground">
           A home for everything your business carries.
@@ -41,7 +41,7 @@ export default function Welcome() {
           <p className="font-medium text-foreground">Manage your inventory your way.</p>
           <p>
             Whether you need a simple mobile inventory companion or a complete inventory-management
-            system for your growing business, Luminous Stockhaven has options for you.
+            system for your growing business, Luminous StockHaven has options for you.
           </p>
           <p>Explore our available plans before starting your free trial.</p>
         </div>
@@ -87,7 +87,7 @@ export default function Welcome() {
         </p>
 
         <p className="mt-6 text-xs text-muted-foreground">
-          Already have a Stockhaven account?{' '}
+          Already have a StockHaven account?{' '}
           <Link to="/login" className="underline underline-offset-2 hover:text-foreground">
             Sign in
           </Link>{' '}

@@ -232,7 +232,7 @@ export default function Subscribe() {
               </form>
             ) : (
               <p className="text-sm text-muted-foreground">
-                No workspace is available on this account yet. Contact Luminous Stockhaven support for help.
+                No workspace is available on this account yet. Contact Luminous StockHaven support for help.
               </p>
             )}
             <p className="text-xs leading-relaxed text-muted-foreground">
@@ -277,7 +277,7 @@ export default function Subscribe() {
         )}
 
         <p className="mt-5 text-xs leading-relaxed text-muted-foreground">
-          No card details are stored by Luminous Stockhaven. Payments are processed by Stripe.
+          No card details are stored by Luminous StockHaven. Payments are processed by Stripe.
         </p>
           </>
         )}

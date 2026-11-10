@@ -77,8 +77,8 @@ test('Subscribe workspace-loop fix applies to Business exactly as to Essentials'
   const plans = readFileSync('src/pages/Plans.jsx', 'utf8');
   assert.match(plans, /<Link to=\{`\/subscribe\?plan=\$\{option\.key\}`\}>Subscribe<\/Link>/);
   const plansLib = readFileSync('src/lib/plans.js', 'utf8');
-  assert.match(plansLib, /key: 'business',\s*\n\s*name: 'Luminous Stockhaven Business',\s*\n\s*price: 29\.99/);
-  assert.match(plansLib, /key: 'essentials',\s*\n\s*name: 'Luminous Stockhaven Essentials',\s*\n\s*price: 14\.99/);
+  assert.match(plansLib, /key: 'business',\s*\n\s*name: 'Luminous StockHaven Business',\s*\n\s*price: 29\.99/);
+  assert.match(plansLib, /key: 'essentials',\s*\n\s*name: 'Luminous StockHaven Essentials',\s*\n\s*price: 14\.99/);
 });
 
 test('an unknown or missing ?plan= shows a chooser instead of silently subscribing to Essentials', () => {

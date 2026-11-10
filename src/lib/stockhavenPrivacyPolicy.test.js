@@ -7,7 +7,7 @@ import { CANCELLATION_GRACE_PARAGRAPH } from './cancellationGrace.js';
 const body = p.sections.flatMap(section => [section.title, ...section.paragraphs]).join('\n');
 const read = path => fs.readFileSync(path, 'utf8');
 
-test('Stockhaven privacy policy is effective November 8, 2026 and never says draft', () => {
+test('StockHaven privacy policy is effective November 8, 2026 and never says draft', () => {
   assert.equal(p.status, 'effective');
   assert.equal(p.version, '2026-11-09-v4');
   assert.equal(p.effectiveDate, 'November 9, 2026');
@@ -41,8 +41,8 @@ test('privacy policy is linked from Plans, Terms and Subscription Policy', () =>
   assert.match(subscription, /to="\/privacy-policy"/);
 });
 
-test('policy covers the Stockhaven app and direct website subscriptions, not marketplace policies', () => {
-  assert.match(p.scope, /Luminous Stockhaven/i);
+test('policy covers the StockHaven app and direct website subscriptions, not marketplace policies', () => {
+  assert.match(p.scope, /Luminous StockHaven/i);
   assert.match(p.scope, /eBay/);
   assert.match(p.scope, /Shopify/);
   assert.match(p.scope, /Google Play/);

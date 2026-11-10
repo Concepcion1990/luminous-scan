@@ -21,12 +21,12 @@ export const TRADEMARK_NOTICE = Object.freeze({
   heading: '🛡️ Built for Retailers, Priceless to Corporate Vultures',
   intro: 'I built this app because I run 5 retail storefronts and was sick of being price-gouged by confusing, multi-hundred-dollar software. This app was built to protect independent artists, crafters, bookstore owners, and local shops.',
   legalHeading: 'LEGAL NOTICE TO COMPETITORS & IMITATORS:',
-  legalBody: 'Luminous Stockhaven™ and The Luminous Bookshop, LLC® are fully registered legal entities. All application user interfaces, backend structural workflows, original features, text, user role documentation, and digital assets are strictly protected under federal copyright law. We actively monitor the market. Any attempt to scrape our platform, clone our proprietary workflows, or infringe upon our intellectual property will be met with immediate, aggressive legal action and federal statutory damages.',
+  legalBody: 'Luminous StockHaven™ and The Luminous Bookshop, LLC® are fully registered legal entities. All application user interfaces, backend structural workflows, original features, text, user role documentation, and digital assets are strictly protected under federal copyright law. We actively monitor the market. Any attempt to scrape our platform, clone our proprietary workflows, or infringe upon our intellectual property will be met with immediate, aggressive legal action and federal statutory damages.',
   acquisitionHeading: 'TO ACQUISITION FIRMS & BROKERS:',
   acquisitionBody: "Do not email me. Do not DM me. Do not pitch me a 'strategic exit.' You can throw thousands, millions, billions, or trillions at me — the answer is No. You will not buy this app just to jack up prices on my fellow merchants. Any acquisition cold-emails will be instantly marked as spam, and your domain will be permanently blocked from our platform. Save your breath.",
 });
 
 export const LEGAL_FOOTER = Object.freeze({
   copyrightLine: '© 2026 The Luminous Bookshop, LLC. All rights reserved.',
-  trademarkLine: 'Luminous Stockhaven™ and the Luminous Stockhaven logo are trademarks of The Luminous Bookshop, LLC. All application interfaces, features, workflows, and proprietary text are protected under applicable copyright laws. Unauthorized duplication, cloning, or scraping is strictly prohibited.',
+  trademarkLine: 'Luminous StockHaven™ and the Luminous StockHaven logo are trademarks of The Luminous Bookshop, LLC. All application interfaces, features, workflows, and proprietary text are protected under applicable copyright laws. Unauthorized duplication, cloning, or scraping is strictly prohibited.',
 });

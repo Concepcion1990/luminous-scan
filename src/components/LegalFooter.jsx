@@ -21,7 +21,7 @@ export default function LegalFooter({ className = '' }) {
     >
       <p>
         <Link to="/about" className="font-medium underline underline-offset-4 hover:text-foreground">
-          About Luminous Stockhaven
+          About Luminous StockHaven
         </Link>
       </p>
       <p className="mt-1">{footer.copyrightLine}</p>

@@ -1,5 +1,5 @@
 /**
- * Luminous Stockhaven twin — Express entry point (T1 skeleton).
+ * Luminous StockHaven twin — Express entry point (T1 skeleton).
  *
  * REPLACES the old Luminous Scan `server.js` (Shopify OAuth, shops.json
  * token store, demo products). That file stays in git history only; the
@@ -60,7 +60,7 @@ async function main() {
     console.log('[twin] wipe sweep timer enabled (daily).');
   }
   app.listen(config.port, () => {
-    console.log(`[twin] Luminous Stockhaven listening on port ${config.port}`);
+    console.log(`[twin] Luminous StockHaven listening on port ${config.port}`);
   });
 }
 

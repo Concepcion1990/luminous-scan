@@ -22,7 +22,7 @@
  * twin's own database). It is the STORE's branding: it appears in
  * the app chrome next to the store's name. Printed documents keep
  * carrying the store's business name and never the Luminous
- * Stockhaven app logo (T5 white-label rule). The app name itself is
+ * StockHaven app logo (T5 white-label rule). The app name itself is
  * never changeable and is not part of any of these routes.
  */
 import crypto from 'node:crypto';
