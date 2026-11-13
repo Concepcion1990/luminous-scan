@@ -2310,9 +2310,9 @@ export const paGuru = {
   "settings.canceled.endsOn": "ਇਹ ਗਾਹਕੀ ਰੱਦ ਕਰ ਦਿੱਤੀ ਗਈ ਹੈ ਅਤੇ {date} ਨੂੰ ਖਤਮ ਹੁੰਦੀ ਹੈ। ਤੁਹਾਨੂੰ ਉਦੋਂ ਤੱਕ ਪੂਰੀ ਪਹੁੰਚ ਮਿਲਦੀ ਰਹੇਗੀ।",
   "settings.delete.checking": "ਮੌਜੂਦਾ ਮਿਟਾਉਣ ਦੀ ਬੇਨਤੀ ਦੀ ਜਾਂਚ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ…",
   "settings.delete.description": "ਆਪਣੇ Luminous StockHaven ਸਾਈਨ-ਇਨ ਖਾਤੇ ਨੂੰ ਹਟਾਉਣ ਦੀ ਬੇਨਤੀ ਕਰੋ।",
-  "settings.delete.dialogDescription": "ਇਹ ਖਾਤਾ ਮਿਟਾਉਣ ਦੀ ਸਮੀਖਿਆ ਦੀ ਬੇਨਤੀ ਕਰਦਾ ਹੈ। ਇਹ ਤੁਹਾਡੇ ਲੌਗਇਨ ਜਾਂ ਵਸਤੂ ਸੂਚੀ ਨੂੰ ਤੁਰੰਤ ਨਹੀਂ ਹਟਾਉਂਦਾ, ਅਤੇ ਇਹ ਕਿਸੇ Stripe ਗਾਹਕੀ ਨੂੰ ਰੱਦ ਨਹੀਂ ਕਰਦਾ। ਇਹ ਪੁਸ਼ਟੀ ਕਰਨ ਲਈ DELETE ਟਾਈਪ ਕਰੋ ਕਿ ਤੁਸੀਂ ਬੇਨਤੀ ਜਮ੍ਹਾਂ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ।",
+  "settings.delete.dialogDescription": "ਇਹ ਖਾਤਾ ਮਿਟਾਉਣ ਦੀ ਸਮੀਖਿਆ ਦੀ ਬੇਨਤੀ ਕਰਦਾ ਹੈ। ਇਹ ਤੁਹਾਡੇ ਲੌਗਇਨ ਜਾਂ ਵਸਤੂ ਸੂਚੀ ਨੂੰ ਤੁਰੰਤ ਨਹੀਂ ਹਟਾਉਂਦਾ, ਅਤੇ ਇਹ ਕਿਸੇ Stripe ਗਾਹਕੀ ਨੂੰ ਰੱਦ ਨਹੀਂ ਕਰਦਾ। ਇਹ ਪੁਸ਼ਟੀ ਕਰਨ ਲਈ {word} ਟਾਈਪ ਕਰੋ ਕਿ ਤੁਸੀਂ ਬੇਨਤੀ ਜਮ੍ਹਾਂ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ।",
   "settings.delete.dialogTitle": "ਖਾਤਾ ਮਿਟਾਉਣ ਦੀ ਬੇਨਤੀ ਕਰੋ",
-  "settings.delete.enterDelete": "ਪੁਸ਼ਟੀ ਕਰਨ ਲਈ DELETE ਦਰਜ ਕਰੋ",
+  "settings.delete.enterDelete": "ਪੁਸ਼ਟੀ ਕਰਨ ਲਈ {word} ਦਰਜ ਕਰੋ",
   "settings.delete.exportFirst": "ਜੇ ਤੁਹਾਨੂੰ ਆਪਣੇ ਰਿਕਾਰਡ ਰੱਖਣ ਦੀ ਲੋੜ ਹੈ ਤਾਂ ਪਹਿਲਾਂ ਆਪਣੀ ਵਸਤੂ ਸੂਚੀ ਨਿਰਯਾਤ ਕਰੋ।",
   "settings.delete.intro": "ਬੇਨਤੀ ਜਮ੍ਹਾਂ ਕਰਨ ਨਾਲ ਤੁਹਾਡਾ ਖਾਤਾ, ਕਾਰੋਬਾਰ, ਜਾਂ ਵਸਤੂ ਸੂਚੀ ਤੁਰੰਤ ਨਹੀਂ ਮਿਟਦੀ। ਮਿਟਾਉਣਾ ਪੂਰਾ ਹੋਣ ਤੋਂ ਪਹਿਲਾਂ ਬੇਨਤੀਆਂ ਦੀ ਵੱਖਰੇ ਤੌਰ 'ਤੇ ਸਮੀਖਿਆ ਕੀਤੀ ਜਾਂਦੀ ਹੈ। ਇਹ ਬੇਨਤੀ Stripe ਗਾਹਕੀ ਨੂੰ ਰੱਦ ਨਹੀਂ ਕਰਦੀ ਜਾਂ ਭਵਿੱਖ ਦੀ ਬਿਲਿੰਗ ਨੂੰ ਨਹੀਂ ਰੋਕਦੀ; ਗਾਹਕੀ ਰੱਦ ਕਰਨਾ ਬਿਲਿੰਗ ਪ੍ਰਦਾਤਾ ਰਾਹੀਂ ਵੱਖਰੇ ਤੌਰ 'ਤੇ ਸੰਭਾਲਿਆ ਜਾਣਾ ਚਾਹੀਦਾ ਹੈ।",
   "settings.delete.keepAccount": "ਖਾਤਾ ਰੱਖੋ",
@@ -3520,4 +3520,6 @@ export const paGuru = {
   "training.track.staff": "Staff track",
   "training.track.staffHelp": "The everyday tools: scanning, the time clock, your schedule, your inbox and your pay stub.",
   "training.warningSentOn": "Warning sent {date}",
+  "auth.sameEmailNotice": "Already have our app from Google Play or the App Store? Use the same email here — the one you sign into the app with — so your shop and your inventory come with you. A different email starts a totally new, empty storefront.",
+  "settings.deleteConfirmWord": "ਮਿਟਾਓ",
 };

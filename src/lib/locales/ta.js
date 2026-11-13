@@ -2310,9 +2310,9 @@ export const ta = {
   "settings.canceled.endsOn": "இந்தச் சந்தா ரத்து செய்யப்பட்டு {date} அன்று முடிவடைகிறது. அதுவரை உங்களுக்கு முழு அணுகல் இருக்கும்.",
   "settings.delete.checking": "ஏற்கனவே உள்ள நீக்கக் கோரிக்கையைச் சரிபார்க்கிறது…",
   "settings.delete.description": "உங்கள் Luminous StockHaven உள்நுழைவுக் கணக்கை அகற்றக் கோரவும்.",
-  "settings.delete.dialogDescription": "இது கணக்கு நீக்கத்திற்கான மதிப்பாய்வைக் கோருகிறது. அது உங்கள் உள்நுழைவு அல்லது இருப்பை உடனடியாக அகற்றாது, மேலும் எந்த Stripe சந்தாவையும் ரத்து செய்யாது. நீங்கள் கோரிக்கையைச் சமர்ப்பிக்க விரும்புகிறீர்கள் என்பதை உறுதிப்படுத்த DELETE என தட்டச்சு செய்யவும்.",
+  "settings.delete.dialogDescription": "இது கணக்கு நீக்கத்திற்கான மதிப்பாய்வைக் கோருகிறது. அது உங்கள் உள்நுழைவு அல்லது இருப்பை உடனடியாக அகற்றாது, மேலும் எந்த Stripe சந்தாவையும் ரத்து செய்யாது. நீங்கள் கோரிக்கையைச் சமர்ப்பிக்க விரும்புகிறீர்கள் என்பதை உறுதிப்படுத்த {word} என தட்டச்சு செய்யவும்.",
   "settings.delete.dialogTitle": "கணக்கு நீக்கத்தைக் கோரவும்",
-  "settings.delete.enterDelete": "உறுதிப்படுத்த DELETE என உள்ளிடவும்",
+  "settings.delete.enterDelete": "உறுதிப்படுத்த {word} என உள்ளிடவும்",
   "settings.delete.exportFirst": "உங்கள் பதிவுகளை வைத்திருக்க வேண்டுமென்றால் முதலில் உங்கள் இருப்பை ஏற்றுமதி செய்யவும்.",
   "settings.delete.intro": "கோரிக்கையைச் சமர்ப்பிப்பது உங்கள் கணக்கு, வணிகங்கள் அல்லது இருப்பை உடனடியாக நீக்காது. நீக்கம் முடிவடைவதற்கு முன் கோரிக்கைகள் தனியாக மதிப்பாய்வு செய்யப்படுகின்றன. இந்தக் கோரிக்கை Stripe சந்தாவை ரத்து செய்யாது அல்லது எதிர்கால பில்லிங்கை நிறுத்தாது; சந்தா ரத்து பில்லிங் வழங்குநர் மூலம் தனியாகக் கையாளப்பட வேண்டும்.",
   "settings.delete.keepAccount": "கணக்கை வைத்திருக்கவும்",
@@ -3520,4 +3520,6 @@ export const ta = {
   "training.track.staff": "Staff track",
   "training.track.staffHelp": "The everyday tools: scanning, the time clock, your schedule, your inbox and your pay stub.",
   "training.warningSentOn": "Warning sent {date}",
+  "auth.sameEmailNotice": "Already have our app from Google Play or the App Store? Use the same email here — the one you sign into the app with — so your shop and your inventory come with you. A different email starts a totally new, empty storefront.",
+  "settings.deleteConfirmWord": "நீக்கு",
 };

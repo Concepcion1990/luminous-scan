@@ -2310,9 +2310,9 @@ export const th = {
   "settings.canceled.endsOn": "การสมัครสมาชิกนี้ถูกยกเลิกแล้วและสิ้นสุดวันที่ {date} คุณยังเข้าถึงได้เต็มรูปแบบจนถึงวันนั้น",
   "settings.delete.checking": "กำลังตรวจสอบคำขอลบที่มีอยู่…",
   "settings.delete.description": "ขอให้นำบัญชีเข้าใช้งาน Luminous StockHaven ของคุณออก",
-  "settings.delete.dialogDescription": "การนี้เป็นการขอให้ตรวจสอบการลบบัญชี ไม่ได้นำการเข้าสู่ระบบหรือสินค้าคงคลังของคุณออกทันที และไม่ยกเลิกการสมัครสมาชิก Stripe ใดๆ พิมพ์ DELETE เพื่อยืนยันว่าคุณต้องการส่งคำขอ",
+  "settings.delete.dialogDescription": "การนี้เป็นการขอให้ตรวจสอบการลบบัญชี ไม่ได้นำการเข้าสู่ระบบหรือสินค้าคงคลังของคุณออกทันที และไม่ยกเลิกการสมัครสมาชิก Stripe ใดๆ พิมพ์ {word} เพื่อยืนยันว่าคุณต้องการส่งคำขอ",
   "settings.delete.dialogTitle": "ขอให้ลบบัญชี",
-  "settings.delete.enterDelete": "กรอก DELETE เพื่อยืนยัน",
+  "settings.delete.enterDelete": "กรอก {word} เพื่อยืนยัน",
   "settings.delete.exportFirst": "ส่งออกสินค้าคงคลังของคุณก่อนหากคุณต้องการเก็บบันทึกไว้",
   "settings.delete.intro": "การส่งคำขอไม่ได้ลบบัญชี ธุรกิจ หรือสินค้าคงคลังของคุณทันที คำขอจะได้รับการตรวจสอบแยกต่างหากก่อนที่การลบจะเสร็จสมบูรณ์ คำขอนี้ไม่ยกเลิกการสมัครสมาชิก Stripe หรือหยุดการเรียกเก็บเงินในอนาคต การยกเลิกการสมัครสมาชิกต้องจัดการแยกต่างหากผ่านผู้ให้บริการเรียกเก็บเงิน",
   "settings.delete.keepAccount": "เก็บบัญชีไว้",
@@ -3520,4 +3520,6 @@ export const th = {
   "training.track.staff": "Staff track",
   "training.track.staffHelp": "The everyday tools: scanning, the time clock, your schedule, your inbox and your pay stub.",
   "training.warningSentOn": "Warning sent {date}",
+  "auth.sameEmailNotice": "Already have our app from Google Play or the App Store? Use the same email here — the one you sign into the app with — so your shop and your inventory come with you. A different email starts a totally new, empty storefront.",
+  "settings.deleteConfirmWord": "ลบ",
 };

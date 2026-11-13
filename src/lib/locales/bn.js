@@ -2310,9 +2310,9 @@ export const bn = {
   "settings.canceled.endsOn": "এই সাবস্ক্রিপশন বাতিল হয়েছে এবং {date}-এ শেষ হবে। ততদিন পর্যন্ত আপনার সম্পূর্ণ অ্যাক্সেস থাকবে।",
   "settings.delete.checking": "বিদ্যমান মুছে ফেলার অনুরোধ আছে কি না যাচাই করা হচ্ছে…",
   "settings.delete.description": "আপনার Luminous StockHaven সাইন-ইন অ্যাকাউন্ট অপসারণের অনুরোধ করুন।",
-  "settings.delete.dialogDescription": "এটি অ্যাকাউন্ট মুছে ফেলার পর্যালোচনার অনুরোধ করে। এটি সঙ্গে সঙ্গে আপনার লগইন বা ইনভেন্টরি সরায় না, এবং কোনো Stripe সাবস্ক্রিপশন বাতিল করে না। অনুরোধ জমা দিতে চান তা নিশ্চিত করতে DELETE লিখুন।",
+  "settings.delete.dialogDescription": "এটি অ্যাকাউন্ট মুছে ফেলার পর্যালোচনার অনুরোধ করে। এটি সঙ্গে সঙ্গে আপনার লগইন বা ইনভেন্টরি সরায় না, এবং কোনো Stripe সাবস্ক্রিপশন বাতিল করে না। অনুরোধ জমা দিতে চান তা নিশ্চিত করতে {word} লিখুন।",
   "settings.delete.dialogTitle": "অ্যাকাউন্ট মুছে ফেলার অনুরোধ",
-  "settings.delete.enterDelete": "নিশ্চিত করতে DELETE লিখুন",
+  "settings.delete.enterDelete": "নিশ্চিত করতে {word} লিখুন",
   "settings.delete.exportFirst": "আপনার রেকর্ড রাখতে চাইলে প্রথমে আপনার ইনভেন্টরি এক্সপোর্ট করুন।",
   "settings.delete.intro": "অনুরোধ জমা দিলে আপনার অ্যাকাউন্ট, ব্যবসা বা ইনভেন্টরি সঙ্গে সঙ্গে মুছে যায় না। মুছে ফেলা সম্পূর্ণ হওয়ার আগে অনুরোধগুলো আলাদাভাবে পর্যালোচনা করা হয়। এই অনুরোধ কোনো Stripe সাবস্ক্রিপশন বাতিল করে না বা ভবিষ্যতের বিলিং বন্ধ করে না; সাবস্ক্রিপশন বাতিল বিলিং প্রদানকারীর মাধ্যমে আলাদাভাবে করতে হবে।",
   "settings.delete.keepAccount": "অ্যাকাউন্ট রাখুন",
@@ -3520,4 +3520,6 @@ export const bn = {
   "training.track.staff": "Staff track",
   "training.track.staffHelp": "The everyday tools: scanning, the time clock, your schedule, your inbox and your pay stub.",
   "training.warningSentOn": "Warning sent {date}",
+  "auth.sameEmailNotice": "Already have our app from Google Play or the App Store? Use the same email here — the one you sign into the app with — so your shop and your inventory come with you. A different email starts a totally new, empty storefront.",
+  "settings.deleteConfirmWord": "মুছুন",
 };
