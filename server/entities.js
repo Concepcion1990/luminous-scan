@@ -529,6 +529,22 @@ async function guardUpdate(pool, def, name, access, row, patch) {
     if (!access.isOwner && !access.can('staff.manage')) {
       throw err(403, 'forbidden', 'You do not have permission to manage staff here.');
     }
+    // Recovery kit (T7): an email CHANGE never goes through the plain
+    // edit. The email is the person's identity — it keys their
+    // account, their rows at OTHER businesses and their trial
+    // history — so it moves only through the owner's email-fix flow,
+    // which carries all of it atomically. (An unchanged email in the
+    // patch is fine: the Staff dialog always sends the field.)
+    if (
+      patch.email !== undefined
+      && String(patch.email).trim().toLowerCase() !== String(row.email || '').trim().toLowerCase()
+    ) {
+      throw err(
+        400,
+        'staff_email_change',
+        "Use the email fix on the Staff page to change a team member's email — it moves their account, their other stores and their trial history with it. A plain edit would strand them under the old address.",
+      );
+    }
     if (Array.isArray(patch.permissions)) {
       const { permissionsForPlan } = await import('./plans.js');
       patch.permissions = permissionsForPlan(planKey, patch.permissions);
