@@ -122,7 +122,7 @@ const BUSINESS_UPDATE_FIELDS = [
   'contact_phone', 'website', 'address', 'currency', 'timezone',
   'date_format', 'unit_system', 'language',
 ];
-const SUPPORTED_LANGUAGES = ['am', 'ar', 'bho', 'bn', 'de', 'en', 'fr-CA', 'fr-FR', 'gu', 'ha', 'hi', 'id', 'it', 'ms', 'wuu', 'yue', 'zh-Hans', 'zh-Hant'];
+const SUPPORTED_LANGUAGES = ['am', 'ar', 'bho', 'bn', 'de', 'en', 'fa', 'fr-CA', 'fr-FR', 'gu', 'ha', 'hi', 'id', 'it', 'ja', 'jv', 'kn', 'ko', 'mr', 'ms', 'pcm', 'prs', 'tg', 'wuu', 'yue', 'zh-Hans', 'zh-Hant'];
 const SUPPORTED_CURRENCIES = ['USD', 'CAD', 'GBP', 'EUR', 'AUD', 'NZD', 'MXN', 'JPY'];
 const SUPPORTED_DATE_FORMATS = ['MMM d, yyyy', 'd MMM yyyy', 'M/d/yyyy', 'yyyy-MM-dd'];
 

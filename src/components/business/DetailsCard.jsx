@@ -144,6 +144,7 @@ export default function DetailsCard({ values, onChange }) {
                 <SelectItem value="bn">{t('settings.details.bengali')}</SelectItem>
                 <SelectItem value="de">{t('settings.details.german')}</SelectItem>
                 <SelectItem value="en">{t('settings.details.english')}</SelectItem>
+                <SelectItem value="fa">{t('settings.details.persian')}</SelectItem>
                 <SelectItem value="fr-CA">{t('settings.details.frenchCanadian')}</SelectItem>
                 <SelectItem value="fr-FR">{t('settings.details.french')}</SelectItem>
                 <SelectItem value="gu">{t('settings.details.gujarati')}</SelectItem>
@@ -151,7 +152,15 @@ export default function DetailsCard({ values, onChange }) {
                 <SelectItem value="hi">{t('settings.details.hindi')}</SelectItem>
                 <SelectItem value="id">{t('settings.details.indonesian')}</SelectItem>
                 <SelectItem value="it">{t('settings.details.italian')}</SelectItem>
+                <SelectItem value="ja">{t('settings.details.japanese')}</SelectItem>
+                <SelectItem value="jv">{t('settings.details.javanese')}</SelectItem>
+                <SelectItem value="kn">{t('settings.details.kannada')}</SelectItem>
+                <SelectItem value="ko">{t('settings.details.korean')}</SelectItem>
+                <SelectItem value="mr">{t('settings.details.marathi')}</SelectItem>
                 <SelectItem value="ms">{t('settings.details.malay')}</SelectItem>
+                <SelectItem value="pcm">{t('settings.details.nigerianPidgin')}</SelectItem>
+                <SelectItem value="prs">{t('settings.details.dari')}</SelectItem>
+                <SelectItem value="tg">{t('settings.details.tajik')}</SelectItem>
                 <SelectItem value="wuu">{t('settings.details.shanghainese')}</SelectItem>
                 <SelectItem value="yue">{t('settings.details.cantonese')}</SelectItem>
                 <SelectItem value="zh-Hans">{t('settings.details.mandarinSimplified')}</SelectItem>

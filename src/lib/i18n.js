@@ -31,9 +31,18 @@ import { ha } from './locales/ha.js';
 import { it } from './locales/it.js';
 import { hi } from './locales/hi.js';
 import { id } from './locales/id.js';
+import { ja } from './locales/ja.js';
+import { jv } from './locales/jv.js';
+import { kn } from './locales/kn.js';
+import { ko } from './locales/ko.js';
+import { mr } from './locales/mr.js';
+import { pcm } from './locales/pcm.js';
+import { fa } from './locales/fa.js';
+import { prs } from './locales/prs.js';
+import { tg } from './locales/tg.js';
 
 /** code -> strings. Add one language at a time, ABC order. */
-export const LOCALES = { en, ar, am, bn, bho, 'zh-Hans': zhHans, 'zh-Hant': zhHant, yue, wuu, 'fr-CA': frCA, ms, gu, de, 'fr-FR': frFR, ha, it, hi, id };
+export const LOCALES = { en, ar, am, bn, bho, 'zh-Hans': zhHans, 'zh-Hant': zhHant, yue, wuu, 'fr-CA': frCA, ms, gu, de, 'fr-FR': frFR, ha, it, hi, id, ja, jv, kn, ko, mr, pcm, fa, prs, tg };
 
 /** Locale codes that read right-to-left (Arabic script family). */
 export const RTL_LOCALES = new Set(['ar', 'fa', 'prs', 'tg', 'ur', 'pa-Arab']);

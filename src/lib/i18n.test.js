@@ -67,8 +67,8 @@ test('RTL locales are detected (document direction flips in a real browser)', ()
   assert.equal(isRTL('zh-Hans'), false);
 });
 
-test('the registry holds English, Arabic, Amharic, Bengali, Bhojpuri, Canadian French, Cantonese, French, German, Gujarati, Hausa, Hindi, Indonesian, Italian, Malay, Mandarin Simplified, Mandarin Traditional and Shanghainese, ABC order', () => {
-  assert.deepEqual(SUPPORTED_LOCALES, ['am', 'ar', 'bho', 'bn', 'de', 'en', 'fr-CA', 'fr-FR', 'gu', 'ha', 'hi', 'id', 'it', 'ms', 'wuu', 'yue', 'zh-Hans', 'zh-Hant']);
+test('the registry holds English, Arabic, Amharic, Bengali, Bhojpuri, Canadian French, Cantonese, Dari, French, German, Gujarati, Hausa, Hindi, Indonesian, Italian, Japanese, Javanese, Kannada, Korean, Malay, Mandarin Simplified, Mandarin Traditional, Marathi, Nigerian Pidgin, Persian, Shanghainese and Tajik, ABC order', () => {
+  assert.deepEqual(SUPPORTED_LOCALES, ['am', 'ar', 'bho', 'bn', 'de', 'en', 'fa', 'fr-CA', 'fr-FR', 'gu', 'ha', 'hi', 'id', 'it', 'ja', 'jv', 'kn', 'ko', 'mr', 'ms', 'pcm', 'prs', 'tg', 'wuu', 'yue', 'zh-Hans', 'zh-Hant']);
   assert.equal(DEFAULT_LOCALE, 'en');
 });
 
@@ -742,6 +742,372 @@ test('switching to Indonesian renders the app in Indonesian', () => {
   assert.equal(t('sync.sent'), 'Semua perubahan terkirim');
   assert.equal(t('scan.onlyOnHand', { count: 3, location: 'Lorong 1' }), 'Hanya 3 yang tersedia di Lorong 1.');
   assert.equal(isRTL(), false);
+  // And back to English — the switch is live, not frozen at import.
+  assert.equal(setLocale('en'), 'en');
+  assert.equal(t('nav.scan'), 'Scan');
+  assert.equal(isRTL(), false);
+});
+
+/**
+ * T6.3 batch 4 — Japanese (ja), the eighteenth translated locale.
+ * Same proof as Arabic: every English key exists in Japanese, every
+ * value is a non-empty string, and the value placeholders match —
+ * except the English plural-agreement markers ({s}, {plural},
+ * {suffix}, {us}, {cs}, {ps}, {fs}, {rs}), which Japanese omits by
+ * design.
+ */
+test('Japanese has every English key, with matching value placeholders', async () => {
+  const { ja } = await import('./locales/ja.js');
+  const agreement = new Set(['s', 'plural', 'suffix', 'us', 'cs', 'ps', 'fs', 'rs']);
+  const placeholders = (text) => new Set([...text.matchAll(/\{(\w+)\}/g)].map((m) => m[1]));
+  assert.equal(Object.keys(ja).length, Object.keys(en).length);
+  for (const [key, english] of Object.entries(en)) {
+    const value = ja[key];
+    assert.equal(typeof value, 'string', `ja missing key: ${key}`);
+    assert.ok(value.length > 0, `ja empty value: ${key}`);
+    const want = new Set([...placeholders(english)].filter((p) => !agreement.has(p)));
+    const got = placeholders(value);
+    for (const p of want) assert.ok(got.has(p), `ja ${key} missing {${p}}`);
+    for (const p of got) assert.ok(placeholders(english).has(p), `ja ${key} extra {${p}}`);
+    for (const p of agreement) assert.ok(!got.has(p), `ja ${key} keeps agreement marker {${p}}`);
+  }
+});
+
+test('switching to Japanese renders the app in Japanese', () => {
+  assert.equal(setLocale('ja'), 'ja');
+  assert.equal(getLocale(), 'ja');
+  assert.equal(t('nav.scan'), 'スキャン');
+  assert.equal(t('nav.overview'), '概要');
+  assert.equal(t('scan.printShelfTag'), '棚タグを印刷する');
+  assert.equal(t('sync.sent'), 'すべての変更が送信されました');
+  assert.equal(t('scan.onlyOnHand', { count: 3, location: '通路 1' }), '通路 1 での手持ちは 3 のみです。');
+  assert.equal(isRTL(), false);
+  // And back to English — the switch is live, not frozen at import.
+  assert.equal(setLocale('en'), 'en');
+  assert.equal(t('nav.scan'), 'Scan');
+  assert.equal(isRTL(), false);
+});
+
+/**
+ * T6.3 batch 4 — Javanese (jv), the nineteenth translated locale.
+ * Same proof as Arabic: every English key exists in Javanese, every
+ * value is a non-empty string, and the value placeholders match —
+ * except the English plural-agreement markers ({s}, {plural},
+ * {suffix}, {us}, {cs}, {ps}, {fs}, {rs}), which Javanese omits by
+ * design.
+ */
+test('Javanese has every English key, with matching value placeholders', async () => {
+  const { jv } = await import('./locales/jv.js');
+  const agreement = new Set(['s', 'plural', 'suffix', 'us', 'cs', 'ps', 'fs', 'rs']);
+  const placeholders = (text) => new Set([...text.matchAll(/\{(\w+)\}/g)].map((m) => m[1]));
+  assert.equal(Object.keys(jv).length, Object.keys(en).length);
+  for (const [key, english] of Object.entries(en)) {
+    const value = jv[key];
+    assert.equal(typeof value, 'string', `jv missing key: ${key}`);
+    assert.ok(value.length > 0, `jv empty value: ${key}`);
+    const want = new Set([...placeholders(english)].filter((p) => !agreement.has(p)));
+    const got = placeholders(value);
+    for (const p of want) assert.ok(got.has(p), `jv ${key} missing {${p}}`);
+    for (const p of got) assert.ok(placeholders(english).has(p), `jv ${key} extra {${p}}`);
+    for (const p of agreement) assert.ok(!got.has(p), `jv ${key} keeps agreement marker {${p}}`);
+  }
+});
+
+test('switching to Javanese renders the app in Javanese', () => {
+  assert.equal(setLocale('jv'), 'jv');
+  assert.equal(getLocale(), 'jv');
+  assert.equal(t('nav.scan'), 'Mindai');
+  assert.equal(t('nav.overview'), 'Ringkesan');
+  assert.equal(t('scan.printShelfTag'), 'Cithak tandha rak');
+  assert.equal(t('sync.sent'), 'Sedaya pangowahan dipunkintun');
+  assert.equal(t('scan.onlyOnHand', { count: 3, location: 'Lorong 1' }), 'Namung 3 ing tangan ing Lorong 1.');
+  assert.equal(isRTL(), false);
+  // And back to English — the switch is live, not frozen at import.
+  assert.equal(setLocale('en'), 'en');
+  assert.equal(t('nav.scan'), 'Scan');
+  assert.equal(isRTL(), false);
+});
+
+/**
+ * T6.3 batch 4 — Kannada (kn), the twentieth translated locale.
+ * Same proof as Arabic: every English key exists in Kannada, every
+ * value is a non-empty string, and the value placeholders match —
+ * except the English plural-agreement markers ({s}, {plural},
+ * {suffix}, {us}, {cs}, {ps}, {fs}, {rs}), which Kannada omits by
+ * design.
+ */
+test('Kannada has every English key, with matching value placeholders', async () => {
+  const { kn } = await import('./locales/kn.js');
+  const agreement = new Set(['s', 'plural', 'suffix', 'us', 'cs', 'ps', 'fs', 'rs']);
+  const placeholders = (text) => new Set([...text.matchAll(/\{(\w+)\}/g)].map((m) => m[1]));
+  assert.equal(Object.keys(kn).length, Object.keys(en).length);
+  for (const [key, english] of Object.entries(en)) {
+    const value = kn[key];
+    assert.equal(typeof value, 'string', `kn missing key: ${key}`);
+    assert.ok(value.length > 0, `kn empty value: ${key}`);
+    const want = new Set([...placeholders(english)].filter((p) => !agreement.has(p)));
+    const got = placeholders(value);
+    for (const p of want) assert.ok(got.has(p), `kn ${key} missing {${p}}`);
+    for (const p of got) assert.ok(placeholders(english).has(p), `kn ${key} extra {${p}}`);
+    for (const p of agreement) assert.ok(!got.has(p), `kn ${key} keeps agreement marker {${p}}`);
+  }
+});
+
+test('switching to Kannada renders the app in Kannada', () => {
+  assert.equal(setLocale('kn'), 'kn');
+  assert.equal(getLocale(), 'kn');
+  assert.equal(t('nav.scan'), 'ಸ್ಕ್ಯಾನ್');
+  assert.equal(t('nav.overview'), 'ಅವಲೋಕನ');
+  assert.equal(t('scan.printShelfTag'), 'ಶೆಲ್ಫ್ ಟ್ಯಾಗ್ ಅನ್ನು ಮುದ್ರಿಸಿ');
+  assert.equal(t('sync.sent'), 'ಎಲ್ಲಾ ಬದಲಾವಣೆಗಳನ್ನು ಕಳುಹಿಸಲಾಗಿದೆ');
+  assert.equal(t('scan.onlyOnHand', { count: 3, location: 'ಐಲ್ 1' }), 'ಐಲ್ 1 ನಲ್ಲಿ ಕೇವಲ 3 ಕೈಯಲ್ಲಿದೆ.');
+  assert.equal(isRTL(), false);
+  // And back to English — the switch is live, not frozen at import.
+  assert.equal(setLocale('en'), 'en');
+  assert.equal(t('nav.scan'), 'Scan');
+  assert.equal(isRTL(), false);
+});
+
+/**
+ * T6.3 batch 4 — Korean (ko), the twenty-first translated locale.
+ * Same proof as Arabic: every English key exists in Korean, every
+ * value is a non-empty string, and the value placeholders match —
+ * except the English plural-agreement markers ({s}, {plural},
+ * {suffix}, {us}, {cs}, {ps}, {fs}, {rs}), which Korean omits by
+ * design.
+ */
+test('Korean has every English key, with matching value placeholders', async () => {
+  const { ko } = await import('./locales/ko.js');
+  const agreement = new Set(['s', 'plural', 'suffix', 'us', 'cs', 'ps', 'fs', 'rs']);
+  const placeholders = (text) => new Set([...text.matchAll(/\{(\w+)\}/g)].map((m) => m[1]));
+  assert.equal(Object.keys(ko).length, Object.keys(en).length);
+  for (const [key, english] of Object.entries(en)) {
+    const value = ko[key];
+    assert.equal(typeof value, 'string', `ko missing key: ${key}`);
+    assert.ok(value.length > 0, `ko empty value: ${key}`);
+    const want = new Set([...placeholders(english)].filter((p) => !agreement.has(p)));
+    const got = placeholders(value);
+    for (const p of want) assert.ok(got.has(p), `ko ${key} missing {${p}}`);
+    for (const p of got) assert.ok(placeholders(english).has(p), `ko ${key} extra {${p}}`);
+    for (const p of agreement) assert.ok(!got.has(p), `ko ${key} keeps agreement marker {${p}}`);
+  }
+});
+
+test('switching to Korean renders the app in Korean', () => {
+  assert.equal(setLocale('ko'), 'ko');
+  assert.equal(getLocale(), 'ko');
+  assert.equal(t('nav.scan'), '스캔');
+  assert.equal(t('nav.overview'), '개요');
+  assert.equal(t('scan.printShelfTag'), '선반 태그 인쇄');
+  assert.equal(t('sync.sent'), '모든 변경 사항이 전송되었습니다');
+  assert.equal(t('scan.onlyOnHand', { count: 3, location: '통로 1' }), '통로 1에 3개만 보유 중입니다.');
+  assert.equal(isRTL(), false);
+  // And back to English — the switch is live, not frozen at import.
+  assert.equal(setLocale('en'), 'en');
+  assert.equal(t('nav.scan'), 'Scan');
+  assert.equal(isRTL(), false);
+});
+
+/**
+ * T6.3 batch 4 — Marathi (mr), the twenty-second translated locale.
+ * Same proof as Arabic: every English key exists in Marathi, every
+ * value is a non-empty string, and the value placeholders match —
+ * except the English plural-agreement markers ({s}, {plural},
+ * {suffix}, {us}, {cs}, {ps}, {fs}, {rs}), which Marathi omits by
+ * design.
+ */
+test('Marathi has every English key, with matching value placeholders', async () => {
+  const { mr } = await import('./locales/mr.js');
+  const agreement = new Set(['s', 'plural', 'suffix', 'us', 'cs', 'ps', 'fs', 'rs']);
+  const placeholders = (text) => new Set([...text.matchAll(/\{(\w+)\}/g)].map((m) => m[1]));
+  assert.equal(Object.keys(mr).length, Object.keys(en).length);
+  for (const [key, english] of Object.entries(en)) {
+    const value = mr[key];
+    assert.equal(typeof value, 'string', `mr missing key: ${key}`);
+    assert.ok(value.length > 0, `mr empty value: ${key}`);
+    const want = new Set([...placeholders(english)].filter((p) => !agreement.has(p)));
+    const got = placeholders(value);
+    for (const p of want) assert.ok(got.has(p), `mr ${key} missing {${p}}`);
+    for (const p of got) assert.ok(placeholders(english).has(p), `mr ${key} extra {${p}}`);
+    for (const p of agreement) assert.ok(!got.has(p), `mr ${key} keeps agreement marker {${p}}`);
+  }
+});
+
+test('switching to Marathi renders the app in Marathi', () => {
+  assert.equal(setLocale('mr'), 'mr');
+  assert.equal(getLocale(), 'mr');
+  assert.equal(t('nav.scan'), 'स्कॅन करा');
+  assert.equal(t('nav.overview'), 'आढावा');
+  assert.equal(t('scan.printShelfTag'), 'कपाट टॅग छापा');
+  assert.equal(t('sync.sent'), 'सर्व बदल पाठवले');
+  assert.equal(t('scan.onlyOnHand', { count: 3, location: 'ठिकाण 1' }), 'ठिकाण 1 येथे फक्त 3 हातात.');
+  assert.equal(isRTL(), false);
+  // And back to English — the switch is live, not frozen at import.
+  assert.equal(setLocale('en'), 'en');
+  assert.equal(t('nav.scan'), 'Scan');
+  assert.equal(isRTL(), false);
+});
+
+/**
+ * T6.3 batch 4 — Nigerian Pidgin (pcm), the twenty-third translated locale.
+ * Same proof as Arabic: every English key exists in Nigerian Pidgin, every
+ * value is a non-empty string, and the value placeholders match —
+ * except the English plural-agreement markers ({s}, {plural},
+ * {suffix}, {us}, {cs}, {ps}, {fs}, {rs}), which Nigerian Pidgin omits by
+ * design.
+ */
+test('Nigerian Pidgin has every English key, with matching value placeholders', async () => {
+  const { pcm } = await import('./locales/pcm.js');
+  const agreement = new Set(['s', 'plural', 'suffix', 'us', 'cs', 'ps', 'fs', 'rs']);
+  const placeholders = (text) => new Set([...text.matchAll(/\{(\w+)\}/g)].map((m) => m[1]));
+  assert.equal(Object.keys(pcm).length, Object.keys(en).length);
+  for (const [key, english] of Object.entries(en)) {
+    const value = pcm[key];
+    assert.equal(typeof value, 'string', `pcm missing key: ${key}`);
+    assert.ok(value.length > 0, `pcm empty value: ${key}`);
+    const want = new Set([...placeholders(english)].filter((p) => !agreement.has(p)));
+    const got = placeholders(value);
+    for (const p of want) assert.ok(got.has(p), `pcm ${key} missing {${p}}`);
+    for (const p of got) assert.ok(placeholders(english).has(p), `pcm ${key} extra {${p}}`);
+    for (const p of agreement) assert.ok(!got.has(p), `pcm ${key} keeps agreement marker {${p}}`);
+  }
+});
+
+test('switching to Nigerian Pidgin renders the app in Nigerian Pidgin', () => {
+  assert.equal(setLocale('pcm'), 'pcm');
+  assert.equal(getLocale(), 'pcm');
+  assert.equal(t('nav.scan'), 'Scan');
+  assert.equal(t('nav.overview'), 'Overview');
+  assert.equal(t('scan.printShelfTag'), 'Print shelf tag');
+  assert.equal(t('sync.sent'), 'All changes don send');
+  assert.equal(t('scan.onlyOnHand', { count: 3, location: 'Aisle 1' }), 'Na only 3 dey hand at Aisle 1.');
+  assert.equal(isRTL(), false);
+  // And back to English — the switch is live, not frozen at import.
+  assert.equal(setLocale('en'), 'en');
+  assert.equal(t('nav.scan'), 'Scan');
+  assert.equal(isRTL(), false);
+});
+
+/**
+ * T6.3 batch 4 — Persian (fa), the twenty-fourth translated locale.
+ * Same proof as Arabic: every English key exists in Persian, every
+ * value is a non-empty string, and the value placeholders match —
+ * except the English plural-agreement markers ({s}, {plural},
+ * {suffix}, {us}, {cs}, {ps}, {fs}, {rs}), which Persian omits by
+ * design.
+ * Persian is in RTL_LOCALES, so the switch test also proves the
+ * right-to-left direction engages (isRTL() true while it is active).
+ */
+test('Persian has every English key, with matching value placeholders', async () => {
+  const { fa } = await import('./locales/fa.js');
+  const agreement = new Set(['s', 'plural', 'suffix', 'us', 'cs', 'ps', 'fs', 'rs']);
+  const placeholders = (text) => new Set([...text.matchAll(/\{(\w+)\}/g)].map((m) => m[1]));
+  assert.equal(Object.keys(fa).length, Object.keys(en).length);
+  for (const [key, english] of Object.entries(en)) {
+    const value = fa[key];
+    assert.equal(typeof value, 'string', `fa missing key: ${key}`);
+    assert.ok(value.length > 0, `fa empty value: ${key}`);
+    const want = new Set([...placeholders(english)].filter((p) => !agreement.has(p)));
+    const got = placeholders(value);
+    for (const p of want) assert.ok(got.has(p), `fa ${key} missing {${p}}`);
+    for (const p of got) assert.ok(placeholders(english).has(p), `fa ${key} extra {${p}}`);
+    for (const p of agreement) assert.ok(!got.has(p), `fa ${key} keeps agreement marker {${p}}`);
+  }
+});
+
+test('switching to Persian renders the app in Persian, RTL included', () => {
+  assert.equal(setLocale('fa'), 'fa');
+  assert.equal(getLocale(), 'fa');
+  assert.equal(t('nav.scan'), 'اسکن');
+  assert.equal(t('nav.overview'), 'نمای کلی');
+  assert.equal(t('scan.printShelfTag'), 'چاپ برچسب قفسه');
+  assert.equal(t('sync.sent'), 'همه تغییرات ارسال شدند');
+  assert.equal(t('scan.onlyOnHand', { count: 3, location: 'راهرو 1' }), 'فقط 3 در راهرو 1 موجود است.');
+  assert.equal(isRTL(), true);
+  // And back to English — the switch is live, not frozen at import.
+  assert.equal(setLocale('en'), 'en');
+  assert.equal(t('nav.scan'), 'Scan');
+  assert.equal(isRTL(), false);
+});
+
+/**
+ * T6.3 batch 4 — Dari (prs), the twenty-fifth translated locale.
+ * Same proof as Arabic: every English key exists in Dari, every
+ * value is a non-empty string, and the value placeholders match —
+ * except the English plural-agreement markers ({s}, {plural},
+ * {suffix}, {us}, {cs}, {ps}, {fs}, {rs}), which Dari omits by
+ * design.
+ * Dari is in RTL_LOCALES, so the switch test also proves the
+ * right-to-left direction engages (isRTL() true while it is active).
+ */
+test('Dari has every English key, with matching value placeholders', async () => {
+  const { prs } = await import('./locales/prs.js');
+  const agreement = new Set(['s', 'plural', 'suffix', 'us', 'cs', 'ps', 'fs', 'rs']);
+  const placeholders = (text) => new Set([...text.matchAll(/\{(\w+)\}/g)].map((m) => m[1]));
+  assert.equal(Object.keys(prs).length, Object.keys(en).length);
+  for (const [key, english] of Object.entries(en)) {
+    const value = prs[key];
+    assert.equal(typeof value, 'string', `prs missing key: ${key}`);
+    assert.ok(value.length > 0, `prs empty value: ${key}`);
+    const want = new Set([...placeholders(english)].filter((p) => !agreement.has(p)));
+    const got = placeholders(value);
+    for (const p of want) assert.ok(got.has(p), `prs ${key} missing {${p}}`);
+    for (const p of got) assert.ok(placeholders(english).has(p), `prs ${key} extra {${p}}`);
+    for (const p of agreement) assert.ok(!got.has(p), `prs ${key} keeps agreement marker {${p}}`);
+  }
+});
+
+test('switching to Dari renders the app in Dari, RTL included', () => {
+  assert.equal(setLocale('prs'), 'prs');
+  assert.equal(getLocale(), 'prs');
+  assert.equal(t('nav.scan'), 'اسکن');
+  assert.equal(t('nav.overview'), 'نمای کلی');
+  assert.equal(t('scan.printShelfTag'), 'چاپ برچسب قفسه');
+  assert.equal(t('sync.sent'), 'همه تغییرات فرستاده شدند');
+  assert.equal(t('scan.onlyOnHand', { count: 3, location: 'راهرو 1' }), 'فقط 3 در راهرو 1 موجود است.');
+  assert.equal(isRTL(), true);
+  // And back to English — the switch is live, not frozen at import.
+  assert.equal(setLocale('en'), 'en');
+  assert.equal(t('nav.scan'), 'Scan');
+  assert.equal(isRTL(), false);
+});
+
+/**
+ * T6.3 batch 4 — Tajik (tg), the twenty-sixth translated locale.
+ * Same proof as Arabic: every English key exists in Tajik, every
+ * value is a non-empty string, and the value placeholders match —
+ * except the English plural-agreement markers ({s}, {plural},
+ * {suffix}, {us}, {cs}, {ps}, {fs}, {rs}), which Tajik omits by
+ * design.
+ * Tajik is in RTL_LOCALES, so the switch test also proves the
+ * right-to-left direction engages (isRTL() true while it is active).
+ */
+test('Tajik has every English key, with matching value placeholders', async () => {
+  const { tg } = await import('./locales/tg.js');
+  const agreement = new Set(['s', 'plural', 'suffix', 'us', 'cs', 'ps', 'fs', 'rs']);
+  const placeholders = (text) => new Set([...text.matchAll(/\{(\w+)\}/g)].map((m) => m[1]));
+  assert.equal(Object.keys(tg).length, Object.keys(en).length);
+  for (const [key, english] of Object.entries(en)) {
+    const value = tg[key];
+    assert.equal(typeof value, 'string', `tg missing key: ${key}`);
+    assert.ok(value.length > 0, `tg empty value: ${key}`);
+    const want = new Set([...placeholders(english)].filter((p) => !agreement.has(p)));
+    const got = placeholders(value);
+    for (const p of want) assert.ok(got.has(p), `tg ${key} missing {${p}}`);
+    for (const p of got) assert.ok(placeholders(english).has(p), `tg ${key} extra {${p}}`);
+    for (const p of agreement) assert.ok(!got.has(p), `tg ${key} keeps agreement marker {${p}}`);
+  }
+});
+
+test('switching to Tajik renders the app in Tajik, RTL included', () => {
+  assert.equal(setLocale('tg'), 'tg');
+  assert.equal(getLocale(), 'tg');
+  assert.equal(t('nav.scan'), 'Скан');
+  assert.equal(t('nav.overview'), 'Шарҳ');
+  assert.equal(t('scan.printShelfTag'), 'Чоп кардани барчаспи раф');
+  assert.equal(t('sync.sent'), 'Ҳамаи тағйирот фиристода шуданд');
+  assert.equal(t('scan.onlyOnHand', { count: 3, location: 'гузаргоҳ 1' }), 'Танҳо 3 дар даст дар гузаргоҳ 1.');
+  assert.equal(isRTL(), true);
   // And back to English — the switch is live, not frozen at import.
   assert.equal(setLocale('en'), 'en');
   assert.equal(t('nav.scan'), 'Scan');
