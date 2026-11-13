@@ -43,7 +43,7 @@ const NOTICE_TEXT = 'Already have our app from Google Play or the App Store? Use
 const TRANCHE_1_LOCALES = [
   'am', 'ar', 'bn', 'bho',
   'es-MX', 'es-ES', 'es-US', 'es-CU', 'es-PR', 'es-VE',
-  'fr-FR', 'fr-CA', 'pt-BR', 'pt-PT', 'zh-Hans', 'zh-Hant',
+  'fr-FR', 'fr-CA', 'pt-BR', 'pt-PT', 'zh-Hans', 'zh-Hant', 'yue', 'wuu',
 ];
 
 test('keyset parity holds across all 52 locale files with the two new keys counted', () => {

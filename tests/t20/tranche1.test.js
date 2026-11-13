@@ -64,8 +64,9 @@ const TRANCHE_1_LOCALES = [
   'es-MX', 'es-ES', 'es-US', 'es-CU', 'es-PR', 'es-VE',
   // Tranche 3 (Nov 13, 2026): French and Portuguese.
   'fr-FR', 'fr-CA', 'pt-BR', 'pt-PT',
-  // Tranche 4 part 1 (Nov 13, 2026): Chinese Simplified + Traditional.
-  'zh-Hans', 'zh-Hant',
+  // Tranche 4 (Nov 13, 2026): Chinese Simplified + Traditional,
+  // Cantonese and Wu.
+  'zh-Hans', 'zh-Hant', 'yue', 'wuu',
 ];
 
 // Verified cognates: keys whose correct Spanish value is spelled
@@ -271,7 +272,7 @@ test('completed-tranche policy bodies are registered and served, merged over Eng
       assert.notEqual(notice, en['policies.translationNotice'], `${code} protective line is still English`);
     }
     // A locale outside the completed tranches still falls back to English.
-    assert.equal(hasPolicyTranslation(kind, 'yue'), false, `${kind}/yue should not be registered yet`);
-    assert.equal(getPolicyDocument(kind, 'yue').translated, false);
+    assert.equal(hasPolicyTranslation(kind, 'de'), false, `${kind}/de should not be registered yet`);
+    assert.equal(getPolicyDocument(kind, 'de').translated, false);
   }
 });

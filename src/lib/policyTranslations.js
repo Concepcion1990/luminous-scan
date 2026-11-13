@@ -75,6 +75,12 @@ import { STOCKHAVEN_PRIVACY_POLICY_ZH_HANS } from './policies/privacy.zh-Hans.js
 import { STOCKHAVEN_TERMS_OF_SERVICE_ZH_HANT } from './policies/terms.zh-Hant.js';
 import { STOCKHAVEN_SUBSCRIPTION_POLICY_ZH_HANT } from './policies/subscription.zh-Hant.js';
 import { STOCKHAVEN_PRIVACY_POLICY_ZH_HANT } from './policies/privacy.zh-Hant.js';
+import { STOCKHAVEN_TERMS_OF_SERVICE_YUE } from './policies/terms.yue.js';
+import { STOCKHAVEN_SUBSCRIPTION_POLICY_YUE } from './policies/subscription.yue.js';
+import { STOCKHAVEN_PRIVACY_POLICY_YUE } from './policies/privacy.yue.js';
+import { STOCKHAVEN_TERMS_OF_SERVICE_WUU } from './policies/terms.wuu.js';
+import { STOCKHAVEN_SUBSCRIPTION_POLICY_WUU } from './policies/subscription.wuu.js';
+import { STOCKHAVEN_PRIVACY_POLICY_WUU } from './policies/privacy.wuu.js';
 
 export const POLICY_KINDS = Object.freeze(['terms', 'subscription', 'privacy']);
 
@@ -171,6 +177,16 @@ registerPolicyTranslation('privacy', 'zh-Hans', STOCKHAVEN_PRIVACY_POLICY_ZH_HAN
 registerPolicyTranslation('terms', 'zh-Hant', STOCKHAVEN_TERMS_OF_SERVICE_ZH_HANT);
 registerPolicyTranslation('subscription', 'zh-Hant', STOCKHAVEN_SUBSCRIPTION_POLICY_ZH_HANT);
 registerPolicyTranslation('privacy', 'zh-Hant', STOCKHAVEN_PRIVACY_POLICY_ZH_HANT);
+
+// --- Tranche 4 registrations, part 2 (Nov 13, 2026) ---------------
+// Cantonese (yue) and Wu (wuu): full UI translation debt retired
+// and all three policy bodies translated. Tranche 4 is complete.
+registerPolicyTranslation('terms', 'yue', STOCKHAVEN_TERMS_OF_SERVICE_YUE);
+registerPolicyTranslation('subscription', 'yue', STOCKHAVEN_SUBSCRIPTION_POLICY_YUE);
+registerPolicyTranslation('privacy', 'yue', STOCKHAVEN_PRIVACY_POLICY_YUE);
+registerPolicyTranslation('terms', 'wuu', STOCKHAVEN_TERMS_OF_SERVICE_WUU);
+registerPolicyTranslation('subscription', 'wuu', STOCKHAVEN_SUBSCRIPTION_POLICY_WUU);
+registerPolicyTranslation('privacy', 'wuu', STOCKHAVEN_PRIVACY_POLICY_WUU);
 
 /** True when a translated body exists for this document + locale. */
 export function hasPolicyTranslation(kind, locale) {
