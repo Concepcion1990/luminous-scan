@@ -12,11 +12,21 @@
  * CHECK OUT / CHECK IN for breaks.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ArrowLeft, BellRing, CalendarClock, Check, Clock3, ListTodo, MessageCircle, Palmtree, Send, X } from 'lucide-react';
+import { ArrowLeft, BellRing, CalendarClock, Check, Clock3, Gift, ListTodo, MessageCircle, Palmtree, Send, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { useBusiness } from '@/hooks/useBusiness';
+import PlanGate from '@/components/plan/PlanGate';
 import { t } from '@/lib/i18n';
+import {
+  buildRewardSlipText,
+  createReward,
+  listRewards,
+  redeemReward,
+  rewardStatusLabel,
+  rewardValueText,
+  voidReward,
+} from '@/lib/rewards';
 import { toLocalDate } from '@/lib/dates';
 import {
   breakIn,
@@ -848,8 +858,283 @@ function InboxTab({ businessId, ctx, people, onRead }) {
   );
 }
 
+function RewardsTab({ businessId, ctx, people, businessName }) {
+  const { toast } = useToast();
+  const [rewards, setRewards] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [recipientId, setRecipientId] = useState('');
+  const [kind, setKind] = useState('percent_off');
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [percent, setPercent] = useState('10');
+  const [amount, setAmount] = useState('');
+  const [currency, setCurrency] = useState('USD');
+  const [detail, setDetail] = useState('');
+  const [redeemCode, setRedeemCode] = useState('');
+  const [slip, setSlip] = useState('');
+
+  const load = useCallback(async () => {
+    const data = await listRewards(businessId);
+    setRewards(data.rewards ?? []);
+    setLoading(false);
+  }, [businessId]);
+
+  useEffect(() => {
+    load().catch(() => setLoading(false));
+  }, [load]);
+
+  // Business-only module: Essentials gets the shown locked door,
+  // never a hidden absence (the server refuses the API the same way).
+  if (ctx.plan !== 'business') {
+    return (
+      <PlanGate feature="rewards">
+        <div />
+      </PlanGate>
+    );
+  }
+
+  const canGive = ctx.level === 'owner' || ctx.level === 'manager';
+  const recipients = people.filter((person) => {
+    if (person.status !== 'active') return false;
+    if (ctx.level === 'owner') return true;
+    return person.level === 'staff' && person.id !== ctx.my_staff_id;
+  });
+  const mine = rewards.filter((reward) => reward.recipient_staff_id === ctx.my_staff_id);
+  const canVoid = (reward) =>
+    reward.status === 'active' &&
+    (ctx.is_owner || (ctx.my_staff_id && reward.giver_staff_id === ctx.my_staff_id));
+
+  const act = async (fn, okMessage) => {
+    setBusy(true);
+    try {
+      await fn();
+      if (okMessage) toast({ title: okMessage });
+      await load();
+    } catch (error) {
+      toast({ title: error.message || t('rewards.actionFailed'), variant: 'destructive' });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const give = () =>
+    act(async () => {
+      const created = await createReward(businessId, {
+        recipient_staff_id: recipientId,
+        kind,
+        title,
+        description,
+        percent_value: kind === 'percent_off' ? Number(percent) : undefined,
+        amount: kind === 'gift_card' ? Number(amount) : undefined,
+        currency: kind === 'gift_card' ? currency : undefined,
+        detail: kind === 'custom' ? detail : undefined,
+      });
+      const name = people.find((p) => p.id === recipientId)?.full_name || '';
+      toast({ title: t('rewards.give.sent', { name }) });
+      setTitle('');
+      setDescription('');
+      setDetail('');
+      return created;
+    }, null);
+
+  const showSlip = (reward) => {
+    setSlip(
+      buildRewardSlipText(businessName, reward, {
+        forLabel: t('rewards.slip.for'),
+        codeLabel: t('rewards.slip.code'),
+        showLine: t('rewards.slip.show'),
+        valueLine: rewardValueText(reward),
+      }),
+    );
+  };
+
+  const printSlip = () => {
+    const win = window.open('', '_blank');
+    if (!win) return;
+    const escaped = slip.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    win.document.write(`<pre style="font-family: monospace; font-size: 16px; line-height: 1.6;">${escaped}</pre>`);
+    win.document.close();
+    win.print();
+  };
+
+  const rewardRow = (reward, { showMine = false } = {}) => (
+    <li key={reward.id} className="py-3">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="font-medium">{reward.title}</p>
+          <p className="mt-0.5 text-sm text-muted-foreground">{rewardValueText(reward)}</p>
+          {reward.description && <p className="mt-0.5 text-sm text-muted-foreground">{reward.description}</p>}
+          <p className="mt-1 text-xs text-muted-foreground">
+            {showMine
+              ? t('rewards.mine.from', { name: reward.giver_name })
+              : t('rewards.history.recipient', { name: reward.recipient_name })}{' '}
+            · {formatDay(reward.issued_at)}
+          </p>
+          {reward.status === 'active' && (
+            <p className="mt-2 text-sm">
+              <span className="text-muted-foreground">{t('rewards.code')}: </span>
+              <span className="rounded-md bg-muted px-2.5 py-1 font-mono text-base font-semibold tracking-widest">
+                {reward.code}
+              </span>
+              {showMine && (
+                <span className="ml-2 text-xs text-muted-foreground">{t('rewards.showCode')}</span>
+              )}
+            </p>
+          )}
+        </div>
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
+          <span className="rounded-full bg-muted px-2 py-0.5 text-xs">{rewardStatusLabel(reward.status)}</span>
+          {reward.status === 'active' && (
+            <Button size="sm" variant="outline" onClick={() => showSlip(reward)}>
+              {t('rewards.slip.print')}
+            </Button>
+          )}
+          {canVoid(reward) && (
+            <Button
+              size="sm"
+              variant="ghost"
+              disabled={busy}
+              onClick={() => act(() => voidReward(businessId, reward.id), t('rewards.voided'))}
+            >
+              {t('rewards.void')}
+            </Button>
+          )}
+        </div>
+      </div>
+    </li>
+  );
+
+  if (loading) return <p className="text-sm text-muted-foreground">{t('workforce.loading')}</p>;
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <h2 className="font-heading text-lg font-semibold">{t('rewards.title')}</h2>
+        <p className="mt-1 text-sm text-muted-foreground">{t('rewards.subtitle')}</p>
+      </div>
+      {canGive && (
+        <Section title={t('rewards.give.title')} help={t('rewards.give.help')}>
+          <div className="grid max-w-2xl gap-3">
+            <div>
+              <label className={labelCls} htmlFor="reward-recipient">{t('rewards.give.recipient')}</label>
+              <select id="reward-recipient" className={inputCls} value={recipientId} onChange={(e) => setRecipientId(e.target.value)}>
+                <option value="">—</option>
+                {recipients.map((person) => (
+                  <option key={person.id} value={person.id}>{person.full_name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className={labelCls} htmlFor="reward-kind">{t('rewards.give.kind')}</label>
+              <select id="reward-kind" className={inputCls} value={kind} onChange={(e) => setKind(e.target.value)}>
+                <option value="percent_off">{t('rewards.kind.percentOff')}</option>
+                <option value="gift_card">{t('rewards.kind.giftCard')}</option>
+                <option value="custom">{t('rewards.kind.custom')}</option>
+              </select>
+            </div>
+            {kind === 'percent_off' && (
+              <div>
+                <label className={labelCls} htmlFor="reward-percent">{t('rewards.give.percent')}</label>
+                <input id="reward-percent" className={inputCls} type="number" min="1" max="100" value={percent} onChange={(e) => setPercent(e.target.value)} />
+              </div>
+            )}
+            {kind === 'gift_card' && (
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className={labelCls} htmlFor="reward-amount">{t('rewards.give.amount')}</label>
+                  <input id="reward-amount" className={inputCls} type="number" min="0" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} />
+                </div>
+                <div>
+                  <label className={labelCls} htmlFor="reward-currency">{t('rewards.give.currency')}</label>
+                  <input id="reward-currency" className={inputCls} value={currency} onChange={(e) => setCurrency(e.target.value)} />
+                </div>
+              </div>
+            )}
+            {kind === 'custom' && (
+              <div>
+                <label className={labelCls} htmlFor="reward-detail">{t('rewards.give.detail')}</label>
+                <textarea id="reward-detail" className={inputCls} rows={2} value={detail} onChange={(e) => setDetail(e.target.value)} placeholder={t('rewards.give.detailPlaceholder')} />
+              </div>
+            )}
+            <div>
+              <label className={labelCls} htmlFor="reward-title">{t('rewards.give.titleField')}</label>
+              <input id="reward-title" className={inputCls} value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t('rewards.give.titlePlaceholder')} />
+            </div>
+            <div>
+              <label className={labelCls} htmlFor="reward-description">{t('rewards.give.description')}</label>
+              <textarea id="reward-description" className={inputCls} rows={2} value={description} onChange={(e) => setDescription(e.target.value)} />
+            </div>
+            <div>
+              <Button disabled={busy || !recipientId || !title.trim()} onClick={give}>
+                <Gift className="mr-2 h-4 w-4" /> {t('rewards.give.submit')}
+              </Button>
+            </div>
+          </div>
+        </Section>
+      )}
+
+      {ctx.my_staff_id && (
+        <Section title={t('rewards.mine.title')}>
+          {mine.length === 0 ? (
+            <p className="text-sm text-muted-foreground">{t('rewards.mine.empty')}</p>
+          ) : (
+            <ul className="divide-y divide-border">{mine.map((reward) => rewardRow(reward, { showMine: true }))}</ul>
+          )}
+        </Section>
+      )}
+
+      {canGive && (
+        <Section title={t('rewards.redeem.title')} help={t('rewards.redeem.help')}>
+          <div className="flex max-w-xl flex-wrap items-end gap-2">
+            <div className="min-w-48 flex-1">
+              <label className={labelCls} htmlFor="reward-redeem-code">{t('rewards.code')}</label>
+              <input
+                id="reward-redeem-code"
+                className={`${inputCls} font-mono uppercase tracking-widest`}
+                value={redeemCode}
+                onChange={(e) => setRedeemCode(e.target.value)}
+                placeholder={t('rewards.redeem.placeholder')}
+              />
+            </div>
+            <Button
+              disabled={busy || !redeemCode.trim()}
+              onClick={() =>
+                act(async () => {
+                  await redeemReward(businessId, redeemCode);
+                  setRedeemCode('');
+                }, t('rewards.redeem.done'))
+              }
+            >
+              <Check className="mr-2 h-4 w-4" /> {t('rewards.redeem.submit')}
+            </Button>
+          </div>
+        </Section>
+      )}
+
+      <Section title={t('rewards.history.title')}>
+        {rewards.length === 0 ? (
+          <p className="text-sm text-muted-foreground">{t('rewards.history.empty')}</p>
+        ) : (
+          <ul className="divide-y divide-border">{rewards.map((reward) => rewardRow(reward))}</ul>
+        )}
+      </Section>
+
+      {slip && (
+        <Section title={t('rewards.slip.print')}>
+          <pre className="whitespace-pre-wrap rounded-md border border-dashed border-border bg-background p-4 font-mono text-sm leading-relaxed">{slip}</pre>
+          <Button className="mt-3" variant="outline" onClick={printSlip}>
+            {t('rewards.slip.print')}
+          </Button>
+        </Section>
+      )}
+    </div>
+  );
+}
+
 const TABS = [
   { id: 'clock', labelKey: 'workforce.tab.clock', icon: Clock3 },
+  { id: 'rewards', labelKey: 'workforce.tab.rewards', icon: Gift },
   { id: 'schedule', labelKey: 'workforce.tab.schedule', icon: CalendarClock },
   { id: 'timeoff', labelKey: 'workforce.tab.timeOff', icon: Palmtree },
   { id: 'tasks', labelKey: 'workforce.tab.tasks', icon: ListTodo },
@@ -857,7 +1142,7 @@ const TABS = [
 ];
 
 export default function Workforce() {
-  const { activeId } = useBusiness();
+  const { activeId, record } = useBusiness();
   const { toast } = useToast();
   const [tab, setTab] = useState('clock');
   const [ctx, setCtx] = useState(null);
@@ -917,6 +1202,9 @@ export default function Workforce() {
       {tab === 'timeoff' && <TimeOffTab businessId={activeId} ctx={ctx} peopleById={peopleById} />}
       {tab === 'tasks' && <TasksTab businessId={activeId} ctx={ctx} people={people} peopleById={peopleById} />}
       {tab === 'inbox' && <InboxTab businessId={activeId} ctx={ctx} people={people} onRead={loadMeta} />}
+      {tab === 'rewards' && (
+        <RewardsTab businessId={activeId} ctx={ctx} people={people} businessName={record?.name || ''} />
+      )}
 
       {ctx.is_owner && settings && (
         <Section title={t('workforce.settings.title')}>

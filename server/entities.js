@@ -10,6 +10,9 @@
  *  - Access: the caller owns the business or is a trusted active
  *    staff member on it (server/authz.js). Reads are open to any
  *    trusted staff; writes need the matching permission (or owner).
+ *  - Subscription: on top of ownership, the workspace must be
+ *    entitled (server/subscriptionAccess.js) — unpaid workspaces
+ *    serve nothing here, and grace is products/stock-levels read-only.
  *  - Plan: Business-only entities (suppliers, alert rules) refuse
  *    on Essentials; the product/staff/site caps refuse over-limit
  *    writes with the same messages Base44 used.
@@ -47,7 +50,14 @@ import {
   BUNDLE_MOVEMENT_TYPES,
 } from './plans.js';
 import { createStaffMember, staffSeatCount } from './staff.js';
-import { assertNotInGrace, withTx } from './billing.js';
+import { withTx } from './billing.js';
+import {
+  assertSubscriptionAccess,
+  subscriptionAccessFor,
+  subscriptionDeniedError,
+  graceReadOnlyError,
+  GRACE_READABLE_ENTITIES,
+} from './subscriptionAccess.js';
 
 const DEFS = {
   Product: {
@@ -590,6 +600,24 @@ export async function listEntities(pool, user, name, filter = {}, options = {}) 
   for (const businessId of accessible) {
     const access = await resolveAccess(pool, user, businessId);
     if (!access) continue;
+    // Subscription access gate (2026-11-13): an unpaid workspace
+    // contributes NO rows; in grace only the grace view's entities
+    // (products + stock levels) are readable. The Entitlement entity
+    // itself stays readable — it is how the client learns the state.
+    // A list that explicitly targets this business gets the hard 403;
+    // an unscoped portfolio list simply skips it, like a business
+    // the caller cannot access at all.
+    if (name !== 'Entitlement') {
+      const gate = await subscriptionAccessFor(pool, user, businessId);
+      if (gate.state === 'denied') {
+        if (wantedIds.length) throw subscriptionDeniedError(gate);
+        continue;
+      }
+      if (gate.state === 'grace' && !GRACE_READABLE_ENTITIES.has(name)) {
+        if (wantedIds.length) throw graceReadOnlyError(gate);
+        continue;
+      }
+    }
     if (def.planGate && !featureAllowed(access.planKey, def.planGate)) continue;
     let businessRows = await fetchBusinessRows(pool, def, businessId);
     if (name === 'StaffMember' && !access.isOwner) {
@@ -622,6 +650,13 @@ export async function getEntity(pool, user, name, id) {
   if (!row) throw err(404, 'not_found', 'Not found.');
   const access = await resolveAccess(pool, user, row.business_id);
   if (!access) throw err(403, 'forbidden', 'You do not have access to this workspace.');
+  // Subscription access gate (2026-11-13): single-row reads obey the
+  // same rule as lists. Entitlement reads are exempt (state discovery).
+  if (name !== 'Entitlement') {
+    await assertSubscriptionAccess(pool, user, row.business_id, {
+      graceRead: GRACE_READABLE_ENTITIES.has(name),
+    });
+  }
   if (def.planGate && !featureAllowed(access.planKey, def.planGate)) {
     throw err(403, 'plan_gated', 'This feature is part of the Business plan.');
   }
@@ -643,7 +678,7 @@ export async function createEntity(pool, user, name, values) {
   if (!businessId) throw err(400, 'invalid_value', 'business_id is required.');
   const access = await resolveAccess(pool, user, businessId);
   if (!access) throw err(403, 'forbidden', 'You do not have access to this workspace.');
-  await assertNotInGrace(pool, businessId);
+  await assertSubscriptionAccess(pool, user, businessId, { write: true });
   if (name === 'StaffMember') {
     if (!access.isOwner && !access.can('staff.manage')) {
       throw err(403, 'forbidden', 'You are not allowed to manage staff here.');
@@ -667,7 +702,7 @@ export async function bulkCreateEntities(pool, user, name, rows) {
   }
   const access = await resolveAccess(pool, user, businessId);
   if (!access) throw err(403, 'forbidden', 'You do not have access to this workspace.');
-  await assertNotInGrace(pool, businessId);
+  await assertSubscriptionAccess(pool, user, businessId, { write: true });
   if (name === 'StaffMember') throw err(400, 'invalid_value', 'Invite staff members one at a time.');
   if (name === 'Product') {
     const additional = rows.filter((row) => row.status !== 'archived').length;
@@ -689,7 +724,7 @@ export async function updateEntity(pool, user, name, id, patch) {
   if (!row) throw err(404, 'not_found', 'Not found.');
   const access = await resolveAccess(pool, user, row.business_id);
   if (!access) throw err(403, 'forbidden', 'You do not have access to this workspace.');
-  await assertNotInGrace(pool, row.business_id);
+  await assertSubscriptionAccess(pool, user, row.business_id, { write: true });
   const publicExisting = publicRow(def, row);
   await guardUpdate(pool, def, name, access, publicExisting, patch);
   // A product re-activated from archived re-enters the cap.
@@ -731,7 +766,7 @@ export async function deleteEntity(pool, user, name, id) {
   if (!row) throw err(404, 'not_found', 'Not found.');
   const access = await resolveAccess(pool, user, row.business_id);
   if (!access) throw err(403, 'forbidden', 'You do not have access to this workspace.');
-  await assertNotInGrace(pool, row.business_id);
+  await assertSubscriptionAccess(pool, user, row.business_id, { write: true });
   if (name === 'StaffMember') {
     // PR #63 follow-up (b): the owner may delete ANY StaffMember row
     // on their own business — including attacker-created ones.

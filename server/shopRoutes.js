@@ -54,6 +54,7 @@ import { buildWorkbookBuffer } from './xlsxExport.js';
 import { EXPORTS, buildValuation, truncatedFilename, EXPORT_ROW_CAP } from './exportData.js';
 import { createStaffMember } from './staff.js';
 import { assertNotInGrace } from './billing.js';
+import { assertSubscriptionAccess } from './subscriptionAccess.js';
 import {
   orderPurchaseOrder,
   cancelPurchaseOrder,
@@ -887,6 +888,10 @@ export function createShopRouter({ getPool: getPoolFn }) {
       throw err(403, 'forbidden', 'You must own the target business too — inventory only moves between your own businesses.');
     }
     if (target.id === source.id) throw err(400, 'invalid_value', 'Choose a different business to move inventory to.');
+    // Subscription gate (2026-11-13): the move WRITES the target's
+    // data, so the target workspace must be entitled too — the path
+    // middleware only assessed the source (:bid).
+    await assertSubscriptionAccess(pool(), req.user, target.id, { write: true });
     const items = Array.isArray(req.body?.items) ? req.body.items : [];
     if (!items.length) throw err(400, 'invalid_value', 'Choose at least one product to move.');
     const moved = await withTx(pool(), async (client) => {
