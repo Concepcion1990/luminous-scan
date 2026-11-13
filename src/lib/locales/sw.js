@@ -2310,9 +2310,9 @@ export const sw = {
   "settings.canceled.endsOn": "Usajili huu umeghairiwa na unaisha tarehe {date}. Unaendelea kuwa na ufikiaji kamili hadi wakati huo.",
   "settings.delete.checking": "Inakagua ombi lililopo la kufutwa…",
   "settings.delete.description": "Omba kuondolewa kwa akaunti yako ya kuingia ya Luminous StockHaven.",
-  "settings.delete.dialogDescription": "Hii huomba ukaguzi wa kufutwa kwa akaunti. Haiondoi mara moja kuingia kwako au hesabu yako, na haighairi usajili wowote wa Stripe. Andika DELETE ili kuthibitisha kuwa unataka kuwasilisha ombi.",
+  "settings.delete.dialogDescription": "Hii huomba ukaguzi wa kufutwa kwa akaunti. Haiondoi mara moja kuingia kwako au hesabu yako, na haighairi usajili wowote wa Stripe. Andika {word} ili kuthibitisha kuwa unataka kuwasilisha ombi.",
   "settings.delete.dialogTitle": "Omba Kufutwa kwa Akaunti",
-  "settings.delete.enterDelete": "Weka DELETE ili kuthibitisha",
+  "settings.delete.enterDelete": "Weka {word} ili kuthibitisha",
   "settings.delete.exportFirst": "Hamisha hesabu yako kwanza ikiwa unahitaji kuweka rekodi zako.",
   "settings.delete.intro": "Kuwasilisha ombi hakufuti mara moja akaunti yako, biashara zako, au hesabu yako. Maombi hukaguliwa kando kabla ya kufutwa kukamilishwa. Ombi hili halighairi usajili wa Stripe au kusimamisha bili ya baadaye; kughairi usajili lazima kushughulikiwe kando kupitia mtoa huduma wa bili.",
   "settings.delete.keepAccount": "Weka Akaunti",
@@ -3520,4 +3520,6 @@ export const sw = {
   "training.track.staff": "Staff track",
   "training.track.staffHelp": "The everyday tools: scanning, the time clock, your schedule, your inbox and your pay stub.",
   "training.warningSentOn": "Warning sent {date}",
+  "auth.sameEmailNotice": "Already have our app from Google Play or the App Store? Use the same email here — the one you sign into the app with — so your shop and your inventory come with you. A different email starts a totally new, empty storefront.",
+  "settings.deleteConfirmWord": "FUTA",
 };

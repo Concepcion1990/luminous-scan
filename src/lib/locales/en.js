@@ -2392,9 +2392,9 @@ export const en = {
   'settings.canceled.endsOn': 'This subscription is canceled and ends on {date}. You keep full access until then.',
   'settings.delete.checking': 'Checking for an existing deletion request…',
   'settings.delete.description': 'Request removal of your Luminous StockHaven sign-in account.',
-  'settings.delete.dialogDescription': 'This requests a review of account deletion. It does not immediately remove your login or inventory, and it does not cancel any Stripe subscription. Type DELETE to confirm you want to submit the request.',
+  'settings.delete.dialogDescription': 'This requests a review of account deletion. It does not immediately remove your login or inventory, and it does not cancel any Stripe subscription. Type {word} to confirm you want to submit the request.',
   'settings.delete.dialogTitle': 'Request Account Deletion',
-  'settings.delete.enterDelete': 'Enter DELETE to confirm',
+  'settings.delete.enterDelete': 'Enter {word} to confirm',
   'settings.delete.exportFirst': 'Export your inventory first if you need to keep your records.',
   'settings.delete.intro': 'Submitting a request does not immediately delete your account, businesses, or inventory. Requests are reviewed separately before deletion can be completed. This request does not cancel a Stripe subscription or stop future billing; subscription cancellation must be handled separately through the billing provider.',
   'settings.delete.keepAccount': 'Keep Account',
@@ -3642,4 +3642,6 @@ export const en = {
   "training.track.staff": "Staff track",
   "training.track.staffHelp": "The everyday tools: scanning, the time clock, your schedule, your inbox and your pay stub.",
   "training.warningSentOn": "Warning sent {date}",
+  "auth.sameEmailNotice": "Already have our app from Google Play or the App Store? Use the same email here — the one you sign into the app with — so your shop and your inventory come with you. A different email starts a totally new, empty storefront.",
+  "settings.deleteConfirmWord": "DELETE",
 };
