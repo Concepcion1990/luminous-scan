@@ -47,7 +47,7 @@ import {
   BUNDLE_MOVEMENT_TYPES,
 } from './plans.js';
 import { createStaffMember, staffSeatCount } from './staff.js';
-import { assertNotInGrace } from './billing.js';
+import { assertNotInGrace, withTx } from './billing.js';
 
 const DEFS = {
   Product: {
@@ -712,6 +712,23 @@ export async function deleteEntity(pool, user, name, id) {
     // PR #63 follow-up (b): the owner may delete ANY StaffMember row
     // on their own business — including attacker-created ones.
     if (!access.isOwner) throw err(403, 'forbidden', 'Only the business owner can remove a staff member.');
+    // Offboarding: removal is complete or it does not happen. The
+    // member's direct-deposit bank details are purged in the same
+    // transaction as the row delete — explicitly, not left to the
+    // migration-007 cascade, so the purge holds wherever this code
+    // runs. Access itself needs no session surgery: resolveAccess
+    // re-reads this row on every request, so the member's very next
+    // request with an existing session resolves to no access.
+    // The books stay: pay stubs and time entries keep their rows
+    // (migration 010 removed their staff cascades).
+    await withTx(pool, async (client) => {
+      await client.query(
+        'DELETE FROM direct_deposit_details WHERE business_id = $1 AND staff_member_id = $2',
+        [row.business_id, id],
+      );
+      await client.query(`DELETE FROM ${def.table} WHERE id = $1`, [id]);
+    });
+    return { ok: true, id };
   } else if (name === 'Entitlement') {
     throw err(403, 'entitlement_read_only', 'Entitlements are managed by billing (T4).');
   } else if (name === 'StaffRole' && access.planKey !== 'business') {
