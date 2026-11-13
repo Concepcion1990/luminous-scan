@@ -230,6 +230,9 @@ export const stripeApi = {
   updateSubscription: (subscriptionId, params, options) =>
     stripePost(`/subscriptions/${encodeURIComponent(subscriptionId)}`, params, options),
 
+  updateCustomer: (customerId, params, options) =>
+    stripePost(`/customers/${encodeURIComponent(customerId)}`, params, options),
+
   listCustomersByEmail: async (email) => {
     const page = await stripeGet('/customers', { email, limit: 10 });
     return page?.data ?? [];

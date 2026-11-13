@@ -51,6 +51,8 @@ export const CSRF_EXEMPT_PATHS = [
   '/api/auth/login',
   '/api/auth/forgot-password',
   '/api/auth/reset-password',
+  '/api/auth/recover',
+  '/api/auth/recover/verify',
   '/api/billing/wipe-sweep',
 ];
 

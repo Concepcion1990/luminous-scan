@@ -31,8 +31,9 @@ import { createT6Router } from './t6Routes.js';
 import { createWorkforceRouter } from './workforceRoutes.js';
 import { createTrainingRouter } from './trainingRoutes.js';
 import { createBillingRouter, stripeWebhookHandler } from './billingRoutes.js';
+import { createRecoveryRouter } from './recoveryRoutes.js';
 import { issueCsrfToken, requireCsrf } from './csrf.js';
-import { requireAuth } from './sessions.js';
+import { SESSION_COOKIE, loadSessionUser, parseCookies, requireAuth } from './sessions.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DIST_DIR = path.resolve(__dirname, '..', 'dist');
@@ -73,7 +74,43 @@ export function createApp() {
   app.get('/api/csrf-token', requireAuth(getPool()), (req, res) => {
     res.json({ csrf_token: issueCsrfToken(req.sessionId) });
   });
+  // Recovery-kit scope guard (T7): a scope='recovery' session — the
+  // short-lived session a spare key mints — may reach ONLY the
+  // change-email flow, its own session housekeeping, and the CSRF
+  // token endpoint. Everything else under /api is refused, so a
+  // recovery session can never browse or touch the shop. Enforced
+  // here, ahead of every router, so no route can forget the check.
+  const RECOVERY_ALLOWED = new Set([
+    'GET /api/auth/me',
+    'POST /api/auth/logout',
+    'POST /api/account/change-email/request',
+    'POST /api/account/change-email/confirm',
+  ]);
+  app.use('/api', async (req, res, next) => {
+    try {
+      const pool = getPool();
+      if (!pool) return next();
+      const cookies = parseCookies(req);
+      if (!cookies[SESSION_COOKIE]) return next();
+      const loaded = await loadSessionUser(pool, cookies[SESSION_COOKIE]);
+      if (!loaded || loaded.scope !== 'recovery') return next();
+      // NOTE: req.path is mount-stripped inside app.use('/api', …) —
+      // originalUrl carries the full path the allowlist is written in.
+      const fullPath = String(req.originalUrl || '').split('?')[0];
+      if (RECOVERY_ALLOWED.has(`${req.method} ${fullPath}`)) return next();
+      return res.status(403).json({
+        error: 'recovery_scope',
+        message: 'This sign-in can only finish changing your account email. Complete that step — or sign in normally — to use the rest of the app.',
+      });
+    } catch (error) {
+      console.error('[twin] recovery scope check failed:', error.message);
+      return res.status(403).json({ error: 'recovery_scope' });
+    }
+  });
   app.use('/api', createAuthRouter({ getPool }));
+  // Recovery kit: spare keys, backup email, change-email, recovery
+  // entry, owner staff-email fix (server/recoveryRoutes.js).
+  app.use('/api', createRecoveryRouter({ getPool }));
   // Billing BEFORE shop: the shop router applies requireAuth to every
   // request that reaches it, and the wipe-sweep job endpoint is
   // job-secret protected, not session protected — it must be reachable

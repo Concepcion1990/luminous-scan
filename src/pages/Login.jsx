@@ -127,6 +127,11 @@ export default function Login() {
           )}
         </Button>
       </form>
+      <p className="text-center text-sm text-muted-foreground mt-4">
+        <Link to="/account-recovery" className="hover:underline">
+          {t('login.cantAccessEmail')}
+        </Link>
+      </p>
       {pendingEmail && (
         <p className="text-center text-sm text-muted-foreground mt-4">
           {t('login.haveCodeFor', { email: pendingEmail })}{" "}

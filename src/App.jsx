@@ -53,12 +53,13 @@ import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
+import AccountRecovery from '@/pages/AccountRecovery';
 import VerifyEmail from '@/pages/VerifyEmail';
 import ThankYou from './pages/ThankYou';
 import GraceInventory from '@/pages/GraceInventory';
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, isAuthenticated, navigateToLogin } = useAuth();
+  const { isLoadingAuth, isLoadingPublicSettings, authError, isAuthenticated, user, navigateToLogin } = useAuth();
   const { pathname } = useLocation();
   // The introduction and the plan comparison are readable before signing in.
   // Public legal pages are readable too, including the /policies/* aliases
@@ -105,6 +106,14 @@ const AuthenticatedApp = () => {
     return <Navigate to="/welcome" replace />;
   }
 
+  // Recovery kit (T7): a restricted recovery session (a spare key was
+  // presented, not a password) may see exactly ONE screen — the
+  // change-email step. The server refuses everything else too; this
+  // keeps the person on the one page that can finish the job.
+  if (isAuthenticated && user?.session_scope === 'recovery' && pathname !== '/account-recovery') {
+    return <Navigate to="/account-recovery" replace />;
+  }
+
   // Render the main app
   return (
     <Routes>
@@ -126,6 +135,7 @@ const AuthenticatedApp = () => {
       <Route path="/verify-email" element={<VerifyEmail />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/account-recovery" element={<AccountRecovery />} />
 
       <Route element={<ProtectedRoute unauthenticatedElement={<Login />} />}>
         {/* Read-only grace view: inside ProtectedRoute (login required) but

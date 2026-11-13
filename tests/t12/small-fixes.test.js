@@ -38,7 +38,9 @@ const NOTICE_TEXT = 'Already have our app from Google Play or the App Store? Use
 
 test('keyset parity holds across all 52 locale files with the two new keys counted', () => {
   const enKeys = Object.keys(en).sort();
-  assert.equal(enKeys.length, 3510);
+  // 3510 at the small-fixes batch; the recovery kit added 65 keys
+  // (50 UI + 15 training) — its t13 segment asserts the same total.
+  assert.equal(enKeys.length, 3575);
   assert.equal(SUPPORTED_LOCALES.length, 52);
   for (const code of SUPPORTED_LOCALES) {
     const keys = Object.keys(LOCALES[code]).sort();

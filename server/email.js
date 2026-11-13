@@ -97,6 +97,86 @@ export async function sendMail({ to, subject, text, html }) {
   return { id: data.id || 'unknown' };
 }
 
+/** Recovery-kit code mail: confirming a backup (spare-key) email. */
+export function backupEmailCodeEmail({ to, code }) {
+  const subject = 'Your Luminous StockHaven backup email code';
+  const text = [
+    'Hello,',
+    '',
+    `Your Luminous StockHaven backup email code is ${code}. It expires in 10 minutes.`,
+    '',
+    'You (or someone signed in as you) asked to set this address as the',
+    'backup email for a Luminous StockHaven account — the spare key that',
+    'can help recover the account if the main email is ever lost.',
+    'Only finish this step if you recognize it.',
+    '',
+    '— Luminous StockHaven',
+  ].join('\n');
+  return { to, subject, text };
+}
+
+/** Recovery-kit code mail: the 6-digit entry code sent to the BACKUP email. */
+export function accountRecoveryCodeEmail({ to, code }) {
+  const subject = 'Your Luminous StockHaven account recovery code';
+  const text = [
+    'Hello,',
+    '',
+    `Your Luminous StockHaven account recovery code is ${code}. It expires in 10 minutes.`,
+    '',
+    'Someone asked to recover a Luminous StockHaven account using this',
+    'backup email. The code only opens the change-email step — it cannot',
+    'sign anyone in, and nothing else about the account can be reached',
+    'with it. If this was not you, you can ignore this email; the code',
+    'expires on its own.',
+    '',
+    '— Luminous StockHaven',
+  ].join('\n');
+  return { to, subject, text };
+}
+
+/** Recovery-kit code mail: proving ownership of a NEW account email. */
+export function newEmailCodeEmail({ to, code }) {
+  const subject = 'Confirm your new Luminous StockHaven email';
+  const text = [
+    'Hello,',
+    '',
+    `Your Luminous StockHaven new email code is ${code}. It expires in 10 minutes.`,
+    '',
+    'Enter this code to finish moving a Luminous StockHaven account to',
+    'this address. Your shop, your inventory and your team access move',
+    'with it — nothing is left behind, and no new free trial starts.',
+    'If you did not ask for this, ignore this email.',
+    '',
+    '— Luminous StockHaven',
+  ].join('\n');
+  return { to, subject, text };
+}
+
+/**
+ * Notice that an account's email was changed. Sent to the OLD address
+ * (and to the verified backup address) after every successful change.
+ * The new address is masked: if the old mailbox is the compromised
+ * one, the notice must not hand over where the account went.
+ */
+export function emailChangedNoticeEmail({ to, newEmail }) {
+  const subject = 'Your Luminous StockHaven account email was changed';
+  const [namePart, domainPart] = String(newEmail || '').split('@');
+  const masked = namePart && domainPart ? `${namePart.slice(0, 1)}•••@${domainPart}` : 'a new address';
+  const text = [
+    'Hello,',
+    '',
+    `The email on your Luminous StockHaven account was changed to ${masked}.`,
+    'Your shop, inventory and history moved with the account.',
+    '',
+    "If this was you, no action is needed. If this was NOT you, contact",
+    'us right away — reply to this email or reach us through',
+    'theluminousbookshop.com — and we will help you secure your account.',
+    '',
+    '— Luminous StockHaven',
+  ].join('\n');
+  return { to, subject, text };
+}
+
 export function staffInviteEmail({ to, businessName, inviterName }) {
   return {
     to,
