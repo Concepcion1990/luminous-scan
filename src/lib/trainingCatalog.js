@@ -86,6 +86,7 @@ export const TRAINING_LESSONS = [
   { id: 'mgr-cross-store', track: 'manager', module: 'cross-store', steps: 4 },
   { id: 'mgr-reports-alerts', track: 'manager', module: 'reports', steps: 4 },
   { id: 'mgr-suppliers-orders', track: 'manager', module: 'purchasing', steps: 4 },
+  { id: 'mgr-send-supplier-order', track: 'manager', module: 'purchasing', steps: 4 },
   { id: 'owner-setup', track: 'owner', module: 'getting-started', steps: 4 },
   { id: 'owner-white-label', track: 'owner', module: 'settings', steps: 4 },
   { id: 'owner-staff-roles', track: 'owner', module: 'staff', steps: 4 },
@@ -96,12 +97,14 @@ export const TRAINING_LESSONS = [
   { id: 'owner-irs-box', track: 'owner', module: 'payroll', steps: 4 },
   { id: 'owner-dd-setup', track: 'owner', module: 'direct-deposit', steps: 4 },
   { id: 'owner-billing', track: 'owner', module: 'billing', steps: 4 },
+  { id: 'owner-trial-reminders', track: 'owner', module: 'billing', steps: 4 },
   { id: 'owner-printing', track: 'owner', module: 'printing', steps: 4 },
   { id: 'owner-import-export', track: 'owner', module: 'exports', steps: 4 },
   { id: 'owner-builds', track: 'owner', module: 'builds', steps: 4 },
   { id: 'owner-messages-oversight', track: 'owner', module: 'messaging', steps: 4 },
   { id: 'owner-cross-store', track: 'owner', module: 'cross-store', steps: 4 },
   { id: 'owner-staff-email-fix', track: 'owner', module: 'staff', steps: 4 },
+  { id: 'owner-send-supplier-order', track: 'owner', module: 'purchasing', steps: 4 },
 ];
 
 export const lessonById = (id) => TRAINING_LESSONS.find((lesson) => lesson.id === id) || null;
