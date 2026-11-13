@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { base44, apiRequest } from '@/api/client';
 import { Link } from 'react-router-dom';
-import { Check, ClipboardList, Pencil, Plus } from 'lucide-react';
+import { Check, ClipboardList, Mail, Pencil, Plus } from 'lucide-react';
 import PurchaseOrderDialog from '@/components/purchasing/PurchaseOrderDialog';
 import ReceiveDialog from '@/components/purchasing/ReceiveDialog';
 import PlanGate from '@/components/plan/PlanGate';
@@ -63,6 +63,24 @@ export default function Purchasing() {
       setFlash(t('purchasing.placed', { number: placed.number }));
     } catch (err) {
       setError(err?.message || t('purchasing.placeFailed'));
+    }
+  };
+
+  // A placed order can be emailed to its supplier from right here —
+  // the server composes a white-label email (this business's name
+  // only) with the PO PDF attached, and records the send on the
+  // order. Drafts are never sendable: they have not been placed.
+  const sendOrder = async (order) => {
+    setError('');
+    try {
+      const { order: sent } = await apiRequest(
+        `/api/businesses/${activeId}/purchase-orders/${order.id}/send`,
+        { method: 'POST' },
+      );
+      setReload((r) => r + 1);
+      setFlash(t('purchasing.sentFlash', { number: sent.number, email: sent.sent_to }));
+    } catch (err) {
+      setError(err?.message || t('purchasing.sendFailed'));
     }
   };
 
@@ -177,6 +195,7 @@ export default function Purchasing() {
           const meta = PO_STATUS[order.status] || PO_STATUS.ordered;
           const progress = poProgress(order);
           const canReceive = ['ordered', 'partial'].includes(order.status);
+          const canSend = ['ordered', 'partial', 'received'].includes(order.status);
           return (
             <div key={order.id} className="rounded-xl border border-border bg-card p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
@@ -239,6 +258,12 @@ export default function Purchasing() {
                     {t('purchasing.receive')}
                   </Button>
                 )}
+                {canSend && (
+                  <Button size="sm" variant="outline" onClick={() => sendOrder(order)}>
+                    <Mail className="mr-1.5 h-3.5 w-3.5" />
+                    {order.send_count > 0 ? t('purchasing.sendAgain') : t('purchasing.sendOrder')}
+                  </Button>
+                )}
                 <Button
                   size="sm"
                   variant="outline"
@@ -252,6 +277,14 @@ export default function Purchasing() {
                 {order.received_by && (
                   <span className="self-center text-[11px] text-muted-foreground">
                     {t('purchasing.receivedBy', { name: order.received_by })}
+                  </span>
+                )}
+                {order.sent_to && (
+                  <span className="self-center text-[11px] text-muted-foreground">
+                    {t('purchasing.sentTo', {
+                      email: order.sent_to,
+                      date: String(order.sent_at || '').slice(0, 10),
+                    })}
                   </span>
                 )}
               </div>
