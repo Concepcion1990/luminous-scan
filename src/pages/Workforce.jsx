@@ -1,6 +1,8 @@
 /**
  * Workforce — scheduling, the time clock, time off, tasks and the
- * team-activity inbox (Workforce phase).
+ * team inbox (Workforce phase + inbox follow-up: notifications for
+ * everything a team member waits on, plus private 1:1 messages with
+ * owner oversight).
  *
  * Everyone on the team gets this page; what they can DO on it is
  * decided on the server (owner > manager > staff): staff clock
@@ -10,7 +12,7 @@
  * CHECK OUT / CHECK IN for breaks.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { BellRing, CalendarClock, Check, Clock3, ListTodo, Palmtree, X } from 'lucide-react';
+import { ArrowLeft, BellRing, CalendarClock, Check, Clock3, ListTodo, MessageCircle, Palmtree, Send, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { useBusiness } from '@/hooks/useBusiness';
@@ -25,18 +27,24 @@ import {
   createTask,
   decideTimeOff,
   getClockStatus,
+  getMessageThread,
+  getMessageUnread,
   getWorkforceContext,
   getWorkforceSettings,
   listEntries,
+  listMessageThreads,
   listNotifications,
   listPeople,
   listSchedules,
   listTasks,
   listTimeOff,
   markNotificationRead,
+  markThreadRead,
+  postMessage,
   requestTimeOff,
   saveSchedule,
   setTaskStatus,
+  startMessageThread,
   timeOffStatusLabel,
   updateWorkforceSettings,
   weekdayLabel,
@@ -595,48 +603,248 @@ function TasksTab({ businessId, ctx, people, peopleById }) {
   );
 }
 
-function InboxTab({ businessId, onRead }) {
+function InboxTab({ businessId, ctx, people, onRead }) {
+  const { toast } = useToast();
   const [items, setItems] = useState([]);
-  const load = useCallback(async () => {
+  const [threads, setThreads] = useState([]);
+  const [activeThread, setActiveThread] = useState(null);
+  const [threadMessages, setThreadMessages] = useState([]);
+  const [draft, setDraft] = useState('');
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [pickerTarget, setPickerTarget] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  const loadNotifications = useCallback(async () => {
     const data = await listNotifications(businessId);
     setItems(data.notifications ?? []);
   }, [businessId]);
+  const loadThreads = useCallback(async () => {
+    const data = await listMessageThreads(businessId);
+    setThreads(data.threads ?? []);
+  }, [businessId]);
   useEffect(() => {
-    load().catch(() => {});
-  }, [load]);
+    loadNotifications().catch(() => {});
+    loadThreads().catch(() => {});
+  }, [loadNotifications, loadThreads]);
+
+  const openThread = async (thread) => {
+    try {
+      const data = await getMessageThread(businessId, thread.id);
+      setActiveThread(data.thread);
+      setThreadMessages(data.messages ?? []);
+      setDraft('');
+      if (thread.is_mine && (thread.unread ?? 0) > 0) {
+        await markThreadRead(businessId, thread.id).catch(() => {});
+        await loadThreads();
+        onRead();
+      }
+    } catch (error) {
+      toast({ title: error.message || t('workforce.actionFailed'), variant: 'destructive' });
+    }
+  };
+
+  const startConversation = async () => {
+    if (!pickerTarget) return;
+    setBusy(true);
+    try {
+      const target = pickerTarget === 'owner' ? { with_owner: true } : { staff_member_id: pickerTarget };
+      const data = await startMessageThread(businessId, target);
+      setPickerOpen(false);
+      setPickerTarget('');
+      await loadThreads();
+      await openThread(data.thread);
+    } catch (error) {
+      toast({ title: error.message || t('workforce.actionFailed'), variant: 'destructive' });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const send = async () => {
+    const body = draft.trim();
+    if (!body || !activeThread) return;
+    setBusy(true);
+    try {
+      await postMessage(businessId, activeThread.id, body);
+      setDraft('');
+      const data = await getMessageThread(businessId, activeThread.id);
+      setActiveThread(data.thread);
+      setThreadMessages(data.messages ?? []);
+      await loadThreads();
+    } catch (error) {
+      toast({ title: error.message || t('workforce.actionFailed'), variant: 'destructive' });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const pickerPeople = people.filter((p) => p.status === 'active' && p.id !== ctx.my_staff_id);
+  const threadTitle = (thread) =>
+    thread.other
+      ? thread.other.name
+      : (thread.participants ?? []).map((p) => p.name).join(' & ');
+
   return (
-    <Section title={t('workforce.inbox.title')}>
-      {items.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{t('workforce.inbox.empty')}</p>
-      ) : (
-        <ul className="divide-y divide-border">
-          {items.map((item) => (
-            <li key={item.id} className={`flex items-center gap-3 py-2.5 text-sm ${item.is_read ? 'opacity-60' : ''}`}>
-              <BellRing className="h-4 w-4 shrink-0 text-muted-foreground" />
-              <span className="flex-1">
-                {item.detail}
-                <span className="block text-xs text-muted-foreground">
-                  {formatDay(item.created_at)} {formatTime(item.created_at)}
+    <div className="space-y-6">
+      <Section title={t('workforce.inbox.title')} help={t('workforce.inbox.help')}>
+        {items.length === 0 ? (
+          <p className="text-sm text-muted-foreground">{t('workforce.inbox.empty')}</p>
+        ) : (
+          <ul className="divide-y divide-border">
+            {items.map((item) => (
+              <li key={item.id} className={`flex items-center gap-3 py-3 text-sm ${item.is_read ? 'opacity-60' : ''}`}>
+                <BellRing className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <span className="flex-1">
+                  {item.detail}
+                  <span className="block text-xs text-muted-foreground">
+                    {formatDay(item.created_at)} {formatTime(item.created_at)}
+                  </span>
                 </span>
-              </span>
-              {!item.is_read && (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={async () => {
-                    await markNotificationRead(businessId, item.id).catch(() => {});
-                    await load();
-                    onRead();
-                  }}
-                >
-                  {t('workforce.inbox.markRead')}
+                {!item.is_read && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={async () => {
+                      await markNotificationRead(businessId, item.id).catch(() => {});
+                      await loadNotifications();
+                      onRead();
+                    }}
+                  >
+                    {t('workforce.inbox.markRead')}
+                  </Button>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </Section>
+
+      <Section title={t('workforce.messages.title')} help={t('workforce.messages.help')}>
+        {!activeThread && (
+          <>
+            <div className="mb-4 flex flex-wrap items-center gap-2">
+              <Button size="sm" variant="outline" onClick={() => setPickerOpen((open) => !open)}>
+                <MessageCircle className="mr-1.5 h-4 w-4" /> {t('workforce.messages.new')}
+              </Button>
+            </div>
+            {pickerOpen && (
+              <div className="mb-5 flex max-w-xl flex-wrap items-end gap-2 rounded-lg bg-muted/50 p-3">
+                <div className="min-w-48 flex-1">
+                  <label className={labelCls}>{t('workforce.messages.to')}</label>
+                  <select className={inputCls} value={pickerTarget} onChange={(e) => setPickerTarget(e.target.value)}>
+                    <option value="">{t('workforce.messages.selectPerson')}</option>
+                    {!ctx.is_owner && <option value="owner">{t('workforce.messages.owner')}</option>}
+                    {pickerPeople.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.full_name} {p.role_name ? `(${p.role_name})` : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <Button size="sm" disabled={busy || !pickerTarget} onClick={startConversation}>
+                  {t('workforce.messages.start')}
                 </Button>
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
-    </Section>
+              </div>
+            )}
+            {threads.length === 0 ? (
+              <p className="text-sm text-muted-foreground">{t('workforce.messages.empty')}</p>
+            ) : (
+              <ul className="divide-y divide-border">
+                {threads.map((thread) => (
+                  <li key={thread.id}>
+                    <button
+                      type="button"
+                      className="flex w-full items-center gap-3 py-3.5 text-left text-sm"
+                      onClick={() => openThread(thread)}
+                    >
+                      <MessageCircle className="h-4 w-4 shrink-0 text-muted-foreground" />
+                      <span className="min-w-0 flex-1">
+                        <span className="font-medium">{threadTitle(thread)}</span>
+                        {thread.oversight && (
+                          <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-xs">
+                            {t('workforce.messages.oversight')}
+                          </span>
+                        )}
+                        <span className="block truncate text-xs text-muted-foreground">
+                          {thread.last_message
+                            ? `${thread.last_message.sender_name}: ${thread.last_message.body}`
+                            : t('workforce.messages.emptyThread')}
+                        </span>
+                      </span>
+                      {thread.last_message_at && (
+                        <span className="shrink-0 text-xs text-muted-foreground">
+                          {formatDay(thread.last_message_at)} {formatTime(thread.last_message_at)}
+                        </span>
+                      )}
+                      {(thread.unread ?? 0) > 0 && (
+                        <span className="shrink-0 rounded-full bg-primary px-2 py-0.5 text-xs font-medium text-primary-foreground">
+                          {thread.unread}
+                        </span>
+                      )}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </>
+        )}
+
+        {activeThread && (
+          <div>
+            <div className="mb-4 flex items-center gap-2">
+              <Button size="sm" variant="ghost" onClick={() => setActiveThread(null)}>
+                <ArrowLeft className="mr-1 h-4 w-4" /> {t('workforce.messages.back')}
+              </Button>
+              <span className="text-sm font-medium">{threadTitle(activeThread)}</span>
+            </div>
+            {activeThread.oversight && (
+              <p className="mb-4 rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground">
+                {t('workforce.messages.oversightNote')}
+              </p>
+            )}
+            {threadMessages.length === 0 ? (
+              <p className="py-4 text-sm text-muted-foreground">{t('workforce.messages.emptyThread')}</p>
+            ) : (
+              <ul className="space-y-3 py-1">
+                {threadMessages.map((message) => (
+                  <li key={message.id} className={`flex ${message.mine ? 'justify-end' : 'justify-start'}`}>
+                    <div
+                      className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
+                        message.mine
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted text-foreground'
+                      }`}
+                    >
+                      {!message.mine && (
+                        <span className="mb-0.5 block text-xs font-medium opacity-70">{message.sender_name}</span>
+                      )}
+                      <span className="whitespace-pre-wrap">{message.body}</span>
+                      <span className="mt-1 block text-[11px] opacity-60">
+                        {formatDay(message.created_at)} {formatTime(message.created_at)}
+                      </span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {activeThread.can_post && (
+              <div className="mt-5 flex items-end gap-2">
+                <textarea
+                  className={inputCls}
+                  rows={2}
+                  value={draft}
+                  onChange={(e) => setDraft(e.target.value)}
+                  placeholder={t('workforce.messages.placeholder')}
+                />
+                <Button disabled={busy || !draft.trim()} onClick={send}>
+                  <Send className="mr-1.5 h-4 w-4" /> {t('workforce.messages.send')}
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+      </Section>
+    </div>
   );
 }
 
@@ -661,15 +869,16 @@ export default function Workforce() {
   const loadMeta = useCallback(async () => {
     if (!activeId) return;
     try {
-      const [c, p, n, s] = await Promise.all([
+      const [c, p, n, s, mu] = await Promise.all([
         getWorkforceContext(activeId),
         listPeople(activeId),
         listNotifications(activeId),
         getWorkforceSettings(activeId),
+        getMessageUnread(activeId).catch(() => ({ unread: 0 })),
       ]);
       setCtx(c);
       setPeople(p.people ?? []);
-      setUnread(n.unread ?? 0);
+      setUnread((n.unread ?? 0) + (mu.unread ?? 0));
       setSettings(s);
     } catch {
       setError(t('workforce.loadError'));
@@ -707,7 +916,7 @@ export default function Workforce() {
       {tab === 'schedule' && <ScheduleTab businessId={activeId} ctx={ctx} people={people} />}
       {tab === 'timeoff' && <TimeOffTab businessId={activeId} ctx={ctx} peopleById={peopleById} />}
       {tab === 'tasks' && <TasksTab businessId={activeId} ctx={ctx} people={people} peopleById={peopleById} />}
-      {tab === 'inbox' && <InboxTab businessId={activeId} onRead={loadMeta} />}
+      {tab === 'inbox' && <InboxTab businessId={activeId} ctx={ctx} people={people} onRead={loadMeta} />}
 
       {ctx.is_owner && settings && (
         <Section title={t('workforce.settings.title')}>

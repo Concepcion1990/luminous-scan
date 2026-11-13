@@ -112,8 +112,12 @@ export const AuthProvider = ({ children }) => {
   };
 
   const navigateToLogin = () => {
-    // Use the SDK's redirectToLogin method
-    base44.auth.redirectToLogin(window.location.href);
+    // Pass the RELATIVE path, never window.location.href: the full href
+    // carries its own query string, and a ?returnTo= inside it wrapped
+    // the URL one layer deeper on every bounce — the 2026-11-12 loop
+    // (public pages strobing blank until the URL hit HTTP 431).
+    // redirectToLogin sanitizes the value again before assigning.
+    base44.auth.redirectToLogin(window.location.pathname + window.location.search);
   };
 
   return (

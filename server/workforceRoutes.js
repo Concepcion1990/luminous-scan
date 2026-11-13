@@ -39,6 +39,12 @@
  *   POST  /api/businesses/:bid/workforce/dd/invite           owner
  *   POST  /api/businesses/:bid/workforce/dd/submit
  *   GET   /api/businesses/:bid/workforce/dd/details/:staffId owner
+ *   GET   /api/businesses/:bid/workforce/messages/threads
+ *   POST  /api/businesses/:bid/workforce/messages/threads    get-or-create
+ *   GET   /api/businesses/:bid/workforce/messages/threads/:id
+ *   POST  /api/businesses/:bid/workforce/messages/threads/:id/messages
+ *   PATCH /api/businesses/:bid/workforce/messages/threads/:id/read
+ *   GET   /api/businesses/:bid/workforce/messages/unread
  *
  * Hierarchy (owner's spec): the OWNER sets the MANAGER's schedule,
  * pushes the MANAGER's stub and decides the MANAGER's time-off;
@@ -230,6 +236,67 @@ async function notifyClockEvent(pool, business, actorRow, event, entryId, when, 
       ],
     );
   }
+}
+
+// ---- Notification fan-out (Workforce inbox follow-up) ---------------------
+// The same one-row-per-recipient-user pattern as the clock events,
+// for everything else a team member waits on: time-off answers,
+// tasks, pay stubs, schedule changes, new messages. entry_id doubles
+// as the related-record reference (the request / task / stub /
+// thread id), the same column that carries the clock entry id for
+// clock events.
+
+async function userForStaffRow(poolInstance, row) {
+  if (!row) return null;
+  const { rows } = await poolInstance.query(
+    'SELECT id FROM users WHERE LOWER(email) = LOWER($1) LIMIT 1',
+    [row.email],
+  );
+  return rows[0] ?? null;
+}
+
+async function notifyUser(poolInstance, business, {
+  recipientUserId,
+  recipientStaffId = null,
+  recipientRole = 'staff',
+  actorStaffId = null,
+  actorName = '',
+  event,
+  detail,
+  refId = null,
+}) {
+  if (!recipientUserId) return;
+  await poolInstance.query(
+    `INSERT INTO workforce_notifications
+       (id, business_id, recipient_user_id, recipient_staff_id, recipient_role, actor_staff_id, actor_name, event, detail, entry_id)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+    [
+      crypto.randomUUID(), business.id, recipientUserId, recipientStaffId, recipientRole,
+      actorStaffId, actorName, event, detail, refId,
+    ],
+  );
+}
+
+/** The owner plus every manager of the business, as recipients. */
+async function leadershipRecipients(poolInstance, business) {
+  const out = [{ userId: business.owner_id, staffId: null, role: 'owner' }];
+  const team = await people(poolInstance, business.id);
+  for (const member of team) {
+    if (personLevel(member) !== 'manager') continue;
+    const user = await userForStaffRow(poolInstance, member);
+    if (user) out.push({ userId: user.id, staffId: member.id, role: 'manager' });
+  }
+  return out;
+}
+
+/** YYYY-MM-DD out of a DATE value, whether the driver hands back a string or a Date. */
+function dateOnly(value) {
+  if (value instanceof Date) return value.toISOString().slice(0, 10);
+  return String(value || '').slice(0, 10);
+}
+
+function actorNameOf(access, user, me) {
+  return access.isOwner ? 'Owner' : me?.full_name || user.email;
 }
 
 // ---- Payroll math ---------------------------------------------------------
@@ -504,7 +571,7 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
   }));
 
   router.put(`${base}/schedules/:staffId`, asyncHandler(async (req, res) => {
-    const { access, level } = await ctx(req);
+    const { access, level, me } = await ctx(req);
     await assertNotInGrace(pool(), req.params.bid);
     const target = await personOr404(pool(), req.params.bid, req.params.staffId);
     const targetLevel = personLevel(target);
@@ -543,6 +610,21 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
       'SELECT * FROM work_schedules WHERE business_id = $1 AND staff_member_id = $2 ORDER BY weekday',
       [req.params.bid, target.id],
     );
+    // The person scheduled hears that their schedule changed.
+    const targetUser = await userForStaffRow(pool(), target);
+    if (targetUser && targetUser.id !== req.user.id) {
+      const actor = actorNameOf(access, req.user, me);
+      await notifyUser(pool(), access.business, {
+        recipientUserId: targetUser.id,
+        recipientStaffId: target.id,
+        recipientRole: targetLevel,
+        actorStaffId: me?.id || null,
+        actorName: actor,
+        event: 'schedule_set',
+        detail: `Your schedule was updated by ${actor}.`,
+        refId: target.id,
+      });
+    }
     return res.json({ schedules: rows });
   }));
 
@@ -786,11 +868,33 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
         String(req.body?.reason || '').trim().slice(0, 1000),
       ],
     );
-    return res.status(201).json({ request: inserted.rows[0] });
+    const request = inserted.rows[0];
+    // Fan-out: a staff request rings the owner AND every manager;
+    // a manager's own request rings the owner only (the hierarchy).
+    const recipients = personLevel(me) === 'manager'
+      ? [{ userId: access.business.owner_id, staffId: null, role: 'owner' }]
+      : await leadershipRecipients(pool(), access.business);
+    const reasonText = String(request.reason || '').trim();
+    const detail =
+      `${me.full_name} requested time off from ${start} to ${end}` +
+      (reasonText ? ` — ${reasonText.slice(0, 200)}` : '');
+    for (const recipient of recipients) {
+      await notifyUser(pool(), access.business, {
+        recipientUserId: recipient.userId,
+        recipientStaffId: recipient.staffId,
+        recipientRole: recipient.role,
+        actorStaffId: me.id,
+        actorName: me.full_name,
+        event: 'time_off_requested',
+        detail,
+        refId: request.id,
+      });
+    }
+    return res.status(201).json({ request });
   }));
 
   router.patch(`${base}/time-off/:id`, asyncHandler(async (req, res) => {
-    const { level } = await ctx(req);
+    const { access, level, me } = await ctx(req);
     await assertNotInGrace(pool(), req.params.bid);
     const status = String(req.body?.status || '');
     if (!['approved', 'declined'].includes(status)) {
@@ -818,6 +922,22 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
        WHERE id = $4 RETURNING *`,
       [status, reason.slice(0, 1000), req.user.id, req.params.id],
     );
+    // The requester hears the answer, with the reason attached.
+    const requesterUser = await userForStaffRow(pool(), requester);
+    if (requesterUser) {
+      await notifyUser(pool(), access.business, {
+        recipientUserId: requesterUser.id,
+        recipientStaffId: requester.id,
+        recipientRole: requesterLevel,
+        actorStaffId: me?.id || null,
+        actorName: actorNameOf(access, req.user, me),
+        event: 'time_off_decided',
+        detail:
+          `Your time-off request for ${dateOnly(request.start_date)} to ${dateOnly(request.end_date)} was ${status}` +
+          (reason ? ` — ${reason.slice(0, 200)}` : ''),
+        refId: request.id,
+      });
+    }
     return res.json({ request: updated.rows[0] });
   }));
 
@@ -857,11 +977,28 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
         access.isOwner ? 'Owner' : me?.full_name || req.user.email,
       ],
     );
-    return res.status(201).json({ task: inserted.rows[0] });
+    const task = inserted.rows[0];
+    // The assignee hears they have a new task.
+    const assigneeUser = await userForStaffRow(pool(), target);
+    if (assigneeUser && assigneeUser.id !== req.user.id) {
+      await notifyUser(pool(), access.business, {
+        recipientUserId: assigneeUser.id,
+        recipientStaffId: target.id,
+        recipientRole: personLevel(target),
+        actorStaffId: me?.id || null,
+        actorName: task.created_by_name,
+        event: 'task_assigned',
+        detail:
+          `${task.created_by_name} assigned you a task: ${task.title}` +
+          (task.due_date ? ` (due ${dateOnly(task.due_date)})` : ''),
+        refId: task.id,
+      });
+    }
+    return res.status(201).json({ task });
   }));
 
   router.patch(`${base}/tasks/:id`, asyncHandler(async (req, res) => {
-    const { level, me } = await ctx(req);
+    const { access, level, me } = await ctx(req);
     await assertNotInGrace(pool(), req.params.bid);
     const { rows } = await pool().query(
       'SELECT * FROM work_tasks WHERE id = $1 AND business_id = $2 LIMIT 1',
@@ -879,6 +1016,34 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
        WHERE id = $2 RETURNING *`,
       [status, req.params.id],
     );
+    // Finishing a task rings the person who assigned it — and only them.
+    if (status === 'done' && task.status !== 'done' && task.created_by_id && task.created_by_id !== req.user.id) {
+      let recipientRole = 'manager';
+      let recipientStaffId = null;
+      if (task.created_by_id === access.business.owner_id) {
+        recipientRole = 'owner';
+      } else {
+        const creator = (
+          await pool().query('SELECT email FROM users WHERE id = $1 LIMIT 1', [task.created_by_id])
+        ).rows[0];
+        const creatorRow = creator ? await staffRowForEmail(pool(), req.params.bid, creator.email) : null;
+        if (creatorRow) {
+          recipientStaffId = creatorRow.id;
+          recipientRole = personLevel(creatorRow);
+        }
+      }
+      const actor = actorNameOf(access, req.user, me);
+      await notifyUser(pool(), access.business, {
+        recipientUserId: task.created_by_id,
+        recipientStaffId,
+        recipientRole,
+        actorStaffId: me?.id || null,
+        actorName: actor,
+        event: 'task_done',
+        detail: `${actor} finished the task: ${task.title}`,
+        refId: task.id,
+      });
+    }
     return res.json({ task: updated.rows[0] });
   }));
 
@@ -1088,7 +1253,7 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
   }));
 
   router.post(`${base}/payroll/stubs/:id/push`, asyncHandler(async (req, res) => {
-    const { level } = await ctx(req);
+    const { access, level, me } = await ctx(req);
     await assertNotInGrace(pool(), req.params.bid);
     if (level === 'staff') throw err(403, 'forbidden', 'Team members cannot send pay stubs.');
     const { rows } = await pool().query(
@@ -1105,6 +1270,27 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
       'UPDATE pay_stubs SET pushed = TRUE, pushed_by_id = $1, pushed_at = NOW() WHERE id = $2 RETURNING *',
       [req.user.id, req.params.id],
     );
+    // The stub's owner hears it has arrived.
+    const recipientUser = await userForStaffRow(pool(), person);
+    if (recipientUser && recipientUser.id !== req.user.id) {
+      const { rows: runRows } = await pool().query(
+        'SELECT period_start, period_end FROM payroll_runs WHERE id = $1 LIMIT 1',
+        [stub.run_id],
+      );
+      const run = runRows[0];
+      await notifyUser(pool(), access.business, {
+        recipientUserId: recipientUser.id,
+        recipientStaffId: person.id,
+        recipientRole: personLevel(person),
+        actorStaffId: me?.id || null,
+        actorName: actorNameOf(access, req.user, me),
+        event: 'stub_pushed',
+        detail: run
+          ? `Your pay stub for ${dateOnly(run.period_start)} to ${dateOnly(run.period_end)} is ready.`
+          : 'Your pay stub is ready.',
+        refId: stub.id,
+      });
+    }
     return res.json({ stub: publicStub(updated.rows[0]) });
   }));
 
@@ -1287,6 +1473,252 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
     );
     if (!rows[0]) throw err(404, 'not_found', 'No direct deposit details for that team member.');
     return res.json({ details: rows[0] });
+  }));
+
+  // ---- Messages (Workforce inbox follow-up) ----------------------------------
+  // One-to-one conversations between people in the business, living
+  // in the same inbox as the notifications above. A participant key
+  // is the staff_member_id — or 'owner' for the business owner, who
+  // is not a staff row. PRIVACY (the owner's rule): only the two
+  // participants can read or post in a thread. The owner may LIST
+  // and READ every thread in their own business (oversight of their
+  // store) but posts only in threads they are part of. Posting also
+  // drops a workforce_notifications row for the other participant,
+  // so their bell rings.
+
+  const OWNER_KEY = 'owner';
+
+  function myKey(access, me) {
+    return access.isOwner ? OWNER_KEY : me?.id || null;
+  }
+
+  function threadParticipants(thread) {
+    return [
+      {
+        key: thread.participant_a_key,
+        user_id: thread.participant_a_user_id,
+        staff_id: thread.participant_a_staff_id,
+        name: thread.participant_a_name,
+        role: thread.participant_a_role,
+      },
+      {
+        key: thread.participant_b_key,
+        user_id: thread.participant_b_user_id,
+        staff_id: thread.participant_b_staff_id,
+        name: thread.participant_b_name,
+        role: thread.participant_b_role,
+      },
+    ];
+  }
+
+  async function participantForKey(business, key) {
+    if (key === OWNER_KEY) {
+      return { key, user_id: business.owner_id, staff_id: null, name: 'Owner', role: 'owner' };
+    }
+    const row = await personOr404(pool(), business.id, key);
+    if (row.status !== 'active') {
+      throw err(400, 'invalid_value', 'That team member is not active in this business.');
+    }
+    const user = await userForStaffRow(pool(), row);
+    if (!user) {
+      throw err(400, 'no_account', 'That team member has not signed in yet, so there is nowhere to send messages.');
+    }
+    return { key, user_id: user.id, staff_id: row.id, name: row.full_name, role: personLevel(row) };
+  }
+
+  async function threadOr404(threadId, businessId) {
+    const { rows } = await pool().query(
+      'SELECT * FROM message_threads WHERE id = $1 AND business_id = $2 LIMIT 1',
+      [threadId, businessId],
+    );
+    if (!rows[0]) throw err(404, 'not_found', 'Conversation not found.');
+    return rows[0];
+  }
+
+  async function threadUnread(threadId, userId) {
+    const { rows } = await pool().query(
+      `SELECT COUNT(*)::int AS count FROM messages
+        WHERE thread_id = $1 AND sender_user_id != $2 AND read_at IS NULL`,
+      [threadId, userId],
+    );
+    return rows[0]?.count ?? 0;
+  }
+
+  async function publicThread(thread, access, me, userId) {
+    const participants = threadParticipants(thread);
+    const key = myKey(access, me);
+    const mine = participants.some((p) => p.key === key);
+    const { rows: lastRows } = await pool().query(
+      'SELECT body, sender_name, sender_user_id, created_at FROM messages WHERE thread_id = $1 ORDER BY created_at DESC LIMIT 1',
+      [thread.id],
+    );
+    return {
+      id: thread.id,
+      business_id: thread.business_id,
+      participants,
+      other: mine ? participants.find((p) => p.key !== key) : null,
+      is_mine: mine,
+      can_post: mine,
+      oversight: !mine && access.isOwner,
+      last_message: lastRows[0] ?? null,
+      last_message_at: thread.last_message_at,
+      unread: mine ? await threadUnread(thread.id, userId) : null,
+      created_at: thread.created_at,
+    };
+  }
+
+  router.get(`${base}/messages/threads`, asyncHandler(async (req, res) => {
+    const { access, me } = await ctx(req);
+    const key = myKey(access, me);
+    let rows;
+    if (access.isOwner) {
+      // Oversight: the owner sees every conversation in their store.
+      ({ rows } = await pool().query(
+        `SELECT * FROM message_threads WHERE business_id = $1
+          ORDER BY last_message_at DESC NULLS LAST, created_at DESC LIMIT 200`,
+        [req.params.bid],
+      ));
+    } else {
+      if (!key) throw err(400, 'no_staff_profile', 'Only team members with a staff profile can do this.');
+      ({ rows } = await pool().query(
+        `SELECT * FROM message_threads
+          WHERE business_id = $1 AND (participant_a_key = $2 OR participant_b_key = $2)
+          ORDER BY last_message_at DESC NULLS LAST, created_at DESC LIMIT 200`,
+        [req.params.bid, key],
+      ));
+    }
+    const threads = [];
+    let unreadTotal = 0;
+    for (const thread of rows) {
+      const pub = await publicThread(thread, access, me, req.user.id);
+      unreadTotal += pub.unread || 0;
+      threads.push(pub);
+    }
+    return res.json({ threads, unread_total: unreadTotal });
+  }));
+
+  router.post(`${base}/messages/threads`, asyncHandler(async (req, res) => {
+    const { access, me } = await ctx(req);
+    await assertNotInGrace(pool(), req.params.bid);
+    const myParticipant = await participantForKey(access.business, myKey(access, me));
+    const targetKey = req.body?.with_owner === true ? OWNER_KEY : String(req.body?.staff_member_id || '');
+    if (!targetKey) throw err(400, 'invalid_value', 'Choose who to message.');
+    if (targetKey === myParticipant.key) {
+      throw err(400, 'invalid_value', 'You cannot message yourself.');
+    }
+    const other = await participantForKey(access.business, targetKey);
+    const [a, b] = [myParticipant, other].sort((x, y) => (x.key < y.key ? -1 : 1));
+    const existing = await pool().query(
+      `SELECT * FROM message_threads
+        WHERE business_id = $1 AND participant_a_key = $2 AND participant_b_key = $3 LIMIT 1`,
+      [req.params.bid, a.key, b.key],
+    );
+    if (existing.rows[0]) {
+      return res.json({ thread: await publicThread(existing.rows[0], access, me, req.user.id), created: false });
+    }
+    const inserted = await pool().query(
+      `INSERT INTO message_threads
+         (id, business_id, participant_a_key, participant_b_key, participant_a_user_id, participant_b_user_id,
+          participant_a_staff_id, participant_b_staff_id, participant_a_name, participant_b_name,
+          participant_a_role, participant_b_role)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`,
+      [
+        crypto.randomUUID(), req.params.bid, a.key, b.key, a.user_id, b.user_id,
+        a.staff_id, b.staff_id, a.name, b.name, a.role, b.role,
+      ],
+    );
+    return res.status(201).json({ thread: await publicThread(inserted.rows[0], access, me, req.user.id), created: true });
+  }));
+
+  router.get(`${base}/messages/threads/:threadId`, asyncHandler(async (req, res) => {
+    const { access, me } = await ctx(req);
+    const thread = await threadOr404(req.params.threadId, req.params.bid);
+    const participants = threadParticipants(thread);
+    const mine = participants.some((p) => p.key === myKey(access, me));
+    if (!mine && !access.isOwner) {
+      throw err(403, 'forbidden', 'This conversation is private to the two people in it.');
+    }
+    const { rows } = await pool().query(
+      'SELECT * FROM messages WHERE thread_id = $1 ORDER BY created_at ASC LIMIT 500',
+      [thread.id],
+    );
+    return res.json({
+      thread: await publicThread(thread, access, me, req.user.id),
+      messages: rows.map((m) => ({ ...m, mine: m.sender_user_id === req.user.id })),
+    });
+  }));
+
+  router.post(`${base}/messages/threads/:threadId/messages`, asyncHandler(async (req, res) => {
+    const { access, me } = await ctx(req);
+    await assertNotInGrace(pool(), req.params.bid);
+    const thread = await threadOr404(req.params.threadId, req.params.bid);
+    const participants = threadParticipants(thread);
+    const key = myKey(access, me);
+    const sender = participants.find((p) => p.key === key);
+    if (!sender) {
+      throw err(
+        403,
+        'forbidden',
+        access.isOwner
+          ? 'You can read every conversation in your business, but you can only post in your own.'
+          : 'This conversation is private to the two people in it.',
+      );
+    }
+    const body = String(req.body?.body || '').trim();
+    if (!body) throw err(400, 'invalid_value', 'Write a message first.');
+    const inserted = await pool().query(
+      `INSERT INTO messages (id, thread_id, business_id, sender_user_id, sender_staff_id, sender_name, body)
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+      [
+        crypto.randomUUID(), thread.id, req.params.bid, req.user.id,
+        sender.staff_id, sender.name, body.slice(0, 2000),
+      ],
+    );
+    await pool().query(
+      'UPDATE message_threads SET last_message_at = NOW(), updated_at = NOW() WHERE id = $1',
+      [thread.id],
+    );
+    // The other person's bell rings.
+    const other = participants.find((p) => p.key !== key);
+    await notifyUser(pool(), access.business, {
+      recipientUserId: other.user_id,
+      recipientStaffId: other.staff_id,
+      recipientRole: other.role,
+      actorStaffId: sender.staff_id,
+      actorName: sender.name,
+      event: 'message',
+      detail: `New message from ${sender.name}`,
+      refId: thread.id,
+    });
+    return res.status(201).json({ message: { ...inserted.rows[0], mine: true } });
+  }));
+
+  router.patch(`${base}/messages/threads/:threadId/read`, asyncHandler(async (req, res) => {
+    const { access, me } = await ctx(req);
+    const thread = await threadOr404(req.params.threadId, req.params.bid);
+    const participants = threadParticipants(thread);
+    if (!participants.some((p) => p.key === myKey(access, me))) {
+      throw err(403, 'forbidden', 'Only the people in a conversation can mark it read.');
+    }
+    await pool().query(
+      'UPDATE messages SET read_at = NOW() WHERE thread_id = $1 AND sender_user_id != $2 AND read_at IS NULL',
+      [thread.id, req.user.id],
+    );
+    return res.json({ unread: await threadUnread(thread.id, req.user.id) });
+  }));
+
+  router.get(`${base}/messages/unread`, asyncHandler(async (req, res) => {
+    const { access, me } = await ctx(req);
+    const key = myKey(access, me);
+    if (!key) return res.json({ unread: 0 });
+    const { rows } = await pool().query(
+      `SELECT COUNT(*)::int AS count FROM messages m
+         JOIN message_threads t ON t.id = m.thread_id
+        WHERE t.business_id = $1 AND (t.participant_a_key = $2 OR t.participant_b_key = $2)
+          AND m.sender_user_id != $3 AND m.read_at IS NULL`,
+      [req.params.bid, key, req.user.id],
+    );
+    return res.json({ unread: rows[0]?.count ?? 0 });
   }));
 
   return router;
