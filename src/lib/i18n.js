@@ -46,9 +46,20 @@ import { pcm } from './locales/pcm.js';
 import { fa } from './locales/fa.js';
 import { prs } from './locales/prs.js';
 import { tg } from './locales/tg.js';
+import { ptBR } from './locales/pt-BR.js';
+import { ptPT } from './locales/pt-PT.js';
+import { paGuru } from './locales/pa-Guru.js';
+import { paArab } from './locales/pa-Arab.js';
+import { ru } from './locales/ru.js';
+import { esUS } from './locales/es-US.js';
+import { esES } from './locales/es-ES.js';
+import { esMX } from './locales/es-MX.js';
+import { esCU } from './locales/es-CU.js';
+import { esPR } from './locales/es-PR.js';
+import { esVE } from './locales/es-VE.js';
 
 /** code -> strings. Add one language at a time, ABC order. */
-export const LOCALES = { en, ar, am, bn, bho, 'zh-Hans': zhHans, 'zh-Hant': zhHant, yue, wuu, 'fr-CA': frCA, ms, gu, de, 'fr-FR': frFR, ha, it, hi, id, ja, jv, kn, ko, mr, pcm, fa, prs, tg };
+export const LOCALES = { en, ar, am, bn, bho, 'zh-Hans': zhHans, 'zh-Hant': zhHant, yue, wuu, 'fr-CA': frCA, ms, gu, de, 'fr-FR': frFR, ha, it, hi, id, ja, jv, kn, ko, mr, pcm, fa, prs, tg, 'pt-BR': ptBR, 'pt-PT': ptPT, 'pa-Guru': paGuru, 'pa-Arab': paArab, ru, 'es-US': esUS, 'es-ES': esES, 'es-MX': esMX, 'es-CU': esCU, 'es-PR': esPR, 'es-VE': esVE };
 
 /** Locale codes that read right-to-left (Arabic script family).
  * Tajik ('tg') is NOT here: the app's Tajik text is Cyrillic and reads
@@ -100,6 +111,17 @@ export const LOCALE_LABEL_KEYS = {
   fa: 'settings.details.persian',
   prs: 'settings.details.dari',
   tg: 'settings.details.tajik',
+  'pt-BR': 'settings.details.portugueseBrazil',
+  'pt-PT': 'settings.details.portuguesePortugal',
+  'pa-Guru': 'settings.details.punjabiGurmukhi',
+  'pa-Arab': 'settings.details.punjabiShahmukhi',
+  ru: 'settings.details.russian',
+  'es-US': 'settings.details.spanishUS',
+  'es-ES': 'settings.details.spanishSpain',
+  'es-MX': 'settings.details.spanishMexico',
+  'es-CU': 'settings.details.spanishCuba',
+  'es-PR': 'settings.details.spanishPuertoRico',
+  'es-VE': 'settings.details.spanishVenezuela',
 };
 
 /** localStorage key holding the visitor's chosen locale (public picker). */
