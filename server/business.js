@@ -7,6 +7,9 @@
  *
  *  - PO order / cancel: guarded status moves (draft -> ordered,
  *    anything open -> cancelled only before anything arrived).
+ *  - PO send: a placed order is emailed to its supplier from inside
+ *    the app, the white-label PO PDF attached, and the send recorded
+ *    on the order — only after the mailer confirms (fails closed).
  *  - PO receive: every line checked before the first movement, then
  *    stock lands through the atomic movements path
  *    (server/movements.js recordMovementTx) — never a direct level
@@ -26,6 +29,8 @@ import { featureAllowed } from './plans.js';
 import { entityDef, publicRow } from './entities.js';
 import { recordMovementTx, getLevel, withTx } from './movements.js';
 import { assertNotInGrace } from './billing.js';
+import { sendMail, purchaseOrderEmail, EmailNotConfigured } from './email.js';
+import { buildPoPdf } from './printPdf.js';
 
 function err(status, code, message) {
   return Object.assign(new Error(message), { status, code });
@@ -117,6 +122,79 @@ export async function orderPurchaseOrder(pool, user, businessId, poId) {
   const { rows } = await pool.query(
     "UPDATE purchase_orders SET status = 'ordered', updated_at = NOW() WHERE id = $1 RETURNING *",
     [poId],
+  );
+  return publicRow(entityDef('PurchaseOrder'), rows[0]);
+}
+
+/**
+ * Send a placed purchase order to its supplier by email (Send-PO
+ * phase, Business only). The email and its attached PO PDF carry
+ * ONLY the sending business's own name — never any app branding
+ * (the PDF is the same white-label document the print route serves).
+ *
+ * Sendable states: a DRAFT has not been placed yet, so it can never
+ * be sent; a CANCELLED order is dead. Everything placed — `ordered`,
+ * `partial`, `received` — may be sent (and re-sent: a corrected or
+ * completed order can go out again, and the record updates).
+ *
+ * Fails closed: when the mailer is not configured, NOTHING is
+ * recorded as sent; when the supplier has no contact email on file,
+ * the send is blocked with a plain prompt to add it first.
+ */
+export async function sendPurchaseOrder(pool, user, businessId, poId) {
+  const access = await businessAccessOr403(pool, user, businessId, 'purchasing.manage');
+  const order = await loadPo(pool, businessId, poId);
+  if (order.status === 'draft') {
+    throw err(400, 'invalid_po_status', 'This order is still a draft — place it before sending it to the supplier.');
+  }
+  if (!['ordered', 'partial', 'received'].includes(order.status)) {
+    throw err(400, 'invalid_po_status', `A ${order.status} order cannot be sent to the supplier.`);
+  }
+  const { rows: supplierRows } = await pool.query(
+    'SELECT * FROM suppliers WHERE id = $1 AND business_id = $2 LIMIT 1',
+    [order.supplier_id, businessId],
+  );
+  const supplier = supplierRows[0];
+  const supplierEmail = String(supplier?.email || '').trim();
+  if (!supplierEmail) {
+    throw err(
+      400,
+      'supplier_email_missing',
+      `Add the email address for ${order.supplier_name || 'this supplier'} first — open Suppliers, add their email, then send the order.`,
+    );
+  }
+  const pdf = buildPoPdf(order, access.business, { mode: 'po' });
+  const safeNumber = String(order.number || 'order').replace(/[^a-zA-Z0-9-_]+/g, '-');
+  try {
+    await sendMail({
+      ...purchaseOrderEmail({
+        to: supplierEmail,
+        businessName: access.business.name,
+        currency: access.business.currency,
+        order,
+      }),
+      attachments: [{ filename: `purchase-order-${safeNumber}.pdf`, content: pdf }],
+    });
+  } catch (error) {
+    if (error instanceof EmailNotConfigured || error?.code === 'email_not_configured') {
+      throw err(
+        503,
+        'email_not_configured',
+        "Email sending isn't switched on for the app yet, so this order was not sent. Nothing was recorded as sent.",
+      );
+    }
+    throw err(
+      502,
+      'email_send_failed',
+      'The email could not be sent, so this order was not marked as sent. Please try again.',
+    );
+  }
+  // Recorded ONLY after the mailer confirmed the send.
+  const { rows } = await pool.query(
+    `UPDATE purchase_orders
+        SET sent_at = NOW(), sent_to = $1, send_count = send_count + 1, updated_at = NOW()
+      WHERE id = $2 RETURNING *`,
+    [supplierEmail, poId],
   );
   return publicRow(entityDef('PurchaseOrder'), rows[0]);
 }

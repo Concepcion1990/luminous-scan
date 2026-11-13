@@ -57,6 +57,7 @@ import { assertNotInGrace } from './billing.js';
 import {
   orderPurchaseOrder,
   cancelPurchaseOrder,
+  sendPurchaseOrder,
   receivePurchaseOrder,
   buildBom,
   disassembleBom,
@@ -683,6 +684,13 @@ export function createShopRouter({ getPool: getPoolFn }) {
 
   router.post('/businesses/:bid/purchase-orders/:id/cancel', asyncHandler(async (req, res) => {
     const order = await cancelPurchaseOrder(pool(), req.user, req.params.bid, req.params.id);
+    return res.json({ order });
+  }));
+
+  // Send the order to its supplier by email (Business only; the mail
+  // and PDF carry the business's own name only — see business.js).
+  router.post('/businesses/:bid/purchase-orders/:id/send', asyncHandler(async (req, res) => {
+    const order = await sendPurchaseOrder(pool(), req.user, req.params.bid, req.params.id);
     return res.json({ order });
   }));
 
