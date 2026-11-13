@@ -2310,9 +2310,9 @@ export const esES = {
   "settings.canceled.endsOn": "Esta suscripción está cancelada y termina el {date}. Conserva el acceso completo hasta entonces.",
   "settings.delete.checking": "Comprobando si existe una solicitud de eliminación…",
   "settings.delete.description": "Solicitar la eliminación de su cuenta de acceso a Luminous StockHaven.",
-  "settings.delete.dialogDescription": "Esto solicita una revisión de la eliminación de la cuenta. No elimina de inmediato su acceso ni su inventario, y no cancela ninguna suscripción de Stripe. Escriba DELETE para confirmar que quiere enviar la solicitud.",
+  "settings.delete.dialogDescription": "Esto solicita una revisión de la eliminación de la cuenta. No elimina de inmediato su acceso ni su inventario, y no cancela ninguna suscripción de Stripe. Escriba {word} para confirmar que quiere enviar la solicitud.",
   "settings.delete.dialogTitle": "Solicitar la eliminación de la cuenta",
-  "settings.delete.enterDelete": "Escriba DELETE para confirmar",
+  "settings.delete.enterDelete": "Escriba {word} para confirmar",
   "settings.delete.exportFirst": "Exporte primero su inventario si necesita conservar sus registros.",
   "settings.delete.intro": "Enviar una solicitud no elimina de inmediato su cuenta, sus negocios ni su inventario. Las solicitudes se revisan por separado antes de que la eliminación pueda completarse. Esta solicitud no cancela una suscripción de Stripe ni detiene la facturación futura; la cancelación de la suscripción debe gestionarse por separado a través del proveedor de facturación.",
   "settings.delete.keepAccount": "Conservar la cuenta",
@@ -3520,4 +3520,6 @@ export const esES = {
   "training.track.staff": "Staff track",
   "training.track.staffHelp": "The everyday tools: scanning, the time clock, your schedule, your inbox and your pay stub.",
   "training.warningSentOn": "Warning sent {date}",
+  "auth.sameEmailNotice": "Already have our app from Google Play or the App Store? Use the same email here — the one you sign into the app with — so your shop and your inventory come with you. A different email starts a totally new, empty storefront.",
+  "settings.deleteConfirmWord": "ELIMINAR",
 };

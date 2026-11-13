@@ -2310,9 +2310,9 @@ export const ptPT = {
   "settings.canceled.endsOn": "Esta subscrição está cancelada e termina em {date}. Mantém o acesso total até lá.",
   "settings.delete.checking": "A verificar se existe um pedido de eliminação…",
   "settings.delete.description": "Pedir a remoção da sua conta de acesso ao Luminous StockHaven.",
-  "settings.delete.dialogDescription": "Isto pede uma revisão da eliminação da conta. Não remove imediatamente o seu acesso nem o seu inventário, e não cancela nenhuma subscrição Stripe. Escreva DELETE para confirmar que quer submeter o pedido.",
+  "settings.delete.dialogDescription": "Isto pede uma revisão da eliminação da conta. Não remove imediatamente o seu acesso nem o seu inventário, e não cancela nenhuma subscrição Stripe. Escreva {word} para confirmar que quer submeter o pedido.",
   "settings.delete.dialogTitle": "Pedir Eliminação da Conta",
-  "settings.delete.enterDelete": "Escreva DELETE para confirmar",
+  "settings.delete.enterDelete": "Escreva {word} para confirmar",
   "settings.delete.exportFirst": "Exporte primeiro o seu inventário, se precisar de guardar os seus registos.",
   "settings.delete.intro": "Submeter um pedido não elimina imediatamente a sua conta, as suas empresas ou o seu inventário. Os pedidos são revistos separadamente antes de a eliminação poder ser concluída. Este pedido não cancela uma subscrição Stripe nem para cobranças futuras; o cancelamento da subscrição tem de ser tratado separadamente através do fornecedor de faturação.",
   "settings.delete.keepAccount": "Manter Conta",
@@ -3520,4 +3520,6 @@ export const ptPT = {
   "training.track.staff": "Staff track",
   "training.track.staffHelp": "The everyday tools: scanning, the time clock, your schedule, your inbox and your pay stub.",
   "training.warningSentOn": "Warning sent {date}",
+  "auth.sameEmailNotice": "Already have our app from Google Play or the App Store? Use the same email here — the one you sign into the app with — so your shop and your inventory come with you. A different email starts a totally new, empty storefront.",
+  "settings.deleteConfirmWord": "ELIMINAR",
 };

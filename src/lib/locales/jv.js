@@ -2310,9 +2310,9 @@ export const jv = {
   "settings.canceled.endsOn": "Langganan punika dipumbatalaken lan pungkasan ing {date}. Panjenengan tetep gadhah akses jangkep ngantos wekdal punika.",
   "settings.delete.checking": "Mriksa panyuwunan pambusakan ingkang sampun wonten…",
   "settings.delete.description": "Nyuwun pambusakan akun mlebet Luminous StockHaven Panjenengan.",
-  "settings.delete.dialogDescription": "Punika nyuwun priksa pambusakan akun. Mboten langsung mbusak mlebet utawi inventaris Panjenengan, lan mboten mbatalaken langganan Stripe punapa kemawon. Ketik DELETE kangge mesthiaken Panjenengan kepengin ngintun panyuwunan.",
+  "settings.delete.dialogDescription": "Punika nyuwun priksa pambusakan akun. Mboten langsung mbusak mlebet utawi inventaris Panjenengan, lan mboten mbatalaken langganan Stripe punapa kemawon. Ketik {word} kangge mesthiaken Panjenengan kepengin ngintun panyuwunan.",
   "settings.delete.dialogTitle": "Nyuwun Pambusakan Akun",
-  "settings.delete.enterDelete": "Lebetaken DELETE kangge mesthiaken",
+  "settings.delete.enterDelete": "Lebetaken {word} kangge mesthiaken",
   "settings.delete.exportFirst": "Ekspor inventaris Panjenengan rumiyin menawi Panjenengan mbetahaken njagi cathetan Panjenengan.",
   "settings.delete.intro": "Ngintun panyuwunan mboten langsung mbusak akun, bisnis, utawi inventaris Panjenengan. Panyuwunan dipunpriksa kapisah sadèrèngipun pambusakan saged dipunrampungaken. Panyuwunan punika mboten mbatalaken langganan Stripe utawi mungkasi tagihan mangsa ngajeng; pambatalan langganan kedah dipunurus kapisah lumantar panyedhiya tagihan.",
   "settings.delete.keepAccount": "Tetepaken Akun",
@@ -3520,4 +3520,6 @@ export const jv = {
   "training.track.staff": "Staff track",
   "training.track.staffHelp": "The everyday tools: scanning, the time clock, your schedule, your inbox and your pay stub.",
   "training.warningSentOn": "Warning sent {date}",
+  "auth.sameEmailNotice": "Already have our app from Google Play or the App Store? Use the same email here — the one you sign into the app with — so your shop and your inventory come with you. A different email starts a totally new, empty storefront.",
+  "settings.deleteConfirmWord": "BUSEK",
 };

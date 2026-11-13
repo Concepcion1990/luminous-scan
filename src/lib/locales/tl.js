@@ -2310,9 +2310,9 @@ export const tl = {
   "settings.canceled.endsOn": "Nakansela ang subscription na ito at magtatapos sa {date}. Mananatili ang iyong buong access hanggang noon.",
   "settings.delete.checking": "Sinusuri kung may kasalukuyang kahilingan sa pagbura…",
   "settings.delete.description": "Hilingin ang pag-alis ng iyong sign-in account sa Luminous StockHaven.",
-  "settings.delete.dialogDescription": "Humihiling ito ng pagsusuri ng pagbura ng account. Hindi nito agad inaalis ang iyong login o imbentaryo, at hindi nito kinakansela ang anumang subscription sa Stripe. I-type ang DELETE upang kumpirmahing gusto mong isumite ang kahilingan.",
+  "settings.delete.dialogDescription": "Humihiling ito ng pagsusuri ng pagbura ng account. Hindi nito agad inaalis ang iyong login o imbentaryo, at hindi nito kinakansela ang anumang subscription sa Stripe. I-type ang {word} upang kumpirmahing gusto mong isumite ang kahilingan.",
   "settings.delete.dialogTitle": "Hilingin ang Pagbura ng Account",
-  "settings.delete.enterDelete": "Ilagay ang DELETE upang kumpirmahin",
+  "settings.delete.enterDelete": "Ilagay ang {word} upang kumpirmahin",
   "settings.delete.exportFirst": "I-export muna ang iyong imbentaryo kung kailangan mong itago ang iyong mga rekord.",
   "settings.delete.intro": "Ang pagsusumite ng kahilingan ay hindi agad nagbubura ng iyong account, mga negosyo, o imbentaryo. Hiwalay na sinusuri ang mga kahilingan bago makumpleto ang pagbura. Ang kahilingang ito ay hindi nagkakansela ng subscription sa Stripe o humihinto ng susunod na pagsingil; dapat hiwalay na asikasuhin ang pagkansela ng subscription sa pamamagitan ng provider ng pagsingil.",
   "settings.delete.keepAccount": "Panatilihin ang Account",
@@ -3520,4 +3520,6 @@ export const tl = {
   "training.track.staff": "Staff track",
   "training.track.staffHelp": "The everyday tools: scanning, the time clock, your schedule, your inbox and your pay stub.",
   "training.warningSentOn": "Warning sent {date}",
+  "auth.sameEmailNotice": "Already have our app from Google Play or the App Store? Use the same email here — the one you sign into the app with — so your shop and your inventory come with you. A different email starts a totally new, empty storefront.",
+  "settings.deleteConfirmWord": "BURAHIN",
 };
