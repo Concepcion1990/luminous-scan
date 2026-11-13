@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { base44, apiRequest } from '@/api/client';
 import { useQueryClient } from '@tanstack/react-query';
-import { Check, CreditCard, Loader2, LogOut, Monitor, Moon, RefreshCw, Save, Sun, Trash2 } from 'lucide-react';
+import { Check, CreditCard, Loader2, LogOut, Monitor, Moon, RefreshCw, Save, Sun, Trash2, TriangleAlert } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useBusiness } from '@/hooks/useBusiness';
 import useEntitlements from '@/hooks/useEntitlements';
@@ -60,6 +60,27 @@ const APPEARANCE_OPTIONS = [
   { value: 'dark', labelKey: 'settings.appearance.dark', descriptionKey: 'settings.appearance.darkDesc', icon: Moon },
   { value: 'system', labelKey: 'settings.appearance.automatic', descriptionKey: 'settings.appearance.automaticDesc', icon: Monitor },
 ];
+
+/**
+ * The owner's plain-words cancel-first warning (Nov 12, 2026). She
+ * designs for skimmers because she is one — warnings must survive a
+ * skim — so this sits at the very TOP of the delete section and again
+ * inside the confirmation dialog, above the type-the-word box: the
+ * first thing seen in both places. Styling stays in the app's calm
+ * warning language (border-warn / bg-warn, the import panels' tone) —
+ * distinct enough to stop a skim, never garish.
+ */
+function CancelBeforeDeleteWarning() {
+  return (
+    <div className="flex items-start gap-2.5 rounded-lg border border-warn/40 bg-warn/10 px-4 py-3 text-sm">
+      <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-warn" aria-hidden="true" />
+      <div>
+        <p className="font-semibold text-foreground">{t('settings.delete.cancelFirstHeadline')}</p>
+        <p className="mt-1 leading-relaxed text-muted-foreground">{t('settings.delete.cancelFirstBody')}</p>
+      </div>
+    </div>
+  );
+}
 
 export default function Settings() {
   const { user, record, profile, isLoading, activeId } = useBusiness();
@@ -588,6 +609,7 @@ export default function Settings() {
         title={t('settings.delete.title')}
         description={t('settings.delete.description')}
       >
+        <CancelBeforeDeleteWarning />
         <p className="text-sm leading-relaxed text-muted-foreground">
           {t('settings.delete.intro')}
         </p>
@@ -642,6 +664,7 @@ export default function Settings() {
                     {t('settings.delete.dialogDescription', { word: confirmWord })}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
+                <CancelBeforeDeleteWarning />
                 <div className="space-y-2 py-2">
                   <p className="text-sm leading-relaxed text-muted-foreground">
                     {plan?.key === 'business'
