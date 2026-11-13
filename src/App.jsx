@@ -1,8 +1,10 @@
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
+import { BrowserRouter as Router, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
+import { isAuthPagePath } from './lib/authReturnTo';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
@@ -55,13 +57,29 @@ import ThankYou from './pages/ThankYou';
 import GraceInventory from '@/pages/GraceInventory';
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const { isLoadingAuth, isLoadingPublicSettings, authError, isAuthenticated, navigateToLogin } = useAuth();
   const { pathname } = useLocation();
   // The introduction and the plan comparison are readable before signing in.
   // Public legal pages are readable too, including the /policies/* aliases
   // the app previously linked to, and both spellings of the Thank You page.
   // The About page is readable too.
   const openToEveryone = pathname === '/welcome' || pathname === '/plans' || pathname === '/subscribe' || pathname === '/about' || pathname === '/subscription-policy' || pathname === '/policies/subscription' || pathname === '/terms-of-service' || pathname === '/policies/terms' || pathname === '/privacy-policy' || pathname === '/ThankYou' || pathname === '/thankyou';
+  // The auth pages are never bounced either: they must render for
+  // signed-out visitors exactly as they are, returnTo and all.
+  const authPage = isAuthPagePath(pathname);
+
+  // Redirect to login automatically when a signed-out visitor hits a
+  // genuinely protected path. This lives in an effect — never during
+  // render — and fires for protected paths only: public pages, the auth
+  // pages, and "/" (handled below) are exempt. Before the 2026-11-12
+  // fix this ran during render for every non-public path, /login
+  // included, and each bounce wrapped the current URL inside a new
+  // returnTo until the URL grew past the server limit (HTTP 431).
+  useEffect(() => {
+    if (authError?.type === 'auth_required' && !openToEveryone && !authPage && pathname !== '/') {
+      navigateToLogin();
+    }
+  }, [authError, openToEveryone, authPage, pathname, navigateToLogin]);
 
   // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
@@ -76,11 +94,14 @@ const AuthenticatedApp = () => {
   if (authError) {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
-    } else if (authError.type === 'auth_required' && !openToEveryone) {
-      // Redirect to login automatically
-      navigateToLogin();
-      return null;
     }
+  }
+
+  // Signed-out at the root: land once on the public face. Signed-in
+  // visitors fall through to the routes, where "/" is the Dashboard
+  // inside ProtectedRoute, exactly as before.
+  if (pathname === '/' && !isAuthenticated) {
+    return <Navigate to="/welcome" replace />;
   }
 
   // Render the main app

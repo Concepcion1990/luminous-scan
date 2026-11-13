@@ -26,6 +26,7 @@
  */
 
 import { csrfHeadersFor } from '../lib/csrf.js';
+import { loginBounceTarget } from '../lib/authReturnTo.js';
 import { t } from '../lib/i18n.js';
 
 const notImplemented = (area) =>
@@ -199,8 +200,14 @@ export const base44 = {  entities: Object.fromEntries(
         if (redirectUrl) window.location.assign(redirectUrl);
       }
     },
+    // The carried returnTo is sanitized here as well as at the caller:
+    // whatever a caller hands in — even a full href with a nested
+    // returnTo — the bounce that leaves this function is a single hop
+    // to /login with one singly-encoded relative path, or plain /login
+    // when there is nothing safe to resume. (2026-11-12 loop fix.)
     redirectToLogin: (returnTo) => {
-      const url = `/login${returnTo ? `?returnTo=${encodeURIComponent(returnTo)}` : ''}`;
+      const target = loginBounceTarget(returnTo, window.location.origin);
+      const url = target === '/' ? '/login' : `/login?returnTo=${encodeURIComponent(target)}`;
       window.location.assign(url);
     },
   },
