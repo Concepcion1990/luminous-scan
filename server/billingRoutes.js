@@ -755,6 +755,17 @@ async function businessAndOwnerFor(pool, metadata) {
   return { business, owner: rows[0] || null };
 }
 
+// Stripe's current invoice shape (API 2026-10-28.endive) has no
+// top-level invoice.subscription; the link now lives at
+// invoice.parent.subscription_details.subscription. Read the old
+// field first so old-shape events and invoices keep working.
+function invoiceSubscriptionId(invoice) {
+  if (!invoice) return null;
+  return invoice.subscription
+    || invoice.parent?.subscription_details?.subscription
+    || null;
+}
+
 async function handleStripeEvent(pool, event) {
   const type = event.type;
   const object = event.data?.object || {};
@@ -887,7 +898,7 @@ async function handleStripeEvent(pool, event) {
       } catch {
         invoice = object;
       }
-      const subscriptionId = invoice.subscription || object.subscription;
+      const subscriptionId = invoiceSubscriptionId(invoice) || invoiceSubscriptionId(object);
       if (!subscriptionId) return { handled: false, reason: 'no_subscription' };
       const subscription = await stripeApi.getSubscription(subscriptionId);
       const { business, owner } = await businessAndOwnerFor(pool, subscription.metadata || {});
@@ -903,7 +914,7 @@ async function handleStripeEvent(pool, event) {
     }
 
     case 'invoice.payment_failed': {
-      const subscriptionId = object.subscription;
+      const subscriptionId = invoiceSubscriptionId(object);
       if (!subscriptionId) return { handled: false, reason: 'no_subscription' };
       let subscription;
       try {
@@ -942,7 +953,7 @@ async function handleStripeEvent(pool, event) {
       } catch {
         return { handled: false, reason: 'invoice_unverified' };
       }
-      const subscriptionId = invoice.subscription;
+      const subscriptionId = invoiceSubscriptionId(invoice);
       if (!subscriptionId) return { handled: false, reason: 'no_subscription' };
       const subscription = await stripeApi.getSubscription(subscriptionId);
       const { business } = await businessAndOwnerFor(pool, subscription.metadata || {});

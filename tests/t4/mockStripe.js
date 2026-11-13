@@ -282,6 +282,25 @@ export function createMockStripe() {
     return { ...charge };
   }
 
+  /** Rewrite a stored invoice into Stripe's current shape
+   *  (API 2026-10-28.endive): no top-level subscription — the link
+   *  lives at parent.subscription_details.subscription, with the
+   *  subscription's metadata mirrored there. Returns the new shape. */
+  function reshapeInvoiceNewApi(invoiceId) {
+    const invoice = invoices.get(invoiceId);
+    if (!invoice) throw new Error(`mock: no invoice ${invoiceId}`);
+    const sub = subscriptions.get(invoice.subscription);
+    invoice.parent = {
+      type: 'subscription_details',
+      subscription_details: {
+        subscription: invoice.subscription,
+        metadata: { ...(sub ? sub.metadata : {}) },
+      },
+    };
+    invoice.subscription = null;
+    return { ...invoice };
+  }
+
   function getSubscription(subId) {
     const sub = subscriptions.get(subId);
     return sub ? { ...sub } : null;
@@ -312,6 +331,7 @@ export function createMockStripe() {
     advancePeriod,
     failPayment,
     refundFirstCharge,
+    reshapeInvoiceNewApi,
     getSubscription,
     getSession,
     listInvoices,

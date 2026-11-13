@@ -170,6 +170,75 @@ test('charge.refunded ends paid access and records refund_confirmed (history kep
   assert.equal(events.rows.length, 1);
 });
 
+test('invoice.paid in the NEW invoice shape (parent.subscription_details only) renews', async () => {
+  const owner = await ownerWithBusiness('renewal-new-shape@example.com');
+  const { checkout } = await trialCheckout(owner, owner.business.id, 'essentials');
+  const session = mock.getSession(checkout.session_id);
+  const subId = session.subscription;
+  const before = await pool.query('SELECT current_period_end FROM subscriptions WHERE business_id = $1', [owner.business.id]);
+  const { invoice } = mock.advancePeriod(subId);
+  // Current Stripe shape: no top-level subscription anywhere — the
+  // stored invoice (what the handler re-fetches) and the event agree.
+  const newShape = mock.reshapeInvoiceNewApi(invoice.id);
+  assert.equal(newShape.subscription, null);
+  assert.equal(newShape.parent.subscription_details.subscription, subId);
+  const event = webhookEvent('invoice.paid', newShape);
+  const res = await postEvent(event);
+  assert.equal(res.status, 200);
+  assert.equal(res.json.handled, true);
+  assert.equal(res.json.renewal, true);
+  const after = await pool.query('SELECT current_period_end, status FROM subscriptions WHERE business_id = $1', [owner.business.id]);
+  assert.equal(after.rows[0].status, 'active');
+  assert.ok(Date.parse(after.rows[0].current_period_end) > Date.parse(before.rows[0].current_period_end));
+});
+
+test('invoice.payment_failed in the NEW invoice shape (parent.subscription_details only) marks past_due', async () => {
+  const owner = await ownerWithBusiness('pastdue-new-shape@example.com');
+  const { checkout } = await trialCheckout(owner, owner.business.id, 'essentials');
+  const session = mock.getSession(checkout.session_id);
+  const subId = session.subscription;
+  const { invoice } = mock.failPayment(subId);
+  // The payment_failed path reads the event object itself.
+  const newShape = {
+    ...invoice,
+    subscription: null,
+    parent: {
+      type: 'subscription_details',
+      subscription_details: { subscription: subId, metadata: { ...(invoice.metadata || {}) } },
+    },
+  };
+  const event = webhookEvent('invoice.payment_failed', newShape);
+  const res = await postEvent(event);
+  assert.equal(res.status, 200);
+  assert.equal(res.json.handled, true);
+  const sub = await pool.query('SELECT status FROM subscriptions WHERE business_id = $1', [owner.business.id]);
+  assert.equal(sub.rows[0].status, 'past_due');
+  const ent = await pool.query('SELECT status FROM entitlements WHERE business_id = $1', [owner.business.id]);
+  assert.equal(ent.rows[0].status, 'past_due');
+});
+
+test('charge.refunded with the invoice in the NEW shape still ends paid access', async () => {
+  const owner = await ownerWithBusiness('refund-new-shape@example.com');
+  const crypto = await import('node:crypto');
+  await pool.query(
+    `INSERT INTO trial_history (id, email, plan, status, source, first_trial_at, consumed_at)
+     VALUES ($1, $2, 'essentials', 'consumed', 'stripe_checkout', NOW(), NOW())`,
+    [crypto.randomUUID(), owner.email],
+  );
+  const { checkout } = await trialCheckout(owner, owner.business.id, 'essentials');
+  const session = mock.getSession(checkout.session_id);
+  const charge = mock.refundFirstCharge(session.subscription);
+  // The refund path re-fetches the invoice; serve it in the new shape.
+  mock.reshapeInvoiceNewApi(charge.invoice);
+  const event = webhookEvent('charge.refunded', charge);
+  const res = await postEvent(event);
+  assert.equal(res.status, 200);
+  assert.equal(res.json.handled, true);
+  assert.equal(res.json.refund_confirmed, true);
+  const ent = await pool.query('SELECT status FROM entitlements WHERE business_id = $1', [owner.business.id]);
+  assert.equal(ent.rows[0].status, 'canceled');
+});
+
 test('customer.subscription.trial_will_end is acknowledged; reminders stay off (no grant change)', async () => {
   const owner = await ownerWithBusiness('trial-will-end@example.com');
   const { checkout } = await trialCheckout(owner, owner.business.id, 'essentials');
