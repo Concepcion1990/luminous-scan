@@ -236,6 +236,11 @@ select,
     --border: 37 25% 79%;
     --input: 37 25% 79%;
     --ring: 37.22 36.07% 57.06%;
+    /* Plain text links only (auth pages, inline policy links): --primary
+       is the pale cream-tan #E3D5BF, which is unreadable as text on
+       white, so links use this deeper bronze of the same warm family.
+       Buttons keep bg-primary exactly as before. */
+    --link: 32 48% 29%;
     --sidebar-background: 36.67 39.13% 81.96%;
     --sidebar-foreground: 30 20% 15.69%;
     --sidebar-primary: 37.22 36.07% 57.06%;
@@ -264,6 +269,9 @@ select,
     --border: 30 13% 32%;
     --input: 30 13% 32%;
     --ring: 37.22 36.07% 57.06%;
+    /* Dark-mode pair of the light theme's --link: a light warm tan that
+       stays readable on the near-black background. */
+    --link: 37 45% 70%;
     --sidebar-background: 30 20% 15.69%;
     --sidebar-foreground: 38.57 46.67% 94.12%;
     --sidebar-primary: 36.67 39.13% 81.96%;

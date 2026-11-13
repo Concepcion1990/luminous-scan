@@ -11,7 +11,7 @@
     "lint:fix": "eslint . --fix",
     "preview": "vite preview",
     "start": "node server.js",
-    "test": "npm run test:t1 && npm run test:t2 && npm run test:t3 && npm run test:t4 && npm run test:t5 && npm run test:t6 && npm run test:t7 && npm run test:t8 && npm run test:t9 && npm run test:t10 && npm run test:t11 && npm run test:t12 && npm run test:t13 && npm run test:t14 && npm run test:t15 && npm run test:t16 && npm run test:t17 && npm run test:t18 && npm run test:t19 && npm run test:t20 && npm run test:t21 && npm run test:t22",
+    "test": "npm run test:t1 && npm run test:t2 && npm run test:t3 && npm run test:t4 && npm run test:t5 && npm run test:t6 && npm run test:t7 && npm run test:t8 && npm run test:t9 && npm run test:t10 && npm run test:t11 && npm run test:t12 && npm run test:t13 && npm run test:t14 && npm run test:t15 && npm run test:t16 && npm run test:t17 && npm run test:t18 && npm run test:t19 && npm run test:t20 && npm run test:t21 && npm run test:t22 && npm run test:t23 && npm run test:t24",
     "test:t1": "node --test src/lib/stockhavenSubscriptionPolicy.test.js src/lib/stockhavenTermsOfService.test.js src/lib/stockhavenPrivacyPolicy.test.js src/lib/trademarkNotice.test.js src/lib/aboutFounder.test.js",
     "test:t2": "node --test tests/t2/*.test.js",
     "test:t3": "node --test tests/t3/*.test.js src/lib/xlsx.test.js",
@@ -33,7 +33,9 @@
     "test:t19": "node --test tests/t19/*.test.js",
     "test:t20": "node --test tests/t20/*.test.js",
     "test:t21": "node --test tests/t21/*.test.js",
-    "test:t22": "node --test tests/t22/*.test.js"
+    "test:t22": "node --test tests/t22/*.test.js",
+    "test:t23": "node --test tests/t23/*.test.js",
+    "test:t24": "node --test tests/t24/*.test.js"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^17.0.0",

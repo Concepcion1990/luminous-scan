@@ -340,6 +340,49 @@ export function trialReminderFinalEmail({ to, plan, trialEndsAt, cancelAtPeriodE
   return { to, subject: '24 hours until your Luminous StockHaven trial ends', text };
 }
 
+/**
+ * Support report email (Support phase) — a copy of a "Report a
+ * problem" note filed from inside the app, sent to the owner's
+ * support inbox. The database row is the record of truth; this mail
+ * is the notification, and the reporter address rides in the body so
+ * the owner can reply to the person directly. Composed in English
+ * per the codebase convention (like notification detail strings).
+ * Carries NO inventory data — only what the reporter wrote and the
+ * fixing context the app attaches openly (the form tells the user
+ * exactly what is included before they send).
+ */
+export function supportReportEmail({
+  to, reporterEmail, categoryLabel, message, reportId,
+  page, businessName, role, plan, locale, userAgent,
+}) {
+  const lines = [
+    'A Luminous StockHaven user reported a problem from inside the app.',
+    '',
+    `Category: ${categoryLabel}`,
+    `From: ${reporterEmail || 'unknown'} — reply to them at that address.`,
+    '',
+    'What they wrote:',
+    String(message || ''),
+    '',
+    'Details the app attached automatically:',
+    `- Page they were on: ${page || 'not recorded'}`,
+    `- Business: ${businessName || 'none selected'}`,
+    `- Their role there: ${role || 'none'}`,
+    `- Plan: ${plan || 'none'}`,
+    `- App language: ${locale || 'not recorded'}`,
+    `- Device / browser: ${userAgent || 'not recorded'}`,
+    '',
+    `The report is saved in the app database (id ${reportId}, status new) — this email is a copy.`,
+    '',
+    '— Luminous StockHaven',
+  ];
+  return {
+    to,
+    subject: `Problem report: ${categoryLabel} — Luminous StockHaven`,
+    text: lines.join('\n'),
+  };
+}
+
 export function staffInviteEmail({ to, businessName, inviterName }) {
   return {
     to,

@@ -14,6 +14,8 @@
  *   /api/businesses/:id/* scan, movements, import, export, valuation,
  *                         dashboard, alerts, cross-business move, staff.
  *   POST /api/billing/*       Stripe billing (T4).
+ *   POST /api/support/report  in-app problem reports (account-level,
+ *                         any plan or none — never subscription-gated).
  *   POST /webhooks/stripe      Stripe webhook (raw body, HMAC verified).
  *   GET  /api/csrf-token       fresh CSRF token for the signed-in session (T6.1);
  *                              every mutating /api call sends it as X-CSRF-Token.
@@ -36,6 +38,7 @@ import { shopifyWebhookHandler } from './posShopify.js';
 import { createTrainingRouter } from './trainingRoutes.js';
 import { createBillingRouter, stripeWebhookHandler } from './billingRoutes.js';
 import { createRecoveryRouter } from './recoveryRoutes.js';
+import { createSupportRouter } from './supportRoutes.js';
 import { assertSubscriptionAccess } from './subscriptionAccess.js';
 import { issueCsrfToken, requireCsrf } from './csrf.js';
 import { SESSION_COOKIE, loadSessionUser, parseCookies, requireAuth } from './sessions.js';
@@ -162,6 +165,11 @@ export function createApp() {
   // Recovery kit: spare keys, backup email, change-email, recovery
   // entry, owner staff-email fix (server/recoveryRoutes.js).
   app.use('/api', createRecoveryRouter({ getPool }));
+  // Support: in-app problem reporting (server/supportRoutes.js).
+  // Account-level on purpose — NOT under /api/businesses/:bid/*, so
+  // the subscription gate never stands between a customer and the
+  // help door, on any plan or none.
+  app.use('/api', createSupportRouter({ getPool }));
   // Billing BEFORE shop: the shop router applies requireAuth to every
   // request that reaches it, and the wipe-sweep job endpoint is
   // job-secret protected, not session protected — it must be reachable

@@ -109,7 +109,11 @@ test('Register shows the trademark notice below the form, with an About link', (
   const screen = read('src/pages/Register.jsx');
   assert.match(screen, /import TrademarkNotice from ["']@\/components\/TrademarkNotice["']/);
   assert.match(screen, /<TrademarkNotice \/>/);
-  assert.match(screen, /<Link to="\/about" className="font-medium text-primary underline underline-offset-4">/);
+  // T24: the Register copy of this link uses the readable bronze
+  // text-link (the auth pages' pale text-primary was unreadable on
+  // white); the Plans copy above keeps text-primary, out of that
+  // fix's scope.
+  assert.match(screen, /<Link to="\/about" className="font-medium text-link underline underline-offset-4">/);
   // T6.3: the link label moved into en.js (auth.aboutLink) — assert the
   // key is referenced and the English value, not a source literal.
   assert.match(screen, /t\('auth\.aboutLink'\)/);
