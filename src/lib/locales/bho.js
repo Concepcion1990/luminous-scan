@@ -2310,9 +2310,9 @@ export const bho = {
   "settings.canceled.endsOn": "ई सब्सक्रिप्शन रद्द भइल बा आ {date} के खतम हो जाई। ओह समय तक रउआ के पूरा पहुँच बनल रही।",
   "settings.delete.checking": "पहिले से मौजूद हटावे के अनुरोध जाँचल जा रहल बा…",
   "settings.delete.description": "रउआ के Luminous StockHaven साइन-इन खाता हटावे के अनुरोध करीं।",
-  "settings.delete.dialogDescription": "एह से खाता हटावे के समीक्षा के अनुरोध होला। एह से तुरंते रउआ के लॉगिन भा इन्वेंटरी ना हटेला, आ ई कवनो Stripe सब्सक्रिप्शन रद्द ना करेला। अनुरोध भेजे खातिर DELETE टाइप करीं, ताकि पुष्टि हो जाव कि रउआ अनुरोध भेजे चाहत बानी।",
+  "settings.delete.dialogDescription": "एह से खाता हटावे के समीक्षा के अनुरोध होला। एह से तुरंते रउआ के लॉगिन भा इन्वेंटरी ना हटेला, आ ई कवनो Stripe सब्सक्रिप्शन रद्द ना करेला। अनुरोध भेजे खातिर {word} टाइप करीं, ताकि पुष्टि हो जाव कि रउआ अनुरोध भेजे चाहत बानी।",
   "settings.delete.dialogTitle": "खाता हटावे के अनुरोध करीं",
-  "settings.delete.enterDelete": "पुष्टि खातिर DELETE डालीं",
+  "settings.delete.enterDelete": "पुष्टि खातिर {word} डालीं",
   "settings.delete.exportFirst": "अगर रउआ के अपना रिकॉर्ड रखे के बा, त पहिले अपना इन्वेंटरी एक्सपोर्ट कर लीं।",
   "settings.delete.intro": "अनुरोध भेजे से रउआ के खाता, बिजनेस, भा इन्वेंटरी तुरंते ना हटेला। हटावल पूरा होखे से पहिले अनुरोध के अलग से समीक्षा होला। ई अनुरोध Stripe सब्सक्रिप्शन रद्द ना करेला आ आगे के बिलिंग ना रोक्केला; सब्सक्रिप्शन रद्द करे के काम बिलिंग सेवा से अलग से निपटावे के पड़ी।",
   "settings.delete.keepAccount": "खाता रखीं",
@@ -3520,4 +3520,6 @@ export const bho = {
   "training.track.staff": "Staff track",
   "training.track.staffHelp": "The everyday tools: scanning, the time clock, your schedule, your inbox and your pay stub.",
   "training.warningSentOn": "Warning sent {date}",
+  "auth.sameEmailNotice": "Already have our app from Google Play or the App Store? Use the same email here — the one you sign into the app with — so your shop and your inventory come with you. A different email starts a totally new, empty storefront.",
+  "settings.deleteConfirmWord": "मिटाईं",
 };

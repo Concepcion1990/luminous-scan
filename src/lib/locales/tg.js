@@ -2310,9 +2310,9 @@ export const tg = {
   "settings.canceled.endsOn": "Ин обуна бекор карда шудааст ва {date} ба анҷом мерасад. Шумо то он вақт дастрасии пурраро нигоҳ медоред.",
   "settings.delete.checking": "Дархости мавҷудаи несткунӣ санҷида шуда истодааст…",
   "settings.delete.description": "Дархости тоза кардани ҳисоби воридшавии Luminous StockHaven-и шумо.",
-  "settings.delete.dialogDescription": "Ин баррасии нест кардани ҳисобро дархост мекунад. Он воридшавӣ ё инвентари шуморо фавран тоза намекунад ва он ҳеҷ обунаи Stripe-ро бекор намекунад. DELETE-ро нависед, то тасдиқ кунед, ки шумо мехоҳед дархостро пешниҳод кунед.",
+  "settings.delete.dialogDescription": "Ин баррасии нест кардани ҳисобро дархост мекунад. Он воридшавӣ ё инвентари шуморо фавран тоза намекунад ва он ҳеҷ обунаи Stripe-ро бекор намекунад. {word}-ро нависед, то тасдиқ кунед, ки шумо мехоҳед дархостро пешниҳод кунед.",
   "settings.delete.dialogTitle": "Дархости Нест кардани Ҳисоб",
-  "settings.delete.enterDelete": "Барои тасдиқ DELETE-ро ворид кунед",
+  "settings.delete.enterDelete": "Барои тасдиқ {word}-ро ворид кунед",
   "settings.delete.exportFirst": "Агар ба шумо лозим бошад, ки сабтҳои худро нигоҳ доред, аввал инвентари худро содир кунед.",
   "settings.delete.intro": "Пешниҳоди дархост ҳисоб, тиҷоратҳо ё инвентари шуморо фавран нест намекунад. Дархостҳо пеш аз анҷом додани несткунӣ алоҳида баррасӣ карда мешаванд. Ин дархост обунаи Stripe-ро бекор намекунад ё ҳисобдории ояндаро қатъ намекунад; бекоркунии обуна бояд алоҳида тавассути провайдери ҳисобдорӣ идора карда шавад.",
   "settings.delete.keepAccount": "Нигоҳ доштани Ҳисоб",
@@ -3520,4 +3520,6 @@ export const tg = {
   "training.track.staff": "Staff track",
   "training.track.staffHelp": "The everyday tools: scanning, the time clock, your schedule, your inbox and your pay stub.",
   "training.warningSentOn": "Warning sent {date}",
+  "auth.sameEmailNotice": "Already have our app from Google Play or the App Store? Use the same email here — the one you sign into the app with — so your shop and your inventory come with you. A different email starts a totally new, empty storefront.",
+  "settings.deleteConfirmWord": "ҲАЗФ",
 };

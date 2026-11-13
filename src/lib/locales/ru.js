@@ -2310,9 +2310,9 @@ export const ru = {
   "settings.canceled.endsOn": "Эта подписка отменена и заканчивается {date}. До этого момента у вас сохраняется полный доступ.",
   "settings.delete.checking": "Проверка существующего запроса на удаление…",
   "settings.delete.description": "Запросить удаление вашего аккаунта для входа в Luminous StockHaven.",
-  "settings.delete.dialogDescription": "При этом запрашивается проверка удаления аккаунта. Это не удаляет сразу ваш вход или остатки и не отменяет подписку Stripe. Введите DELETE, чтобы подтвердить, что вы хотите отправить запрос.",
+  "settings.delete.dialogDescription": "При этом запрашивается проверка удаления аккаунта. Это не удаляет сразу ваш вход или остатки и не отменяет подписку Stripe. Введите {word}, чтобы подтвердить, что вы хотите отправить запрос.",
   "settings.delete.dialogTitle": "Запросить удаление аккаунта",
-  "settings.delete.enterDelete": "Введите DELETE для подтверждения",
+  "settings.delete.enterDelete": "Введите {word} для подтверждения",
   "settings.delete.exportFirst": "Сначала экспортируйте ваши остатки, если вам нужно сохранить записи.",
   "settings.delete.intro": "Отправка запроса не удаляет сразу ваш аккаунт, компании или остатки. Запросы рассматриваются отдельно, прежде чем удаление может быть завершено. Этот запрос не отменяет подписку Stripe и не останавливает будущие списания; отмена подписки должна выполняться отдельно через платёжного провайдера.",
   "settings.delete.keepAccount": "Сохранить аккаунт",
@@ -3520,4 +3520,6 @@ export const ru = {
   "training.track.staff": "Staff track",
   "training.track.staffHelp": "The everyday tools: scanning, the time clock, your schedule, your inbox and your pay stub.",
   "training.warningSentOn": "Warning sent {date}",
+  "auth.sameEmailNotice": "Already have our app from Google Play or the App Store? Use the same email here — the one you sign into the app with — so your shop and your inventory come with you. A different email starts a totally new, empty storefront.",
+  "settings.deleteConfirmWord": "УДАЛИТЬ",
 };

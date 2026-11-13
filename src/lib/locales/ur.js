@@ -2310,9 +2310,9 @@ export const ur = {
   "settings.canceled.endsOn": "یہ سبسکرپشن منسوخ ہے اور {date} کو ختم ہوتی ہے۔ تب تک آپ کو مکمل رسائی حاصل رہے گی۔",
   "settings.delete.checking": "موجودہ حذف کی درخواست جانچی جا رہی ہے…",
   "settings.delete.description": "اپنے Luminous StockHaven سائن ان اکاؤنٹ کو ہٹانے کی درخواست کریں۔",
-  "settings.delete.dialogDescription": "یہ اکاؤنٹ حذف کرنے کے جائزے کی درخواست کرتا ہے۔ یہ آپ کا لاگ ان یا انوینٹری فوراً نہیں ہٹاتا، اور نہ ہی کسی Stripe سبسکرپشن کو منسوخ کرتا ہے۔ درخواست جمع کرنے کی خواہش کی تصدیق کے لیے DELETE لکھیں۔",
+  "settings.delete.dialogDescription": "یہ اکاؤنٹ حذف کرنے کے جائزے کی درخواست کرتا ہے۔ یہ آپ کا لاگ ان یا انوینٹری فوراً نہیں ہٹاتا، اور نہ ہی کسی Stripe سبسکرپشن کو منسوخ کرتا ہے۔ درخواست جمع کرنے کی خواہش کی تصدیق کے لیے {word} لکھیں۔",
   "settings.delete.dialogTitle": "اکاؤنٹ حذف کرنے کی درخواست کریں",
-  "settings.delete.enterDelete": "تصدیق کے لیے DELETE درج کریں",
+  "settings.delete.enterDelete": "تصدیق کے لیے {word} درج کریں",
   "settings.delete.exportFirst": "اگر آپ کو اپنے ریکارڈ رکھنے ہیں تو پہلے اپنی انوینٹری ایکسپورٹ کر لیں۔",
   "settings.delete.intro": "درخواست جمع کرنے سے آپ کا اکاؤنٹ، کاروبار، یا انوینٹری فوراً حذف نہیں ہوتے۔ حذف مکمل ہونے سے پہلے درخواستوں کا الگ سے جائزہ لیا جاتا ہے۔ یہ درخواست Stripe سبسکرپشن منسوخ نہیں کرتی اور نہ آئندہ بلنگ روکتی ہے؛ سبسکرپشن کی منسوخی بلنگ فراہم کنندہ کے ذریعے الگ سے نمٹانی ہوگی۔",
   "settings.delete.keepAccount": "اکاؤنٹ برقرار رکھیں",
@@ -3520,4 +3520,6 @@ export const ur = {
   "training.track.staff": "Staff track",
   "training.track.staffHelp": "The everyday tools: scanning, the time clock, your schedule, your inbox and your pay stub.",
   "training.warningSentOn": "Warning sent {date}",
+  "auth.sameEmailNotice": "Already have our app from Google Play or the App Store? Use the same email here — the one you sign into the app with — so your shop and your inventory come with you. A different email starts a totally new, empty storefront.",
+  "settings.deleteConfirmWord": "حذف",
 };
