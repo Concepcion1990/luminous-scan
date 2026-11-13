@@ -21,7 +21,7 @@ test('trademark notice text is the owner\'s exact words, verbatim', () => {
   assert.equal(notice.legalHeading, 'LEGAL NOTICE TO COMPETITORS & IMITATORS:');
   assert.equal(
     notice.legalBody,
-    'We actively monitor the market. Any attempt to scrape our platform or clone our proprietary workflows will be met with immediate, aggressive legal action.',
+    'We actively monitor the market. Any attempt to scrape our platform, clone our proprietary workflows, or infringe upon our intellectual property will be met with immediate, aggressive legal action.',
   );
   assert.equal(notice.acquisitionHeading, 'TO ACQUISITION FIRMS & BROKERS:');
   assert.equal(
@@ -31,10 +31,14 @@ test('trademark notice text is the owner\'s exact words, verbatim', () => {
 });
 
 test('footer text is the owner\'s exact words, verbatim', () => {
-  // Nov 12, 2026: the © line is gone entirely — it was wholly a
-  // copyright claim, and the owner removed the claims rather than
-  // replacing the line with new copy.
-  assert.equal(footer.copyrightLine, undefined);
+  // Nov 12, 2026: the © line was first removed whole (it was wholly a
+  // copyright claim), then restored the same day on her word — minus
+  // only the © symbol, and with her registered legal name, "The
+  // Luminous Book Shop, LLC" (Book and Shop separate words).
+  assert.equal(
+    footer.copyrightLine,
+    '2026 The Luminous Book Shop, LLC. All rights reserved.',
+  );
   assert.equal(
     footer.trademarkLine,
     'Unauthorized duplication, cloning, or scraping is strictly prohibited.',
@@ -51,7 +55,9 @@ test('no trademark / copyright claim language remains (Nov 12, 2026)', () => {
   assert.doesNotMatch(rendered, /trademark/i);
   assert.doesNotMatch(rendered, /copyright/i);
   assert.doesNotMatch(rendered, /registered/i);
-  assert.doesNotMatch(rendered, /All rights reserved/);
+  // "All rights reserved" is NOT forbidden: on Nov 12, 2026 she
+  // explicitly kept that phrase in the restored footer line, minus
+  // only the © symbol.
   assert.doesNotMatch(rendered, /statutory damages/i);
   assert.ok(Object.isFrozen(notice), 'notice module must be frozen');
   assert.ok(Object.isFrozen(footer), 'footer module must be frozen');
@@ -79,7 +85,7 @@ test('LegalFooter renders the footer from the module, small and centered', () =>
   const component = read('src/components/LegalFooter.jsx');
   assert.match(component, /import \{ LEGAL_FOOTER as footer \} from '@\/lib\/trademarkNotice'/);
   assert.match(component, /<footer/);
-  assert.doesNotMatch(component, /copyrightLine/);
+  assert.match(component, /\{footer\.copyrightLine\}/);
   assert.match(component, /\{footer\.trademarkLine\}/);
   assert.match(component, /text-center/);
   assert.match(component, /text-\[11px\]/);
