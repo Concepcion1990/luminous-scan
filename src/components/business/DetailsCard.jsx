@@ -144,6 +144,12 @@ export default function DetailsCard({ values, onChange }) {
                 <SelectItem value="bn">{t('settings.details.bengali')}</SelectItem>
                 <SelectItem value="de">{t('settings.details.german')}</SelectItem>
                 <SelectItem value="en">{t('settings.details.english')}</SelectItem>
+                <SelectItem value="es-CU">{t('settings.details.spanishCuba')}</SelectItem>
+                <SelectItem value="es-ES">{t('settings.details.spanishSpain')}</SelectItem>
+                <SelectItem value="es-MX">{t('settings.details.spanishMexico')}</SelectItem>
+                <SelectItem value="es-PR">{t('settings.details.spanishPuertoRico')}</SelectItem>
+                <SelectItem value="es-US">{t('settings.details.spanishUS')}</SelectItem>
+                <SelectItem value="es-VE">{t('settings.details.spanishVenezuela')}</SelectItem>
                 <SelectItem value="fa">{t('settings.details.persian')}</SelectItem>
                 <SelectItem value="fr-CA">{t('settings.details.frenchCanadian')}</SelectItem>
                 <SelectItem value="fr-FR">{t('settings.details.french')}</SelectItem>
@@ -158,8 +164,13 @@ export default function DetailsCard({ values, onChange }) {
                 <SelectItem value="ko">{t('settings.details.korean')}</SelectItem>
                 <SelectItem value="mr">{t('settings.details.marathi')}</SelectItem>
                 <SelectItem value="ms">{t('settings.details.malay')}</SelectItem>
+                <SelectItem value="pa-Arab">{t('settings.details.punjabiShahmukhi')}</SelectItem>
+                <SelectItem value="pa-Guru">{t('settings.details.punjabiGurmukhi')}</SelectItem>
                 <SelectItem value="pcm">{t('settings.details.nigerianPidgin')}</SelectItem>
                 <SelectItem value="prs">{t('settings.details.dari')}</SelectItem>
+                <SelectItem value="pt-BR">{t('settings.details.portugueseBrazil')}</SelectItem>
+                <SelectItem value="pt-PT">{t('settings.details.portuguesePortugal')}</SelectItem>
+                <SelectItem value="ru">{t('settings.details.russian')}</SelectItem>
                 <SelectItem value="tg">{t('settings.details.tajik')}</SelectItem>
                 <SelectItem value="wuu">{t('settings.details.shanghainese')}</SelectItem>
                 <SelectItem value="yue">{t('settings.details.cantonese')}</SelectItem>
