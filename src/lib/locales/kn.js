@@ -2310,9 +2310,9 @@ export const kn = {
   "settings.canceled.endsOn": "ಈ ಚಂದಾದಾರಿಕೆಯನ್ನು ರದ್ದುಗೊಳಿಸಲಾಗಿದೆ ಮತ್ತು {date} ರಂದು ಮುಗಿಯುತ್ತದೆ. ಅಲ್ಲಿಯವರೆಗೆ ನೀವು ಪೂರ್ಣ ಪ್ರವೇಶವನ್ನು ಉಳಿಸಿಕೊಳ್ಳುತ್ತೀರಿ.",
   "settings.delete.checking": "ಅಸ್ತಿತ್ವದಲ್ಲಿರುವ ಅಳಿಸುವಿಕೆ ವಿನಂತಿಗಾಗಿ ಪರಿಶೀಲಿಸಲಾಗುತ್ತಿದೆ…",
   "settings.delete.description": "ನಿಮ್ಮ Luminous StockHaven ಸೈನ್-ಇನ್ ಖಾತೆಯನ್ನು ತೆಗೆದುಹಾಕಲು ಕೋರಿ.",
-  "settings.delete.dialogDescription": "ಇದು ಖಾತೆ ಅಳಿಸುವಿಕೆಯ ಪರಿಶೀಲನೆಯನ್ನು ಕೋರುತ್ತದೆ. ಇದು ನಿಮ್ಮ ಲಾಗಿನ್ ಅಥವಾ ದಾಸ್ತಾನನ್ನು ತಕ್ಷಣ ತೆಗೆದುಹಾಕುವುದಿಲ್ಲ, ಮತ್ತು ಇದು ಯಾವುದೇ Stripe ಚಂದಾದಾರಿಕೆಯನ್ನು ರದ್ದುಗೊಳಿಸುವುದಿಲ್ಲ. ನೀವು ವಿನಂತಿಯನ್ನು ಸಲ್ಲಿಸಲು ಬಯಸುತ್ತೀರಿ ಎಂದು ದೃಢೀಕರಿಸಲು DELETE ಅನ್ನು ಟೈಪ್ ಮಾಡಿ.",
+  "settings.delete.dialogDescription": "ಇದು ಖಾತೆ ಅಳಿಸುವಿಕೆಯ ಪರಿಶೀಲನೆಯನ್ನು ಕೋರುತ್ತದೆ. ಇದು ನಿಮ್ಮ ಲಾಗಿನ್ ಅಥವಾ ದಾಸ್ತಾನನ್ನು ತಕ್ಷಣ ತೆಗೆದುಹಾಕುವುದಿಲ್ಲ, ಮತ್ತು ಇದು ಯಾವುದೇ Stripe ಚಂದಾದಾರಿಕೆಯನ್ನು ರದ್ದುಗೊಳಿಸುವುದಿಲ್ಲ. ನೀವು ವಿನಂತಿಯನ್ನು ಸಲ್ಲಿಸಲು ಬಯಸುತ್ತೀರಿ ಎಂದು ದೃಢೀಕರಿಸಲು {word} ಅನ್ನು ಟೈಪ್ ಮಾಡಿ.",
   "settings.delete.dialogTitle": "ಖಾತೆ ಅಳಿಸುವಿಕೆಯನ್ನು ಕೋರಿ",
-  "settings.delete.enterDelete": "ದೃಢೀಕರಿಸಲು DELETE ಅನ್ನು ನಮೂದಿಸಿ",
+  "settings.delete.enterDelete": "ದೃಢೀಕರಿಸಲು {word} ಅನ್ನು ನಮೂದಿಸಿ",
   "settings.delete.exportFirst": "ನಿಮ್ಮ ದಾಖಲೆಗಳನ್ನು ಇರಿಸಿಕೊಳ್ಳಬೇಕಾದರೆ ಮೊದಲು ನಿಮ್ಮ ದಾಸ್ತಾನನ್ನು ರಫ್ತು ಮಾಡಿ.",
   "settings.delete.intro": "ವಿನಂತಿಯನ್ನು ಸಲ್ಲಿಸುವುದರಿಂದ ನಿಮ್ಮ ಖಾತೆ, ವ್ಯವಹಾರಗಳು, ಅಥವಾ ದಾಸ್ತಾನನ್ನು ತಕ್ಷಣ ಅಳಿಸಲಾಗುವುದಿಲ್ಲ. ಅಳಿಸುವಿಕೆಯನ್ನು ಪೂರ್ಣಗೊಳಿಸುವ ಮೊದಲು ವಿನಂತಿಗಳನ್ನು ಪ್ರತ್ಯೇಕವಾಗಿ ಪರಿಶೀಲಿಸಲಾಗುತ್ತದೆ. ಈ ವಿನಂತಿಯು Stripe ಚಂದಾದಾರಿಕೆಯನ್ನು ರದ್ದುಗೊಳಿಸುವುದಿಲ್ಲ ಅಥವಾ ಭವಿಷ್ಯದ ಬಿಲ್ಲಿಂಗ್ ಅನ್ನು ನಿಲ್ಲಿಸುವುದಿಲ್ಲ; ಚಂದಾದಾರಿಕೆ ರದ್ದತಿಯನ್ನು ಬಿಲ್ಲಿಂಗ್ ಪೂರೈಕೆದಾರರ ಮೂಲಕ ಪ್ರತ್ಯೇಕವಾಗಿ ನಿರ್ವಹಿಸಬೇಕು.",
   "settings.delete.keepAccount": "ಖಾತೆಯನ್ನು ಉಳಿಸಿಕೊಳ್ಳಿ",
@@ -3520,4 +3520,6 @@ export const kn = {
   "training.track.staff": "Staff track",
   "training.track.staffHelp": "The everyday tools: scanning, the time clock, your schedule, your inbox and your pay stub.",
   "training.warningSentOn": "Warning sent {date}",
+  "auth.sameEmailNotice": "Already have our app from Google Play or the App Store? Use the same email here — the one you sign into the app with — so your shop and your inventory come with you. A different email starts a totally new, empty storefront.",
+  "settings.deleteConfirmWord": "ಅಳಿಸಿ",
 };

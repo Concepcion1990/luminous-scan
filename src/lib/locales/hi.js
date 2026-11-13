@@ -2310,9 +2310,9 @@ export const hi = {
   "settings.canceled.endsOn": "यह सदस्यता रद्द कर दी गई है और {date} पर समाप्त हो गई है। आप तब तक पूरी पहुँच बनाए रखें।",
   "settings.delete.checking": "मौजूदा विलोपन अनुरोध की जाँच की जा रही है...",
   "settings.delete.description": "अपने Luminous StockHaven साइन-इन खाते को हटाने का अनुरोध करें।",
-  "settings.delete.dialogDescription": "यह खाता हटाने की समीक्षा का अनुरोध करता है। यह आपके लॉगिन या इन्वेंट्री को तुरंत नहीं हटाता है, और यह किसी भी Stripe सदस्यता को रद्द नहीं करता है। यह पुष्टि करने के लिए कि आप अनुरोध सबमिट करना चाहते हैं, DELETE टाइप करें।",
+  "settings.delete.dialogDescription": "यह खाता हटाने की समीक्षा का अनुरोध करता है। यह आपके लॉगिन या इन्वेंट्री को तुरंत नहीं हटाता है, और यह किसी भी Stripe सदस्यता को रद्द नहीं करता है। यह पुष्टि करने के लिए कि आप अनुरोध सबमिट करना चाहते हैं, {word} टाइप करें।",
   "settings.delete.dialogTitle": "खाता हटाने का अनुरोध करें",
-  "settings.delete.enterDelete": "पुष्टि करने के लिए DELETE दर्ज करें",
+  "settings.delete.enterDelete": "पुष्टि करने के लिए {word} दर्ज करें",
   "settings.delete.exportFirst": "यदि आपको अपना रिकॉर्ड रखने की आवश्यकता है तो पहले अपनी इन्वेंट्री निर्यात करें।",
   "settings.delete.intro": "अनुरोध सबमिट करने से आपका खाता, व्यवसाय या इन्वेंट्री तुरंत नहीं हटती। विलोपन पूरा होने से पहले अनुरोधों की अलग से समीक्षा की जाती है। यह अनुरोध Stripe सदस्यता को रद्द नहीं करता है या भविष्य की बिलिंग को नहीं रोकता है; सदस्यता रद्दीकरण को बिलिंग प्रदाता के माध्यम से अलग से संभाला जाना चाहिए।",
   "settings.delete.keepAccount": "हिसाब रखें",
@@ -3520,4 +3520,6 @@ export const hi = {
   "training.track.staff": "Staff track",
   "training.track.staffHelp": "The everyday tools: scanning, the time clock, your schedule, your inbox and your pay stub.",
   "training.warningSentOn": "Warning sent {date}",
+  "auth.sameEmailNotice": "Already have our app from Google Play or the App Store? Use the same email here — the one you sign into the app with — so your shop and your inventory come with you. A different email starts a totally new, empty storefront.",
+  "settings.deleteConfirmWord": "मिटाएँ",
 };

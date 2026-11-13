@@ -2310,9 +2310,9 @@ export const te = {
   "settings.canceled.endsOn": "ఈ సభ్యత్వం రద్దు చేయబడింది మరియు {date} న ముగుస్తుంది. అప్పటి వరకు మీకు పూర్తి యాక్సెస్ ఉంటుంది.",
   "settings.delete.checking": "ఇప్పటికే ఉన్న తొలగింపు అభ్యర్థన కోసం తనిఖీ చేయబడుతోంది…",
   "settings.delete.description": "మీ Luminous StockHaven సైన్-ఇన్ ఖాతా తీసివేతను అభ్యర్థించండి.",
-  "settings.delete.dialogDescription": "ఇది ఖాతా తొలగింపు సమీక్షను అభ్యర్థిస్తుంది. ఇది మీ లాగిన్ లేదా ఇన్వెంటరీని వెంటనే తీసివేయదు, మరియు ఇది ఏ Stripe సభ్యత్వాన్ని రద్దు చేయదు. మీరు అభ్యర్థనను సమర్పించాలనుకుంటున్నారని నిర్ధారించడానికి DELETE అని టైప్ చేయండి.",
+  "settings.delete.dialogDescription": "ఇది ఖాతా తొలగింపు సమీక్షను అభ్యర్థిస్తుంది. ఇది మీ లాగిన్ లేదా ఇన్వెంటరీని వెంటనే తీసివేయదు, మరియు ఇది ఏ Stripe సభ్యత్వాన్ని రద్దు చేయదు. మీరు అభ్యర్థనను సమర్పించాలనుకుంటున్నారని నిర్ధారించడానికి {word} అని టైప్ చేయండి.",
   "settings.delete.dialogTitle": "ఖాతా తొలగింపును అభ్యర్థించండి",
-  "settings.delete.enterDelete": "నిర్ధారించడానికి DELETE అని నమోదు చేయండి",
+  "settings.delete.enterDelete": "నిర్ధారించడానికి {word} అని నమోదు చేయండి",
   "settings.delete.exportFirst": "మీ రికార్డులను మీరు ఉంచుకోవాల్సి ఉంటే ముందుగా మీ ఇన్వెంటరీని ఎగుమతి చేయండి.",
   "settings.delete.intro": "అభ్యర్థనను సమర్పించడం మీ ఖాతా, వ్యాపారాలు, లేదా ఇన్వెంటరీని వెంటనే తొలగించదు. తొలగింపు పూర్తి కావడానికి ముందు అభ్యర్థనలు విడిగా సమీక్షించబడతాయి. ఈ అభ్యర్థన Stripe సభ్యత్వాన్ని రద్దు చేయదు లేదా భవిష్యత్ బిల్లింగ్‌ను ఆపదు; సభ్యత్వ రద్దును బిల్లింగ్ ప్రొవైడర్ ద్వారా విడిగా నిర్వహించాలి.",
   "settings.delete.keepAccount": "ఖాతాను ఉంచండి",
@@ -3520,4 +3520,6 @@ export const te = {
   "training.track.staff": "Staff track",
   "training.track.staffHelp": "The everyday tools: scanning, the time clock, your schedule, your inbox and your pay stub.",
   "training.warningSentOn": "Warning sent {date}",
+  "auth.sameEmailNotice": "Already have our app from Google Play or the App Store? Use the same email here — the one you sign into the app with — so your shop and your inventory come with you. A different email starts a totally new, empty storefront.",
+  "settings.deleteConfirmWord": "తొలగించు",
 };
