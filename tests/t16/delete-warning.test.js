@@ -43,6 +43,7 @@ const TRANCHE_1_LOCALES = [
   'am', 'ar', 'bn', 'bho',
   'es-MX', 'es-ES', 'es-US', 'es-CU', 'es-PR', 'es-VE',
   'fr-FR', 'fr-CA', 'pt-BR', 'pt-PT', 'zh-Hans', 'zh-Hant', 'yue', 'wuu',
+  'de', 'it', 'ja',
 ];
 
 test('the warning keys carry the owner\u2019s exact English wording', () => {
@@ -85,7 +86,7 @@ test('the warning is verbatim English where no translation pass has landed; tran
     assert.equal(t(BODY_KEY), BODY);
     // Interim state: locales without a translation pass render the
     // same English text — never a missing key.
-    setLocale('de');
+    setLocale('ko');
     assert.equal(t(HEADLINE_KEY), HEADLINE);
     assert.equal(t(BODY_KEY), BODY);
     // Completed-tranche locales render their own warning through t().
