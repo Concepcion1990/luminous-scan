@@ -2947,4 +2947,5 @@ export const ko = {
   "apiLib.businessNotFound": "사업을 찾을 수 없습니다",
   "apiLib.googleSignInUnavailable": "Google 로그인을 사용할 수 없습니다 — 이메일과 비밀번호로 로그인해 주십시오.",
   "apiLib.chooseBusinessFirst": "먼저 사업을 선택하십시오.",
+  "policies.translationNotice": "이 번역은 귀하가 귀하의 언어로 읽을 수 있도록 제공됩니다. 이 번역과 영어 버전 사이에 불일치가 있을 경우, 영어 버전이 공식 버전입니다.",
 };

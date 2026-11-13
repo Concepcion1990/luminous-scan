@@ -1,29 +1,36 @@
 import { Link } from 'react-router-dom';
 import { ShieldCheck } from 'lucide-react';
 import AppMark from '@/components/brand/AppMark';
+import LanguagePicker from '@/components/LanguagePicker';
 import PlanOptionCard from '@/components/plans/PlanOptionCard';
 import TrialCountdown from '@/components/plans/TrialCountdown';
 import { Button } from '@/components/ui/button';
 import { WELCOME_OPTIONS } from '@/lib/plans';
 import { markWelcomeSeen } from '@/lib/welcome';
-import { t } from '@/lib/i18n';
+import { t, useLocale } from '@/lib/i18n';
 
 /**
  * First launch directs customers to compare plans before entering the app.
  * Opening this screen starts no trial and creates no subscription.
+ * The header carries the public language picker — a visitor reads the
+ * whole page in their language before subscribing.
  */
 export default function Welcome() {
+  useLocale();
   return (
     <div className="min-h-screen bg-background">
       <header className="bg-primary px-4 py-4 text-primary-foreground sm:px-8">
-        <div className="mx-auto flex max-w-5xl items-center justify-between gap-3">
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3">
           <AppMark />
-          <Link
-            to="/plans"
-            className="font-mono text-[10px] uppercase tracking-[0.14em] text-primary-foreground/70 hover:text-primary-foreground"
-          >
-            {t('welcome.comparePlans')}
-          </Link>
+          <div className="flex items-center gap-3">
+            <LanguagePicker tone="onPrimary" />
+            <Link
+              to="/plans"
+              className="font-mono text-[10px] uppercase tracking-[0.14em] text-primary-foreground/70 hover:text-primary-foreground"
+            >
+              {t('welcome.comparePlans')}
+            </Link>
+          </div>
         </div>
       </header>
 

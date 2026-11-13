@@ -2947,4 +2947,5 @@ export const ha = {
   "apiLib.businessNotFound": "Ba a sami kasuwanci ba",
   "apiLib.googleSignInUnavailable": "Shigar Google ba ta samuwa — da fatan za a shiga da imel ɗinka da kalmar sirrinka.",
   "apiLib.chooseBusinessFirst": "Zaɓi kasuwanci da farko.",
+  "policies.translationNotice": "An bayar da wannan fassarar ne don ku iya karanta ta a cikin harshenku. Idan har aka samu sabani tsakanin wannan fassarar da sigar Turanci, sigar Turanci ce ta hukuma.",
 };

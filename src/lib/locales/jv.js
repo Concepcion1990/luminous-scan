@@ -2947,4 +2947,5 @@ export const jv = {
   "apiLib.businessNotFound": "Bisnis mboten kapanggih",
   "apiLib.googleSignInUnavailable": "Mlebet Google mboten cumawis — mangga mlebet kanthi email lan tembung sandhi Panjenengan.",
   "apiLib.chooseBusinessFirst": "Pilih bisnis rumiyin.",
+  "policies.translationNotice": "Terjemahan menika dipunparingaken supados panjenengan saged maos ing basa panjenengan piyambak. Menawi wonten bèntenipun antawisipun terjemahan menika kaliyan vèrsi Inggris, vèrsi Inggris ingkang resmi.",
 };

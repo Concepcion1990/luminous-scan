@@ -11,7 +11,7 @@
  *   POST /api/auth/forgot-password { email }           -> 200 (always; no enumeration)
  *   POST /api/auth/reset-password  { resetToken, newPassword } -> 200
  *   GET  /api/businesses           -> 200 { items: [...] }
- *   POST /api/businesses           { name, tagline?, currency? } -> 201
+ *   POST /api/businesses           { name, tagline?, currency?, language? } -> 201
  *   POST /api/businesses/:id/switch -> 200 { active_business_id }
  *
  * Security rules, all fail-closed:
@@ -568,6 +568,13 @@ export function createAuthRouter({ getPool }) {
     const name = String(req.body?.name || '').trim();
     const tagline = String(req.body?.tagline || '').trim();
     const currency = String(req.body?.currency || 'USD').trim().toUpperCase();
+    // Language carry-through: the visitor's public-picker choice rides
+    // along at create time. Validated against the same allowlist the
+    // PATCH route enforces, and fails soft to English like the other
+    // create defaults — an unknown code never blocks creating a
+    // business, it just starts the workspace in English.
+    const requestedLanguage = String(req.body?.language || '').trim();
+    const language = SUPPORTED_LANGUAGES.includes(requestedLanguage) ? requestedLanguage : 'en';
     if (!name || name.length > 120) {
       return res.status(400).json({ error: 'invalid_name', message: 'Enter a business name (up to 120 characters).' });
     }
@@ -596,9 +603,9 @@ export function createAuthRouter({ getPool }) {
         }
         const id = crypto.randomUUID();
         const inserted = await client.query(
-          `INSERT INTO businesses (id, owner_id, name, tagline, currency, created_by_id)
-           VALUES ($1, $2, $3, $4, $5, $2) RETURNING *`,
-          [id, req.user.id, name, tagline, currency],
+          `INSERT INTO businesses (id, owner_id, name, tagline, currency, language, created_by_id)
+           VALUES ($1, $2, $3, $4, $5, $6, $2) RETURNING *`,
+          [id, req.user.id, name, tagline, currency, language],
         );
         await client.query(
           `INSERT INTO business_memberships (id, business_id, user_id, role, created_by_id)

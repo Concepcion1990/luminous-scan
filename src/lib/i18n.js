@@ -7,12 +7,18 @@
  * Languages keep landing ONE AT A TIME, in ABC order of the list the
  * owner approves. See src/lib/locales/README.md for the how-to.
  *
- * The language comes from the business record (`language` on the
- * business — Settings → Details). An unknown or missing code falls
- * back to English, never to a blank screen. A missing key returns
+ * The language has two sources, in order: before sign-in it is the
+ * visitor's own choice — the public LanguagePicker (landing, Plans,
+ * Subscribe, Register, Login and the policy pages) — persisted in
+ * localStorage (`stockhaven.locale`) so it survives navigation and
+ * reloads, and carried into the business a registering visitor creates.
+ * After sign-in the business record wins (`language` on the business —
+ * Settings → Details), applied by Layout. An unknown or missing code
+ * falls back to English, never to a blank screen. A missing key returns
  * the key itself, so an unfinished translation degrades to a visible
  * key instead of crashing the page.
  */
+import { useSyncExternalStore } from 'react';
 import { en } from './locales/en.js';
 import { ar } from './locales/ar.js';
 import { am } from './locales/am.js';
@@ -59,6 +65,46 @@ export const SUPPORTED_LOCALES = Object.keys(LOCALES).sort();
 
 export const DEFAULT_LOCALE = 'en';
 
+/**
+ * The Settings label key naming each locale. The label VALUES are a
+ * language's own name plus its English name in parentheses, identical
+ * in every locale file by design (see locales/README.md) — so whichever
+ * language is active, the picker and the Settings select always show
+ * each language's own name for itself.
+ */
+export const LOCALE_LABEL_KEYS = {
+  en: 'settings.details.english',
+  ar: 'settings.details.arabic',
+  am: 'settings.details.amharic',
+  bn: 'settings.details.bengali',
+  bho: 'settings.details.bhojpuri',
+  'zh-Hans': 'settings.details.mandarinSimplified',
+  'zh-Hant': 'settings.details.mandarinTraditional',
+  yue: 'settings.details.cantonese',
+  wuu: 'settings.details.shanghainese',
+  'fr-CA': 'settings.details.frenchCanadian',
+  'fr-FR': 'settings.details.french',
+  ms: 'settings.details.malay',
+  gu: 'settings.details.gujarati',
+  de: 'settings.details.german',
+  ha: 'settings.details.hausa',
+  it: 'settings.details.italian',
+  hi: 'settings.details.hindi',
+  id: 'settings.details.indonesian',
+  ja: 'settings.details.japanese',
+  jv: 'settings.details.javanese',
+  kn: 'settings.details.kannada',
+  ko: 'settings.details.korean',
+  mr: 'settings.details.marathi',
+  pcm: 'settings.details.nigerianPidgin',
+  fa: 'settings.details.persian',
+  prs: 'settings.details.dari',
+  tg: 'settings.details.tajik',
+};
+
+/** localStorage key holding the visitor's chosen locale (public picker). */
+export const LOCALE_STORAGE_KEY = 'stockhaven.locale';
+
 let currentLocale = DEFAULT_LOCALE;
 
 /** Read the active locale code (default 'en'). */
@@ -66,17 +112,69 @@ export function getLocale() {
   return currentLocale;
 }
 
+function readStoredLocale() {
+  try {
+    const value = globalThis.localStorage?.getItem(LOCALE_STORAGE_KEY);
+    return LOCALES[value] ? value : null;
+  } catch {
+    return null;
+  }
+}
+
+function storeLocale(code) {
+  try {
+    globalThis.localStorage?.setItem(LOCALE_STORAGE_KEY, code);
+  } catch {
+    // Private mode or blocked storage: the choice still applies for
+    // the rest of the session, it just is not remembered.
+  }
+}
+
+// React subscription so a page re-renders the moment the locale changes
+// (the picker's "applies immediately"): setLocale notifies, useLocale
+// subscribes. Non-React callers (Layout's business-language effect)
+// keep working exactly as before.
+const localeListeners = new Set();
+
+export function subscribeLocale(listener) {
+  localeListeners.add(listener);
+  return () => localeListeners.delete(listener);
+}
+
+function notifyLocaleChanged() {
+  for (const listener of [...localeListeners]) listener();
+}
+
+/** React hook: the active locale, re-rendering on every change. */
+export function useLocale() {
+  return useSyncExternalStore(subscribeLocale, getLocale, getLocale);
+}
+
 /**
  * Set the active locale. Unknown codes fall back to English — the
- * setting is a preference, never a crash.
+ * setting is a preference, never a crash. The choice is persisted to
+ * localStorage so a visitor's language survives navigation and
+ * reloads, and subscribers (useLocale) re-render immediately.
  */
 export function setLocale(code) {
   currentLocale = LOCALES[code] ? code : DEFAULT_LOCALE;
+  storeLocale(currentLocale);
   // T6.3: RTL locales flip the document direction so the whole layout
   // flows right-to-left (guarded — the node test env has no document).
   if (typeof document !== 'undefined' && document.documentElement) {
     document.documentElement.dir = isRTL(currentLocale) ? 'rtl' : 'ltr';
   }
+  notifyLocaleChanged();
+  return currentLocale;
+}
+
+/**
+ * Apply the visitor's stored locale at app start (main.jsx). No stored
+ * choice (or a code the registry no longer holds) leaves English.
+ */
+export function initLocale() {
+  const stored = readStoredLocale();
+  if (stored && stored !== currentLocale) setLocale(stored);
   return currentLocale;
 }
 
@@ -106,4 +204,9 @@ export function t(key, vars = {}) {
 /** The plural-aware count suffix used by the sync indicator. */
 export function pluralSuffix(count) {
   return count === 1 ? '' : 's';
+}
+
+/** A locale's display label (its own name + English gloss) for pickers. */
+export function localeLabel(code) {
+  return t(LOCALE_LABEL_KEYS[code] ?? LOCALE_LABEL_KEYS[DEFAULT_LOCALE]);
 }

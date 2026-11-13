@@ -2947,4 +2947,5 @@ export const de = {
   "apiLib.businessNotFound": "Unternehmen nicht gefunden",
   "apiLib.googleSignInUnavailable": "Die Google-Anmeldung ist nicht verfügbar — bitte melden Sie sich mit Ihrer E-Mail-Adresse und Ihrem Passwort an.",
   "apiLib.chooseBusinessFirst": "Wählen Sie zuerst ein Unternehmen.",
+  "policies.translationNotice": "Diese Übersetzung wird bereitgestellt, damit Sie sie in Ihrer Sprache lesen können. Sollte es jemals eine Abweichung zwischen dieser Übersetzung und der englischen Fassung geben, ist die englische Fassung die offizielle.",
 };

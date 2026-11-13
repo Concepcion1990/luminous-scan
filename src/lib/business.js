@@ -1,6 +1,6 @@
 import { base44 } from '@/api/client';
 import { localTimeZoneName } from '@/lib/dates';
-import { t } from './i18n.js';
+import { getLocale, t } from './i18n.js';
 
 export const APP_NAME = 'Luminous StockHaven';
 export const APP_TAGLINE = 'A home for everything your business carries.';
@@ -81,6 +81,11 @@ export async function createBusiness(values) {
     name: values.name,
     tagline: values.tagline || '',
     currency: values.currency || 'USD',
+    // Language carry-through (owner's ask, Nov 12): a business created
+    // after the visitor picked a language in the public picker starts
+    // in that language. An explicit values.language wins; the server
+    // validates the code against its allowlist and fails soft to 'en'.
+    language: values.language || getLocale(),
   });
   if (response.data?.error) throw new Error(response.data.error);
   return response.data.business;

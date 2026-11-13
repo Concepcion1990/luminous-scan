@@ -2947,4 +2947,5 @@ export const ar = {
   "apiLib.businessNotFound": "العمل غير موجود",
   "apiLib.googleSignInUnavailable": "تسجيل الدخول عبر Google غير متاح — يرجى تسجيل الدخول ببريدك الإلكتروني وكلمة مرورك.",
   "apiLib.chooseBusinessFirst": "اختر عملًا أولًا.",
+  "policies.translationNotice": "تُقدَّم هذه الترجمة لكي تتمكن من قراءتها بلغتك. وإذا حدث أي اختلاف بين هذه الترجمة والنسخة الإنجليزية، فإن النسخة الإنجليزية هي النسخة الرسمية.",
 };
