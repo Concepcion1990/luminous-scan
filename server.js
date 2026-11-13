@@ -19,6 +19,7 @@ import { config, configuredSecretNames } from './server/config.js';
 import { runMigrations } from './server/migrate.js';
 import { setPoolOverride, getPool } from './server/db.js';
 import { runWipeSweep } from './server/billing.js';
+import { runTrialReminderSweep } from './server/trialReminders.js';
 
 const app = createApp();
 
@@ -58,6 +59,23 @@ async function main() {
     };
     setInterval(runSweep, 24 * 60 * 60 * 1000);
     console.log('[twin] wipe sweep timer enabled (daily).');
+    // Trial reminder sweep (owner decision 2026-11-12: reminders ON):
+    // hourly, because the final reminder is a 24-hours-before email —
+    // a daily cadence could land it a day late. Runs once at startup
+    // too, so a restart never delays a due reminder by a full hour.
+    // The job endpoint POST /api/billing/trial-reminder-sweep is the
+    // manual/worker trigger either way, exactly like the wipe sweep.
+    const runReminders = async () => {
+      try {
+        const pool = getPool();
+        if (pool) await runTrialReminderSweep(pool, { now: new Date() });
+      } catch (error) {
+        console.error('[twin] trial reminder sweep failed:', error.message);
+      }
+    };
+    void runReminders();
+    setInterval(runReminders, 60 * 60 * 1000);
+    console.log('[twin] trial reminder sweep timer enabled (hourly).');
   }
   app.listen(config.port, () => {
     console.log(`[twin] Luminous StockHaven listening on port ${config.port}`);
