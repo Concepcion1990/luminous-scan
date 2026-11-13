@@ -8,9 +8,15 @@
  * inline — so the next language is a new file in this folder, not a hunt
  * through the pages.
  *
- * Deliberately NOT keyed here: legal/policy bodies, the About founder story,
- * and the trademark notice/footer lines — verbatim owner/legal texts that
- * stay English until the owner says otherwise (see the T6.3 report).
+ * Deliberately NOT keyed here: the About founder story and the
+ * trademark notice/footer lines — verbatim owner/legal texts that stay
+ * English until the owner says otherwise (see the T6.3 report). The
+ * legal/policy BODIES are also not keyed here: they live as English
+ * document modules (src/lib/stockhaven*.js, the official text) with
+ * per-locale translations registered in src/lib/policyTranslations.js
+ * as the owner approves them (Nov 12 decision). The ONE policy key
+ * here is policies.translationNotice — the protective line shown above
+ * a translated body, itself translated into every locale.
  */
 export const en = {
   // Main navigation (src/components/layout/navGroups.js)
@@ -3062,5 +3068,6 @@ export const en = {
   "apiLib.businessNotFound": "Business not found",
   "apiLib.googleSignInUnavailable": "Google sign-in is not available — please log in with your email and password.",
   "apiLib.chooseBusinessFirst": "Choose a business first.",
+  "policies.translationNotice": "This translation is provided so you can read it in your language. If there is ever a disagreement between this translation and the English version, the English version is the official one.",
 
 };

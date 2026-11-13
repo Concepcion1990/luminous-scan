@@ -2947,4 +2947,5 @@ export const am = {
   "apiLib.businessNotFound": "ንግድ አልተገኘም",
   "apiLib.googleSignInUnavailable": "የGoogle መግቢያ አይገኝም — እባክዎ በኢሜይልዎ እና በይለፍ ቃልዎ ይግቡ።",
   "apiLib.chooseBusinessFirst": "መጀመሪያ ንግድ ይምረጡ።",
+  "policies.translationNotice": "ይህ ትርጉም በቋንቋዎ እንዲያነቡት የቀረበ ነው። በዚህ ትርጉም እና በእንግሊዝኛ እትም መካከል አለመግባባት ካለ፣ የእንግሊዝኛ እትም ነው ይፋዊው።",
 };

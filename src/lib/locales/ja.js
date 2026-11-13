@@ -2947,4 +2947,5 @@ export const ja = {
   "apiLib.businessNotFound": "ビジネスが見つかりません",
   "apiLib.googleSignInUnavailable": "Google サインインは利用できません — メールアドレスとパスワードでログインしてください。",
   "apiLib.chooseBusinessFirst": "まずビジネスを選んでください。",
+  "policies.translationNotice": "この翻訳は、お客様がご自身の言語でお読みいただけるよう提供されています。この翻訳と英語版との間に相違がある場合は、英語版が正式なものとなります。",
 };
