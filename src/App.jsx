@@ -38,6 +38,9 @@ import Orders from '@/pages/Orders';
 import Returns from '@/pages/Returns';
 import Counts from '@/pages/Counts';
 import CrossStoreInbox from '@/pages/CrossStoreInbox';
+import Workforce from '@/pages/Workforce';
+import Payroll from '@/pages/Payroll';
+import DirectDepositForm from '@/pages/DirectDepositForm';
 import Purchasing from '@/pages/Purchasing';
 import Suppliers from '@/pages/Suppliers';
 import Welcome from '@/pages/Welcome';
@@ -198,6 +201,9 @@ const AuthenticatedApp = () => {
           <Route path="/import" element={<ImportCenter />} />
           <Route path="/upgrade" element={<Upgrade />} />
           <Route path="/staff" element={<Staff />} />
+          <Route path="/workforce" element={<Workforce />} />
+          <Route path="/payroll" element={<Payroll />} />
+          <Route path="/payroll/direct-deposit-form" element={<DirectDepositForm />} />
           <Route path="/settings" element={<Settings />} />
           </Route>
         </Route>
