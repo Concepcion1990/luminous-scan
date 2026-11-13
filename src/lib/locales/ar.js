@@ -2310,9 +2310,9 @@ export const ar = {
   "settings.canceled.endsOn": "هذا الاشتراك ملغًى وينتهي في {date}. وتحتفظ بوصول كامل حتى ذلك الحين.",
   "settings.delete.checking": "جارٍ التحقق من وجود طلب حذف…",
   "settings.delete.description": "اطلب إزالة حساب تسجيل الدخول الخاص بك في Luminous StockHaven.",
-  "settings.delete.dialogDescription": "يطلب هذا مراجعة حذف الحساب. وهو لا يزيل تسجيل دخولك أو مخزونك فورًا، ولا يلغي أي اشتراك في Stripe. اكتب DELETE للتأكيد أنك تريد إرسال الطلب.",
+  "settings.delete.dialogDescription": "يطلب هذا مراجعة حذف الحساب. وهو لا يزيل تسجيل دخولك أو مخزونك فورًا، ولا يلغي أي اشتراك في Stripe. اكتب {word} للتأكيد أنك تريد إرسال الطلب.",
   "settings.delete.dialogTitle": "طلب حذف الحساب",
-  "settings.delete.enterDelete": "أدخل DELETE للتأكيد",
+  "settings.delete.enterDelete": "أدخل {word} للتأكيد",
   "settings.delete.exportFirst": "صدّر مخزونك أولًا إذا كنت بحاجة إلى الاحتفاظ بسجلاتك.",
   "settings.delete.intro": "إرسال الطلب لا يحذف حسابك أو أعمالك أو مخزونك فورًا. وتُراجَع الطلبات بشكل منفصل قبل إتمام الحذف. ولا يلغي هذا الطلب اشتراكًا في Stripe ولا يوقف الفوترة المستقبلية؛ ويجب معالجة إلغاء الاشتراك بشكل منفصل عبر مزوّد الفوترة.",
   "settings.delete.keepAccount": "الاحتفاظ بالحساب",
@@ -3520,4 +3520,6 @@ export const ar = {
   "training.track.staff": "Staff track",
   "training.track.staffHelp": "The everyday tools: scanning, the time clock, your schedule, your inbox and your pay stub.",
   "training.warningSentOn": "Warning sent {date}",
+  "auth.sameEmailNotice": "Already have our app from Google Play or the App Store? Use the same email here — the one you sign into the app with — so your shop and your inventory come with you. A different email starts a totally new, empty storefront.",
+  "settings.deleteConfirmWord": "حذف",
 };

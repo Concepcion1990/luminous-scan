@@ -2310,9 +2310,9 @@ export const ko = {
   "settings.canceled.endsOn": "이 구독은 취소되었으며 {date}에 종료됩니다. 그때까지 전체 접근을 유지합니다.",
   "settings.delete.checking": "기존 삭제 요청을 확인하는 중입니다…",
   "settings.delete.description": "Luminous StockHaven 로그인 계정 제거를 요청합니다.",
-  "settings.delete.dialogDescription": "이는 계정 삭제 검토를 요청합니다. 로그인이나 재고를 즉시 제거하지 않으며, Stripe 구독을 취소하지도 않습니다. 요청을 제출하시려면 DELETE를 입력하여 확인해 주십시오.",
+  "settings.delete.dialogDescription": "이는 계정 삭제 검토를 요청합니다. 로그인이나 재고를 즉시 제거하지 않으며, Stripe 구독을 취소하지도 않습니다. 요청을 제출하시려면 {word}를 입력하여 확인해 주십시오.",
   "settings.delete.dialogTitle": "계정 삭제 요청",
-  "settings.delete.enterDelete": "확인하려면 DELETE를 입력하십시오",
+  "settings.delete.enterDelete": "확인하려면 {word}를 입력하십시오",
   "settings.delete.exportFirst": "기록을 보관해야 한다면 먼저 재고를 내보내십시오.",
   "settings.delete.intro": "요청을 제출해도 계정, 사업 또는 재고가 즉시 삭제되지 않습니다. 요청은 삭제가 완료되기 전에 별도로 검토됩니다. 이 요청은 Stripe 구독을 취소하거나 향후 청구를 중단하지 않습니다. 구독 취소는 결제 제공업체를 통해 별도로 처리해야 합니다.",
   "settings.delete.keepAccount": "계정 유지",
@@ -3520,4 +3520,6 @@ export const ko = {
   "training.track.staff": "Staff track",
   "training.track.staffHelp": "The everyday tools: scanning, the time clock, your schedule, your inbox and your pay stub.",
   "training.warningSentOn": "Warning sent {date}",
+  "auth.sameEmailNotice": "Already have our app from Google Play or the App Store? Use the same email here — the one you sign into the app with — so your shop and your inventory come with you. A different email starts a totally new, empty storefront.",
+  "settings.deleteConfirmWord": "삭제",
 };

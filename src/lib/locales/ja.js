@@ -2310,9 +2310,9 @@ export const ja = {
   "settings.canceled.endsOn": "このサブスクリプションはキャンセルされ、{date} に終了します。それまではフルアクセスを維持できます。",
   "settings.delete.checking": "既存の削除リクエストを確認中…",
   "settings.delete.description": "Luminous StockHaven のサインインアカウントの削除をリクエストします。",
-  "settings.delete.dialogDescription": "これによりアカウント削除のレビューがリクエストされます。ログインや在庫が即座に削除されることはなく、Stripe サブスクリプションがキャンセルされることもありません。リクエストを送信することを確認するには、DELETE と入力してください。",
+  "settings.delete.dialogDescription": "これによりアカウント削除のレビューがリクエストされます。ログインや在庫が即座に削除されることはなく、Stripe サブスクリプションがキャンセルされることもありません。リクエストを送信することを確認するには、{word} と入力してください。",
   "settings.delete.dialogTitle": "アカウント削除をリクエストする",
-  "settings.delete.enterDelete": "確認するには DELETE と入力してください",
+  "settings.delete.enterDelete": "確認するには {word} と入力してください",
   "settings.delete.exportFirst": "記録を保持する必要がある場合は、まず在庫をエクスポートしてください。",
   "settings.delete.intro": "リクエストを送信しても、アカウント、ビジネス、在庫が即座に削除されることはありません。リクエストは、削除が完了する前に別途レビューされます。このリクエストでは Stripe サブスクリプションはキャンセルされず、今後の請求も停止しません。サブスクリプションのキャンセルは、請求プロバイダーを通じて別途処理する必要があります。",
   "settings.delete.keepAccount": "アカウントを保持する",
@@ -3520,4 +3520,6 @@ export const ja = {
   "training.track.staff": "Staff track",
   "training.track.staffHelp": "The everyday tools: scanning, the time clock, your schedule, your inbox and your pay stub.",
   "training.warningSentOn": "Warning sent {date}",
+  "auth.sameEmailNotice": "Already have our app from Google Play or the App Store? Use the same email here — the one you sign into the app with — so your shop and your inventory come with you. A different email starts a totally new, empty storefront.",
+  "settings.deleteConfirmWord": "削除",
 };

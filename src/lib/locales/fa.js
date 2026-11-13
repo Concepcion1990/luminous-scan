@@ -2310,9 +2310,9 @@ export const fa = {
   "settings.canceled.endsOn": "این اشتراک لغو شده است و در {date} پایان می‌یابد. تا آن زمان دسترسی کامل را حفظ می‌کنید.",
   "settings.delete.checking": "در حال بررسی درخواست حذف موجود…",
   "settings.delete.description": "درخواست حذف حساب ورود Luminous StockHaven خود را بدهید.",
-  "settings.delete.dialogDescription": "این درخواست بررسی حذف حساب را می‌دهد. ورود یا موجودی شما را بلافاصله حذف نمی‌کند و هیچ اشتراک Stripe را لغو نمی‌کند. DELETE را تایپ کنید تا تأیید کنید می‌خواهید درخواست را ارسال کنید.",
+  "settings.delete.dialogDescription": "این درخواست بررسی حذف حساب را می‌دهد. ورود یا موجودی شما را بلافاصله حذف نمی‌کند و هیچ اشتراک Stripe را لغو نمی‌کند. {word} را تایپ کنید تا تأیید کنید می‌خواهید درخواست را ارسال کنید.",
   "settings.delete.dialogTitle": "درخواست حذف حساب",
-  "settings.delete.enterDelete": "برای تأیید DELETE را وارد کنید",
+  "settings.delete.enterDelete": "برای تأیید {word} را وارد کنید",
   "settings.delete.exportFirst": "اگر نیاز دارید سوابق خود را نگه دارید، ابتدا موجودی خود را صادر کنید.",
   "settings.delete.intro": "ارسال درخواست حساب، کسب‌وکارها یا موجودی شما را بلافاصله حذف نمی‌کند. درخواست‌ها جدا بررسی می‌شوند پیش از اینکه حذف کامل شود. این درخواست اشتراک Stripe را لغو نمی‌کند یا صورت‌حساب آینده را متوقف نمی‌کند؛ لغو اشتراک باید جدا از طریق ارائه‌دهنده صورت‌حساب انجام شود.",
   "settings.delete.keepAccount": "حفظ حساب",
@@ -3520,4 +3520,6 @@ export const fa = {
   "training.track.staff": "Staff track",
   "training.track.staffHelp": "The everyday tools: scanning, the time clock, your schedule, your inbox and your pay stub.",
   "training.warningSentOn": "Warning sent {date}",
+  "auth.sameEmailNotice": "Already have our app from Google Play or the App Store? Use the same email here — the one you sign into the app with — so your shop and your inventory come with you. A different email starts a totally new, empty storefront.",
+  "settings.deleteConfirmWord": "حذف",
 };
