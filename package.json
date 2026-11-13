@@ -11,7 +11,7 @@
     "lint:fix": "eslint . --fix",
     "preview": "vite preview",
     "start": "node server.js",
-    "test": "npm run test:t1 && npm run test:t2 && npm run test:t3 && npm run test:t4 && npm run test:t5 && npm run test:t6 && npm run test:t7 && npm run test:t8 && npm run test:t9 && npm run test:t10",
+    "test": "npm run test:t1 && npm run test:t2 && npm run test:t3 && npm run test:t4 && npm run test:t5 && npm run test:t6 && npm run test:t7 && npm run test:t8 && npm run test:t9 && npm run test:t10 && npm run test:t11",
     "test:t1": "node --test src/lib/stockhavenSubscriptionPolicy.test.js src/lib/stockhavenTermsOfService.test.js src/lib/stockhavenPrivacyPolicy.test.js src/lib/trademarkNotice.test.js src/lib/aboutFounder.test.js",
     "test:t2": "node --test tests/t2/*.test.js",
     "test:t3": "node --test tests/t3/*.test.js src/lib/xlsx.test.js",
@@ -21,7 +21,8 @@
     "test:t7": "node --test tests/t7/*.test.js",
     "test:t8": "node --test tests/t8/*.test.js",
     "test:t9": "node --test tests/t9/*.test.js",
-    "test:t10": "node --test tests/t10/*.test.js"
+    "test:t10": "node --test tests/t10/*.test.js",
+    "test:t11": "node --test tests/t11/*.test.js"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^17.0.0",
