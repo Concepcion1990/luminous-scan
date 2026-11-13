@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Check, LogOut, Minus } from 'lucide-react';
 import AppMark from '@/components/brand/AppMark';
+import LanguagePicker from '@/components/LanguagePicker';
 import LegalFooter from '@/components/LegalFooter';
 import TrademarkNotice from '@/components/TrademarkNotice';
 import PlanOptionCard from '@/components/plans/PlanOptionCard';
@@ -11,7 +12,7 @@ import { STOCKHAVEN_SUBSCRIPTION_POLICY as policy } from '@/lib/stockhavenSubscr
 import { STOCKHAVEN_TERMS_OF_SERVICE as terms } from '@/lib/stockhavenTermsOfService';
 import { useAuth } from '@/lib/AuthContext';
 import useEntitlements from '@/hooks/useEntitlements';
-import { t } from '@/lib/i18n';
+import { t, useLocale } from '@/lib/i18n';
 
 function Cell({ value }) {
   if (value === true) return <Check className="mx-auto h-4 w-4 text-ok" aria-label={t('plans.included')} />;
@@ -23,6 +24,9 @@ function Cell({ value }) {
 
 /** Essentials against Business, with the mobile-only plan shown beside them. */
 export default function Plans() {
+  // Public page: re-render in the visitor's language when the picker
+  // switches it (the header below carries the picker).
+  useLocale();
   const { isAuthenticated, logout } = useAuth();
   const { plan, status, isLoading } = useEntitlements();
   // A signed-in customer already holds a plan: show it, never offer them
@@ -45,14 +49,17 @@ export default function Plans() {
   return (
     <div className="min-h-screen bg-background">
       <header className="bg-primary px-4 py-4 text-primary-foreground sm:px-8">
-        <div className="mx-auto flex max-w-5xl items-center justify-between gap-3">
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3">
           <AppMark />
-          <Link
-            to="/welcome"
-            className="font-mono text-[10px] uppercase tracking-[0.14em] text-primary-foreground/70 hover:text-primary-foreground"
-          >
-            {t('plans.backToWelcome')}
-          </Link>
+          <div className="flex items-center gap-3">
+            <LanguagePicker tone="onPrimary" />
+            <Link
+              to="/welcome"
+              className="font-mono text-[10px] uppercase tracking-[0.14em] text-primary-foreground/70 hover:text-primary-foreground"
+            >
+              {t('plans.backToWelcome')}
+            </Link>
+          </div>
         </div>
       </header>
 

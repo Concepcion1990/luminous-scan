@@ -2947,4 +2947,5 @@ export const fa = {
   "apiLib.businessNotFound": "کسب‌وکار پیدا نشد",
   "apiLib.googleSignInUnavailable": "ورود با Google در دسترس نیست — لطفاً با ایمیل و گذرواژه خود وارد شوید.",
   "apiLib.chooseBusinessFirst": "ابتدا یک کسب‌وکار انتخاب کنید.",
+  "policies.translationNotice": "این ترجمه ارائه شده است تا بتوانید آن را به زبان خودتان بخوانید. اگر میان این ترجمه و نسخهٔ انگلیسی اختلافی پیش بیاید، نسخهٔ انگلیسی نسخهٔ رسمی است.",
 };

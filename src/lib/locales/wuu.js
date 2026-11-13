@@ -2947,4 +2947,5 @@ export const wuu = {
   "apiLib.businessNotFound": "寻勿到生意",
   "apiLib.googleSignInUnavailable": "Google 登录用勿了——请用侬个邮箱搭密码登录。",
   "apiLib.chooseBusinessFirst": "先选一只生意。",
+  "policies.translationNotice": "本翻译是拨侬用自家言话看个。假使本翻译搭英文版本有啥勿一致个地方，以英文版本为准。",
 };

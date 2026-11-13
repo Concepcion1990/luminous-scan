@@ -2947,4 +2947,5 @@ export const prs = {
   "apiLib.businessNotFound": "تجارت پیدا نشد",
   "apiLib.googleSignInUnavailable": "ورود با Google موجود نیست — لطفاً با ایمیل و رمز عبور خود وارد شوید.",
   "apiLib.chooseBusinessFirst": "نخست یک تجارت انتخاب کنید.",
+  "policies.translationNotice": "این ترجمه تهیه شده است تا بتوانید آن را به زبان خود تان بخوانید. اگر بین این ترجمه و نسخهٔ انگلیسی اختلافی به وجود آید، نسخهٔ انگلیسی نسخهٔ رسمی است.",
 };

@@ -2,7 +2,13 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { ThemeProvider } from 'next-themes'
 import App from '@/App.jsx'
+import { initLocale } from '@/lib/i18n'
 import '@/index.css'
+
+// The visitor's language choice (public LanguagePicker) is restored
+// before the first render, so a returning visitor never sees an
+// English flash before their language applies.
+initLocale()
 
 // T6: the app shell is installable and opens with no connection (the
 // offline queue holds the work; the service worker never answers API

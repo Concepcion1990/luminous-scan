@@ -1,26 +1,37 @@
 import { Link } from 'react-router-dom';
 import { FileText, ArrowLeft, ShieldCheck } from 'lucide-react';
 import AppMark from '@/components/brand/AppMark';
+import LanguagePicker from '@/components/LanguagePicker';
 import LegalFooter from '@/components/LegalFooter';
-import { STOCKHAVEN_SUBSCRIPTION_POLICY as policy } from '@/lib/stockhavenSubscriptionPolicy';
+import { getPolicyDocument } from '@/lib/policyTranslations';
+import { t, useLocale } from '@/lib/i18n';
 
 /**
  * Public, read-only policy. Accessible before account creation, signing
  * in, or paying. No Base44 or payment-provider request and no subscription action.
+ * The body renders in the visitor's language WHEN a translation is
+ * registered for it (src/lib/policyTranslations.js); otherwise the
+ * English body — the official text — is shown, and a translated body
+ * is introduced by the protective line (policies.translationNotice).
  */
 export default function SubscriptionPolicy() {
+  const locale = useLocale();
+  const { document: policy, translated } = getPolicyDocument('subscription', locale);
   return (
     <div className="min-h-screen bg-background">
       <header className="bg-primary px-4 py-4 text-primary-foreground sm:px-8">
-        <div className="mx-auto flex max-w-4xl items-center justify-between gap-3">
+        <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-3">
           <AppMark />
-          <Link
-            to="/plans"
-            className="inline-flex items-center gap-1.5 text-xs font-medium text-primary-foreground/80 underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground"
-          >
-            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-            View plans
-          </Link>
+          <div className="flex items-center gap-3">
+            <LanguagePicker tone="onPrimary" />
+            <Link
+              to="/plans"
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-primary-foreground/80 underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground"
+            >
+              <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+              View plans
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -48,6 +59,12 @@ export default function SubscriptionPolicy() {
             </div>
           </div>
         </aside>
+
+        {translated && (
+          <aside role="note" className="mt-6 rounded-xl border border-border bg-secondary/50 p-4">
+            <p className="text-sm leading-relaxed">{t('policies.translationNotice')}</p>
+          </aside>
+        )}
 
         <p className="my-6 text-sm leading-relaxed text-muted-foreground">
           {policy.introduction}

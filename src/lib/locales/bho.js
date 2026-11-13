@@ -2947,4 +2947,5 @@ export const bho = {
   "apiLib.businessNotFound": "बिजनेस ना मिलल",
   "apiLib.googleSignInUnavailable": "Google साइन-इन उपलब्ध नइखे — कृपया आपन ईमेल आ पासवर्ड से लॉग इन करल।",
   "apiLib.chooseBusinessFirst": "पहिले बिजनेस चुनीं।",
+  "policies.translationNotice": "ई अनुवाद एह खातिर दिहल गइल बा ताकि रउआ एकरा के आपन भाषा में पढ़ सकीं। अगर एह अनुवाद आ अंगरेजी संस्करण के बीच कवनो मतभेद होखे, त अंगरेजी संस्करण ही आधिकारिक मानल जाई।",
 };

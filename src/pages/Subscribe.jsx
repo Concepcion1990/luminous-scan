@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import AppMark from '@/components/brand/AppMark';
+import LanguagePicker from '@/components/LanguagePicker';
 import LegalFooter from '@/components/LegalFooter';
 import TrademarkNotice from '@/components/TrademarkNotice';
 import { Button } from '@/components/ui/button';
@@ -11,7 +12,7 @@ import { useBusiness } from '@/hooks/useBusiness';
 import useEntitlements from '@/hooks/useEntitlements';
 import { PLANS } from '@/lib/plans';
 import { base44 } from '@/api/client';
-import { t } from '@/lib/i18n';
+import { t, useLocale } from '@/lib/i18n';
 
 // T4: Stripe checkout is live on the twin. The trial and monthly
 // buttons below call create-checkout on the server, which validates
@@ -19,6 +20,9 @@ import { t } from '@/lib/i18n';
 // creates the pending purchase, and returns Stripe's hosted checkout
 // URL. No card details ever touch this page.
 export default function Subscribe() {
+  // Public page: re-render in the visitor's language when the picker
+  // switches it (the header below carries the picker).
+  useLocale();
   const [searchParams] = useSearchParams();
   const selected = searchParams.get('plan');
   // A missing or unknown ?plan= must never silently default to a plan —
@@ -133,11 +137,14 @@ export default function Subscribe() {
   return (
     <div className="min-h-screen bg-background">
       <header className="bg-primary px-4 py-4 text-primary-foreground sm:px-8">
-        <div className="mx-auto flex max-w-3xl items-center justify-between gap-3">
+        <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-3">
           <AppMark />
-          <Link to="/plans" className="font-mono text-[10px] uppercase tracking-[0.14em] text-primary-foreground/70 hover:text-primary-foreground">
-            {t('subscribe.backToPlans')}
-          </Link>
+          <div className="flex items-center gap-3">
+            <LanguagePicker tone="onPrimary" />
+            <Link to="/plans" className="font-mono text-[10px] uppercase tracking-[0.14em] text-primary-foreground/70 hover:text-primary-foreground">
+              {t('subscribe.backToPlans')}
+            </Link>
+          </div>
         </div>
       </header>
 

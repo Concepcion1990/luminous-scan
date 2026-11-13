@@ -7,9 +7,10 @@ import { Label } from "@/components/ui/label";
 import { Lock, Loader2, AlertTriangle } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import { getPasswordHint } from "./Register";
-import { t } from '@/lib/i18n';
+import { t, useLocale } from '@/lib/i18n';
 
 export default function ResetPassword() {
+  useLocale();
   const [searchParams] = useSearchParams();
   const resetToken = searchParams.get("token");
 

@@ -16,6 +16,12 @@ Languages are added **one at a time, in ABC order** of the list the owner approv
 6. Add a test in `src/lib/i18n.test.js`: every `en` key exists in the new locale, every value is a non-empty string, value placeholders match (minus agreement markers), and `t()` with that locale returns the translated string for at least the nav + scan surfaces. See the Arabic test for the pattern.
 7. **No surface conversion is needed anymore** — every page, component, and shared lib file already goes through `t()` (T6.3). A new language is a new file in this folder, not a hunt through the pages.
 
+## The public picker + policy translations (Picker build, Nov 12)
+
+- Visitors switch language **before** signing up: `src/components/LanguagePicker.jsx` sits on the landing page, Plans, Subscribe, the three policy pages, and the auth pages (via `AuthLayout`). The choice applies immediately (`setLocale` in `src/lib/i18n.js`, RTL flip included), persists in localStorage under `stockhaven.locale`, is restored at startup by `initLocale()` in `src/main.jsx`, and a business created afterwards starts in that language (client sends it in `createBusiness`; the server validates it against `SUPPORTED_LANGUAGES` and fails soft to English).
+- Picker labels come from `LOCALE_LABEL_KEYS` in `src/lib/i18n.js` — the same `settings.details.<language>` keys the Settings select uses.
+- The legal pages render per-locale bodies through the registry in `src/lib/policyTranslations.js`: English modules stay the base and the official text; a later pass registers a translated body per locale (`registerPolicyTranslation(kind, locale, body)`), and until then the English body shows. When a translated body shows, the page prints `policies.translationNotice` above it — **every new locale file must include that key** (the English text: the translation is for reading; if there is ever a disagreement, the English version is the official one).
+
 ## What `t()` does when something is missing
 
 - Unknown locale code → English (never a blank screen).

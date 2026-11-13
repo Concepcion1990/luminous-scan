@@ -7,10 +7,13 @@ import { Label } from "@/components/ui/label";
 import { Check, LogIn, Mail, Lock, Loader2 } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import { safeReturnTo } from "@/lib/authReturnTo";
-import { t } from '@/lib/i18n';
+import { t, useLocale } from '@/lib/i18n';
 import { readPendingVerificationEmail } from "./Register";
 
 export default function Login() {
+  // Public page (the picker lives in AuthLayout): re-render in the
+  // visitor's language the moment the picker switches it.
+  useLocale();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");

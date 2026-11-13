@@ -10,7 +10,7 @@ import AuthLayout from "@/components/AuthLayout";
 import { toast } from "@/components/ui/use-toast";
 import { safeReturnTo } from "@/lib/authReturnTo";
 import { readPendingVerificationEmail, PENDING_VERIFICATION_KEY } from "./Register";
-import { t } from '@/lib/i18n';
+import { t, useLocale } from '@/lib/i18n';
 
 /**
  * "Verify an emailed code" — the Finding 28 resume path as its own
@@ -21,6 +21,7 @@ import { t } from '@/lib/i18n';
  * The pending email from Register is pre-filled when one exists.
  */
 export default function VerifyEmail() {
+  useLocale();
   const [email, setEmail] = useState(readPendingVerificationEmail);
   const [otpCode, setOtpCode] = useState("");
   const [error, setError] = useState("");

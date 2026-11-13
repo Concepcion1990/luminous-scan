@@ -11,7 +11,7 @@ import AuthLayout from "@/components/AuthLayout";
 import TrademarkNotice from "@/components/TrademarkNotice";
 import { toast } from "@/components/ui/use-toast";
 import { safeReturnTo } from "@/lib/authReturnTo";
-import { t } from '@/lib/i18n';
+import { t, useLocale } from '@/lib/i18n';
 
 /**
  * An email waiting on its verification code, so leaving the OTP screen
@@ -51,6 +51,9 @@ function forgetPendingVerificationEmail() {
 export function getPasswordHint() { return t('register.passwordHint'); }
 
 export default function Register() {
+  // Public page (the picker lives in AuthLayout): re-render in the
+  // visitor's language the moment the picker switches it.
+  useLocale();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
