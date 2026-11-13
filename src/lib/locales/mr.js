@@ -2310,9 +2310,9 @@ export const mr = {
   "settings.canceled.endsOn": "ही सदस्यता रद्द केली आहे आणि {date} रोजी संपते. तोपर्यंत तुम्हाला पूर्ण प्रवेश मिळतो.",
   "settings.delete.checking": "विद्यमान हटवण विनंती तपासत आहे…",
   "settings.delete.description": "तुमचे Luminous StockHaven साइन-इन खाते काढण्याची विनंती करा.",
-  "settings.delete.dialogDescription": "हे खाते हटवण्याच्या पुनरावलोकनाची विनंती करते. ते तुमचे लॉगिन किंवा इन्व्हेंटरी ताबडतोब काढत नाही आणि कोणतीही Stripe सदस्यता रद्द करत नाही. तुम्हाला विनंती सादर करायची आहे याची पुष्टी करण्यासाठी DELETE टाइप करा.",
+  "settings.delete.dialogDescription": "हे खाते हटवण्याच्या पुनरावलोकनाची विनंती करते. ते तुमचे लॉगिन किंवा इन्व्हेंटरी ताबडतोब काढत नाही आणि कोणतीही Stripe सदस्यता रद्द करत नाही. तुम्हाला विनंती सादर करायची आहे याची पुष्टी करण्यासाठी {word} टाइप करा.",
   "settings.delete.dialogTitle": "खाते हटवण्याची विनंती करा",
-  "settings.delete.enterDelete": "पुष्टी करण्यासाठी DELETE टाका",
+  "settings.delete.enterDelete": "पुष्टी करण्यासाठी {word} टाका",
   "settings.delete.exportFirst": "तुम्हाला तुमच्या नोंदी ठेवायच्या असल्यास आधी तुमची इन्व्हेंटरी निर्यात करा.",
   "settings.delete.intro": "विनंती सादर केल्याने तुमचे खाते, व्यवसाय किंवा इन्व्हेंटरी ताबडतोब हटवली जात नाही. हटवणे पूर्ण होण्यापूर्वी विनंत्यांचे वेगळे पुनरावलोकन केले जाते. ही विनंती Stripe सदस्यता रद्द करत नाही किंवा भविष्यातील बिलिंग थांबवत नाही; सदस्यता रद्दीकरण बिलिंग प्रदात्यामार्फत वेगळे हाताळलेच पाहिजे.",
   "settings.delete.keepAccount": "खाते ठेवा",
@@ -3520,4 +3520,6 @@ export const mr = {
   "training.track.staff": "Staff track",
   "training.track.staffHelp": "The everyday tools: scanning, the time clock, your schedule, your inbox and your pay stub.",
   "training.warningSentOn": "Warning sent {date}",
+  "auth.sameEmailNotice": "Already have our app from Google Play or the App Store? Use the same email here — the one you sign into the app with — so your shop and your inventory come with you. A different email starts a totally new, empty storefront.",
+  "settings.deleteConfirmWord": "हटवा",
 };

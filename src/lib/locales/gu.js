@@ -2310,9 +2310,9 @@ export const gu = {
   "settings.canceled.endsOn": "આ સબસ્ક્રિપ્શન રદ થયું છે અને {date} ના રોજ સમાપ્ત થાય છે. ત્યાં સુધી તમને સંપૂર્ણ પ્રવેશ મળે છે.",
   "settings.delete.checking": "હાલની કાઢી નાખવાની વિનંતી તપાસી રહ્યા છીએ…",
   "settings.delete.description": "તમારું Luminous StockHaven સાઇન-ઇન એકાઉન્ટ દૂર કરવાની વિનંતી કરો.",
-  "settings.delete.dialogDescription": "આ એકાઉન્ટ કાઢી નાખવાની સમીક્ષાની વિનંતી કરે છે. તે તમારું લોગિન કે ઇન્વેન્ટરી તરત દૂર કરતું નથી, અને તે કોઈ Stripe સબસ્ક્રિપ્શન રદ કરતું નથી. વિનંતી સબમિટ કરવાની પુષ્ટિ કરવા DELETE ટાઇપ કરો.",
+  "settings.delete.dialogDescription": "આ એકાઉન્ટ કાઢી નાખવાની સમીક્ષાની વિનંતી કરે છે. તે તમારું લોગિન કે ઇન્વેન્ટરી તરત દૂર કરતું નથી, અને તે કોઈ Stripe સબસ્ક્રિપ્શન રદ કરતું નથી. વિનંતી સબમિટ કરવાની પુષ્ટિ કરવા {word} ટાઇપ કરો.",
   "settings.delete.dialogTitle": "એકાઉન્ટ કાઢી નાખવાની વિનંતી કરો",
-  "settings.delete.enterDelete": "પુષ્ટિ કરવા DELETE લખો",
+  "settings.delete.enterDelete": "પુષ્ટિ કરવા {word} લખો",
   "settings.delete.exportFirst": "જો તમારે તમારા રેકોર્ડ રાખવા હોય તો પહેલા તમારી ઇન્વેન્ટરી એક્સપોર્ટ કરો.",
   "settings.delete.intro": "વિનંતી સબમિટ કરવાથી તમારું એકાઉન્ટ, વ્યવસાય કે ઇન્વેન્ટરી તરત કાઢી નખાતી નથી. કાઢી નાખવું પૂરું થઈ શકે તે પહેલા વિનંતીઓ અલગથી સમીક્ષા થાય છે. આ વિનંતી Stripe સબસ્ક્રિપ્શન રદ કરતી નથી કે ભવિષ્યનું બિલિંગ રોકતી નથી; સબસ્ક્રિપ્શન રદ કરવું બિલિંગ પ્રોવાઇડર દ્વારા અલગથી સંભાળવું પડશે.",
   "settings.delete.keepAccount": "એકાઉન્ટ રાખો",
@@ -3520,4 +3520,6 @@ export const gu = {
   "training.track.staff": "Staff track",
   "training.track.staffHelp": "The everyday tools: scanning, the time clock, your schedule, your inbox and your pay stub.",
   "training.warningSentOn": "Warning sent {date}",
+  "auth.sameEmailNotice": "Already have our app from Google Play or the App Store? Use the same email here — the one you sign into the app with — so your shop and your inventory come with you. A different email starts a totally new, empty storefront.",
+  "settings.deleteConfirmWord": "ડિલીટ",
 };

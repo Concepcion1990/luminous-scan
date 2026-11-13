@@ -2310,9 +2310,9 @@ export const uk = {
   "settings.canceled.endsOn": "Цю підписку скасовано, і вона завершується {date}. До того часу ви зберігаєте повний доступ.",
   "settings.delete.checking": "Перевірка наявного запиту на видалення…",
   "settings.delete.description": "Запитати видалення вашого облікового запису для входу в Luminous StockHaven.",
-  "settings.delete.dialogDescription": "Це запитує перегляд видалення облікового запису. Це не видаляє одразу ваш вхід чи запаси й не скасовує жодної підписки Stripe. Введіть DELETE, щоб підтвердити, що ви хочете надіслати запит.",
+  "settings.delete.dialogDescription": "Це запитує перегляд видалення облікового запису. Це не видаляє одразу ваш вхід чи запаси й не скасовує жодної підписки Stripe. Введіть {word}, щоб підтвердити, що ви хочете надіслати запит.",
   "settings.delete.dialogTitle": "Запитати видалення облікового запису",
-  "settings.delete.enterDelete": "Введіть DELETE для підтвердження",
+  "settings.delete.enterDelete": "Введіть {word} для підтвердження",
   "settings.delete.exportFirst": "Спочатку експортуйте свої запаси, якщо вам потрібно зберегти записи.",
   "settings.delete.intro": "Надсилання запиту не видаляє одразу ваш обліковий запис, бізнеси чи запаси. Запити переглядаються окремо, перш ніж видалення можна буде завершити. Цей запит не скасовує підписку Stripe і не зупиняє майбутні списання; скасування підписки потрібно оформлювати окремо через платіжного провайдера.",
   "settings.delete.keepAccount": "Зберегти обліковий запис",
@@ -3520,4 +3520,6 @@ export const uk = {
   "training.track.staff": "Staff track",
   "training.track.staffHelp": "The everyday tools: scanning, the time clock, your schedule, your inbox and your pay stub.",
   "training.warningSentOn": "Warning sent {date}",
+  "auth.sameEmailNotice": "Already have our app from Google Play or the App Store? Use the same email here — the one you sign into the app with — so your shop and your inventory come with you. A different email starts a totally new, empty storefront.",
+  "settings.deleteConfirmWord": "ВИДАЛИТИ",
 };
