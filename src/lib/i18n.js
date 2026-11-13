@@ -67,9 +67,13 @@ import { uk } from './locales/uk.js';
 import { ur } from './locales/ur.js';
 import { vi } from './locales/vi.js';
 import { yo } from './locales/yo.js';
+import { enGB } from './locales/en-GB.js';
+import { enCA } from './locales/en-CA.js';
+import { enAU } from './locales/en-AU.js';
+import { enIN } from './locales/en-IN.js';
 
 /** code -> strings. Add one language at a time, ABC order. */
-export const LOCALES = { en, ar, am, bn, bho, 'zh-Hans': zhHans, 'zh-Hant': zhHant, yue, wuu, 'fr-CA': frCA, ms, gu, de, 'fr-FR': frFR, ha, it, hi, id, ja, jv, kn, ko, mr, pcm, fa, prs, tg, 'pt-BR': ptBR, 'pt-PT': ptPT, 'pa-Guru': paGuru, 'pa-Arab': paArab, ru, 'es-US': esUS, 'es-ES': esES, 'es-MX': esMX, 'es-CU': esCU, 'es-PR': esPR, 'es-VE': esVE, sw, tl, ta, te, th, tr, uk, ur, vi, yo };
+export const LOCALES = { en, ar, am, bn, bho, 'zh-Hans': zhHans, 'zh-Hant': zhHant, yue, wuu, 'fr-CA': frCA, ms, gu, de, 'fr-FR': frFR, ha, it, hi, id, ja, jv, kn, ko, mr, pcm, fa, prs, tg, 'pt-BR': ptBR, 'pt-PT': ptPT, 'pa-Guru': paGuru, 'pa-Arab': paArab, ru, 'es-US': esUS, 'es-ES': esES, 'es-MX': esMX, 'es-CU': esCU, 'es-PR': esPR, 'es-VE': esVE, sw, tl, ta, te, th, tr, uk, ur, vi, yo, 'en-GB': enGB, 'en-CA': enCA, 'en-AU': enAU, 'en-IN': enIN };
 
 /** Locale codes that read right-to-left (Arabic script family).
  * Tajik ('tg') is NOT here: the app's Tajik text is Cyrillic and reads
@@ -142,6 +146,10 @@ export const LOCALE_LABEL_KEYS = {
   ur: 'settings.details.urdu',
   vi: 'settings.details.vietnamese',
   yo: 'settings.details.yoruba',
+  'en-GB': 'settings.details.englishUK',
+  'en-CA': 'settings.details.englishCanada',
+  'en-AU': 'settings.details.englishAustralia',
+  'en-IN': 'settings.details.englishIndia',
 };
 
 /** localStorage key holding the visitor's chosen locale (public picker). */
