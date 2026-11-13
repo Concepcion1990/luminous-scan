@@ -34,10 +34,32 @@ export async function setPlan(businessId, plan, ownerId = null) {
   );
 }
 
-/** Owner + one business; plan defaults to Essentials unless set. */
-export async function ownerWithBusiness(email, name = 'Test Shop') {
+/**
+ * Set a business's entitlement row directly (test-only), with any
+ * status/dates — the general form of setPlan. The HTTP grant flow is
+ * T4's; tests write the row by SQL, like setPlan always did.
+ */
+export async function setEntitlement(businessId, { plan = 'essentials', status = 'active', trialEndsAt = null, periodEndsAt = null, ownerId = null } = {}) {
+  await pool.query('DELETE FROM entitlements WHERE business_id = $1', [businessId]);
+  await pool.query(
+    `INSERT INTO entitlements (id, business_id, plan, status, trial_ends_at, period_ends_at, created_by_id)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+    [crypto.randomUUID(), businessId, plan, status, trialEndsAt, periodEndsAt, ownerId],
+  );
+}
+
+/**
+ * Owner + one business. Since the 2026-11-13 access gate, a business
+ * with no entitlement row serves NO business data, so a fixture that
+ * exercises feature behavior grants an active Essentials entitlement
+ * by default — the state a real workspace is in after checkout.
+ * Pass { grant: false } for the unpaid-workspace cases, or
+ * { plan: 'business' } for an entitled Business workspace.
+ */
+export async function ownerWithBusiness(email, name = 'Test Shop', { grant = true, plan = 'essentials' } = {}) {
   const owner = await registerVerifiedUser(email);
   const business = await createBusiness(owner.cookie, name);
+  if (grant) await setPlan(business.id, plan, owner.user.id);
   return { ...owner, business };
 }
 

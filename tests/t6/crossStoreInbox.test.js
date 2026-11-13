@@ -45,6 +45,7 @@ async function twoStores(email) {
   await setPlan(owner.business.id, 'business', owner.user.id);
   const locationA = await createLocation(owner.cookie, owner.business.id, { name: 'Main' });
   const storeB = await createBusiness(owner.cookie, 'Second Store');
+  await setPlan(storeB.id, 'business', owner.user.id);
   const locationB = await createLocation(owner.cookie, storeB.id, { name: 'Main' });
   const [productA] = await createProducts(owner.cookie, owner.business.id, [
     { name: 'Inbox Notebook', sku: 'INBOX-001', price: 12 },

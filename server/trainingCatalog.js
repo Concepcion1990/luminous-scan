@@ -40,7 +40,9 @@ export const TRAINING_MODULES = [
   "settings",
   "billing",
   "exports",
-  "builds"
+  "builds",
+  "rewards",
+  "pos"
 ];
 
 export const MODULE_LABELS = {
@@ -69,7 +71,9 @@ export const MODULE_LABELS = {
   "settings": "Settings",
   "billing": "Plan & billing",
   "exports": "Exports",
-  "builds": "Bundles & builds"
+  "builds": "Bundles & builds",
+  "rewards": "Rewards & incentives",
+  "pos": "Till connections (POS)"
 };
 
 export const TRAINING_LESSONS = [
@@ -93,6 +97,8 @@ export const TRAINING_LESSONS = [
   { id: 'listings-basics', track: 'staff', module: 'listings', steps: 4 },
   { id: 'import-basics', track: 'staff', module: 'import', steps: 4 },
   { id: 'clock-basics', track: 'staff', module: 'workforce', steps: 4 },
+  { id: 'staff-your-rewards', track: 'staff', module: 'rewards', steps: 4 },
+  { id: 'staff-pos-till-sales', track: 'staff', module: 'pos', steps: 4 },
   { id: 'schedule-yours', track: 'staff', module: 'workforce', steps: 4 },
   { id: 'timeoff-request', track: 'staff', module: 'workforce', steps: 4 },
   { id: 'tasks-yours', track: 'staff', module: 'workforce', steps: 4 },
@@ -105,6 +111,7 @@ export const TRAINING_LESSONS = [
   { id: 'mgr-schedules', track: 'manager', module: 'workforce', steps: 4 },
   { id: 'mgr-timeoff-decide', track: 'manager', module: 'workforce', steps: 4 },
   { id: 'mgr-tasks-assign', track: 'manager', module: 'workforce', steps: 4 },
+  { id: 'mgr-give-rewards', track: 'manager', module: 'rewards', steps: 4 },
   { id: 'mgr-clock-oversight', track: 'manager', module: 'workforce', steps: 4 },
   { id: 'mgr-payroll-preview', track: 'manager', module: 'payroll', steps: 4 },
   { id: 'mgr-stub-push', track: 'manager', module: 'payroll', steps: 4 },
@@ -133,6 +140,13 @@ export const TRAINING_LESSONS = [
   { id: 'owner-cross-store', track: 'owner', module: 'cross-store', steps: 4 },
   { id: 'owner-staff-email-fix', track: 'owner', module: 'staff', steps: 4 },
   { id: 'owner-send-supplier-order', track: 'owner', module: 'purchasing', steps: 4 },
+  { id: 'owner-give-rewards', track: 'owner', module: 'rewards', steps: 4 },
+  { id: 'owner-rewards-oversight', track: 'owner', module: 'rewards', steps: 4 },
+  { id: 'owner-pos-connect-square', track: 'owner', module: 'pos', steps: 4 },
+  { id: 'owner-pos-connect-shopify', track: 'owner', module: 'pos', steps: 4 },
+  { id: 'owner-pos-mapping', track: 'owner', module: 'pos', steps: 4 },
+  { id: 'owner-pos-csv', track: 'owner', module: 'pos', steps: 4 },
+  { id: 'owner-pos-sales-list', track: 'owner', module: 'pos', steps: 4 },
 ];
 
 /** permission -> the training modules gaining it should teach. */

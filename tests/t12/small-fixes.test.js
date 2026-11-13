@@ -5,8 +5,10 @@
  * `auth.sameEmailNotice` (shared SameEmailNotice component) so a
  * visitor who already has the phone app subscribes with the SAME
  * email — a different email starts a totally new, empty storefront.
- * The text ships in English in every locale for now (translation
- * debt convention), which these tests pin down.
+ * The text shipped in English in every locale (translation-debt
+ * convention); translation tranches retire the debt locale by
+ * locale — TRANCHE_1_LOCALES below tracks the locales whose pass
+ * has landed, and these tests pin both states.
  *
  * Part 2: the translated Delete Account confirmation word. The
  * confirmation is per-locale via `settings.deleteConfirmWord`:
@@ -36,12 +38,17 @@ const readSrc = (rel) => fs.readFileSync(path.join(here, '..', '..', rel), 'utf8
 
 const NOTICE_TEXT = 'Already have our app from Google Play or the App Store? Use the same email here — the one you sign into the app with — so your shop and your inventory come with you. A different email starts a totally new, empty storefront.';
 
+// Locales whose translation pass has landed (tranche 1, Nov 13, 2026).
+const TRANCHE_1_LOCALES = ['am', 'ar', 'bn', 'bho'];
+
 test('keyset parity holds across all 52 locale files with the two new keys counted', () => {
   const enKeys = Object.keys(en).sort();
   // 3510 at the small-fixes batch; the recovery kit added 65 keys
   // (50 UI + 15 training) for 3575; send-PO added 15 more (5 UI +
-  // 10 training) — its t14 segment asserts the same total.
-  assert.equal(enKeys.length, 3595);
+  // 10 training) for 3595; the delete warning added 2 more for 3597;
+  // rewards added 67 more (46 UI + 21 training) for 3664;
+  // POS added 85 more (54 UI + 31 training) for 3749; the POS gate added 5 more, for 3754; plans parity added 14 more, for 3768.
+  assert.equal(enKeys.length, 3768);
   assert.equal(SUPPORTED_LOCALES.length, 52);
   for (const code of SUPPORTED_LOCALES) {
     const keys = Object.keys(LOCALES[code]).sort();
@@ -51,10 +58,19 @@ test('keyset parity holds across all 52 locale files with the two new keys count
   }
 });
 
-test('the same-email notice is the owner\u2019s exact text in English, interim English everywhere', () => {
+test('the same-email notice is the owner\u2019s exact text in English, interim English where no translation pass has landed', () => {
   assert.equal(en['auth.sameEmailNotice'], NOTICE_TEXT);
   for (const code of SUPPORTED_LOCALES) {
+    if (TRANCHE_1_LOCALES.includes(code)) continue;
     assert.equal(LOCALES[code]['auth.sameEmailNotice'], NOTICE_TEXT, `${code} notice differs (English interim until its translation pass)`);
+  }
+  // Tranche 1 locales carry a real translation of the notice — a
+  // non-empty string that is not the English text.
+  for (const code of TRANCHE_1_LOCALES) {
+    const value = LOCALES[code]['auth.sameEmailNotice'];
+    assert.equal(typeof value, 'string', `${code} notice missing`);
+    assert.ok(value.length > 0, `${code} notice empty`);
+    assert.notEqual(value, NOTICE_TEXT, `${code} notice is still English after its translation pass`);
   }
 });
 

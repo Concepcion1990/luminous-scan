@@ -1,9 +1,8 @@
 /**
  * T13 — recovery-kit surface invariants: the new i18n keys exist in
  * every locale (3575 at the recovery kit; send-PO later brought the
- * total to 3595 — its t14 segment asserts the same total), and the
- * training catalogs (client + server) carry the kit's lessons in
- * agreement.
+ * total to 3595, the delete warning to 3597 and rewards to 3664), and the training
+ * catalogs (client + server) carry the kit's lessons in agreement.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -15,8 +14,10 @@ import { TRAINING_LESSONS as SERVER_LESSONS } from '../../server/trainingCatalog
 test('keyset parity holds across all 52 locale files at the recovery-kit total', () => {
   const enKeys = Object.keys(en).sort();
   // 3575 at the recovery kit; send-PO added 15 keys (5 UI + 10
-  // training) for 3595 — its t14 segment asserts the same total.
-  assert.equal(enKeys.length, 3595);
+  // training) for 3595; the delete warning added 2 more for 3597;
+  // rewards added 67 more (46 UI + 21 training) for 3664;
+  // POS added 85 more (54 UI + 31 training) for 3749; the POS gate added 5 more, for 3754; plans parity added 14 more, for 3768.
+  assert.equal(enKeys.length, 3768);
   assert.equal(SUPPORTED_LOCALES.length, 52);
   for (const code of SUPPORTED_LOCALES) {
     const keys = Object.keys(LOCALES[code]).sort();

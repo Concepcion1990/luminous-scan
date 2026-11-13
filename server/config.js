@@ -24,9 +24,14 @@ export const config = {
   stripeTestPriceBusiness: process.env.STRIPE_TEST_PRICE_BUSINESS || '',
   billingJobSecret: process.env.BILLING_JOB_SECRET || '',
   billingJobsEnabled: process.env.BILLING_JOBS_ENABLED || '',
+  // POS phase: Square OAuth + webhook signing, Shopify webhook HMAC.
+  squareAppId: process.env.SQUARE_APP_ID || '',
+  squareAppSecret: process.env.SQUARE_APP_SECRET || '',
+  squareWebhookSignatureKey: process.env.SQUARE_WEBHOOK_SIGNATURE_KEY || '',
+  shopifyApiSecret: process.env.SHOPIFY_API_SECRET || '',
 };
 
-const SECRET_NAMES = ['DATABASE_URL', 'SESSION_SECRET', 'RESEND_API_KEY', 'EMAIL_API_KEY', 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 'BILLING_JOB_SECRET'];
+const SECRET_NAMES = ['DATABASE_URL', 'SESSION_SECRET', 'RESEND_API_KEY', 'EMAIL_API_KEY', 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 'BILLING_JOB_SECRET', 'SQUARE_APP_ID', 'SQUARE_APP_SECRET', 'SQUARE_WEBHOOK_SIGNATURE_KEY', 'SHOPIFY_API_SECRET'];
 
 export function configuredSecretNames() {
   return SECRET_NAMES.filter((name) => Boolean(process.env[name]));

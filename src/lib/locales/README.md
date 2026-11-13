@@ -22,6 +22,10 @@ Languages are added **one at a time, in ABC order** of the list the owner approv
 - Picker labels come from `LOCALE_LABEL_KEYS` in `src/lib/i18n.js` — the same `settings.details.<language>` keys the Settings select uses.
 - The legal pages render per-locale bodies through the registry in `src/lib/policyTranslations.js`: English modules stay the base and the official text; a later pass registers a translated body per locale (`registerPolicyTranslation(kind, locale, body)`), and until then the English body shows. When a translated body shows, the page prints `policies.translationNotice` above it — **every new locale file must include that key** (the English text: the translation is for reading; if there is ever a disagreement, the English version is the official one).
 
+## Translation-debt tranches
+
+Later features (workforce, inbox/messaging, training, the recovery kit, Send-PO, trial reminders, the delete warning, Rewards, POS and its plan gate) landed with their strings propagated as verbatim-English interim into every locale — translation debt. **Tranche 1 (Nov 13, 2026)** retired the debt for the first four locales in ABC order — **Amharic (am), Arabic (ar), Bengali (bn), Bhojpuri (bho)**: every debt key translated, and all three policy bodies translated and registered in `src/lib/policyTranslations.js` (files under `src/lib/policies/`). The debt census definition (byte-identical values minus the legitimately-identical categories: token-only proper/technical strings, example-data placeholders, language labels, the confirmation-word key) lives in `tests/t20/tranche1.test.js`, which pins zero debt for these four locales. Remaining locales carry roughly 790 debt keys each and retire in later tranches, same ABC order.
+
 ## What `t()` does when something is missing
 
 - Unknown locale code → English (never a blank screen).

@@ -173,6 +173,7 @@ test('receiving a delivery against the order shows the variance', async () => {
 test('cross-store: out of stock here, in stock at the other store', async () => {
   const { owner, location } = await businessSetup('cross-a@example.com');
   const storeB = await createBusiness(owner.cookie, 'Second Store');
+  await setPlan(storeB.id, 'business', owner.user.id);
   const locationB = await createLocation(owner.cookie, storeB.id, { name: 'Main' });
   const [productA] = await createProducts(owner.cookie, owner.business.id, [
     { name: 'Shared Notebook', sku: 'SHARED-001', price: 12 },
@@ -198,6 +199,7 @@ test('cross-store: out of stock here, in stock at the other store', async () => 
 test('cross-store notify: ship-it request lands in the other store’s inbox', async () => {
   const { owner, location } = await businessSetup('cross-notify@example.com');
   const storeB = await createBusiness(owner.cookie, 'Second Store');
+  await setPlan(storeB.id, 'business', owner.user.id);
   const locationB = await createLocation(owner.cookie, storeB.id, { name: 'Main' });
   const [productA] = await createProducts(owner.cookie, owner.business.id, [
     { name: 'Shared Pen', sku: 'SHARED-002', price: 4 },

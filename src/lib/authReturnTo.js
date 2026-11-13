@@ -44,6 +44,27 @@ export function isAuthPagePath(pathname) {
   return AUTH_PAGE_PATHS.includes(pathname);
 }
 
+// The app shell's render gate, as a pure decision so the regression
+// tests can drive it. Public pages and the auth pages render
+// immediately — nothing on them depends on the session — so a cold or
+// slow session check can neither stall them behind the loading
+// spinner nor sway where they land. "/" and the protected pages DO
+// depend on the session (a signed-in visitor at "/" gets the
+// Dashboard; a signed-out one is landed on /welcome exactly once), so
+// they keep waiting for the check, exactly as before.
+//
+// (Design-polish pass, 2026-11-13: the spinner previously gated EVERY
+// route on the session check — and on the public-settings flag chained
+// behind it — so on a cold start even the Welcome page sat behind a
+// spinner for seconds, and the signed-out landing waited on the whole
+// chain. The gate is now per-route-class, and the public-settings
+// loading state plays no part in it: nothing renders from those
+// settings, so their loading must never hold the shell hostage.)
+export function shellShouldWait({ openToEveryone, authPage, isLoadingAuth }) {
+  if (openToEveryone || authPage) return false;
+  return Boolean(isLoadingAuth);
+}
+
 // The value a login bounce may carry as its ?returnTo=. Pure in
 // (value, origin) so the regression tests can drive it directly.
 //

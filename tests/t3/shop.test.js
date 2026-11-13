@@ -230,6 +230,7 @@ test('cross-business move: an owner moves stock from one store to another', asyn
   const shopA = await createBusiness(owner.cookie, 'Shop A');
   await setPlan(shopA.id, 'business', owner.user.id);
   const shopB = await createBusiness(owner.cookie, 'Shop B');
+  await setPlan(shopB.id, 'business', owner.user.id);
   const locA = await createLocation(owner.cookie, shopA.id, { name: 'Store A' });
   const locB = await createLocation(owner.cookie, shopB.id, { name: 'Store B' });
   const [product] = await createProducts(owner.cookie, shopA.id, [
@@ -287,6 +288,7 @@ test('cross-business move refuses a non-owner and refuses more than is on hand',
   const shopA = await createBusiness(owner.cookie, 'Shop A');
   await setPlan(shopA.id, 'business', owner.user.id);
   const shopB = await createBusiness(owner.cookie, 'Shop B');
+  await setPlan(shopB.id, 'business', owner.user.id);
   const locA = await createLocation(owner.cookie, shopA.id, { name: 'Store A' });
   const locB = await createLocation(owner.cookie, shopB.id, { name: 'Store B' });
   const [product] = await createProducts(owner.cookie, shopA.id, [{ name: 'Bookmark', sku: 'BM-1' }]);

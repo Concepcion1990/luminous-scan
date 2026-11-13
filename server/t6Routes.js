@@ -33,6 +33,7 @@ import { requireAuth } from './sessions.js';
 import { resolveAccess, loadBusiness, loadBusinessesForUser } from './authz.js';
 import { planFor, featureAllowed } from './plans.js';
 import { assertNotInGrace } from './billing.js';
+import { hasFullSubscriptionAccess } from './subscriptionAccess.js';
 import { applySyncBatch, syncState } from './sync.js';
 import { entityDef, publicRow } from './entities.js';
 
@@ -148,7 +149,15 @@ export function createT6Router({ getPool: getPoolFn }) {
   /** Other businesses the caller owns, with this product's stock at each. */
   async function availabilityFor(product) {
     const owned = await loadBusinessesForUser(pool(), product.ownerId);
-    const others = owned.filter((b) => b.id !== product.businessId);
+    // Subscription gate (2026-11-13): another store's stock is that
+    // workspace's data — an unpaid/lapsed store contributes nothing
+    // here either, even though the asking store is entitled.
+    const entitled = [];
+    for (const b of owned) {
+      if (b.id === product.businessId) continue;
+      if (await hasFullSubscriptionAccess(pool(), b.id)) entitled.push(b);
+    }
+    const others = entitled;
     const out = [];
     for (const other of others) {
       let match = null;

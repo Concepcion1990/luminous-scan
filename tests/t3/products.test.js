@@ -159,7 +159,7 @@ test('product create requires a name and a business', async () => {
 });
 
 test('entitlement read: missing row resolves to Essentials, Business row reads back', async () => {
-  const { cookie, business, user } = await ownerWithBusiness('ent-read@example.com');
+  const { cookie, business, user } = await ownerWithBusiness('ent-read@example.com', 'Test Shop', { grant: false });
   const before = await req(`/api/businesses/${business.id}/entitlement`, { method: 'GET', cookie });
   assert.equal(before.json.plan, 'essentials');
   assert.equal(before.json.entitlement, null);

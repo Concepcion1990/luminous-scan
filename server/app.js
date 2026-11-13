@@ -29,9 +29,14 @@ import { createAuthRouter } from './authRoutes.js';
 import { createShopRouter } from './shopRoutes.js';
 import { createT6Router } from './t6Routes.js';
 import { createWorkforceRouter } from './workforceRoutes.js';
+import { createRewardsRouter } from './rewardsRoutes.js';
+import { createPosRouter } from './posRoutes.js';
+import { squareWebhookHandler, squareOAuthCallbackHandler } from './posSquare.js';
+import { shopifyWebhookHandler } from './posShopify.js';
 import { createTrainingRouter } from './trainingRoutes.js';
 import { createBillingRouter, stripeWebhookHandler } from './billingRoutes.js';
 import { createRecoveryRouter } from './recoveryRoutes.js';
+import { assertSubscriptionAccess } from './subscriptionAccess.js';
 import { issueCsrfToken, requireCsrf } from './csrf.js';
 import { SESSION_COOKIE, loadSessionUser, parseCookies, requireAuth } from './sessions.js';
 
@@ -48,6 +53,13 @@ export function createApp() {
   // Stripe webhook FIRST, before any JSON parsing: signature
   // verification needs the raw body untouched (T4).
   app.post('/webhooks/stripe', express.raw({ type: 'application/json' }), stripeWebhookHandler);
+  // POS webhooks (POS phase): same raw-body rule — Square's HMAC and
+  // Shopify's HMAC are both computed over the untouched body.
+  app.post('/webhooks/pos/square', express.raw({ type: '*/*' }), squareWebhookHandler);
+  app.post('/webhooks/pos/shopify', express.raw({ type: '*/*' }), shopifyWebhookHandler);
+  // Square OAuth callback: a browser redirect from Square, no
+  // session — the HMAC-signed state is its credential.
+  app.get('/api/pos/square/callback', squareOAuthCallbackHandler);
   // 3 MB JSON bodies: a store logo (up to 2 MB as a data URL) must
   // reach the logo endpoint's own clear 400, not the parser's 413.
   app.use(express.json({ limit: '3mb' }));
@@ -107,6 +119,45 @@ export function createApp() {
       return res.status(403).json({ error: 'recovery_scope' });
     }
   });
+  // Subscription access gate (2026-11-13, pre-launch loophole fix):
+  // the screen gate (SubscriptionAccessRoute) is not enough — the
+  // business DATA routes must refuse unpaid workspaces too, or a
+  // signed-in customer could skip /plans and use the API directly.
+  // This middleware covers every /api/businesses/:bid/* surface in
+  // one place (shop, T6 sync/cross-store, workforce, rewards, POS,
+  // training, the Settings business PATCH, the recovery staff-email
+  // fix) so a future router cannot forget the check. The generic
+  // entity API is gated inside server/entities.js (its business id
+  // travels in filters/rows, not the path). Exempt here: business
+  // switch (workspace selection) and the entitlement read itself —
+  // both are pre-checkout essentials. Business list/create are not
+  // under this prefix at all. Requests with no live session pass
+  // through: the routers answer their own 401.
+  const BUSINESS_PATH = /^\/api\/businesses\/([^/]+)(\/.*)?$/;
+  app.use('/api', async (req, res, next) => {
+    try {
+      const fullPath = String(req.originalUrl || '').split('?')[0];
+      const match = BUSINESS_PATH.exec(fullPath);
+      if (!match) return next();
+      if (req.method === 'POST' && /^\/api\/businesses\/[^/]+\/switch$/.test(fullPath)) return next();
+      if (req.method === 'GET' && /^\/api\/businesses\/[^/]+\/entitlement$/.test(fullPath)) return next();
+      const pool = getPool();
+      if (!pool) return next();
+      const cookies = parseCookies(req);
+      if (!cookies[SESSION_COOKIE]) return next();
+      const loaded = await loadSessionUser(pool, cookies[SESSION_COOKIE]);
+      if (!loaded || loaded.scope === 'recovery') return next();
+      const write = !['GET', 'HEAD'].includes(req.method);
+      await assertSubscriptionAccess(pool, loaded.user, match[1], { write });
+      return next();
+    } catch (error) {
+      if (error && error.status === 403) {
+        return res.status(403).json({ error: error.code || 'subscription_required', message: error.message });
+      }
+      console.error('[twin] subscription access gate failed:', error.message);
+      return res.status(403).json({ error: 'subscription_required' });
+    }
+  });
   app.use('/api', createAuthRouter({ getPool }));
   // Recovery kit: spare keys, backup email, change-email, recovery
   // entry, owner staff-email fix (server/recoveryRoutes.js).
@@ -121,6 +172,10 @@ export function createApp() {
   app.use('/api', createT6Router({ getPool }));
   // Workforce: scheduling, time clock, time-off, tasks, payroll.
   app.use('/api', createWorkforceRouter({ getPool }));
+  // Rewards: Business-only staff incentives, inside the workforce area.
+  app.use('/api', createRewardsRouter({ getPool }));
+  // POS: till connections, mappings, CSV sales import (server/posRoutes.js).
+  app.use('/api', createPosRouter({ getPool }));
   // Training: role-scoped lesson tracks, assignments, team progress.
   app.use('/api', createTrainingRouter({ getPool }));
   app.use('/api', createShopRouter({ getPool }));
@@ -129,9 +184,30 @@ export function createApp() {
     res.status(404).json({ error: 'not_found', detail: 'API route not implemented yet' });
   });
 
-  app.use(express.static(DIST_DIR));
+  // Cache posture for the built app (design-polish pass, 2026-11-13):
+  // the shell document, the service worker script and the manifest
+  // must revalidate on every load, so a new deploy is picked up on
+  // the next visit — with express.static's defaults the browser could
+  // heuristically cache all three, which is how a phone kept serving
+  // the pre-fix build on 2026-11-12. The fingerprinted files under
+  // /assets/ are the opposite: their names change with their content,
+  // so they may be cached for a year, immutable.
+  app.use(express.static(DIST_DIR, {
+    setHeaders(res, filePath) {
+      if (filePath.includes(`${path.sep}assets${path.sep}`)) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      } else if (
+        filePath.endsWith('index.html')
+        || filePath.endsWith('sw.js')
+        || filePath.endsWith('manifest.webmanifest')
+      ) {
+        res.setHeader('Cache-Control', 'no-cache');
+      }
+    },
+  }));
   // SPA fallback: every non-API GET serves the built app.
   app.get('*', (_req, res) => {
+    res.setHeader('Cache-Control', 'no-cache');
     res.sendFile(path.join(DIST_DIR, 'index.html'));
   });
 

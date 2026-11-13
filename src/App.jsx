@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import { BrowserRouter as Router, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { isAuthPagePath } from './lib/authReturnTo';
+import { shellShouldWait } from './lib/authReturnTo';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
@@ -40,6 +41,7 @@ import Orders from '@/pages/Orders';
 import Returns from '@/pages/Returns';
 import Counts from '@/pages/Counts';
 import CrossStoreInbox from '@/pages/CrossStoreInbox';
+import PosConnections from '@/pages/PosConnections';
 import Workforce from '@/pages/Workforce';
 import Training from '@/pages/Training';
 import Payroll from '@/pages/Payroll';
@@ -59,7 +61,7 @@ import ThankYou from './pages/ThankYou';
 import GraceInventory from '@/pages/GraceInventory';
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, isAuthenticated, user, navigateToLogin } = useAuth();
+  const { isLoadingAuth, authError, isAuthenticated, user, navigateToLogin } = useAuth();
   const { pathname } = useLocation();
   // The introduction and the plan comparison are readable before signing in.
   // Public legal pages are readable too, including the /policies/* aliases
@@ -83,39 +85,10 @@ const AuthenticatedApp = () => {
     }
   }, [authError, openToEveryone, authPage, pathname, navigateToLogin]);
 
-  // Show loading spinner while checking app public settings or auth
-  if (isLoadingPublicSettings || isLoadingAuth) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
-  // Handle authentication errors
-  if (authError) {
-    if (authError.type === 'user_not_registered') {
-      return <UserNotRegisteredError />;
-    }
-  }
-
-  // Signed-out at the root: land once on the public face. Signed-in
-  // visitors fall through to the routes, where "/" is the Dashboard
-  // inside ProtectedRoute, exactly as before.
-  if (pathname === '/' && !isAuthenticated) {
-    return <Navigate to="/welcome" replace />;
-  }
-
-  // Recovery kit (T7): a restricted recovery session (a spare key was
-  // presented, not a password) may see exactly ONE screen — the
-  // change-email step. The server refuses everything else too; this
-  // keeps the person on the one page that can finish the job.
-  if (isAuthenticated && user?.session_scope === 'recovery' && pathname !== '/account-recovery') {
-    return <Navigate to="/account-recovery" replace />;
-  }
-
-  // Render the main app
-  return (
+  // The route table, built once and returned by the last exit below.
+  // Building the element mounts nothing; the checks after it decide
+  // whether this render shows the table, the spinner, or a redirect.
+  const routes = (
     <Routes>
       <Route path="/welcome" element={<Welcome />} />
       <Route path="/plans" element={<Plans />} />
@@ -203,6 +176,7 @@ const AuthenticatedApp = () => {
             }
           />
           <Route path="/orders" element={<Orders />} />
+          <Route path="/pos" element={<PosConnections />} />
           <Route path="/returns" element={<Returns />} />
           <Route path="/counts" element={<Counts />} />
           <Route
@@ -245,6 +219,46 @@ const AuthenticatedApp = () => {
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
+
+  // Show the loading spinner only while the session check is running
+  // AND this path's destination depends on it (shellShouldWait).
+  // Public pages and the auth pages render immediately, however cold
+  // the server is: nothing on them waits on the session, and a
+  // signed-out visitor's landing can no longer be swayed by how slow
+  // the check is. "/" and the protected pages keep waiting, exactly
+  // as before — their destination IS the session's answer.
+  if (shellShouldWait({ openToEveryone, authPage, isLoadingAuth })) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  // Handle authentication errors
+  if (authError) {
+    if (authError.type === 'user_not_registered') {
+      return <UserNotRegisteredError />;
+    }
+  }
+
+  // Signed-out at the root: land once on the public face. Signed-in
+  // visitors fall through to the routes, where "/" is the Dashboard
+  // inside ProtectedRoute, exactly as before.
+  if (pathname === '/' && !isAuthenticated) {
+    return <Navigate to="/welcome" replace />;
+  }
+
+  // Recovery kit (T7): a restricted recovery session (a spare key was
+  // presented, not a password) may see exactly ONE screen — the
+  // change-email step. The server refuses everything else too; this
+  // keeps the person on the one page that can finish the job.
+  if (isAuthenticated && user?.session_scope === 'recovery' && pathname !== '/account-recovery') {
+    return <Navigate to="/account-recovery" replace />;
+  }
+
+  // Render the main app
+  return routes;
 };
 
 

@@ -24,13 +24,20 @@ export const AuthProvider = ({ children }) => {
       try {
         const publicSettings = await base44.app.getPublicSettings();
         setAppPublicSettings(publicSettings);
+        // The settings flag clears the moment the settings call
+        // settles — never chained behind the session check below
+        // (design-polish pass, 2026-11-13). The settings call is a
+        // local stub on the twin, and nothing renders from its result,
+        // so its loading state must not gate any route.
+        setIsLoadingPublicSettings(false);
 
         // T2: auth is a session cookie, not a bearer token — there is
         // no appParams.token on the twin, so the check is unconditional.
         // A signed-out user gets a 401 here and is treated as signed
-        // out below; public pages do not render on authError.
+        // out below; the shell renders public pages without waiting
+        // for this check and lands a signed-out visitor from "/" on
+        // /welcome once it resolves (src/App.jsx).
         await checkUserAuth();
-        setIsLoadingPublicSettings(false);
       } catch (appError) {
         console.error('App state check failed:', appError);
         

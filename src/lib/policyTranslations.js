@@ -27,6 +27,18 @@
 import { STOCKHAVEN_TERMS_OF_SERVICE } from './stockhavenTermsOfService.js';
 import { STOCKHAVEN_SUBSCRIPTION_POLICY } from './stockhavenSubscriptionPolicy.js';
 import { STOCKHAVEN_PRIVACY_POLICY } from './stockhavenPrivacyPolicy.js';
+import { STOCKHAVEN_TERMS_OF_SERVICE_AM } from './policies/terms.am.js';
+import { STOCKHAVEN_SUBSCRIPTION_POLICY_AM } from './policies/subscription.am.js';
+import { STOCKHAVEN_PRIVACY_POLICY_AM } from './policies/privacy.am.js';
+import { STOCKHAVEN_TERMS_OF_SERVICE_AR } from './policies/terms.ar.js';
+import { STOCKHAVEN_SUBSCRIPTION_POLICY_AR } from './policies/subscription.ar.js';
+import { STOCKHAVEN_PRIVACY_POLICY_AR } from './policies/privacy.ar.js';
+import { STOCKHAVEN_TERMS_OF_SERVICE_BN } from './policies/terms.bn.js';
+import { STOCKHAVEN_SUBSCRIPTION_POLICY_BN } from './policies/subscription.bn.js';
+import { STOCKHAVEN_PRIVACY_POLICY_BN } from './policies/privacy.bn.js';
+import { STOCKHAVEN_TERMS_OF_SERVICE_BHO } from './policies/terms.bho.js';
+import { STOCKHAVEN_SUBSCRIPTION_POLICY_BHO } from './policies/subscription.bho.js';
+import { STOCKHAVEN_PRIVACY_POLICY_BHO } from './policies/privacy.bho.js';
 
 export const POLICY_KINDS = Object.freeze(['terms', 'subscription', 'privacy']);
 
@@ -36,8 +48,9 @@ const ENGLISH_BODIES = {
   privacy: STOCKHAVEN_PRIVACY_POLICY,
 };
 
-// kind -> { localeCode: translatedBody }. Empty today — translations
-// land per locale in later passes and register at import time.
+// kind -> { localeCode: translatedBody }. Translations land per
+// locale in passes and register at import time (see the tranche
+// registrations below the register function).
 const translatedBodies = { terms: {}, subscription: {}, privacy: {} };
 
 /**
@@ -53,6 +66,23 @@ export function registerPolicyTranslation(kind, locale, body) {
   translatedBodies[kind][locale] = body;
   return true;
 }
+
+// --- Tranche 1 registrations (Nov 13, 2026) ----------------------
+// Amharic (am), Arabic (ar), Bengali (bn), Bhojpuri (bho): full UI
+// translation debt retired and all three policy bodies translated
+// in the same pass.
+registerPolicyTranslation('terms', 'am', STOCKHAVEN_TERMS_OF_SERVICE_AM);
+registerPolicyTranslation('subscription', 'am', STOCKHAVEN_SUBSCRIPTION_POLICY_AM);
+registerPolicyTranslation('privacy', 'am', STOCKHAVEN_PRIVACY_POLICY_AM);
+registerPolicyTranslation('terms', 'ar', STOCKHAVEN_TERMS_OF_SERVICE_AR);
+registerPolicyTranslation('subscription', 'ar', STOCKHAVEN_SUBSCRIPTION_POLICY_AR);
+registerPolicyTranslation('privacy', 'ar', STOCKHAVEN_PRIVACY_POLICY_AR);
+registerPolicyTranslation('terms', 'bn', STOCKHAVEN_TERMS_OF_SERVICE_BN);
+registerPolicyTranslation('subscription', 'bn', STOCKHAVEN_SUBSCRIPTION_POLICY_BN);
+registerPolicyTranslation('privacy', 'bn', STOCKHAVEN_PRIVACY_POLICY_BN);
+registerPolicyTranslation('terms', 'bho', STOCKHAVEN_TERMS_OF_SERVICE_BHO);
+registerPolicyTranslation('subscription', 'bho', STOCKHAVEN_SUBSCRIPTION_POLICY_BHO);
+registerPolicyTranslation('privacy', 'bho', STOCKHAVEN_PRIVACY_POLICY_BHO);
 
 /** True when a translated body exists for this document + locale. */
 export function hasPolicyTranslation(kind, locale) {
