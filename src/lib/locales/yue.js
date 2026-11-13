@@ -2947,4 +2947,5 @@ export const yue = {
   "apiLib.businessNotFound": "搵唔到生意",
   "apiLib.googleSignInUnavailable": "Google 登入用唔到 — 請用你嘅電郵同密碼登入。",
   "apiLib.chooseBusinessFirst": "請先揀一間生意。",
+  "policies.translationNotice": "呢個譯本係畀你用自己嘅語言嚟睇嘅。如果呢個譯本同英文版本之間有任何唔一致嘅地方，一律以英文版本為準。",
 };

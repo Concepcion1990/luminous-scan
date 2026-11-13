@@ -2947,4 +2947,5 @@ export const id = {
   "apiLib.businessNotFound": "Bisnis tidak ditemukan",
   "apiLib.googleSignInUnavailable": "Proses masuk Google tidak tersedia — silakan masuk dengan email dan kata sandi Anda.",
   "apiLib.chooseBusinessFirst": "Pilih bisnis terlebih dahulu.",
+  "policies.translationNotice": "Terjemahan ini disediakan agar Anda dapat membacanya dalam bahasa Anda. Jika suatu saat terdapat perbedaan antara terjemahan ini dan versi bahasa Inggris, versi bahasa Inggris-lah yang resmi.",
 };
