@@ -42,6 +42,7 @@ const BODY_KEY = 'settings.delete.cancelFirstBody';
 const TRANCHE_1_LOCALES = [
   'am', 'ar', 'bn', 'bho',
   'es-MX', 'es-ES', 'es-US', 'es-CU', 'es-PR', 'es-VE',
+  'fr-FR', 'fr-CA', 'pt-BR', 'pt-PT', 'zh-Hans', 'zh-Hant',
 ];
 
 test('the warning keys carry the owner\u2019s exact English wording', () => {

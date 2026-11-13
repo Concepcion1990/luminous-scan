@@ -155,7 +155,7 @@ test('policies: no translation registered -> the English body, cleanly', () => {
   // ar, bn and bho; tranche 2 registered the six Spanish variants —
   // sampled here are locales still unregistered.)
   for (const kind of POLICY_KINDS) {
-    for (const locale of ['fr-FR', 'de', 'it']) {
+    for (const locale of ['de', 'it', 'ja']) {
       assert.equal(hasPolicyTranslation(kind, locale), false);
       const { document, translated } = getPolicyDocument(kind, locale);
       assert.equal(translated, false, `${kind}/${locale} should not claim a translation`);
@@ -170,11 +170,14 @@ test('policies: no translation registered -> the English body, cleanly', () => {
 
 test('policies: a registered translation is served, merged over English, with the line', () => {
   // Malformed registrations are refused and never poison the slot.
-  assert.equal(registerPolicyTranslation('terms', 'fr-FR', null), false);
-  assert.equal(registerPolicyTranslation('terms', 'fr-FR', { title: 42, sections: [] }), false);
+  // (Fixture registrations use the placeholder code 'xx', which no
+  // real translation pass will ever register, so this test survives
+  // every tranche.)
+  assert.equal(registerPolicyTranslation('terms', 'xx', null), false);
+  assert.equal(registerPolicyTranslation('terms', 'xx', { title: 42, sections: [] }), false);
   assert.equal(registerPolicyTranslation('terms', 'en', { title: 'X', sections: [] }), false);
-  assert.equal(registerPolicyTranslation('unknown', 'fr-FR', { title: 'X', sections: [] }), false);
-  assert.equal(hasPolicyTranslation('terms', 'fr-FR'), false);
+  assert.equal(registerPolicyTranslation('unknown', 'xx', { title: 'X', sections: [] }), false);
+  assert.equal(hasPolicyTranslation('terms', 'xx'), false);
 
   // A minimal fixture body — a title and one section, deliberately NOT
   // a full translation — proves the translated path end to end.
@@ -184,10 +187,10 @@ test('policies: a registered translation is served, merged over English, with th
       { id: 'acceptance', title: '1. Acceptation (fixture)', paragraphs: ['Paragraphe fixture.'] },
     ],
   };
-  assert.equal(registerPolicyTranslation('terms', 'fr-FR', fixture), true);
-  assert.equal(hasPolicyTranslation('terms', 'fr-FR'), true);
+  assert.equal(registerPolicyTranslation('terms', 'xx', fixture), true);
+  assert.equal(hasPolicyTranslation('terms', 'xx'), true);
 
-  const { document, translated } = getPolicyDocument('terms', 'fr-FR');
+  const { document, translated } = getPolicyDocument('terms', 'xx');
   assert.equal(translated, true);
   assert.equal(document.title, fixture.title);
   assert.deepEqual(document.sections, fixture.sections);

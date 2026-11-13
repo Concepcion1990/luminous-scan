@@ -57,6 +57,24 @@ import { STOCKHAVEN_PRIVACY_POLICY_ES_PR } from './policies/privacy.es-PR.js';
 import { STOCKHAVEN_TERMS_OF_SERVICE_ES_VE } from './policies/terms.es-VE.js';
 import { STOCKHAVEN_SUBSCRIPTION_POLICY_ES_VE } from './policies/subscription.es-VE.js';
 import { STOCKHAVEN_PRIVACY_POLICY_ES_VE } from './policies/privacy.es-VE.js';
+import { STOCKHAVEN_TERMS_OF_SERVICE_FR_FR } from './policies/terms.fr-FR.js';
+import { STOCKHAVEN_SUBSCRIPTION_POLICY_FR_FR } from './policies/subscription.fr-FR.js';
+import { STOCKHAVEN_PRIVACY_POLICY_FR_FR } from './policies/privacy.fr-FR.js';
+import { STOCKHAVEN_TERMS_OF_SERVICE_FR_CA } from './policies/terms.fr-CA.js';
+import { STOCKHAVEN_SUBSCRIPTION_POLICY_FR_CA } from './policies/subscription.fr-CA.js';
+import { STOCKHAVEN_PRIVACY_POLICY_FR_CA } from './policies/privacy.fr-CA.js';
+import { STOCKHAVEN_TERMS_OF_SERVICE_PT_BR } from './policies/terms.pt-BR.js';
+import { STOCKHAVEN_SUBSCRIPTION_POLICY_PT_BR } from './policies/subscription.pt-BR.js';
+import { STOCKHAVEN_PRIVACY_POLICY_PT_BR } from './policies/privacy.pt-BR.js';
+import { STOCKHAVEN_TERMS_OF_SERVICE_PT_PT } from './policies/terms.pt-PT.js';
+import { STOCKHAVEN_SUBSCRIPTION_POLICY_PT_PT } from './policies/subscription.pt-PT.js';
+import { STOCKHAVEN_PRIVACY_POLICY_PT_PT } from './policies/privacy.pt-PT.js';
+import { STOCKHAVEN_TERMS_OF_SERVICE_ZH_HANS } from './policies/terms.zh-Hans.js';
+import { STOCKHAVEN_SUBSCRIPTION_POLICY_ZH_HANS } from './policies/subscription.zh-Hans.js';
+import { STOCKHAVEN_PRIVACY_POLICY_ZH_HANS } from './policies/privacy.zh-Hans.js';
+import { STOCKHAVEN_TERMS_OF_SERVICE_ZH_HANT } from './policies/terms.zh-Hant.js';
+import { STOCKHAVEN_SUBSCRIPTION_POLICY_ZH_HANT } from './policies/subscription.zh-Hant.js';
+import { STOCKHAVEN_PRIVACY_POLICY_ZH_HANT } from './policies/privacy.zh-Hant.js';
 
 export const POLICY_KINDS = Object.freeze(['terms', 'subscription', 'privacy']);
 
@@ -125,6 +143,34 @@ registerPolicyTranslation('privacy', 'es-PR', STOCKHAVEN_PRIVACY_POLICY_ES_PR);
 registerPolicyTranslation('terms', 'es-VE', STOCKHAVEN_TERMS_OF_SERVICE_ES_VE);
 registerPolicyTranslation('subscription', 'es-VE', STOCKHAVEN_SUBSCRIPTION_POLICY_ES_VE);
 registerPolicyTranslation('privacy', 'es-VE', STOCKHAVEN_PRIVACY_POLICY_ES_VE);
+
+// --- Tranche 3 registrations (Nov 13, 2026) ----------------------
+// French (fr-FR, fr-CA) and Portuguese (pt-BR, pt-PT): full UI
+// translation debt retired and all three policy bodies translated
+// in the same pass.
+registerPolicyTranslation('terms', 'fr-FR', STOCKHAVEN_TERMS_OF_SERVICE_FR_FR);
+registerPolicyTranslation('subscription', 'fr-FR', STOCKHAVEN_SUBSCRIPTION_POLICY_FR_FR);
+registerPolicyTranslation('privacy', 'fr-FR', STOCKHAVEN_PRIVACY_POLICY_FR_FR);
+registerPolicyTranslation('terms', 'fr-CA', STOCKHAVEN_TERMS_OF_SERVICE_FR_CA);
+registerPolicyTranslation('subscription', 'fr-CA', STOCKHAVEN_SUBSCRIPTION_POLICY_FR_CA);
+registerPolicyTranslation('privacy', 'fr-CA', STOCKHAVEN_PRIVACY_POLICY_FR_CA);
+registerPolicyTranslation('terms', 'pt-BR', STOCKHAVEN_TERMS_OF_SERVICE_PT_BR);
+registerPolicyTranslation('subscription', 'pt-BR', STOCKHAVEN_SUBSCRIPTION_POLICY_PT_BR);
+registerPolicyTranslation('privacy', 'pt-BR', STOCKHAVEN_PRIVACY_POLICY_PT_BR);
+registerPolicyTranslation('terms', 'pt-PT', STOCKHAVEN_TERMS_OF_SERVICE_PT_PT);
+registerPolicyTranslation('subscription', 'pt-PT', STOCKHAVEN_SUBSCRIPTION_POLICY_PT_PT);
+registerPolicyTranslation('privacy', 'pt-PT', STOCKHAVEN_PRIVACY_POLICY_PT_PT);
+
+// --- Tranche 4 registrations, part 1 (Nov 13, 2026) ---------------
+// Chinese Simplified (zh-Hans) and Traditional (zh-Hant): full UI
+// translation debt retired and all three policy bodies translated.
+// Cantonese (yue) and Wu (wuu) follow in part 2 of this tranche.
+registerPolicyTranslation('terms', 'zh-Hans', STOCKHAVEN_TERMS_OF_SERVICE_ZH_HANS);
+registerPolicyTranslation('subscription', 'zh-Hans', STOCKHAVEN_SUBSCRIPTION_POLICY_ZH_HANS);
+registerPolicyTranslation('privacy', 'zh-Hans', STOCKHAVEN_PRIVACY_POLICY_ZH_HANS);
+registerPolicyTranslation('terms', 'zh-Hant', STOCKHAVEN_TERMS_OF_SERVICE_ZH_HANT);
+registerPolicyTranslation('subscription', 'zh-Hant', STOCKHAVEN_SUBSCRIPTION_POLICY_ZH_HANT);
+registerPolicyTranslation('privacy', 'zh-Hant', STOCKHAVEN_PRIVACY_POLICY_ZH_HANT);
 
 /** True when a translated body exists for this document + locale. */
 export function hasPolicyTranslation(kind, locale) {
