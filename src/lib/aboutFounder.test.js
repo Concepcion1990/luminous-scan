@@ -84,9 +84,10 @@ test('LegalFooter links to /about, small and subtle', () => {
   assert.equal(en['layout.aboutLink'], 'About Luminous StockHaven');
   assert.match(footer, /text-\[11px\]/, 'footer stays small');
   assert.match(footer, /text-center/, 'footer stays centered');
-  // The legal text itself is untouched. (The © line was removed whole
-  // on Nov 12, 2026 — see trademarkNotice.test.js.)
-  assert.doesNotMatch(footer, /copyrightLine/);
+  // The legal text itself is untouched. (The © line was removed on
+  // Nov 12, 2026, then restored the same day minus the © symbol — see
+  // trademarkNotice.test.js.)
+  assert.match(footer, /\{footer\.copyrightLine\}/);
   assert.match(footer, /\{footer\.trademarkLine\}/);
 });
 

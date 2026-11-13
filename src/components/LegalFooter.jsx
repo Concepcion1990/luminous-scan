@@ -4,8 +4,10 @@ import { t } from '@/lib/i18n';
 
 /**
  * Small, centered legal line at the bottom of the pages. (The old
- * © copyright line was removed whole on Nov 12, 2026 — it was entirely
- * a copyright claim, and the app claims none.)
+ * © line was removed on Nov 12, 2026, then restored the same day on
+ * her word without the © symbol and with her registered legal name,
+ * Book and Shop as separate words — the exact text lives in
+ * src/lib/trademarkNotice.js.)
  * Deliberately quiet — it must not interfere with a customer's work.
  * The text lives in src/lib/trademarkNotice.js and is rendered verbatim.
  *
@@ -27,6 +29,7 @@ export default function LegalFooter({ className = '' }) {
           {t('layout.aboutLink')}
         </Link>
       </p>
+      <p className="mt-1">{footer.copyrightLine}</p>
       <p className="mt-1">{footer.trademarkLine}</p>
     </footer>
   );

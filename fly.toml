@@ -1,7 +1,7 @@
-# Luminous StockHaven twin (Fly.io app "scanstock-luminous", region dfw).
+# Luminous StockHaven twin (Fly.io app "luminous-stockhaven", region dfw).
 # T1: the twin is always on — customers need it up, so unlike the old
 # Scan demo it must NOT auto-stop to zero.
-app = "scanstock-luminous"
+app = "luminous-stockhaven"
 primary_region = "dfw"
 
 [build]
