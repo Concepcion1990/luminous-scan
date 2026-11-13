@@ -121,7 +121,7 @@ const DEFS = {
   PurchaseOrder: {
     table: 'purchase_orders',
     json: ['lines'],
-    numeric: ['subtotal', 'shipping', 'tax', 'total'],
+    numeric: ['subtotal', 'shipping', 'tax', 'total', 'send_count'],
     bool: [],
     required: ['number', 'supplier_id'],
     // Business-only (plan §2.11). Created as draft, never silently
@@ -413,6 +413,11 @@ async function guardCreate(pool, def, name, access, values) {
     // the browser asked for. It moves to `ordered` only through the
     // guarded transition (update) — see guardUpdate.
     values.status = 'draft';
+    // And never pre-sent: the send record belongs to the send
+    // endpoint alone (server/business.js sendPurchaseOrder).
+    values.sent_at = null;
+    values.sent_to = '';
+    values.send_count = 0;
     const supplier = (
       await pool.query('SELECT id FROM suppliers WHERE id = $1 AND business_id = $2', [
         values.supplier_id,
@@ -483,6 +488,9 @@ async function guardUpdate(pool, def, name, access, row, patch) {
   }
   if (name === 'PurchaseOrder') {
     const current = row;
+    if (patch.sent_at !== undefined || patch.sent_to !== undefined || patch.send_count !== undefined) {
+      throw err(400, 'po_send_via_endpoint', 'The sent record changes only when an order is sent to the supplier, not by editing the order.');
+    }
     if (patch.status && patch.status !== current.status) {
       if (['partial', 'received'].includes(patch.status)) {
         throw err(400, 'invalid_po_status', 'Received progress is set by receiving stock, not by editing the order.');
