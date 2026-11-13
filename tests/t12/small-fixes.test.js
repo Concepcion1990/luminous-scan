@@ -46,6 +46,7 @@ const TRANCHE_1_LOCALES = [
   'fr-FR', 'fr-CA', 'pt-BR', 'pt-PT', 'zh-Hans', 'zh-Hant', 'yue', 'wuu',
   'de', 'it', 'ja',
   'ko', 'ru', 'uk',
+  'fa', 'prs', 'ur',
 ];
 
 test('keyset parity holds across all 52 locale files with the two new keys counted', () => {

@@ -99,6 +99,15 @@ import { STOCKHAVEN_PRIVACY_POLICY_RU } from './policies/privacy.ru.js';
 import { STOCKHAVEN_TERMS_OF_SERVICE_UK } from './policies/terms.uk.js';
 import { STOCKHAVEN_SUBSCRIPTION_POLICY_UK } from './policies/subscription.uk.js';
 import { STOCKHAVEN_PRIVACY_POLICY_UK } from './policies/privacy.uk.js';
+import { STOCKHAVEN_TERMS_OF_SERVICE_FA } from './policies/terms.fa.js';
+import { STOCKHAVEN_SUBSCRIPTION_POLICY_FA } from './policies/subscription.fa.js';
+import { STOCKHAVEN_PRIVACY_POLICY_FA } from './policies/privacy.fa.js';
+import { STOCKHAVEN_TERMS_OF_SERVICE_PRS } from './policies/terms.prs.js';
+import { STOCKHAVEN_SUBSCRIPTION_POLICY_PRS } from './policies/subscription.prs.js';
+import { STOCKHAVEN_PRIVACY_POLICY_PRS } from './policies/privacy.prs.js';
+import { STOCKHAVEN_TERMS_OF_SERVICE_UR } from './policies/terms.ur.js';
+import { STOCKHAVEN_SUBSCRIPTION_POLICY_UR } from './policies/subscription.ur.js';
+import { STOCKHAVEN_PRIVACY_POLICY_UR } from './policies/privacy.ur.js';
 
 export const POLICY_KINDS = Object.freeze(['terms', 'subscription', 'privacy']);
 
@@ -231,6 +240,19 @@ registerPolicyTranslation('privacy', 'ru', STOCKHAVEN_PRIVACY_POLICY_RU);
 registerPolicyTranslation('terms', 'uk', STOCKHAVEN_TERMS_OF_SERVICE_UK);
 registerPolicyTranslation('subscription', 'uk', STOCKHAVEN_SUBSCRIPTION_POLICY_UK);
 registerPolicyTranslation('privacy', 'uk', STOCKHAVEN_PRIVACY_POLICY_UK);
+
+// --- Tranche 7 registrations (Nov 13, 2026) ---
+// Persian (fa), Dari (prs), Urdu (ur): full UI translation debt retired and all three
+// policy bodies translated in the same pass.
+registerPolicyTranslation('terms', 'fa', STOCKHAVEN_TERMS_OF_SERVICE_FA);
+registerPolicyTranslation('subscription', 'fa', STOCKHAVEN_SUBSCRIPTION_POLICY_FA);
+registerPolicyTranslation('privacy', 'fa', STOCKHAVEN_PRIVACY_POLICY_FA);
+registerPolicyTranslation('terms', 'prs', STOCKHAVEN_TERMS_OF_SERVICE_PRS);
+registerPolicyTranslation('subscription', 'prs', STOCKHAVEN_SUBSCRIPTION_POLICY_PRS);
+registerPolicyTranslation('privacy', 'prs', STOCKHAVEN_PRIVACY_POLICY_PRS);
+registerPolicyTranslation('terms', 'ur', STOCKHAVEN_TERMS_OF_SERVICE_UR);
+registerPolicyTranslation('subscription', 'ur', STOCKHAVEN_SUBSCRIPTION_POLICY_UR);
+registerPolicyTranslation('privacy', 'ur', STOCKHAVEN_PRIVACY_POLICY_UR);
 
 /** True when a translated body exists for this document + locale. */
 export function hasPolicyTranslation(kind, locale) {

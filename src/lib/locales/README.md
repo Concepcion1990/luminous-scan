@@ -26,6 +26,23 @@ Languages are added **one at a time, in ABC order** of the list the owner approv
 
 Later features (workforce, inbox/messaging, training, the recovery kit, Send-PO, trial reminders, the delete warning, Rewards, POS and its plan gate) landed with their strings propagated as verbatim-English interim into every locale — translation debt. **Tranche 1 (Nov 13, 2026)** retired the debt for the first four locales in ABC order — **Amharic (am), Arabic (ar), Bengali (bn), Bhojpuri (bho)**: every debt key translated, and all three policy bodies translated and registered in `src/lib/policyTranslations.js` (files under `src/lib/policies/`). The debt census definition (byte-identical values minus the legitimately-identical categories: token-only proper/technical strings, example-data placeholders, language labels, the confirmation-word key) lives in `tests/t20/tranche1.test.js`, which pins zero debt for the completed locales. **Tranche 2 (Nov 13, 2026)** retired the debt for the six Spanish variants — **es-MX, es-ES, es-US, es-CU, es-PR, es-VE** — UI keys and all three policy bodies each; the census gained one documented category, the *verified cognate* (a short value spelled identically in correct Spanish — Total, Subtotal, Digital, Roles, Kit, kg, No, "{count} roles" — pinned as exact keys per locale in the t20 test, never a pattern). **Tranche 3 (Nov 13, 2026)** retired the debt for **French (fr-FR, fr-CA)** and **Portuguese (pt-BR, pt-PT)** the same way, each with its own pinned cognate set (French shares many identically-spelled words with English — Description, Dimensions, Total, Notes; Portuguese adds Status, Item, Scanner, Backup). **Tranche 4 (Nov 13, 2026)** retired the debt for the four Chinese locales — **zh-Hans, zh-Hant, yue, wuu** — UI keys and all three policy bodies each (no cognate exemptions: Chinese shares no identically-spelled words with English). Remaining locales carry roughly 850 debt keys each and retire in later tranches.
 
+Tranche 5 (Nov 13, 2026): `de`, `it`, `ja` — full UI debt retired
+and all three policy bodies translated and registered in the same
+pass. German keeps its deliberate single quotes for highlighted
+terms (house style in the earlier batches) and translates its
+`locations.fill.*` keys with blank runs, since a locale's fill-in
+blanks take no unit word.
+
+Tranche 6 (Nov 13, 2026): `ko`, `ru`, `uk` — same terms. Korean
+renders its locale date-format strings as the Korean long form
+(the same collapsing approach as Japanese).
+
+Tranche 7 (Nov 13, 2026): `fa`, `prs`, `ur` — the RTL group, same
+terms. All three read right-to-left with no direction marks inside
+the strings; their Latin technical terms ride along exactly as the
+earlier batches established. Urdu keeps its format-example strings
+and SKU labels in Latin form, matching its own earlier batches.
+
 ## What `t()` does when something is missing
 
 - Unknown locale code → English (never a blank screen).
