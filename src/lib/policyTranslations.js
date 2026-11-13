@@ -39,6 +39,24 @@ import { STOCKHAVEN_PRIVACY_POLICY_BN } from './policies/privacy.bn.js';
 import { STOCKHAVEN_TERMS_OF_SERVICE_BHO } from './policies/terms.bho.js';
 import { STOCKHAVEN_SUBSCRIPTION_POLICY_BHO } from './policies/subscription.bho.js';
 import { STOCKHAVEN_PRIVACY_POLICY_BHO } from './policies/privacy.bho.js';
+import { STOCKHAVEN_TERMS_OF_SERVICE_ES_MX } from './policies/terms.es-MX.js';
+import { STOCKHAVEN_SUBSCRIPTION_POLICY_ES_MX } from './policies/subscription.es-MX.js';
+import { STOCKHAVEN_PRIVACY_POLICY_ES_MX } from './policies/privacy.es-MX.js';
+import { STOCKHAVEN_TERMS_OF_SERVICE_ES_ES } from './policies/terms.es-ES.js';
+import { STOCKHAVEN_SUBSCRIPTION_POLICY_ES_ES } from './policies/subscription.es-ES.js';
+import { STOCKHAVEN_PRIVACY_POLICY_ES_ES } from './policies/privacy.es-ES.js';
+import { STOCKHAVEN_TERMS_OF_SERVICE_ES_US } from './policies/terms.es-US.js';
+import { STOCKHAVEN_SUBSCRIPTION_POLICY_ES_US } from './policies/subscription.es-US.js';
+import { STOCKHAVEN_PRIVACY_POLICY_ES_US } from './policies/privacy.es-US.js';
+import { STOCKHAVEN_TERMS_OF_SERVICE_ES_CU } from './policies/terms.es-CU.js';
+import { STOCKHAVEN_SUBSCRIPTION_POLICY_ES_CU } from './policies/subscription.es-CU.js';
+import { STOCKHAVEN_PRIVACY_POLICY_ES_CU } from './policies/privacy.es-CU.js';
+import { STOCKHAVEN_TERMS_OF_SERVICE_ES_PR } from './policies/terms.es-PR.js';
+import { STOCKHAVEN_SUBSCRIPTION_POLICY_ES_PR } from './policies/subscription.es-PR.js';
+import { STOCKHAVEN_PRIVACY_POLICY_ES_PR } from './policies/privacy.es-PR.js';
+import { STOCKHAVEN_TERMS_OF_SERVICE_ES_VE } from './policies/terms.es-VE.js';
+import { STOCKHAVEN_SUBSCRIPTION_POLICY_ES_VE } from './policies/subscription.es-VE.js';
+import { STOCKHAVEN_PRIVACY_POLICY_ES_VE } from './policies/privacy.es-VE.js';
 
 export const POLICY_KINDS = Object.freeze(['terms', 'subscription', 'privacy']);
 
@@ -83,6 +101,30 @@ registerPolicyTranslation('privacy', 'bn', STOCKHAVEN_PRIVACY_POLICY_BN);
 registerPolicyTranslation('terms', 'bho', STOCKHAVEN_TERMS_OF_SERVICE_BHO);
 registerPolicyTranslation('subscription', 'bho', STOCKHAVEN_SUBSCRIPTION_POLICY_BHO);
 registerPolicyTranslation('privacy', 'bho', STOCKHAVEN_PRIVACY_POLICY_BHO);
+
+// --- Tranche 2 registrations (Nov 13, 2026) ----------------------
+// Spanish variants: Mexico (es-MX), Spain (es-ES), United States
+// (es-US), Cuba (es-CU), Puerto Rico (es-PR), Venezuela (es-VE):
+// full UI translation debt retired and all three policy bodies
+// translated in the same pass.
+registerPolicyTranslation('terms', 'es-MX', STOCKHAVEN_TERMS_OF_SERVICE_ES_MX);
+registerPolicyTranslation('subscription', 'es-MX', STOCKHAVEN_SUBSCRIPTION_POLICY_ES_MX);
+registerPolicyTranslation('privacy', 'es-MX', STOCKHAVEN_PRIVACY_POLICY_ES_MX);
+registerPolicyTranslation('terms', 'es-ES', STOCKHAVEN_TERMS_OF_SERVICE_ES_ES);
+registerPolicyTranslation('subscription', 'es-ES', STOCKHAVEN_SUBSCRIPTION_POLICY_ES_ES);
+registerPolicyTranslation('privacy', 'es-ES', STOCKHAVEN_PRIVACY_POLICY_ES_ES);
+registerPolicyTranslation('terms', 'es-US', STOCKHAVEN_TERMS_OF_SERVICE_ES_US);
+registerPolicyTranslation('subscription', 'es-US', STOCKHAVEN_SUBSCRIPTION_POLICY_ES_US);
+registerPolicyTranslation('privacy', 'es-US', STOCKHAVEN_PRIVACY_POLICY_ES_US);
+registerPolicyTranslation('terms', 'es-CU', STOCKHAVEN_TERMS_OF_SERVICE_ES_CU);
+registerPolicyTranslation('subscription', 'es-CU', STOCKHAVEN_SUBSCRIPTION_POLICY_ES_CU);
+registerPolicyTranslation('privacy', 'es-CU', STOCKHAVEN_PRIVACY_POLICY_ES_CU);
+registerPolicyTranslation('terms', 'es-PR', STOCKHAVEN_TERMS_OF_SERVICE_ES_PR);
+registerPolicyTranslation('subscription', 'es-PR', STOCKHAVEN_SUBSCRIPTION_POLICY_ES_PR);
+registerPolicyTranslation('privacy', 'es-PR', STOCKHAVEN_PRIVACY_POLICY_ES_PR);
+registerPolicyTranslation('terms', 'es-VE', STOCKHAVEN_TERMS_OF_SERVICE_ES_VE);
+registerPolicyTranslation('subscription', 'es-VE', STOCKHAVEN_SUBSCRIPTION_POLICY_ES_VE);
+registerPolicyTranslation('privacy', 'es-VE', STOCKHAVEN_PRIVACY_POLICY_ES_VE);
 
 /** True when a translated body exists for this document + locale. */
 export function hasPolicyTranslation(kind, locale) {

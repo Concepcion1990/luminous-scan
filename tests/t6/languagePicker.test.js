@@ -152,9 +152,10 @@ test('registration: the create call carries the chosen locale', () => {
 test('policies: no translation registered -> the English body, cleanly', () => {
   // For locales without a registered translation, every kind falls
   // back to the English document itself. (Tranche 1 registered am,
-  // ar, bn and bho — sampled here are locales still unregistered.)
+  // ar, bn and bho; tranche 2 registered the six Spanish variants —
+  // sampled here are locales still unregistered.)
   for (const kind of POLICY_KINDS) {
-    for (const locale of ['fr-FR', 'de', 'es-MX']) {
+    for (const locale of ['fr-FR', 'de', 'it']) {
       assert.equal(hasPolicyTranslation(kind, locale), false);
       const { document, translated } = getPolicyDocument(kind, locale);
       assert.equal(translated, false, `${kind}/${locale} should not claim a translation`);

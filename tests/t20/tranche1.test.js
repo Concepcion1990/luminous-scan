@@ -26,10 +26,24 @@
  *     script in every locale file, per each file's own header;
  *   - an example-data placeholder (a *Placeholder key whose value is
  *     sample data: an email address, a bare domain a user must type
- *     literally, or one of the fictional example names).
+ *     literally, or one of the fictional example names);
+ *   - a VERIFIED COGNATE (tranche 2, Nov 13, 2026): a short value
+ *     whose correct translation is spelled identically in the target
+ *     language. Spanish is the first case: Total, Subtotal, Digital,
+ *     Roles, Kit, kg, the table-header abbreviation No, and
+ *     "{count} roles" (roles is the Spanish plural of rol) are the
+ *     same words in Spanish. These keys are pinned per locale in
+ *     COGNATE_KEYS below — the exemption names exact keys, verified
+ *     one by one, never a pattern, so a genuinely untranslated string
+ *     can never hide inside it.
  * English regional variants (en-GB/CA/AU/IN) are adaptations, not
  * translations — most values are identical by design and they are
  * out of scope for the debt census.
+ *
+ * TRANCHE 2 (Nov 13, 2026): the six Spanish variants — es-MX, es-ES,
+ * es-US, es-CU, es-PR, es-VE — retired their debt in the same shape
+ * (UI keys + all three policy bodies registered). The locale list
+ * below is the union of completed tranches; later tranches append.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -44,7 +58,33 @@ import { STOCKHAVEN_TERMS_OF_SERVICE } from '../../src/lib/stockhavenTermsOfServ
 import { STOCKHAVEN_SUBSCRIPTION_POLICY } from '../../src/lib/stockhavenSubscriptionPolicy.js';
 import { STOCKHAVEN_PRIVACY_POLICY } from '../../src/lib/stockhavenPrivacyPolicy.js';
 
-const TRANCHE_1_LOCALES = ['am', 'ar', 'bn', 'bho'];
+const TRANCHE_1_LOCALES = [
+  'am', 'ar', 'bn', 'bho',
+  // Tranche 2 (Nov 13, 2026): the six Spanish variants.
+  'es-MX', 'es-ES', 'es-US', 'es-CU', 'es-PR', 'es-VE',
+];
+
+// Verified cognates: keys whose correct Spanish value is spelled
+// identically to the English (see the census definition above).
+// Verified key-by-key for every Spanish variant — the identical set
+// was the same 15 keys in all six.
+const SPANISH_COGNATE_KEYS = new Set([
+  'products.exportNo', 'print.no',
+  'productForm.fulfillDigital', 'productForm.unitKg',
+  'orders.subtotal', 'orders.total',
+  'purchasing.subtotal', 'purchasing.total',
+  'reports.total', 'print.subtotal', 'print.total',
+  'staff.rolesCount', 'staff.rolesHeading', 'staff.statRoles',
+  'bomLib.kindBundleShort',
+]);
+const COGNATE_KEYS = {
+  'es-MX': SPANISH_COGNATE_KEYS,
+  'es-ES': SPANISH_COGNATE_KEYS,
+  'es-US': SPANISH_COGNATE_KEYS,
+  'es-CU': SPANISH_COGNATE_KEYS,
+  'es-PR': SPANISH_COGNATE_KEYS,
+  'es-VE': SPANISH_COGNATE_KEYS,
+};
 
 const TOKENS = [
   'Luminous StockHaven', 'Social Security', 'Medicare', 'SKU', 'UPC',
@@ -79,12 +119,13 @@ function legitIdentical(key, value) {
 
 function debtKeys(code) {
   const locale = LOCALES[code];
+  const cognates = COGNATE_KEYS[code] || new Set();
   return Object.keys(en).filter(
-    (key) => locale[key] === en[key] && !legitIdentical(key, en[key]),
+    (key) => locale[key] === en[key] && !legitIdentical(key, en[key]) && !cognates.has(key),
   );
 }
 
-test('tranche 1 locales carry zero translation debt', () => {
+test('completed-tranche locales carry zero translation debt', () => {
   for (const code of TRANCHE_1_LOCALES) {
     const debt = debtKeys(code);
     assert.deepEqual(
@@ -95,7 +136,7 @@ test('tranche 1 locales carry zero translation debt', () => {
   }
 });
 
-test('tranche 1 locales keep keyset parity and placeholder parity with English', () => {
+test('completed-tranche locales keep keyset parity and placeholder parity with English', () => {
   const agreement = new Set(['s', 'plural', 'suffix', 'us', 'cs', 'ps', 'fs', 'rs']);
   const placeholders = (text) => new Set([...text.matchAll(/\{(\w+)\}/g)].map((m) => m[1]));
   const enKeys = Object.keys(en).sort();
@@ -121,7 +162,7 @@ const ENGLISH_DOCUMENTS = {
   privacy: STOCKHAVEN_PRIVACY_POLICY,
 };
 
-test('tranche 1 policy bodies are registered and served, merged over English', () => {
+test('completed-tranche policy bodies are registered and served, merged over English', () => {
   for (const kind of POLICY_KINDS) {
     const english = ENGLISH_DOCUMENTS[kind];
     for (const code of TRANCHE_1_LOCALES) {
@@ -167,8 +208,8 @@ test('tranche 1 policy bodies are registered and served, merged over English', (
       assert.equal(typeof notice, 'string', `${code} is missing policies.translationNotice`);
       assert.notEqual(notice, en['policies.translationNotice'], `${code} protective line is still English`);
     }
-    // A locale outside the tranche still falls back to English.
-    assert.equal(hasPolicyTranslation(kind, 'de'), false, `${kind}/de should not be registered yet`);
-    assert.equal(getPolicyDocument(kind, 'de').translated, false);
+    // A locale outside the completed tranches still falls back to English.
+    assert.equal(hasPolicyTranslation(kind, 'fr-FR'), false, `${kind}/fr-FR should not be registered yet`);
+    assert.equal(getPolicyDocument(kind, 'fr-FR').translated, false);
   }
 });

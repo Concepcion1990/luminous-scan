@@ -37,7 +37,12 @@ const HEADLINE_KEY = 'settings.delete.cancelFirstHeadline';
 const BODY_KEY = 'settings.delete.cancelFirstBody';
 
 // Locales whose translation pass has landed (tranche 1, Nov 13, 2026).
-const TRANCHE_1_LOCALES = ['am', 'ar', 'bn', 'bho'];
+// Locales whose translation pass has landed (tranche 1, Nov 13,
+// 2026; tranche 2 added the six Spanish variants the same day).
+const TRANCHE_1_LOCALES = [
+  'am', 'ar', 'bn', 'bho',
+  'es-MX', 'es-ES', 'es-US', 'es-CU', 'es-PR', 'es-VE',
+];
 
 test('the warning keys carry the owner\u2019s exact English wording', () => {
   assert.equal(en[HEADLINE_KEY], HEADLINE);
@@ -79,13 +84,16 @@ test('the warning is verbatim English where no translation pass has landed; tran
     assert.equal(t(BODY_KEY), BODY);
     // Interim state: locales without a translation pass render the
     // same English text — never a missing key.
-    setLocale('es-MX');
+    setLocale('de');
     assert.equal(t(HEADLINE_KEY), HEADLINE);
     assert.equal(t(BODY_KEY), BODY);
-    // A tranche 1 locale renders its own warning through t().
+    // Completed-tranche locales render their own warning through t().
     setLocale('am');
     assert.equal(t(HEADLINE_KEY), LOCALES.am[HEADLINE_KEY]);
     assert.equal(t(BODY_KEY), LOCALES.am[BODY_KEY]);
+    setLocale('es-MX');
+    assert.equal(t(HEADLINE_KEY), LOCALES['es-MX'][HEADLINE_KEY]);
+    assert.equal(t(BODY_KEY), LOCALES['es-MX'][BODY_KEY]);
   } finally {
     setLocale('en');
   }

@@ -38,8 +38,12 @@ const readSrc = (rel) => fs.readFileSync(path.join(here, '..', '..', rel), 'utf8
 
 const NOTICE_TEXT = 'Already have our app from Google Play or the App Store? Use the same email here — the one you sign into the app with — so your shop and your inventory come with you. A different email starts a totally new, empty storefront.';
 
-// Locales whose translation pass has landed (tranche 1, Nov 13, 2026).
-const TRANCHE_1_LOCALES = ['am', 'ar', 'bn', 'bho'];
+// Locales whose translation pass has landed (tranche 1, Nov 13,
+// 2026; tranche 2 added the six Spanish variants the same day).
+const TRANCHE_1_LOCALES = [
+  'am', 'ar', 'bn', 'bho',
+  'es-MX', 'es-ES', 'es-US', 'es-CU', 'es-PR', 'es-VE',
+];
 
 test('keyset parity holds across all 52 locale files with the two new keys counted', () => {
   const enKeys = Object.keys(en).sort();
