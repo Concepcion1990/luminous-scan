@@ -28,6 +28,7 @@
  */
 import crypto from 'node:crypto';
 import { matchesFilter, pageRows, FETCH_CAP } from './query.js';
+import { trainingFlagForMemberChange, trainingFlagForRoleChange } from './trainingCore.js';
 import {
   resolveAccess,
   accessibleBusinessIds,
@@ -680,7 +681,22 @@ export async function updateEntity(pool, user, name, id, patch) {
     `UPDATE ${def.table} SET ${sets} WHERE id = $${columns.length + 1} RETURNING *`,
     [...columns.map((col) => dbValues[col]), id],
   );
-  return publicRow(def, updated.rows[0]);
+  const result = publicRow(def, updated.rows[0]);
+  // Training flag (owner's rule): when a person's role or permissions
+  // GROW — directly on their member row, or through their role —
+  // lessons for the new parts are assigned and their bell rings. The
+  // hooks diff effective permissions and never throw into this write.
+  if (name === 'StaffMember' || name === 'StaffRole') {
+    const actor = {
+      userId: user.id,
+      staffId: access.staffRow?.id ?? null,
+      name: access.isOwner ? 'Owner' : access.staffRow?.full_name || user.email,
+    };
+    const hookArgs = { business: access.business, planKey: access.planKey, before: publicExisting, after: result, actor };
+    if (name === 'StaffMember') await trainingFlagForMemberChange(pool, hookArgs);
+    else await trainingFlagForRoleChange(pool, hookArgs);
+  }
+  return result;
 }
 
 export async function deleteEntity(pool, user, name, id) {
