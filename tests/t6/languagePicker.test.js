@@ -49,11 +49,17 @@ function read(path) {
 
 test('picker: the protective line exists in every locale, English verbatim', () => {
   assert.equal(getStrings('en')['policies.translationNotice'], NOTICE_ENGLISH);
+  // The English variants (batch 7) read the official English text itself,
+  // so their notice keeps the standard English wording too; every
+  // translated locale carries the notice in its own language.
+  const ENGLISH_LOCALES = new Set(['en', 'en-GB', 'en-CA', 'en-AU', 'en-IN']);
   for (const code of SUPPORTED_LOCALES) {
     const value = getStrings(code)['policies.translationNotice'];
     assert.equal(typeof value, 'string', `${code} is missing policies.translationNotice`);
     assert.ok(value.length > 20, `${code} translation notice looks empty`);
-    if (code !== 'en') {
+    if (ENGLISH_LOCALES.has(code)) {
+      assert.equal(value, NOTICE_ENGLISH, `${code} notice should stay the English wording`);
+    } else {
       assert.notEqual(value, NOTICE_ENGLISH, `${code} notice is still the English text`);
     }
   }

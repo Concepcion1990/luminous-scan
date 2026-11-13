@@ -144,6 +144,10 @@ export default function DetailsCard({ values, onChange }) {
                 <SelectItem value="bn">{t('settings.details.bengali')}</SelectItem>
                 <SelectItem value="de">{t('settings.details.german')}</SelectItem>
                 <SelectItem value="en">{t('settings.details.english')}</SelectItem>
+                <SelectItem value="en-AU">{t('settings.details.englishAustralia')}</SelectItem>
+                <SelectItem value="en-CA">{t('settings.details.englishCanada')}</SelectItem>
+                <SelectItem value="en-GB">{t('settings.details.englishUK')}</SelectItem>
+                <SelectItem value="en-IN">{t('settings.details.englishIndia')}</SelectItem>
                 <SelectItem value="es-CU">{t('settings.details.spanishCuba')}</SelectItem>
                 <SelectItem value="es-ES">{t('settings.details.spanishSpain')}</SelectItem>
                 <SelectItem value="es-MX">{t('settings.details.spanishMexico')}</SelectItem>

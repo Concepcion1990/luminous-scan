@@ -68,8 +68,8 @@ test('RTL locales are detected (document direction flips in a real browser)', ()
   assert.equal(isRTL('zh-Hans'), false);
 });
 
-test('the registry holds English, Arabic, Amharic, Bengali, Bhojpuri, Brazilian Portuguese, Canadian French, Cantonese, Dari, European Portuguese, French, German, Gujarati, Hausa, Hindi, Indonesian, Italian, Japanese, Javanese, Kannada, Korean, Malay, Mandarin Simplified, Mandarin Traditional, Marathi, Nigerian Pidgin, Persian, Punjabi (Gurmukhi), Punjabi (Shahmukhi), Russian, Shanghainese, Spanish (Cuba), Spanish (Mexico), Spanish (Puerto Rico), Spanish (Spain), Spanish (United States), Spanish (Venezuela), Swahili, Tagalog, Tajik, Tamil, Telugu, Thai, Turkish, Ukrainian, Urdu, Vietnamese and Yoruba, ABC order', () => {
-  assert.deepEqual(SUPPORTED_LOCALES, ['am', 'ar', 'bho', 'bn', 'de', 'en', 'es-CU', 'es-ES', 'es-MX', 'es-PR', 'es-US', 'es-VE', 'fa', 'fr-CA', 'fr-FR', 'gu', 'ha', 'hi', 'id', 'it', 'ja', 'jv', 'kn', 'ko', 'mr', 'ms', 'pa-Arab', 'pa-Guru', 'pcm', 'prs', 'pt-BR', 'pt-PT', 'ru', 'sw', 'ta', 'te', 'tg', 'th', 'tl', 'tr', 'uk', 'ur', 'vi', 'wuu', 'yo', 'yue', 'zh-Hans', 'zh-Hant']);
+test('the registry holds English, English (Australia), English (Canada), English (India), English (United Kingdom), Arabic, Amharic, Bengali, Bhojpuri, Brazilian Portuguese, Canadian French, Cantonese, Dari, European Portuguese, French, German, Gujarati, Hausa, Hindi, Indonesian, Italian, Japanese, Javanese, Kannada, Korean, Malay, Mandarin Simplified, Mandarin Traditional, Marathi, Nigerian Pidgin, Persian, Punjabi (Gurmukhi), Punjabi (Shahmukhi), Russian, Shanghainese, Spanish (Cuba), Spanish (Mexico), Spanish (Puerto Rico), Spanish (Spain), Spanish (United States), Spanish (Venezuela), Swahili, Tagalog, Tajik, Tamil, Telugu, Thai, Turkish, Ukrainian, Urdu, Vietnamese and Yoruba, ABC order', () => {
+  assert.deepEqual(SUPPORTED_LOCALES, ['am', 'ar', 'bho', 'bn', 'de', 'en', 'en-AU', 'en-CA', 'en-GB', 'en-IN', 'es-CU', 'es-ES', 'es-MX', 'es-PR', 'es-US', 'es-VE', 'fa', 'fr-CA', 'fr-FR', 'gu', 'ha', 'hi', 'id', 'it', 'ja', 'jv', 'kn', 'ko', 'mr', 'ms', 'pa-Arab', 'pa-Guru', 'pcm', 'prs', 'pt-BR', 'pt-PT', 'ru', 'sw', 'ta', 'te', 'tg', 'th', 'tl', 'tr', 'uk', 'ur', 'vi', 'wuu', 'yo', 'yue', 'zh-Hans', 'zh-Hant']);
   assert.equal(DEFAULT_LOCALE, 'en');
 });
 
@@ -2017,6 +2017,153 @@ test('switching to Yoruba renders the app in Yoruba', () => {
   assert.equal(t('scan.printShelfTag'), "Tẹ̀ àmì ṣẹ́ẹ̀fù jáde");
   assert.equal(t('sync.sent'), "A ti fi gbogbo àyípadà ránṣẹ́");
   assert.equal(t('scan.onlyOnHand', { count: 3, location: "ọ̀nà 1" }), "3 nìkan ni ó wà ní ọwọ́ ní ọ̀nà 1.");
+  assert.equal(isRTL(), false);
+  // And back to English — the switch is live, not frozen at import.
+  assert.equal(setLocale('en'), 'en');
+  assert.equal(t('nav.scan'), 'Scan');
+  assert.equal(isRTL(), false);
+});
+
+test('English (United Kingdom) has every English key, with matching value placeholders', async () => {
+  const { enGB } = await import('./locales/en-GB.js');
+  const placeholders = (text) => new Set([...text.matchAll(/\{(\w+)\}/g)].map((m) => m[1]));
+  assert.equal(Object.keys(enGB).length, Object.keys(en).length);
+  for (const [key, english] of Object.entries(en)) {
+    const value = enGB[key];
+    assert.equal(typeof value, 'string', `en-GB missing key: ${key}`);
+    assert.ok(value.length > 0, `en-GB empty value: ${key}`);
+    // English variants KEEP the plural-agreement markers — placeholders
+    // must match the English set exactly (unlike the translated locales).
+    const want = placeholders(english);
+    const got = placeholders(value);
+    for (const p of want) assert.ok(got.has(p), `en-GB ${key} missing {${p}}`);
+    for (const p of got) assert.ok(want.has(p), `en-GB ${key} extra {${p}}`);
+  }
+});
+
+test('switching to English (United Kingdom) renders the app in English (United Kingdom)', () => {
+  assert.equal(setLocale('en-GB'), 'en-GB');
+  assert.equal(getLocale(), 'en-GB');
+  assert.equal(t('nav.scan'), 'Scan');
+  assert.equal(t('nav.overview'), 'Overview');
+  assert.equal(t('scan.printShelfTag'), 'Print shelf tag');
+  assert.equal(t('sync.sent'), 'All changes sent');
+  assert.equal(t('scan.onlyOnHand', { count: 3, location: 'Aisle 1' }), 'Only 3 on hand at Aisle 1.');
+  // The strings that genuinely differ in this region:
+  assert.equal(t('settings.identity.brandColor'), 'Brand colour');
+  assert.equal(t('import.title'), 'Import centre');
+  assert.equal(t('products.eyebrow'), 'Catalogue');
+  assert.equal(t('settings.billingStatus.canceled'), 'Cancelled');
+  assert.equal(t('settings.details.addressPlaceholder'), 'Street, city, postcode');
+  assert.equal(isRTL(), false);
+  // And back to English — the switch is live, not frozen at import.
+  assert.equal(setLocale('en'), 'en');
+  assert.equal(t('nav.scan'), 'Scan');
+  assert.equal(isRTL(), false);
+});
+
+test('English (Canada) has every English key, with matching value placeholders', async () => {
+  const { enCA } = await import('./locales/en-CA.js');
+  const placeholders = (text) => new Set([...text.matchAll(/\{(\w+)\}/g)].map((m) => m[1]));
+  assert.equal(Object.keys(enCA).length, Object.keys(en).length);
+  for (const [key, english] of Object.entries(en)) {
+    const value = enCA[key];
+    assert.equal(typeof value, 'string', `en-CA missing key: ${key}`);
+    assert.ok(value.length > 0, `en-CA empty value: ${key}`);
+    const want = placeholders(english);
+    const got = placeholders(value);
+    for (const p of want) assert.ok(got.has(p), `en-CA ${key} missing {${p}}`);
+    for (const p of got) assert.ok(want.has(p), `en-CA ${key} extra {${p}}`);
+  }
+});
+
+test('switching to English (Canada) renders the app in English (Canada)', () => {
+  assert.equal(setLocale('en-CA'), 'en-CA');
+  assert.equal(getLocale(), 'en-CA');
+  assert.equal(t('nav.scan'), 'Scan');
+  assert.equal(t('nav.overview'), 'Overview');
+  assert.equal(t('scan.printShelfTag'), 'Print shelf tag');
+  assert.equal(t('sync.sent'), 'All changes sent');
+  assert.equal(t('scan.onlyOnHand', { count: 3, location: 'Aisle 1' }), 'Only 3 on hand at Aisle 1.');
+  // The strings that genuinely differ in this region (Canada keeps the
+  // US forms for catalog, fulfillment and the -ize words):
+  assert.equal(t('settings.identity.brandColor'), 'Brand colour');
+  assert.equal(t('import.title'), 'Import centre');
+  assert.equal(t('products.eyebrow'), 'Catalog');
+  assert.equal(t('settings.billingStatus.canceled'), 'Cancelled');
+  assert.equal(t('settings.details.addressPlaceholder'), 'Street, city, province, postal code');
+  assert.equal(isRTL(), false);
+  // And back to English — the switch is live, not frozen at import.
+  assert.equal(setLocale('en'), 'en');
+  assert.equal(t('nav.scan'), 'Scan');
+  assert.equal(isRTL(), false);
+});
+
+test('English (Australia) has every English key, with matching value placeholders', async () => {
+  const { enAU } = await import('./locales/en-AU.js');
+  const placeholders = (text) => new Set([...text.matchAll(/\{(\w+)\}/g)].map((m) => m[1]));
+  assert.equal(Object.keys(enAU).length, Object.keys(en).length);
+  for (const [key, english] of Object.entries(en)) {
+    const value = enAU[key];
+    assert.equal(typeof value, 'string', `en-AU missing key: ${key}`);
+    assert.ok(value.length > 0, `en-AU empty value: ${key}`);
+    const want = placeholders(english);
+    const got = placeholders(value);
+    for (const p of want) assert.ok(got.has(p), `en-AU ${key} missing {${p}}`);
+    for (const p of got) assert.ok(want.has(p), `en-AU ${key} extra {${p}}`);
+  }
+});
+
+test('switching to English (Australia) renders the app in English (Australia)', () => {
+  assert.equal(setLocale('en-AU'), 'en-AU');
+  assert.equal(getLocale(), 'en-AU');
+  assert.equal(t('nav.scan'), 'Scan');
+  assert.equal(t('nav.overview'), 'Overview');
+  assert.equal(t('scan.printShelfTag'), 'Print shelf tag');
+  assert.equal(t('sync.sent'), 'All changes sent');
+  assert.equal(t('scan.onlyOnHand', { count: 3, location: 'Aisle 1' }), 'Only 3 on hand at Aisle 1.');
+  // The strings that genuinely differ in this region:
+  assert.equal(t('settings.identity.brandColor'), 'Brand colour');
+  assert.equal(t('import.title'), 'Import centre');
+  assert.equal(t('products.eyebrow'), 'Catalogue');
+  assert.equal(t('settings.billingStatus.canceled'), 'Cancelled');
+  assert.equal(t('settings.details.addressPlaceholder'), 'Street, city, state, postcode');
+  assert.equal(isRTL(), false);
+  // And back to English — the switch is live, not frozen at import.
+  assert.equal(setLocale('en'), 'en');
+  assert.equal(t('nav.scan'), 'Scan');
+  assert.equal(isRTL(), false);
+});
+
+test('English (India) has every English key, with matching value placeholders', async () => {
+  const { enIN } = await import('./locales/en-IN.js');
+  const placeholders = (text) => new Set([...text.matchAll(/\{(\w+)\}/g)].map((m) => m[1]));
+  assert.equal(Object.keys(enIN).length, Object.keys(en).length);
+  for (const [key, english] of Object.entries(en)) {
+    const value = enIN[key];
+    assert.equal(typeof value, 'string', `en-IN missing key: ${key}`);
+    assert.ok(value.length > 0, `en-IN empty value: ${key}`);
+    const want = placeholders(english);
+    const got = placeholders(value);
+    for (const p of want) assert.ok(got.has(p), `en-IN ${key} missing {${p}}`);
+    for (const p of got) assert.ok(want.has(p), `en-IN ${key} extra {${p}}`);
+  }
+});
+
+test('switching to English (India) renders the app in English (India)', () => {
+  assert.equal(setLocale('en-IN'), 'en-IN');
+  assert.equal(getLocale(), 'en-IN');
+  assert.equal(t('nav.scan'), 'Scan');
+  assert.equal(t('nav.overview'), 'Overview');
+  assert.equal(t('scan.printShelfTag'), 'Print shelf tag');
+  assert.equal(t('sync.sent'), 'All changes sent');
+  assert.equal(t('scan.onlyOnHand', { count: 3, location: 'Aisle 1' }), 'Only 3 on hand at Aisle 1.');
+  // The strings that genuinely differ in this region:
+  assert.equal(t('settings.identity.brandColor'), 'Brand colour');
+  assert.equal(t('import.title'), 'Import centre');
+  assert.equal(t('products.eyebrow'), 'Catalogue');
+  assert.equal(t('settings.billingStatus.canceled'), 'Cancelled');
+  assert.equal(t('settings.details.addressPlaceholder'), 'Street, city, state, PIN code');
   assert.equal(isRTL(), false);
   // And back to English — the switch is live, not frozen at import.
   assert.equal(setLocale('en'), 'en');
