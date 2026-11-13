@@ -11,14 +11,16 @@
     "lint:fix": "eslint . --fix",
     "preview": "vite preview",
     "start": "node server.js",
-    "test": "npm run test:t1 && npm run test:t2 && npm run test:t3 && npm run test:t4 && npm run test:t5 && npm run test:t6 && npm run test:t7",
+    "test": "npm run test:t1 && npm run test:t2 && npm run test:t3 && npm run test:t4 && npm run test:t5 && npm run test:t6 && npm run test:t7 && npm run test:t8 && npm run test:t9",
     "test:t1": "node --test src/lib/stockhavenSubscriptionPolicy.test.js src/lib/stockhavenTermsOfService.test.js src/lib/stockhavenPrivacyPolicy.test.js src/lib/trademarkNotice.test.js src/lib/aboutFounder.test.js",
     "test:t2": "node --test tests/t2/*.test.js",
     "test:t3": "node --test tests/t3/*.test.js src/lib/xlsx.test.js",
     "test:t4": "node --test tests/t4/*.test.js",
     "test:t5": "node --test tests/t5/*.test.js src/lib/bluetoothPrint.test.js src/lib/usbPrint.test.js",
     "test:t6": "node --test tests/t6/*.test.js src/lib/i18n.test.js src/lib/brandTheme.test.js",
-    "test:t7": "node --test tests/t7/*.test.js"
+    "test:t7": "node --test tests/t7/*.test.js",
+    "test:t8": "node --test tests/t8/*.test.js",
+    "test:t9": "node --test tests/t9/*.test.js"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^17.0.0",

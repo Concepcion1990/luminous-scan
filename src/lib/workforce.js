@@ -106,6 +106,42 @@ export function setTaskStatus(businessId, id, status) {
   });
 }
 
+// ---- Messages (Workforce inbox follow-up) --------------------------------
+// One-to-one conversations inside the same inbox as the notifications.
+// Privacy lives on the server: a person sees only their own threads;
+// the owner additionally reads every thread in their business
+// (oversight) but posts only in their own.
+
+export function listMessageThreads(businessId) {
+  return apiRequest(`${base(businessId)}/messages/threads`);
+}
+
+export function startMessageThread(businessId, target) {
+  return apiRequest(`${base(businessId)}/messages/threads`, { method: 'POST', body: target });
+}
+
+export function getMessageThread(businessId, threadId) {
+  return apiRequest(`${base(businessId)}/messages/threads/${encodeURIComponent(threadId)}`);
+}
+
+export function postMessage(businessId, threadId, body) {
+  return apiRequest(`${base(businessId)}/messages/threads/${encodeURIComponent(threadId)}/messages`, {
+    method: 'POST',
+    body: { body },
+  });
+}
+
+export function markThreadRead(businessId, threadId) {
+  return apiRequest(`${base(businessId)}/messages/threads/${encodeURIComponent(threadId)}/read`, {
+    method: 'PATCH',
+    body: {},
+  });
+}
+
+export function getMessageUnread(businessId) {
+  return apiRequest(`${base(businessId)}/messages/unread`);
+}
+
 // ---- Payroll -----------------------------------------------------------
 
 export function getPayrollContext(businessId) {
