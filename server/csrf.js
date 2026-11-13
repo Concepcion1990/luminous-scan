@@ -31,8 +31,9 @@
  *     /resend-otp, /login, /forgot-password, /reset-password):
  *     no session exists yet, so there is nothing to bind a token
  *     to. They keep their own defenses (rate limits, OTP codes).
- *   - /api/billing/wipe-sweep: a server-to-server job call guarded
- *     by the billing job secret, never a browser flow.
+ *   - /api/billing/wipe-sweep and /api/billing/trial-reminder-sweep:
+ *     server-to-server job calls guarded by the billing job secret,
+ *     never browser flows.
  *   - The Stripe webhook is not under /api and is HMAC-verified
  *     on its raw body (T4) — it never reaches this middleware.
  */
@@ -54,6 +55,7 @@ export const CSRF_EXEMPT_PATHS = [
   '/api/auth/recover',
   '/api/auth/recover/verify',
   '/api/billing/wipe-sweep',
+  '/api/billing/trial-reminder-sweep',
 ];
 
 export function isCsrfExempt(path) {
