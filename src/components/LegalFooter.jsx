@@ -1,0 +1,33 @@
+import { Link } from 'react-router-dom';
+import { LEGAL_FOOTER as footer } from '@/lib/trademarkNotice';
+import { t } from '@/lib/i18n';
+
+/**
+ * Small, centered legal line at the bottom of the pages. (The old
+ * © copyright line was removed whole on Nov 12, 2026 — it was entirely
+ * a copyright claim, and the app claims none.)
+ * Deliberately quiet — it must not interfere with a customer's work.
+ * The text lives in src/lib/trademarkNotice.js and is rendered verbatim.
+ *
+ * The About link sits alongside the legal text, small and subtle, so
+ * anyone can reach the founder's story from every page that carries
+ * this footer.
+ *
+ * `className` is extra spacing for the context it sits in — the shared
+ * Layout passes bottom padding so the line clears the fixed mobile tab
+ * bar; every other page leaves it off.
+ */
+export default function LegalFooter({ className = '' }) {
+  return (
+    <footer
+      className={`mt-10 border-t border-border pt-4 text-center text-[11px] leading-relaxed text-muted-foreground ${className}`}
+    >
+      <p>
+        <Link to="/about" className="font-medium underline underline-offset-4 hover:text-foreground">
+          {t('layout.aboutLink')}
+        </Link>
+      </p>
+      <p className="mt-1">{footer.trademarkLine}</p>
+    </footer>
+  );
+}

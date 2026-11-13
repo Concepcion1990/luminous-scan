@@ -1,0 +1,49 @@
+# Self-run Postgres for the Luminous StockHaven twin (T0 decision:
+# Postgres SELF-RUN, ~$5/mo for the database: 512 MB machine ~$3.69 +
+# 10 GB volume $1.50 — NOT Fly.io Managed Postgres at $38/mo).
+#
+# PROVISIONED Nov 9-10, 2026 (T3, via the Machines API):
+#   app     scanstock-luminous-db (org concepcion-perez-carrillo)
+#   volume  stockhaven_pgdata, 10 GB, dfw, id vol_vgnw2521y1p90kp4
+#   machine cool-cherry-280, id 0803436f225768, shared 1 CPU, 512 MB, dfw
+#   image   postgres:16, database stockhaven, user stockhaven
+#   DATABASE_URL set as a Fly secret on scanstock-luminous (name verified);
+#   POSTGRES_PASSWORD set as a Fly secret on scanstock-luminous-db.
+#   Password generated at provision time, lives ONLY in Fly secrets —
+#   never in this file, never in the repo, never in chat.
+#
+# TWO provisioning facts a rebuild must repeat (found the hard way):
+#   1. PGDATA must be a SUBDIRECTORY of the mount
+#      (PGDATA=/var/lib/postgresql/data/pgdata) — a fresh Fly volume
+#      contains lost+found, so initdb refuses the mount root itself.
+#   2. The volume mount root arrives as root-owned mode 0700, which the
+#      postgres user cannot traverse — one-time `chmod 755
+#      /var/lib/postgresql/data` inside the machine (via the Machines
+#      exec endpoint) before the entrypoint runs initdb. The mode lives
+#      on the volume, so it survives restarts.
+#      (Without both: postgres:16 crash-loops, exit 1, no logs — the
+#      failure was diagnosed by exec'ing initdb by hand inside the
+#      machine, which printed the permission error.)
+#
+# Migrations run at twin startup (server.js -> runMigrations) when the
+# twin next deploys; they have NOT yet run against this live database
+# (this VM has no route to Fly's private network — see twin-t3-report).
+app = "scanstock-luminous-db"
+primary_region = "dfw"
+
+[build]
+  image = "postgres:16"
+
+[env]
+  POSTGRES_DB = "stockhaven"
+  POSTGRES_USER = "stockhaven"
+  PGDATA = "/var/lib/postgresql/data/pgdata"
+
+[[mounts]]
+  source = "stockhaven_pgdata"
+  destination = "/var/lib/postgresql/data"
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 512
