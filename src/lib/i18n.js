@@ -57,9 +57,19 @@ import { esMX } from './locales/es-MX.js';
 import { esCU } from './locales/es-CU.js';
 import { esPR } from './locales/es-PR.js';
 import { esVE } from './locales/es-VE.js';
+import { sw } from './locales/sw.js';
+import { tl } from './locales/tl.js';
+import { ta } from './locales/ta.js';
+import { te } from './locales/te.js';
+import { th } from './locales/th.js';
+import { tr } from './locales/tr.js';
+import { uk } from './locales/uk.js';
+import { ur } from './locales/ur.js';
+import { vi } from './locales/vi.js';
+import { yo } from './locales/yo.js';
 
 /** code -> strings. Add one language at a time, ABC order. */
-export const LOCALES = { en, ar, am, bn, bho, 'zh-Hans': zhHans, 'zh-Hant': zhHant, yue, wuu, 'fr-CA': frCA, ms, gu, de, 'fr-FR': frFR, ha, it, hi, id, ja, jv, kn, ko, mr, pcm, fa, prs, tg, 'pt-BR': ptBR, 'pt-PT': ptPT, 'pa-Guru': paGuru, 'pa-Arab': paArab, ru, 'es-US': esUS, 'es-ES': esES, 'es-MX': esMX, 'es-CU': esCU, 'es-PR': esPR, 'es-VE': esVE };
+export const LOCALES = { en, ar, am, bn, bho, 'zh-Hans': zhHans, 'zh-Hant': zhHant, yue, wuu, 'fr-CA': frCA, ms, gu, de, 'fr-FR': frFR, ha, it, hi, id, ja, jv, kn, ko, mr, pcm, fa, prs, tg, 'pt-BR': ptBR, 'pt-PT': ptPT, 'pa-Guru': paGuru, 'pa-Arab': paArab, ru, 'es-US': esUS, 'es-ES': esES, 'es-MX': esMX, 'es-CU': esCU, 'es-PR': esPR, 'es-VE': esVE, sw, tl, ta, te, th, tr, uk, ur, vi, yo };
 
 /** Locale codes that read right-to-left (Arabic script family).
  * Tajik ('tg') is NOT here: the app's Tajik text is Cyrillic and reads
@@ -122,6 +132,16 @@ export const LOCALE_LABEL_KEYS = {
   'es-CU': 'settings.details.spanishCuba',
   'es-PR': 'settings.details.spanishPuertoRico',
   'es-VE': 'settings.details.spanishVenezuela',
+  sw: 'settings.details.swahili',
+  tl: 'settings.details.tagalog',
+  ta: 'settings.details.tamil',
+  te: 'settings.details.telugu',
+  th: 'settings.details.thai',
+  tr: 'settings.details.turkish',
+  uk: 'settings.details.ukrainian',
+  ur: 'settings.details.urdu',
+  vi: 'settings.details.vietnamese',
+  yo: 'settings.details.yoruba',
 };
 
 /** localStorage key holding the visitor's chosen locale (public picker). */
