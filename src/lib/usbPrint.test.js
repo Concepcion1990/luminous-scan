@@ -116,9 +116,13 @@ test('a printer with no bulk OUT endpoint is refused with the fallback copy', as
 });
 
 test('PrintCenter USB copy states the desktop path and the iPhone gap', () => {
+  // T6.3 moved the copy out of PrintCenter.jsx into t() keys — check the
+  // rendered English copy (print.howUsbBody) and that the page wires it.
   const page = readFileSync('src/pages/PrintCenter.jsx', 'utf8');
-  assert.match(page, /Plug the printer into the\s+computer with its cord/);
-  assert.match(page, /On an Android phone with a USB OTG cable/);
-  assert.match(page, /iPhones cannot print over USB directly/);
-  assert.match(page, /USB button above talks straight to\s+the printer/);
+  assert.ok(page.includes('print.howUsbBody'), 'PrintCenter is missing the USB help key');
+  const copy = readFileSync('src/lib/locales/en.js', 'utf8');
+  assert.match(copy, /Plug the printer into the\s+computer with its cord/);
+  assert.match(copy, /On an Android phone with a USB OTG cable/);
+  assert.match(copy, /iPhones cannot print over USB directly/);
+  assert.match(copy, /USB button above talks straight to\s+the printer/);
 });

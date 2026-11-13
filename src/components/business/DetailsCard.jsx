@@ -138,8 +138,24 @@ export default function DetailsCard({ values, onChange }) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="am">{t('settings.details.amharic')}</SelectItem>
                 <SelectItem value="ar">{t('settings.details.arabic')}</SelectItem>
+                <SelectItem value="bho">{t('settings.details.bhojpuri')}</SelectItem>
+                <SelectItem value="bn">{t('settings.details.bengali')}</SelectItem>
+                <SelectItem value="de">{t('settings.details.german')}</SelectItem>
                 <SelectItem value="en">{t('settings.details.english')}</SelectItem>
+                <SelectItem value="fr-CA">{t('settings.details.frenchCanadian')}</SelectItem>
+                <SelectItem value="fr-FR">{t('settings.details.french')}</SelectItem>
+                <SelectItem value="gu">{t('settings.details.gujarati')}</SelectItem>
+                <SelectItem value="ha">{t('settings.details.hausa')}</SelectItem>
+                <SelectItem value="hi">{t('settings.details.hindi')}</SelectItem>
+                <SelectItem value="id">{t('settings.details.indonesian')}</SelectItem>
+                <SelectItem value="it">{t('settings.details.italian')}</SelectItem>
+                <SelectItem value="ms">{t('settings.details.malay')}</SelectItem>
+                <SelectItem value="wuu">{t('settings.details.shanghainese')}</SelectItem>
+                <SelectItem value="yue">{t('settings.details.cantonese')}</SelectItem>
+                <SelectItem value="zh-Hans">{t('settings.details.mandarinSimplified')}</SelectItem>
+                <SelectItem value="zh-Hant">{t('settings.details.mandarinTraditional')}</SelectItem>
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground">{t('settings.details.moreLanguages')}</p>

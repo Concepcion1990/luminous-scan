@@ -226,9 +226,12 @@ test('the inbox is reachable for Business and hidden/locked for Essentials', () 
   // The nav label has an English string (i18n test asserts every key).
   const en = readFileSync('src/lib/locales/en.js', 'utf8');
   assert.match(en, /'nav\.crossStoreInbox': 'Cross-store inbox'/);
-  // The PlanGate knows the feature's display name.
+  // The PlanGate knows the feature's display name. T6.3 moved the label
+  // out of plans.js into a t() key, so check the getter wiring AND the
+  // rendered English string, not the old literal.
   const plans = readFileSync('src/lib/plans.js', 'utf8');
-  assert.match(plans, /crossStore: 'Cross-store requests'/);
+  assert.match(plans, /get crossStore\(\) \{ return t\('plansLib\.feature\.crossStore'\); \},/);
+  assert.match(en, /'plansLib\.feature\.crossStore': "Cross-store requests"/);
   // The route is PlanGate-wrapped: a typed URL on Essentials lands on
   // the locked screen, never on the page.
   const app = readFileSync('src/App.jsx', 'utf8');

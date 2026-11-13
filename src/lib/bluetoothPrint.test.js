@@ -126,28 +126,35 @@ test('client-side labels PDF needs no fetch: real PDF from cached data', () => {
 });
 
 test('PrintCenter help copy covers all four connections and the iPhone workarounds', () => {
+  // T6.3 moved the copy out of PrintCenter.jsx into t() keys — the page
+  // renders print.how*, so check the rendered English copy, not the JSX
+  // source, and check the page wires those keys.
   const page = readFileSync('src/pages/PrintCenter.jsx', 'utf8');
+  for (const key of ['print.howBluetoothLead', 'print.howBluetoothBody', 'print.howWifiLead', 'print.howWifiBody', 'print.howEthernetLead', 'print.howEthernetBody', 'print.howUsbLead', 'print.howUsbBody', 'print.howCordsLead', 'print.howCordsBody', 'print.howOfflineLead', 'print.howOfflineBody', 'print.howIntro']) {
+    assert.ok(page.includes(key), `PrintCenter is missing the help key: ${key}`);
+  }
+  const copy = readFileSync('src/lib/locales/en.js', 'utf8');
   // The four connections, by name.
   for (const word of ['Bluetooth', 'Wi-Fi', 'Ethernet', 'USB']) {
-    assert.match(page, new RegExp(word), `PrintCenter must document ${word}`);
+    assert.match(copy, new RegExp(word), `PrintCenter must document ${word}`);
   }
   // iOS Safari gap, stated plainly, with the mobile-app Bluetooth workaround.
-  assert.match(page, /does not work in iOS Safari/);
-  assert.match(page, /Bluetooth printing comes with the mobile\s+app/);
+  assert.match(copy, /does not work in iOS Safari/);
+  assert.match(copy, /Bluetooth printing comes with the mobile\s+app/);
   // AirPrint: built in, no app code, same-Wi-Fi requirement.
-  assert.match(page, /AirPrint is built in/);
-  assert.match(page, /the app needs no AirPrint-specific code/);
-  assert.match(page, /must be on the same Wi-Fi/);
+  assert.match(copy, /AirPrint is built in/);
+  assert.match(copy, /the app needs no AirPrint-specific code/);
+  assert.match(copy, /must be on the same Wi-Fi/);
   // Cords serve iPhones one step removed.
-  assert.match(page, /shows up on your iPhone over the shop Wi-Fi/);
+  assert.match(copy, /shows up on your iPhone over the shop Wi-Fi/);
   // Ethernet is a desktop/computer path.
-  assert.match(page, /iPhones do not use Ethernet cords/);
+  assert.match(copy, /iPhones do not use Ethernet cords/);
   // Internet-drop resilience, honestly bounded.
-  assert.match(page, /If the internet drops,/);
-  assert.match(page, /Full offline mode[\s\S]*?is a separate, bigger build and is not claimed here/);
+  assert.match(copy, /If the internet drops,/);
+  assert.match(copy, /Full offline mode[\s\S]*?is a separate, bigger build and is not claimed here/);
   // Gating: labels both plans, documents Business-only, whatever the connection.
-  assert.match(page, /Labels print on both plans/);
-  assert.match(page, /Packing slips, purchase\s+orders, supplier documents and reports are Business-only/);
+  assert.match(copy, /Labels print on both plans/);
+  assert.match(copy, /Packing slips, purchase\s+orders, supplier documents and reports are Business-only/);
   // The direct-print section is plan-free: no plan check gates Bluetooth/USB/labels.
   assert.doesNotMatch(page, /isEssentials.*printLabelsViaBluetooth|printLabelsViaBluetooth.*isEssentials/);
 });

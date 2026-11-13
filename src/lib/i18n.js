@@ -15,9 +15,25 @@
  */
 import { en } from './locales/en.js';
 import { ar } from './locales/ar.js';
+import { am } from './locales/am.js';
+import { bn } from './locales/bn.js';
+import { bho } from './locales/bho.js';
+import { zhHans } from './locales/zh-Hans.js';
+import { zhHant } from './locales/zh-Hant.js';
+import { yue } from './locales/yue.js';
+import { wuu } from './locales/wuu.js';
+import { frCA } from './locales/fr-CA.js';
+import { ms } from './locales/ms.js';
+import { gu } from './locales/gu.js';
+import { de } from './locales/de.js';
+import { frFR } from './locales/fr-FR.js';
+import { ha } from './locales/ha.js';
+import { it } from './locales/it.js';
+import { hi } from './locales/hi.js';
+import { id } from './locales/id.js';
 
 /** code -> strings. Add one language at a time, ABC order. */
-export const LOCALES = { en, ar };
+export const LOCALES = { en, ar, am, bn, bho, 'zh-Hans': zhHans, 'zh-Hant': zhHant, yue, wuu, 'fr-CA': frCA, ms, gu, de, 'fr-FR': frFR, ha, it, hi, id };
 
 /** Locale codes that read right-to-left (Arabic script family). */
 export const RTL_LOCALES = new Set(['ar', 'fa', 'prs', 'tg', 'ur', 'pa-Arab']);

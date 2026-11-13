@@ -197,9 +197,15 @@ test('the Exports page is rewired to the server endpoint', async () => {
   assert.match(card, /apiDownload\(/);
   assert.match(card, /\/api\/businesses\/\$\{businessId\}\/export\/\$\{dataset\.id\}/);
   assert.match(card, /X-Export-Truncated|truncated/);
-  assert.match(card, /stopped at 20,000 rows/);
+  // T6.3: the truncation copy is a t() key now — check the wiring and the
+  // rendered English strings, not the JSX literals.
+  assert.match(card, /t\(truncated \? 'exports\.exportedRowsTruncated' : 'exports\.exportedRows'/);
+  assert.match(card, /t\(truncated \? 'exports\.savedAsTruncated' : 'exports\.savedAs'/);
+  const en = readFileSync('src/lib/locales/en.js', 'utf8');
+  assert.match(en, /stopped at 20,000 rows/);
   assert.doesNotMatch(card, /exportDataset\(/);
   const page = readFileSync('src/pages/Exports.jsx', 'utf8');
   assert.match(page, /<ExportCard/);
-  assert.match(page, /truncated-20000/);
+  assert.match(page, /t\('exports\.about3'\)/);
+  assert.match(en, /truncated-20000/);
 });

@@ -181,9 +181,17 @@ test('plan change refuses strangers, same-plan, and non-subscribers', async () =
 });
 
 test('downgrade warning copy is in plain words on the Upgrade page', async () => {
+  // T6.3 moved the copy out of Upgrade.jsx into t() keys — the page renders
+  // upgrade.downgradeWarning1-5, so check the page wires those keys AND the
+  // rendered English strings carry the plain-words phrases.
   const __dirname = path.dirname(fileURLToPath(import.meta.url));
   const upgrade = fs.readFileSync(path.resolve(__dirname, '../../src/pages/Upgrade.jsx'), 'utf8');
-  const lower = upgrade.toLowerCase();
+  for (const key of ['upgrade.downgradeWarning1', 'upgrade.downgradeWarning2', 'upgrade.downgradeWarning3', 'upgrade.downgradeWarning4', 'upgrade.downgradeWarning5']) {
+    assert.ok(upgrade.includes(key), `Upgrade.jsx is missing the downgrade warning key: ${key}`);
+  }
+  const { t, setLocale } = await import('../../src/lib/i18n.js');
+  setLocale('en');
+  const copy = [1, 2, 3, 4, 5].map((n) => t(`upgrade.downgradeWarning${n}`)).join(' ').toLowerCase();
   for (const phrase of [
     'staff beyond 3',
     'extra businesses',
@@ -192,7 +200,7 @@ test('downgrade warning copy is in plain words on the Upgrade page', async () =>
     'suppliers',
     'inventory itself moves smoothly',
   ]) {
-    assert.ok(lower.includes(phrase), `Upgrade.jsx is missing the downgrade warning phrase: ${phrase}`);
+    assert.ok(copy.includes(phrase), `downgrade warning copy is missing the phrase: ${phrase}`);
   }
 });
 

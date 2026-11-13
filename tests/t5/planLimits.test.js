@@ -111,7 +111,10 @@ test('frontend gates: Staff hides + New role on Essentials; role edit/delete gua
   assert.match(staff, /canCreateRoles/);
   assert.match(staff, /const canCreateRoles = !entitlementLoading && !isEssentials;/);
   assert.match(staff, /{canCreateRoles && \(/);
-  assert.match(staff, /New role/);
+  // T6.3: the button label is a t() key now — check the wiring and the
+  // rendered English string, not the JSX literal.
+  assert.match(staff, /t\('staff\.newRole'\)/);
+  assert.match(src('src/lib/locales/en.js'), /'staff\.newRole': 'New role'/);
 });
 
 test('frontend gates: no Products Export button on Essentials', () => {
@@ -152,9 +155,14 @@ test('frontend gates: Import Center promises no download and shows problem rows 
   // count; the Download button only renders when allowDownload is true.
   assert.match(problemReport, /const allowDownload = !isEssentials && !entitlementLoading;/);
   assert.match(problemReport, /rows\.slice\(0, 25\)/);
-  assert.match(problemReport, /Business can download this list as a file/);
+  // T6.3: the copy is a t() key now — check the wiring and the rendered
+  // English strings, not the JSX literals.
+  assert.match(problemReport, /t\('import\.businessDownloadPrefix'\)/);
+  assert.match(problemReport, /t\('import\.downloadProblems'\)/);
+  const en = src('src/lib/locales/en.js');
+  assert.match(en, /'import\.businessDownloadPrefix': 'Business can download this list as a file/);
+  assert.match(en, /'import\.downloadProblems': 'Download these problems'/);
   assert.match(problemReport, /{allowDownload && \(/);
-  assert.match(problemReport, /Download these problems/);
 });
 
 test('frontend gates: no PO / supplier packing-slip print styles on Essentials', () => {
@@ -190,9 +198,15 @@ test('frontend gates: Essentials shows 15 permissions with Import data, not expo
 test('frontend gates: ReorderPanel creates draft POs and blocks missing-cost lines', () => {
   const reorder = src('src/components/dashboard/ReorderPanel.jsx');
   assert.match(reorder, /status: 'draft'/);
-  assert.match(reorder, /a missing cost is not \$0/);
-  assert.match(reorder, /Create draft PO/);
-  assert.match(reorder, /Nothing is\n\s+ordered until you review and place the draft in Purchasing/);
+  // T6.3: the copy is a t() key now — check the wiring and the rendered
+  // English strings, not the JSX literals.
+  assert.match(reorder, /t\('dashboard\.addCostBeforeOrder'/);
+  assert.match(reorder, /t\('dashboard\.createDraftPo'/);
+  assert.match(reorder, /t\('dashboard\.reorderIntro'\)/);
+  const en = src('src/lib/locales/en.js');
+  assert.match(en, /a missing cost is not \$0/);
+  assert.match(en, /"dashboard\.createDraftPo": "Create draft PO/);
+  assert.match(en, /Nothing is ordered until you review and place the draft in Purchasing/);
   assert.doesNotMatch(reorder, /status: 'ordered'/);
 });
 
