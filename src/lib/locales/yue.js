@@ -2310,9 +2310,9 @@ export const yue = {
   "settings.canceled.endsOn": "呢個訂閱已經取消，會喺 {date} 結束。喺嗰日之前你仍然可以完整使用。",
   "settings.delete.checking": "檢查緊係咪已經有刪除要求…",
   "settings.delete.description": "要求移除你嘅 Luminous StockHaven 登入賬戶。",
-  "settings.delete.dialogDescription": "呢個係要求審核刪除賬戶。唔會即刻移除你嘅登入或者庫存，亦都唔會取消任何 Stripe 訂閱。請輸入 DELETE 確認你想提交呢個要求。",
+  "settings.delete.dialogDescription": "呢個係要求審核刪除賬戶。唔會即刻移除你嘅登入或者庫存，亦都唔會取消任何 Stripe 訂閱。請輸入 {word} 確認你想提交呢個要求。",
   "settings.delete.dialogTitle": "要求刪除賬戶",
-  "settings.delete.enterDelete": "輸入 DELETE 確認",
+  "settings.delete.enterDelete": "輸入 {word} 確認",
   "settings.delete.exportFirst": "如果你想保留記錄，請先匯出你嘅庫存。",
   "settings.delete.intro": "提交要求唔會即刻刪除你嘅賬戶、商戶或者庫存。要求會另外審核，審核完先可以完成刪除。呢個要求唔會取消 Stripe 訂閱，亦都唔會停止之後嘅收費；取消訂閱要另外透過賬單供應商處理。",
   "settings.delete.keepAccount": "保留賬戶",
@@ -3520,4 +3520,6 @@ export const yue = {
   "training.track.staff": "Staff track",
   "training.track.staffHelp": "The everyday tools: scanning, the time clock, your schedule, your inbox and your pay stub.",
   "training.warningSentOn": "Warning sent {date}",
+  "auth.sameEmailNotice": "Already have our app from Google Play or the App Store? Use the same email here — the one you sign into the app with — so your shop and your inventory come with you. A different email starts a totally new, empty storefront.",
+  "settings.deleteConfirmWord": "刪除",
 };

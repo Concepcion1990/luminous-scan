@@ -251,6 +251,35 @@ export function t(key, vars = {}) {
   );
 }
 
+/**
+ * The Delete Account confirmation word for a locale
+ * (`settings.deleteConfirmWord`): English confirms with DELETE, every
+ * other language with its own word — ELIMINAR, SUPPRIMER, LÖSCHEN,
+ * حذف, 削除… (owner's decision, Nov 12, 2026: "everything should
+ * translate per language, every single thing"). Settings.jsx
+ * interpolates this word into the delete prompts and matches the
+ * typed text against it; never hard-code 'DELETE' as the comparison
+ * outside the English strings (see locales/README.md).
+ */
+export function deleteConfirmWord(code = currentLocale) {
+  const word = getStrings(code)['settings.deleteConfirmWord'];
+  return typeof word === 'string' && word.length > 0 ? word : 'DELETE';
+}
+
+/**
+ * True when the typed text matches the locale's Delete Account
+ * confirmation word: surrounding whitespace is ignored and letter
+ * case is folded with the locale's own rules (so Turkish SİL matches
+ * a typed "sil"). In every non-English locale ONLY that language's
+ * word passes — the literal DELETE does not.
+ */
+export function matchesDeleteConfirm(input, code = currentLocale) {
+  if (typeof input !== 'string') return false;
+  const typed = input.trim();
+  if (!typed) return false;
+  return typed.toLocaleLowerCase(code) === deleteConfirmWord(code).toLocaleLowerCase(code);
+}
+
 /** The plural-aware count suffix used by the sync indicator. */
 export function pluralSuffix(count) {
   return count === 1 ? '' : 's';

@@ -34,7 +34,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/components/ui/use-toast';
-import { t } from '@/lib/i18n';
+import { t, deleteConfirmWord, matchesDeleteConfirm } from '@/lib/i18n';
 
 const VERIFIED_STRIPE_STATUS_LABELS = {
   ACTIVE: 'settings.billingStatus.active',
@@ -207,14 +207,23 @@ export default function Settings() {
     return () => { mounted = false; };
   }, []);
 
+  // The Delete Account confirmation word is the CURRENT language's own
+  // word (settings.deleteConfirmWord): DELETE in English, ELIMINAR in
+  // Spanish, SUPPRIMER in French… The prompts below show it and the
+  // typed text is matched against it — never the literal 'DELETE'
+  // outside English.
+  const confirmWord = deleteConfirmWord();
+
   const submitDeletionRequest = async () => {
-    if (deletionSubmitting || deletionConfirmation !== 'DELETE') return;
+    if (deletionSubmitting || !matchesDeleteConfirm(deletionConfirmation)) return;
 
     setDeletionSubmitting(true);
     setDeletionError('');
     try {
       const response = await base44.functions.invoke('request-account-deletion', {
         action: 'request',
+        // The function's expected token stays the literal 'DELETE';
+        // the localized typed-word gate above is the user-facing check.
         confirmation: 'DELETE',
       });
       const result = response.data;
@@ -627,7 +636,7 @@ export default function Settings() {
                 <AlertDialogHeader>
                   <AlertDialogTitle>{t('settings.delete.dialogTitle')}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    {t('settings.delete.dialogDescription')}
+                    {t('settings.delete.dialogDescription', { word: confirmWord })}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <div className="space-y-2 py-2">
@@ -637,7 +646,7 @@ export default function Settings() {
                       : t('settings.delete.noExport')}
                   </p>
                   <label htmlFor="confirm-account-deletion" className="text-sm font-medium text-foreground">
-                    {t('settings.delete.enterDelete')}
+                    {t('settings.delete.enterDelete', { word: confirmWord })}
                   </label>
                   <input
                     id="confirm-account-deletion"
@@ -659,7 +668,7 @@ export default function Settings() {
                   <Button
                     type="button"
                     variant="destructive"
-                    disabled={deletionConfirmation !== 'DELETE' || deletionSubmitting}
+                    disabled={!matchesDeleteConfirm(deletionConfirmation) || deletionSubmitting}
                     onClick={submitDeletionRequest}
                   >
                     {deletionSubmitting ? (

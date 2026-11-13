@@ -2310,9 +2310,9 @@ export const wuu = {
   "settings.canceled.endsOn": "搿个订阅已经取消，勒 {date} 结束。结束前侬照样好全部使用。",
   "settings.delete.checking": "正在确认是不是已经有删除请求…",
   "settings.delete.description": "请求删除侬个 Luminous StockHaven 登录账号。",
-  "settings.delete.dialogDescription": "搿是请求审核账号删除。伊勿会马上删脱侬个登录或者库存，也勿会取消任何 Stripe 订阅。输入 DELETE 确认侬想提交搿个请求。",
+  "settings.delete.dialogDescription": "搿是请求审核账号删除。伊勿会马上删脱侬个登录或者库存，也勿会取消任何 Stripe 订阅。输入 {word} 确认侬想提交搿个请求。",
   "settings.delete.dialogTitle": "请求删除账号",
-  "settings.delete.enterDelete": "输入 DELETE 确认",
+  "settings.delete.enterDelete": "输入 {word} 确认",
   "settings.delete.exportFirst": "如果侬需要留牢记录，先导出侬个库存。",
   "settings.delete.intro": "提交请求勿会马上删脱侬个账号、业务或者库存。请求要另外审核过，删除才能完成。搿个请求勿会取消 Stripe 订阅，也勿会停脱以后个收费；取消订阅一定要另外通过账单方处理。",
   "settings.delete.keepAccount": "保留账号",
@@ -3520,4 +3520,6 @@ export const wuu = {
   "training.track.staff": "Staff track",
   "training.track.staffHelp": "The everyday tools: scanning, the time clock, your schedule, your inbox and your pay stub.",
   "training.warningSentOn": "Warning sent {date}",
+  "auth.sameEmailNotice": "Already have our app from Google Play or the App Store? Use the same email here — the one you sign into the app with — so your shop and your inventory come with you. A different email starts a totally new, empty storefront.",
+  "settings.deleteConfirmWord": "删除",
 };

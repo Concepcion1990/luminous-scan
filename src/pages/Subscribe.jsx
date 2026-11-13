@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import AppMark from '@/components/brand/AppMark';
 import LanguagePicker from '@/components/LanguagePicker';
 import LegalFooter from '@/components/LegalFooter';
+import SameEmailNotice from '@/components/SameEmailNotice';
 import TrademarkNotice from '@/components/TrademarkNotice';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -170,6 +171,8 @@ export default function Subscribe() {
         <p className="mt-2 text-sm text-muted-foreground">
           {t('subscribe.pricePerMonth', { price: `$${plan.price.toFixed(2)}` })}
         </p>
+
+        <SameEmailNotice className="mt-6" />
 
         <TrademarkNotice />
 
