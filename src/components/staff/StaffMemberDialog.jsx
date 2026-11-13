@@ -3,6 +3,7 @@ import { base44 } from '@/api/client';
 import { Loader2, TriangleAlert } from 'lucide-react';
 import { allRoles, BUSINESS_ONLY_PERMISSIONS, roleById, STATUS_OPTIONS } from '@/lib/staff';
 import { createStaffMember } from '@/lib/entitlements';
+import { fixStaffEmail } from '@/lib/recovery';
 import useEntitlements from '@/hooks/useEntitlements';
 import { useAuth } from '@/lib/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
@@ -166,6 +167,15 @@ export default function StaffMemberDialog({
         notes: form.notes.trim(),
         invited_at: member?.invited_at || new Date().toISOString(),
       };
+
+      // Recovery kit (T7): an email CHANGE on an existing member goes
+      // through the owner's email fix — it carries the member's
+      // account, their rows at other businesses and their trial
+      // history atomically (the server refuses email changes on the
+      // plain update). Unchanged emails skip straight to the update.
+      if (member && email !== String(member.email || '').toLowerCase()) {
+        await fixStaffEmail(businessId, member.id, email);
+      }
 
       if (member) await base44.entities.StaffMember.update(member.id, payload);
       else await createStaffMember(businessId, payload);
