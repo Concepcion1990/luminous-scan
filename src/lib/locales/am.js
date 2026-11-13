@@ -2310,9 +2310,9 @@ export const am = {
   "settings.canceled.endsOn": "ይህ ደንበኝነት ምዝገባ ተሰርዟል እና በ{date} ያልቃል። እስከዚያ ድረስ ሙሉ መዳረሻ ይኖርዎታል።",
   "settings.delete.checking": "ያለውን የመሰረዝ ጥያቄ በመፈተሽ ላይ…",
   "settings.delete.description": "የLuminous StockHaven መግቢያ መለያዎን ማስወገድ ይጠይቁ።",
-  "settings.delete.dialogDescription": "ይህ የመለያ መሰረዝ ግምገማ ይጠይቃል። መግቢያዎን ወይም ክምችትዎን ወዲያውኑ አያስወግድም፣ እናም ማንኛውንም የStripe ደንበኝነት ምዝገባ አይሰርዝም። ጥያቄውን ለማቅረብ እንደሚፈልጉ ለማረጋገጥ DELETE ይተይቡ።",
+  "settings.delete.dialogDescription": "ይህ የመለያ መሰረዝ ግምገማ ይጠይቃል። መግቢያዎን ወይም ክምችትዎን ወዲያውኑ አያስወግድም፣ እናም ማንኛውንም የStripe ደንበኝነት ምዝገባ አይሰርዝም። ጥያቄውን ለማቅረብ እንደሚፈልጉ ለማረጋገጥ {word} ይተይቡ።",
   "settings.delete.dialogTitle": "የመለያ መሰረዝ ይጠይቁ",
-  "settings.delete.enterDelete": "ለማረጋገጥ DELETE ያስገቡ",
+  "settings.delete.enterDelete": "ለማረጋገጥ {word} ያስገቡ",
   "settings.delete.exportFirst": "መዝገቦችዎን ማቆየት ከፈለጉ መጀመሪያ ክምችትዎን ወደ ውጭ ይላኩ።",
   "settings.delete.intro": "ጥያቄ ማቅረብ መለያዎን፣ ንግዶችዎን ወይም ክምችትዎን ወዲያውኑ አይሰርዝም። መሰረዝ ከመጠናቀቁ በፊት ጥያቄዎች በተናጠል ይገመገማሉ። ይህ ጥያቄ የStripe ደንበኝነት ምዝገባን አይሰርዝም ወይም የወደፊት ክፍያን አያቆምም፤ የደንበኝነት ምዝገባ ስረዛ በክፍያ አቅራቢው በኩል በተናጠል መስተናገድ አለበት።",
   "settings.delete.keepAccount": "መለያውን ያቆዩ",
@@ -3520,4 +3520,6 @@ export const am = {
   "training.track.staff": "Staff track",
   "training.track.staffHelp": "The everyday tools: scanning, the time clock, your schedule, your inbox and your pay stub.",
   "training.warningSentOn": "Warning sent {date}",
+  "auth.sameEmailNotice": "Already have our app from Google Play or the App Store? Use the same email here — the one you sign into the app with — so your shop and your inventory come with you. A different email starts a totally new, empty storefront.",
+  "settings.deleteConfirmWord": "ሰርዝ",
 };

@@ -2310,9 +2310,9 @@ export const vi = {
   "settings.canceled.endsOn": "Đăng ký này đã bị hủy và kết thúc vào {date}. Bạn giữ toàn quyền truy cập cho đến lúc đó.",
   "settings.delete.checking": "Đang kiểm tra yêu cầu xóa hiện có…",
   "settings.delete.description": "Yêu cầu xóa tài khoản đăng nhập Luminous StockHaven của bạn.",
-  "settings.delete.dialogDescription": "Thao tác này yêu cầu xem xét việc xóa tài khoản. Thao tác này không xóa ngay thông tin đăng nhập hoặc hàng tồn kho của bạn, và không hủy bất kỳ đăng ký Stripe nào. Gõ \"DELETE\" để xác nhận bạn muốn gửi yêu cầu.",
+  "settings.delete.dialogDescription": "Thao tác này yêu cầu xem xét việc xóa tài khoản. Thao tác này không xóa ngay thông tin đăng nhập hoặc hàng tồn kho của bạn, và không hủy bất kỳ đăng ký Stripe nào. Gõ \"{word}\" để xác nhận bạn muốn gửi yêu cầu.",
   "settings.delete.dialogTitle": "Yêu cầu xóa tài khoản",
-  "settings.delete.enterDelete": "Nhập DELETE để xác nhận",
+  "settings.delete.enterDelete": "Nhập {word} để xác nhận",
   "settings.delete.exportFirst": "Hãy xuất hàng tồn kho của bạn trước nếu bạn cần giữ hồ sơ.",
   "settings.delete.intro": "Việc gửi yêu cầu không xóa ngay tài khoản, doanh nghiệp hoặc hàng tồn kho của bạn. Yêu cầu được xem xét riêng trước khi việc xóa có thể hoàn tất. Yêu cầu này không hủy đăng ký Stripe hoặc dừng thanh toán trong tương lai; việc hủy đăng ký phải được xử lý riêng qua nhà cung cấp thanh toán.",
   "settings.delete.keepAccount": "Giữ tài khoản",
@@ -3520,4 +3520,6 @@ export const vi = {
   "training.track.staff": "Staff track",
   "training.track.staffHelp": "The everyday tools: scanning, the time clock, your schedule, your inbox and your pay stub.",
   "training.warningSentOn": "Warning sent {date}",
+  "auth.sameEmailNotice": "Already have our app from Google Play or the App Store? Use the same email here — the one you sign into the app with — so your shop and your inventory come with you. A different email starts a totally new, empty storefront.",
+  "settings.deleteConfirmWord": "XÓA",
 };

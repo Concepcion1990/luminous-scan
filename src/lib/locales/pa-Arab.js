@@ -2310,9 +2310,9 @@ export const paArab = {
   "settings.canceled.endsOn": "ایہہ سبسکرپشن منسوخ اے تے {date} نوں ختم ہوندی اے۔ اودوں تک تہانوں پوری رسائی حاصل اے۔",
   "settings.delete.checking": "موجودہ حذف دی درخواست دی جانچ ہو رہی اے…",
   "settings.delete.description": "اپنے Luminous StockHaven سائن ان اکاؤنٹ نوں ہٹان دی درخواست کرو۔",
-  "settings.delete.dialogDescription": "ایہہ اکاؤنٹ حذف کرن دے جائزے دی درخواست کردا اے۔ ایہہ فوراً تہاڈا لاگ ان یا انوینٹری نہیں ہٹاندا، تے ایہہ کوئی Stripe سبسکرپشن منسوخ نہیں کردا۔ DELETE لکھو تاکہ تصدیق ہووے کہ تسی درخواست جمع کرنا چاہندے او۔",
+  "settings.delete.dialogDescription": "ایہہ اکاؤنٹ حذف کرن دے جائزے دی درخواست کردا اے۔ ایہہ فوراً تہاڈا لاگ ان یا انوینٹری نہیں ہٹاندا، تے ایہہ کوئی Stripe سبسکرپشن منسوخ نہیں کردا۔ {word} لکھو تاکہ تصدیق ہووے کہ تسی درخواست جمع کرنا چاہندے او۔",
   "settings.delete.dialogTitle": "اکاؤنٹ حذف کرن دی درخواست کرو",
-  "settings.delete.enterDelete": "تصدیق لئی DELETE درج کرو",
+  "settings.delete.enterDelete": "تصدیق لئی {word} درج کرو",
   "settings.delete.exportFirst": "جے تہانوں اپنے ریکارڈ رکھن دی لوڑ اے تے پہلاں اپنی انوینٹری ایکسپورٹ کرو۔",
   "settings.delete.intro": "درخواست جمع کرن نال تہاڈا اکاؤنٹ، کاروبار، یا انوینٹری فوراً حذف نہیں ہوندی۔ حذف مکمل ہون توں پہلاں درخواستاں دا وکھرے طور اُتے جائزہ لیا جاندا اے۔ ایہہ درخواست Stripe سبسکرپشن منسوخ نہیں کردی تے نہ ہی مستقبل دی بلنگ روکدی اے؛ سبسکرپشن دی منسوخی بلنگ فراہم کرن والے راہیں وکھرے طور اُتے نمٹائی جانی چاہیدی اے۔",
   "settings.delete.keepAccount": "اکاؤنٹ رکھو",
@@ -3520,4 +3520,6 @@ export const paArab = {
   "training.track.staff": "Staff track",
   "training.track.staffHelp": "The everyday tools: scanning, the time clock, your schedule, your inbox and your pay stub.",
   "training.warningSentOn": "Warning sent {date}",
+  "auth.sameEmailNotice": "Already have our app from Google Play or the App Store? Use the same email here — the one you sign into the app with — so your shop and your inventory come with you. A different email starts a totally new, empty storefront.",
+  "settings.deleteConfirmWord": "مٹاؤ",
 };

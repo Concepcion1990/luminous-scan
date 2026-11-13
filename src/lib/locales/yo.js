@@ -2310,9 +2310,9 @@ export const yo = {
   "settings.canceled.endsOn": "A ti fagilé ìforúkọsílẹ̀ yìí, yóò sì parí ní {date}. O pa ìwọlé kíkún mọ́ títí di ìgbà náà.",
   "settings.delete.checking": "Ń ṣàyẹ̀wò ìbéèrè píparẹ́ tí ó wà tẹ́lẹ̀…",
   "settings.delete.description": "Béèrè yíyọ àkáǹtì ìwọlé Luminous StockHaven rẹ kúrò.",
-  "settings.delete.dialogDescription": "Èyí béèrè àyẹ̀wò píparẹ́ àkáǹtì. Kò yọ ìwọlé rẹ tàbí ọjà ọjà kúrò lẹ́sẹ̀kẹsẹ̀, kò sì fagilé ìforúkọsílẹ̀ Stripe kankan. Tẹ \"DELETE\" láti jẹ́rìí pé o fẹ́ fi ìbéèrè náà ránṣẹ́.",
+  "settings.delete.dialogDescription": "Èyí béèrè àyẹ̀wò píparẹ́ àkáǹtì. Kò yọ ìwọlé rẹ tàbí ọjà ọjà kúrò lẹ́sẹ̀kẹsẹ̀, kò sì fagilé ìforúkọsílẹ̀ Stripe kankan. Tẹ \"{word}\" láti jẹ́rìí pé o fẹ́ fi ìbéèrè náà ránṣẹ́.",
   "settings.delete.dialogTitle": "Béèrè Píparẹ́ Àkáǹtì",
-  "settings.delete.enterDelete": "Tẹ DELETE láti jẹ́rìí",
+  "settings.delete.enterDelete": "Tẹ {word} láti jẹ́rìí",
   "settings.delete.exportFirst": "Kó ọjà ọjà rẹ jáde ní àkọ́kọ́ bí o bá nílò láti pa àwọn àkọsílẹ̀ rẹ mọ́.",
   "settings.delete.intro": "Fífi ìbéèrè ránṣẹ́ kò pa àkáǹtì rẹ, àwọn ìṣòwò rẹ, tàbí ọjà ọjà rẹ rẹ́ lẹ́sẹ̀kẹsẹ̀. A ń ṣe àyẹ̀wò àwọn ìbéèrè lọ́tọ̀ ṣáájú kí píparẹ́ tó le parí. Ìbéèrè yìí kò fagilé ìforúkọsílẹ̀ Stripe tàbí dá ìsanwó ọjọ́ iwájú dúró; ìfagilé ìforúkọsílẹ̀ gbọdọ̀ ṣe lọ́tọ̀ nípasẹ̀ olùpèsè ìsanwó.",
   "settings.delete.keepAccount": "Pa Àkáǹtì Mọ́",
@@ -3520,4 +3520,6 @@ export const yo = {
   "training.track.staff": "Staff track",
   "training.track.staffHelp": "The everyday tools: scanning, the time clock, your schedule, your inbox and your pay stub.",
   "training.warningSentOn": "Warning sent {date}",
+  "auth.sameEmailNotice": "Already have our app from Google Play or the App Store? Use the same email here — the one you sign into the app with — so your shop and your inventory come with you. A different email starts a totally new, empty storefront.",
+  "settings.deleteConfirmWord": "PAARẸ",
 };

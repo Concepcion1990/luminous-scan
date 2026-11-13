@@ -2310,9 +2310,9 @@ export const frFR = {
   "settings.canceled.endsOn": "Cet abonnement est annulé et se termine le {date}. Vous conservez un accès complet jusque-là.",
   "settings.delete.checking": "Vérification d'une demande de suppression existante…",
   "settings.delete.description": "Demander la suppression de votre compte de connexion Luminous StockHaven.",
-  "settings.delete.dialogDescription": "Ceci demande un examen de la suppression du compte. Cela ne supprime pas immédiatement votre identifiant ni votre inventaire, et n'annule aucun abonnement Stripe. Saisissez DELETE pour confirmer que vous souhaitez soumettre la demande.",
+  "settings.delete.dialogDescription": "Ceci demande un examen de la suppression du compte. Cela ne supprime pas immédiatement votre identifiant ni votre inventaire, et n'annule aucun abonnement Stripe. Saisissez {word} pour confirmer que vous souhaitez soumettre la demande.",
   "settings.delete.dialogTitle": "Demander la suppression du compte",
-  "settings.delete.enterDelete": "Saisissez DELETE pour confirmer",
+  "settings.delete.enterDelete": "Saisissez {word} pour confirmer",
   "settings.delete.exportFirst": "Exportez d'abord votre inventaire si vous devez conserver vos relevés.",
   "settings.delete.intro": "Soumettre une demande ne supprime pas immédiatement votre compte, vos entreprises ou votre inventaire. Les demandes sont examinées séparément avant que la suppression puisse être effectuée. Cette demande n'annule pas un abonnement Stripe et n'arrête pas la facturation future ; l'annulation de l'abonnement doit être traitée séparément via le fournisseur de facturation.",
   "settings.delete.keepAccount": "Garder le compte",
@@ -3520,4 +3520,6 @@ export const frFR = {
   "training.track.staff": "Staff track",
   "training.track.staffHelp": "The everyday tools: scanning, the time clock, your schedule, your inbox and your pay stub.",
   "training.warningSentOn": "Warning sent {date}",
+  "auth.sameEmailNotice": "Already have our app from Google Play or the App Store? Use the same email here — the one you sign into the app with — so your shop and your inventory come with you. A different email starts a totally new, empty storefront.",
+  "settings.deleteConfirmWord": "SUPPRIMER",
 };
