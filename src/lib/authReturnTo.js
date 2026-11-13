@@ -37,6 +37,7 @@ export const AUTH_PAGE_PATHS = [
   "/verify-email",
   "/forgot-password",
   "/reset-password",
+  "/account-recovery",
 ];
 
 export function isAuthPagePath(pathname) {

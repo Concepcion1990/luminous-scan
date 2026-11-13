@@ -434,7 +434,12 @@ export function createAuthRouter({ getPool }) {
     return res.json({ ok: true });
   });
 
-  router.get('/auth/me', authed, (req, res) => res.json(publicUser(req.user)));
+  router.get('/auth/me', authed, (req, res) => res.json({
+    ...publicUser(req.user),
+    // Recovery kit (T7): 'recovery' sessions may only change the
+    // account email; the client routes them to that one step.
+    session_scope: req.sessionScope || 'full',
+  }));
 
   router.patch('/auth/me', authed, async (req, res) => {
     const pool = getPool();
