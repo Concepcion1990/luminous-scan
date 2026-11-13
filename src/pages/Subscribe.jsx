@@ -31,6 +31,11 @@ export default function Subscribe() {
   // with no warning. Null means "no valid plan chosen yet".
   const planKey = selected === 'business' ? 'business'
     : selected === 'essentials' ? 'essentials' : null;
+  // The "that plan link isn't valid" notice is only for a link that
+  // actually named a plan we do not offer. A bare /subscribe (no ?plan=
+  // at all — someone typed the address or tapped a plain link) is an
+  // innocent visit: it gets the plain plan chooser, no scolding.
+  const planParamSupplied = selected !== null;
   const plan = planKey ? PLANS[planKey] : null;
   const returnTo = planKey ? `/subscribe?plan=${planKey}` : '/plans';
   const { isAuthenticated } = useAuth();
@@ -153,9 +158,9 @@ export default function Subscribe() {
         <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">{t('subscribe.eyebrow')}</p>
         {!planKey ? (
           <>
-            <h1 className="mt-2 text-2xl font-semibold sm:text-3xl">{t('subscribe.invalidTitle')}</h1>
+            <h1 className="mt-2 text-2xl font-semibold sm:text-3xl">{planParamSupplied ? t('subscribe.invalidTitle') : t('subscribe.chooseTitle')}</h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              {t('subscribe.invalidBody')}
+              {planParamSupplied ? t('subscribe.invalidBody') : t('subscribe.chooseBody')}
             </p>
             <div className="mt-6 flex flex-col gap-2 sm:flex-row">
               <Button asChild><Link to="/subscribe?plan=essentials">{t('subscribe.essentialsLink')}</Link></Button>

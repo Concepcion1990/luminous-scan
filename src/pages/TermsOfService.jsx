@@ -64,11 +64,11 @@ export default function TermsOfService() {
 
         <div className="mt-5 text-sm leading-relaxed text-muted-foreground">
           Please also review our{' '}
-          <Link to="/subscription-policy" className="font-medium text-primary underline underline-offset-4">
+          <Link to="/subscription-policy" className="font-medium text-link underline underline-offset-4">
             Subscription, Cancellation &amp; Refund Policy
           </Link>
           {' '}and our{' '}
-          <Link to="/privacy-policy" className="font-medium text-primary underline underline-offset-4">
+          <Link to="/privacy-policy" className="font-medium text-link underline underline-offset-4">
             Privacy Policy
           </Link>
           . These terms do not override those more detailed documents, applicable law or

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ArrowLeft, BookOpen } from 'lucide-react';
 import AppMark from '@/components/brand/AppMark';
+import LanguagePicker from '@/components/LanguagePicker';
 import LegalFooter from '@/components/LegalFooter';
 import { ABOUT_FOUNDER as about } from '@/lib/aboutFounder';
 
@@ -15,14 +16,17 @@ export default function About() {
   return (
     <div className="min-h-screen bg-background">
       <header className="bg-primary px-4 py-4 text-primary-foreground sm:px-8">
-        <div className="mx-auto flex max-w-4xl items-center justify-between gap-3">
+        <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-3">
           <AppMark />
-          <Link
-            to="/plans"
-            className="inline-flex items-center gap-1.5 text-xs font-medium text-primary-foreground/80 underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground"
-          >
-            <ArrowLeft className="h-4 w-4" aria-hidden="true" /> View plans
-          </Link>
+          <div className="flex items-center gap-3">
+            <LanguagePicker tone="onPrimary" />
+            <Link
+              to="/plans"
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-primary-foreground/80 underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground"
+            >
+              <ArrowLeft className="h-4 w-4" aria-hidden="true" /> View plans
+            </Link>
+          </div>
         </div>
       </header>
 

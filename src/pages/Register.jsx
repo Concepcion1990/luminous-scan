@@ -192,13 +192,13 @@ export default function Register() {
         </Button>
         <p className="text-center text-sm text-muted-foreground mt-4">
           {t('verifyEmail.didntReceiveCode')}{" "}
-          <button onClick={handleResend} className="text-primary font-medium hover:underline">
+          <button onClick={handleResend} className="text-link font-medium hover:underline">
             {t('verifyEmail.resend')}
           </button>
         </p>
         <p className="text-center text-sm text-muted-foreground">
           {t('register.alreadyHaveAccountWithEmail')}{" "}
-          <Link to={loginPath} className="text-primary font-medium hover:underline">
+          <Link to={loginPath} className="text-link font-medium hover:underline">
             {t('register.logInInstead')}
           </Link>
         </p>
@@ -219,7 +219,7 @@ export default function Register() {
           {t('register.alreadyHaveAccount')}{" "}
           <Link
             to={loginPath}
-            className="text-primary font-medium hover:underline"
+            className="text-link font-medium hover:underline"
           >
             {t('register.logIn')}
           </Link>
@@ -229,7 +229,7 @@ export default function Register() {
         <>
           <TrademarkNotice />
           <p className="mt-3 text-center text-sm">
-            <Link to="/about" className="font-medium text-primary underline underline-offset-4">
+            <Link to="/about" className="font-medium text-link underline underline-offset-4">
               {t('auth.aboutLink')}
             </Link>
           </p>
@@ -241,7 +241,7 @@ export default function Register() {
           {error}
           {alreadyExists && (
             <div className="mt-2">
-              <Link to={loginPath} className="text-primary font-medium hover:underline">
+              <Link to={loginPath} className="text-link font-medium hover:underline">
                 {t('register.signInInstead')}
               </Link>
             </div>
@@ -260,7 +260,7 @@ export default function Register() {
               setEmail(pendingEmail);
               setShowOtp(true);
             }}
-            className="text-primary font-medium hover:underline mt-1"
+            className="text-link font-medium hover:underline mt-1"
           >
             {t('register.verifyCode')}
           </button>
@@ -334,7 +334,7 @@ export default function Register() {
       </form>
       <p className="text-center text-sm text-muted-foreground mt-4">
         {t('register.alreadyHaveCode')}{" "}
-        <button type="button" onClick={handleResumeCode} className="text-primary font-medium hover:underline">
+        <button type="button" onClick={handleResumeCode} className="text-link font-medium hover:underline">
           {t('register.verifyEmailedCode')}
         </button>
       </p>

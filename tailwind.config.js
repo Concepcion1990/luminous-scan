@@ -41,6 +41,7 @@ module.exports = {
   				DEFAULT: 'hsl(var(--destructive))',
   				foreground: 'hsl(var(--destructive-foreground))'
   			},
+  			link: 'hsl(var(--link))',
   			ok: 'hsl(var(--ok))',
   			warn: 'hsl(var(--warn))',
   			border: 'hsl(var(--border))',

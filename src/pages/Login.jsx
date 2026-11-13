@@ -53,12 +53,12 @@ export default function Login() {
           {t('login.noAccount')}{" "}
           <Link
             to={"/register" + (returnTo !== "/" ? "?returnTo=" + encodeURIComponent(returnTo) : "")}
-            className="text-primary font-medium hover:underline"
+            className="text-link font-medium hover:underline"
           >
             {t('login.createOne')}
           </Link>{" "}
           ·{" "}
-          <Link to="/plans" className="text-primary font-medium hover:underline">
+          <Link to="/plans" className="text-link font-medium hover:underline">
             {t('login.seePlans')}
           </Link>
         </>
@@ -98,7 +98,7 @@ export default function Login() {
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <Label htmlFor="password">{t('auth.passwordLabel')}</Label>
-            <Link to="/forgot-password" className="text-xs text-primary hover:underline">
+            <Link to="/forgot-password" className="text-xs text-link hover:underline">
               {t('login.forgotPassword')}
             </Link>
           </div>
@@ -135,7 +135,7 @@ export default function Login() {
       {pendingEmail && (
         <p className="text-center text-sm text-muted-foreground mt-4">
           {t('login.haveCodeFor', { email: pendingEmail })}{" "}
-          <Link to="/verify-email" className="text-primary font-medium hover:underline">
+          <Link to="/verify-email" className="text-link font-medium hover:underline">
             {t('login.verifyEmailLink')}
           </Link>
         </p>
@@ -143,7 +143,7 @@ export default function Login() {
       {!pendingEmail && (
         <p className="text-center text-sm text-muted-foreground mt-4">
           {t('login.haveCode')}{" "}
-          <Link to="/verify-email" className="text-primary font-medium hover:underline">
+          <Link to="/verify-email" className="text-link font-medium hover:underline">
             {t('login.verifyEmailLink')}
           </Link>
         </p>

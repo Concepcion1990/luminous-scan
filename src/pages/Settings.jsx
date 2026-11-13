@@ -20,6 +20,7 @@ import DetailsCard from '@/components/business/DetailsCard';
 import SoftwareCard from '@/components/business/SoftwareCard';
 import PlanSummaryCard from '@/components/plans/PlanSummaryCard';
 import SecurityCard from '@/components/business/SecurityCard';
+import SupportCard from '@/components/business/SupportCard';
 import EssentialsCheckoutReadinessDiagnostic from '@/components/billing/EssentialsCheckoutReadinessDiagnostic';
 import UpgradeDryRunPanel from '@/components/billing/UpgradeDryRunPanel';
 import SettingsCard from '@/components/business/SettingsCard';
@@ -408,6 +409,8 @@ export default function Settings() {
       <PlanSummaryCard />
 
       <SecurityCard />
+
+      <SupportCard />
 
       {canShowPrivateBillingDiagnostics && (
         <EssentialsCheckoutReadinessDiagnostic businessId={activeId} />

@@ -39,7 +39,7 @@ export default function AccountRecovery() {
     let cancelled = false;
     (async () => {
       try {
-        const me = await apiRequest("/auth/me");
+        const me = await apiRequest("/api/auth/me");
         if (cancelled) return;
         if (me?.session_scope === "recovery") {
           setFullSession(false);
