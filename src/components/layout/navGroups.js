@@ -22,6 +22,8 @@ import {
   Store,
   FileUp,
   Users,
+  CalendarClock,
+  Wallet,
   CreditCard,
   Inbox,
 } from 'lucide-react';
@@ -95,6 +97,11 @@ export const NAV_GROUPS = [
       // import-only — see exportPermissionLabel in src/lib/staff.js.
       { to: '/import', label: 'Import', labelKey: 'nav.import', icon: FileUp, perm: 'exports.use' },
       { to: '/staff', label: 'Staff', labelKey: 'nav.staff', icon: Users, perm: 'staff.manage' },
+      // Workforce + Payroll carry no `perm`: every team member needs
+      // the time clock and their own stubs. The server enforces the
+      // owner > manager > staff hierarchy on every call.
+      { to: '/workforce', label: 'Workforce', labelKey: 'nav.workforce', icon: CalendarClock },
+      { to: '/payroll', label: 'Payroll', labelKey: 'nav.payroll', icon: Wallet },
       { to: '/upgrade', label: 'Plan & limits', labelKey: 'nav.upgrade', icon: CreditCard },
       { to: '/settings', label: 'Settings', labelKey: 'nav.settings', icon: Settings2, perm: 'settings.manage' },
     ],

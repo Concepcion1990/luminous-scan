@@ -28,6 +28,7 @@ import { checkDb, getPool } from './db.js';
 import { createAuthRouter } from './authRoutes.js';
 import { createShopRouter } from './shopRoutes.js';
 import { createT6Router } from './t6Routes.js';
+import { createWorkforceRouter } from './workforceRoutes.js';
 import { createBillingRouter, stripeWebhookHandler } from './billingRoutes.js';
 import { issueCsrfToken, requireCsrf } from './csrf.js';
 import { requireAuth } from './sessions.js';
@@ -80,6 +81,8 @@ export function createApp() {
   app.use('/api', createBillingRouter({ getPool }));
   // T6: offline sync, name search, cross-store, logo upload.
   app.use('/api', createT6Router({ getPool }));
+  // Workforce: scheduling, time clock, time-off, tasks, payroll.
+  app.use('/api', createWorkforceRouter({ getPool }));
   app.use('/api', createShopRouter({ getPool }));
 
   app.use('/api', (_req, res) => {

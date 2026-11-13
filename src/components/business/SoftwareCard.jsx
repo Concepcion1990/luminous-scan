@@ -32,6 +32,17 @@ export default function SoftwareCard() {
       <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
         {t('settings.software.fixedNote')}
       </p>
+      <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+        {t('bookshop.note')}{' '}
+        <a
+          href="https://theluminousbookshop.com"
+          target="_blank"
+          rel="noreferrer"
+          className="font-medium text-primary underline underline-offset-2"
+        >
+          {t('bookshop.visit')}
+        </a>
+      </p>
     </SettingsCard>
   );
 }
