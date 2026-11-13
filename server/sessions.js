@@ -15,6 +15,8 @@ import { config } from './config.js';
 
 export const SESSION_COOKIE = 'twin_session';
 export const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+/** Recovery sessions (spare-key entry) are short-lived on purpose. */
+export const RECOVERY_SESSION_TTL_MS = 30 * 60 * 1000; // 30 minutes
 
 export function sessionSecretConfigured() {
   return Boolean(process.env.SESSION_SECRET || config.sessionSecret);
@@ -67,14 +69,21 @@ export function parseCookies(req) {
   return out;
 }
 
-/** Create a session row and return its id. */
-export async function createSession(client, userId, { userAgent, ipAddress } = {}) {
+/**
+ * Create a session row and return its id. `scope` is 'full' for a
+ * normal sign-in, or 'recovery' for the spare-key emergency session
+ * (migration 011) — a recovery session can reach ONLY the
+ * change-email flow (the allowlist lives in server/app.js) and lives
+ * for RECOVERY_SESSION_TTL_MS unless `ttlMs` overrides.
+ */
+export async function createSession(client, userId, { userAgent, ipAddress, scope = 'full', ttlMs = null } = {}) {
   const id = crypto.randomUUID();
-  const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
+  const lifetime = ttlMs ?? (scope === 'recovery' ? RECOVERY_SESSION_TTL_MS : SESSION_TTL_MS);
+  const expiresAt = new Date(Date.now() + lifetime);
   await client.query(
-    `INSERT INTO sessions (id, user_id, expires_at, user_agent, ip_address)
-     VALUES ($1, $2, $3, $4, $5)`,
-    [id, userId, expiresAt.toISOString(), userAgent || null, ipAddress || null],
+    `INSERT INTO sessions (id, user_id, expires_at, user_agent, ip_address, scope)
+     VALUES ($1, $2, $3, $4, $5, $6)`,
+    [id, userId, expiresAt.toISOString(), userAgent || null, ipAddress || null, scope],
   );
   return { id, expiresAt };
 }
@@ -91,12 +100,32 @@ export async function revokeAllSessions(client, userId) {
   );
 }
 
+/** Revoke every session for the user EXCEPT one (an email change keeps
+ *  the session that proved itself and kills every other door). */
+export async function revokeOtherSessions(client, userId, keepSessionId) {
+  await client.query(
+    'UPDATE sessions SET revoked_at = NOW() WHERE user_id = $1 AND id <> $2 AND revoked_at IS NULL',
+    [userId, keepSessionId],
+  );
+}
+
+/** A recovery session that completed its one job becomes a normal
+ *  session with a normal lifetime. */
+export async function graduateSession(client, sessionId) {
+  const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
+  await client.query(
+    "UPDATE sessions SET scope = 'full', expires_at = $2 WHERE id = $1",
+    [sessionId, expiresAt.toISOString()],
+  );
+  return expiresAt;
+}
+
 /** Load the live session + user for a signed cookie value, or null. */
 export async function loadSessionUser(pool, signedValue) {
   const sessionId = verifySignedSessionId(signedValue);
   if (!sessionId) return null;
   const { rows } = await pool.query(
-    `SELECT s.id AS session_id, s.expires_at, s.revoked_at,
+    `SELECT s.id AS session_id, s.expires_at, s.revoked_at, s.scope,
             u.id, u.email, u.email_verified, u.active_business_id, u.created_at
        FROM sessions s JOIN users u ON u.id = s.user_id
       WHERE s.id = $1`,
@@ -108,6 +137,8 @@ export async function loadSessionUser(pool, signedValue) {
   if (new Date(row.expires_at).getTime() <= Date.now()) return null;
   return {
     sessionId: row.session_id,
+    // Pre-011 rows (and engines that lag the migration) read as full.
+    scope: row.scope === 'recovery' ? 'recovery' : 'full',
     user: {
       id: row.id,
       email: row.email,
@@ -129,6 +160,7 @@ export function requireAuth(pool) {
       }
       req.user = loaded.user;
       req.sessionId = loaded.sessionId;
+      req.sessionScope = loaded.scope;
       return next();
     } catch (error) {
       console.error('[twin] auth check failed:', error.message);

@@ -72,6 +72,8 @@ export const TRAINING_LESSONS = [
   { id: 'messages-private', track: 'staff', module: 'messaging', steps: 4 },
   { id: 'stub-yours', track: 'staff', module: 'payroll', steps: 4 },
   { id: 'dd-submit', track: 'staff', module: 'direct-deposit', steps: 4 },
+  { id: 'spare-keys-setup', track: 'staff', module: 'settings', steps: 4 },
+  { id: 'lost-email-recovery', track: 'staff', module: 'settings', steps: 4 },
   { id: 'mgr-schedules', track: 'manager', module: 'workforce', steps: 4 },
   { id: 'mgr-timeoff-decide', track: 'manager', module: 'workforce', steps: 4 },
   { id: 'mgr-tasks-assign', track: 'manager', module: 'workforce', steps: 4 },
@@ -99,6 +101,7 @@ export const TRAINING_LESSONS = [
   { id: 'owner-builds', track: 'owner', module: 'builds', steps: 4 },
   { id: 'owner-messages-oversight', track: 'owner', module: 'messaging', steps: 4 },
   { id: 'owner-cross-store', track: 'owner', module: 'cross-store', steps: 4 },
+  { id: 'owner-staff-email-fix', track: 'owner', module: 'staff', steps: 4 },
 ];
 
 export const lessonById = (id) => TRAINING_LESSONS.find((lesson) => lesson.id === id) || null;
