@@ -44,8 +44,10 @@ import { tg } from './locales/tg.js';
 /** code -> strings. Add one language at a time, ABC order. */
 export const LOCALES = { en, ar, am, bn, bho, 'zh-Hans': zhHans, 'zh-Hant': zhHant, yue, wuu, 'fr-CA': frCA, ms, gu, de, 'fr-FR': frFR, ha, it, hi, id, ja, jv, kn, ko, mr, pcm, fa, prs, tg };
 
-/** Locale codes that read right-to-left (Arabic script family). */
-export const RTL_LOCALES = new Set(['ar', 'fa', 'prs', 'tg', 'ur', 'pa-Arab']);
+/** Locale codes that read right-to-left (Arabic script family).
+ * Tajik ('tg') is NOT here: the app's Tajik text is Cyrillic and reads
+ * left-to-right (removed Nov 12, 2026). */
+export const RTL_LOCALES = new Set(['ar', 'fa', 'prs', 'ur', 'pa-Arab']);
 
 /** True when the locale reads right-to-left. */
 export function isRTL(code = currentLocale) {

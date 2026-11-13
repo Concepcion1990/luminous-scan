@@ -3,7 +3,9 @@ import { LEGAL_FOOTER as footer } from '@/lib/trademarkNotice';
 import { t } from '@/lib/i18n';
 
 /**
- * Small, centered copyright / trademark line at the bottom of the pages.
+ * Small, centered legal line at the bottom of the pages. (The old
+ * © copyright line was removed whole on Nov 12, 2026 — it was entirely
+ * a copyright claim, and the app claims none.)
  * Deliberately quiet — it must not interfere with a customer's work.
  * The text lives in src/lib/trademarkNotice.js and is rendered verbatim.
  *
@@ -25,7 +27,6 @@ export default function LegalFooter({ className = '' }) {
           {t('layout.aboutLink')}
         </Link>
       </p>
-      <p className="mt-1">{footer.copyrightLine}</p>
       <p className="mt-1">{footer.trademarkLine}</p>
     </footer>
   );

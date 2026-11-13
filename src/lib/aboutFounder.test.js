@@ -84,8 +84,9 @@ test('LegalFooter links to /about, small and subtle', () => {
   assert.equal(en['layout.aboutLink'], 'About Luminous StockHaven');
   assert.match(footer, /text-\[11px\]/, 'footer stays small');
   assert.match(footer, /text-center/, 'footer stays centered');
-  // The legal text itself is untouched.
-  assert.match(footer, /\{footer\.copyrightLine\}/);
+  // The legal text itself is untouched. (The © line was removed whole
+  // on Nov 12, 2026 — see trademarkNotice.test.js.)
+  assert.doesNotMatch(footer, /copyrightLine/);
   assert.match(footer, /\{footer\.trademarkLine\}/);
 });
 
@@ -151,8 +152,9 @@ test('no policy or trademark wording was touched by this change', () => {
     assert.doesNotMatch(text, /About the Founder/, `${module} must carry no about-page text`);
     assert.doesNotMatch(text, /built by a retailer, for retailers/, `${module} must carry no about-page text`);
   }
-  // The trademark notice still says exactly what she wrote.
+  // The notice still carries her words — heading and entity name —
+  // with the trademark/copyright claims removed on her Nov 12 word.
   const notice = read('src/lib/trademarkNotice.js');
   assert.match(notice, /Built for Retailers, Priceless to Corporate Vultures/);
-  assert.match(notice, /The Luminous Bookshop, LLC®/);
+  assert.match(notice, /legalBody: 'We actively monitor the market\./);
 });

@@ -59,10 +59,11 @@ test('RTL locales are detected (document direction flips in a real browser)', ()
   assert.equal(isRTL('ar'), true);
   assert.equal(isRTL('fa'), true);
   assert.equal(isRTL('prs'), true);
-  assert.equal(isRTL('tg'), true);
   assert.equal(isRTL('ur'), true);
   assert.equal(isRTL('pa-Arab'), true);
   assert.equal(isRTL('en'), false);
+  // Tajik is Cyrillic — left-to-right, NOT RTL (fixed Nov 12, 2026).
+  assert.equal(isRTL('tg'), false);
   assert.equal(isRTL('es-MX'), false);
   assert.equal(isRTL('zh-Hans'), false);
 });
@@ -1079,8 +1080,9 @@ test('switching to Dari renders the app in Dari, RTL included', () => {
  * except the English plural-agreement markers ({s}, {plural},
  * {suffix}, {us}, {cs}, {ps}, {fs}, {rs}), which Tajik omits by
  * design.
- * Tajik is in RTL_LOCALES, so the switch test also proves the
- * right-to-left direction engages (isRTL() true while it is active).
+ * Tajik reads left-to-right (Cyrillic), so it is NOT in RTL_LOCALES
+ * (removed Nov 12, 2026); the switch test asserts isRTL() stays false
+ * while Tajik is active.
  */
 test('Tajik has every English key, with matching value placeholders', async () => {
   const { tg } = await import('./locales/tg.js');
@@ -1099,7 +1101,7 @@ test('Tajik has every English key, with matching value placeholders', async () =
   }
 });
 
-test('switching to Tajik renders the app in Tajik, RTL included', () => {
+test('switching to Tajik renders the app in Tajik, left-to-right', () => {
   assert.equal(setLocale('tg'), 'tg');
   assert.equal(getLocale(), 'tg');
   assert.equal(t('nav.scan'), 'Скан');
@@ -1107,7 +1109,7 @@ test('switching to Tajik renders the app in Tajik, RTL included', () => {
   assert.equal(t('scan.printShelfTag'), 'Чоп кардани барчаспи раф');
   assert.equal(t('sync.sent'), 'Ҳамаи тағйирот фиристода шуданд');
   assert.equal(t('scan.onlyOnHand', { count: 3, location: 'гузаргоҳ 1' }), 'Танҳо 3 дар даст дар гузаргоҳ 1.');
-  assert.equal(isRTL(), true);
+  assert.equal(isRTL(), false);
   // And back to English — the switch is live, not frozen at import.
   assert.equal(setLocale('en'), 'en');
   assert.equal(t('nav.scan'), 'Scan');

@@ -21,7 +21,7 @@ test('trademark notice text is the owner\'s exact words, verbatim', () => {
   assert.equal(notice.legalHeading, 'LEGAL NOTICE TO COMPETITORS & IMITATORS:');
   assert.equal(
     notice.legalBody,
-    'Luminous StockHaven™ and The Luminous Bookshop, LLC® are fully registered legal entities. All application user interfaces, backend structural workflows, original features, text, user role documentation, and digital assets are strictly protected under federal copyright law. We actively monitor the market. Any attempt to scrape our platform, clone our proprietary workflows, or infringe upon our intellectual property will be met with immediate, aggressive legal action and federal statutory damages.',
+    'We actively monitor the market. Any attempt to scrape our platform or clone our proprietary workflows will be met with immediate, aggressive legal action.',
   );
   assert.equal(notice.acquisitionHeading, 'TO ACQUISITION FIRMS & BROKERS:');
   assert.equal(
@@ -31,20 +31,28 @@ test('trademark notice text is the owner\'s exact words, verbatim', () => {
 });
 
 test('footer text is the owner\'s exact words, verbatim', () => {
-  assert.equal(footer.copyrightLine, '© 2026 The Luminous Bookshop, LLC. All rights reserved.');
+  // Nov 12, 2026: the © line is gone entirely — it was wholly a
+  // copyright claim, and the owner removed the claims rather than
+  // replacing the line with new copy.
+  assert.equal(footer.copyrightLine, undefined);
   assert.equal(
     footer.trademarkLine,
-    'Luminous StockHaven™ and the Luminous StockHaven logo are trademarks of The Luminous Bookshop, LLC. All application interfaces, features, workflows, and proprietary text are protected under applicable copyright laws. Unauthorized duplication, cloning, or scraping is strictly prohibited.',
+    'Unauthorized duplication, cloning, or scraping is strictly prohibited.',
   );
 });
 
-test('the ® on The Luminous Bookshop, LLC stays exactly as she wrote it', () => {
-  // Her decision Nov 9, 2026: keep the ® — no ™ swap. If anyone "fixes"
-  // it, this test fails on purpose.
-  assert.match(notice.legalBody, /The Luminous Bookshop, LLC®/);
-  assert.doesNotMatch(notice.legalBody, /The Luminous Bookshop, LLC™/);
-  assert.match(notice.legalBody, /Luminous StockHaven™/);
-  assert.match(footer.trademarkLine, /Luminous StockHaven™/);
+test('no trademark / copyright claim language remains (Nov 12, 2026)', () => {
+  // Her decision Nov 12, 2026: she is launching without a trademark /
+  // copyright filing, so the app must not claim them — no ®, ™ or ©
+  // symbols, no registration or protection claims. This test replaces
+  // the Nov 9 "® stays" test, which her Nov 12 decision superseded.
+  const rendered = [...Object.values(notice), ...Object.values(footer)].join('\n');
+  assert.doesNotMatch(rendered, /[®™©]/);
+  assert.doesNotMatch(rendered, /trademark/i);
+  assert.doesNotMatch(rendered, /copyright/i);
+  assert.doesNotMatch(rendered, /registered/i);
+  assert.doesNotMatch(rendered, /All rights reserved/);
+  assert.doesNotMatch(rendered, /statutory damages/i);
   assert.ok(Object.isFrozen(notice), 'notice module must be frozen');
   assert.ok(Object.isFrozen(footer), 'footer module must be frozen');
 });
@@ -71,7 +79,7 @@ test('LegalFooter renders the footer from the module, small and centered', () =>
   const component = read('src/components/LegalFooter.jsx');
   assert.match(component, /import \{ LEGAL_FOOTER as footer \} from '@\/lib\/trademarkNotice'/);
   assert.match(component, /<footer/);
-  assert.match(component, /\{footer\.copyrightLine\}/);
+  assert.doesNotMatch(component, /copyrightLine/);
   assert.match(component, /\{footer\.trademarkLine\}/);
   assert.match(component, /text-center/);
   assert.match(component, /text-\[11px\]/);
