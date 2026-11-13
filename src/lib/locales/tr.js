@@ -2310,9 +2310,9 @@ export const tr = {
   "settings.canceled.endsOn": "Bu abonelik iptal edildi ve {date} tarihinde sona eriyor. O zamana kadar tam erişiminiz devam eder.",
   "settings.delete.checking": "Mevcut bir silme isteği kontrol ediliyor…",
   "settings.delete.description": "Luminous StockHaven oturum açma hesabınızın kaldırılmasını isteyin.",
-  "settings.delete.dialogDescription": "Bu, hesap silme incelemesi isteğinde bulunur. Oturumunuzu veya envanterinizi hemen kaldırmaz ve hiçbir Stripe aboneliğini iptal etmez. İsteği göndermek istediğinizi onaylamak için DELETE yazın.",
+  "settings.delete.dialogDescription": "Bu, hesap silme incelemesi isteğinde bulunur. Oturumunuzu veya envanterinizi hemen kaldırmaz ve hiçbir Stripe aboneliğini iptal etmez. İsteği göndermek istediğinizi onaylamak için {word} yazın.",
   "settings.delete.dialogTitle": "Hesap Silme İsteğinde Bulunun",
-  "settings.delete.enterDelete": "Onaylamak için DELETE girin",
+  "settings.delete.enterDelete": "Onaylamak için {word} girin",
   "settings.delete.exportFirst": "Kayıtlarınızı saklamanız gerekiyorsa önce envanterinizi dışa aktarın.",
   "settings.delete.intro": "Bir istek göndermek, hesabınızı, işletmelerinizi veya envanterinizi hemen silmez. İstekler, silme tamamlanmadan önce ayrı ayrı incelenir. Bu istek, bir Stripe aboneliğini iptal etmez veya gelecekteki faturalandırmayı durdurmaz; abonelik iptali, faturalandırma sağlayıcısı aracılığıyla ayrıca ele alınmalıdır.",
   "settings.delete.keepAccount": "Hesabı Koru",
@@ -3520,4 +3520,6 @@ export const tr = {
   "training.track.staff": "Staff track",
   "training.track.staffHelp": "The everyday tools: scanning, the time clock, your schedule, your inbox and your pay stub.",
   "training.warningSentOn": "Warning sent {date}",
+  "auth.sameEmailNotice": "Already have our app from Google Play or the App Store? Use the same email here — the one you sign into the app with — so your shop and your inventory come with you. A different email starts a totally new, empty storefront.",
+  "settings.deleteConfirmWord": "SİL",
 };

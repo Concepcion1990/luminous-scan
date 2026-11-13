@@ -2310,9 +2310,9 @@ export const ptBR = {
   "settings.canceled.endsOn": "Esta assinatura está cancelada e termina em {date}. Você mantém acesso completo até lá.",
   "settings.delete.checking": "Verificando se já existe uma solicitação de exclusão…",
   "settings.delete.description": "Solicitar a remoção da sua conta de acesso ao Luminous StockHaven.",
-  "settings.delete.dialogDescription": "Isso solicita uma análise da exclusão da conta. Não remove imediatamente seu login nem seu estoque e não cancela nenhuma assinatura do Stripe. Digite DELETE para confirmar que deseja enviar a solicitação.",
+  "settings.delete.dialogDescription": "Isso solicita uma análise da exclusão da conta. Não remove imediatamente seu login nem seu estoque e não cancela nenhuma assinatura do Stripe. Digite {word} para confirmar que deseja enviar a solicitação.",
   "settings.delete.dialogTitle": "Solicitar exclusão da conta",
-  "settings.delete.enterDelete": "Digite DELETE para confirmar",
+  "settings.delete.enterDelete": "Digite {word} para confirmar",
   "settings.delete.exportFirst": "Exporte seu estoque primeiro se precisar manter seus registros.",
   "settings.delete.intro": "Enviar uma solicitação não exclui imediatamente sua conta, suas empresas nem seu estoque. As solicitações são analisadas separadamente antes que a exclusão possa ser concluída. Esta solicitação não cancela uma assinatura do Stripe nem interrompe cobranças futuras; o cancelamento da assinatura deve ser tratado separadamente pela provedora de cobrança.",
   "settings.delete.keepAccount": "Manter conta",
@@ -3520,4 +3520,6 @@ export const ptBR = {
   "training.track.staff": "Staff track",
   "training.track.staffHelp": "The everyday tools: scanning, the time clock, your schedule, your inbox and your pay stub.",
   "training.warningSentOn": "Warning sent {date}",
+  "auth.sameEmailNotice": "Already have our app from Google Play or the App Store? Use the same email here — the one you sign into the app with — so your shop and your inventory come with you. A different email starts a totally new, empty storefront.",
+  "settings.deleteConfirmWord": "EXCLUIR",
 };

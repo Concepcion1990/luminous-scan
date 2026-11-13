@@ -2310,9 +2310,9 @@ export const ms = {
   "settings.canceled.endsOn": "Langganan ini dibatalkan dan tamat pada {date}. Anda kekal mendapat akses penuh sehingga itu.",
   "settings.delete.checking": "Menyemak permintaan pemadaman sedia ada…",
   "settings.delete.description": "Minta penyingkiran akaun log masuk Luminous StockHaven anda.",
-  "settings.delete.dialogDescription": "Ini meminta semakan pemadaman akaun. Ia tidak serta-merta membuang log masuk atau inventori anda, dan ia tidak membatalkan sebarang langganan Stripe. Taip DELETE untuk mengesahkan anda mahu menghantar permintaan.",
+  "settings.delete.dialogDescription": "Ini meminta semakan pemadaman akaun. Ia tidak serta-merta membuang log masuk atau inventori anda, dan ia tidak membatalkan sebarang langganan Stripe. Taip {word} untuk mengesahkan anda mahu menghantar permintaan.",
   "settings.delete.dialogTitle": "Minta Pemadaman Akaun",
-  "settings.delete.enterDelete": "Masukkan DELETE untuk mengesahkan",
+  "settings.delete.enterDelete": "Masukkan {word} untuk mengesahkan",
   "settings.delete.exportFirst": "Eksport inventori anda dahulu jika anda perlu menyimpan rekod anda.",
   "settings.delete.intro": "Menghantar permintaan tidak serta-merta memadamkan akaun, perniagaan, atau inventori anda. Permintaan disemak secara berasingan sebelum pemadaman dapat diselesaikan. Permintaan ini tidak membatalkan langganan Stripe atau menghentikan pengebilan akan datang; pembatalan langganan mesti dikendalikan secara berasingan melalui pembekal pengebilan.",
   "settings.delete.keepAccount": "Kekalkan Akaun",
@@ -3520,4 +3520,6 @@ export const ms = {
   "training.track.staff": "Staff track",
   "training.track.staffHelp": "The everyday tools: scanning, the time clock, your schedule, your inbox and your pay stub.",
   "training.warningSentOn": "Warning sent {date}",
+  "auth.sameEmailNotice": "Already have our app from Google Play or the App Store? Use the same email here — the one you sign into the app with — so your shop and your inventory come with you. A different email starts a totally new, empty storefront.",
+  "settings.deleteConfirmWord": "PADAM",
 };

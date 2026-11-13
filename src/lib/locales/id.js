@@ -2310,9 +2310,9 @@ export const id = {
   "settings.canceled.endsOn": "Langganan ini dibatalkan dan berakhir pada {date}. Anda tetap memiliki akses penuh hingga saat itu.",
   "settings.delete.checking": "Memeriksa permintaan penghapusan yang ada…",
   "settings.delete.description": "Minta penghapusan akun masuk Luminous StockHaven Anda.",
-  "settings.delete.dialogDescription": "Ini meminta peninjauan penghapusan akun. Itu tidak segera menghapus login atau inventaris Anda, dan tidak membatalkan langganan Stripe apa ​​pun. Ketik DELETE untuk mengonfirmasi bahwa Anda ingin mengirimkan permintaan.",
+  "settings.delete.dialogDescription": "Ini meminta peninjauan penghapusan akun. Itu tidak segera menghapus login atau inventaris Anda, dan tidak membatalkan langganan Stripe apa ​​pun. Ketik {word} untuk mengonfirmasi bahwa Anda ingin mengirimkan permintaan.",
   "settings.delete.dialogTitle": "Minta Penghapusan Akun",
-  "settings.delete.enterDelete": "Masukkan DELETE untuk mengonfirmasi",
+  "settings.delete.enterDelete": "Masukkan {word} untuk mengonfirmasi",
   "settings.delete.exportFirst": "Ekspor inventaris Anda terlebih dahulu jika Anda perlu menyimpan catatan Anda.",
   "settings.delete.intro": "Mengirimkan permintaan tidak langsung menghapus akun, bisnis, atau inventaris Anda. Permintaan ditinjau secara terpisah sebelum penghapusan dapat diselesaikan. Permintaan ini tidak membatalkan langganan Stripe atau menghentikan penagihan di masa mendatang; pembatalan berlangganan harus ditangani secara terpisah melalui penyedia penagihan.",
   "settings.delete.keepAccount": "Pertahankan Akun",
@@ -3520,4 +3520,6 @@ export const id = {
   "training.track.staff": "Staff track",
   "training.track.staffHelp": "The everyday tools: scanning, the time clock, your schedule, your inbox and your pay stub.",
   "training.warningSentOn": "Warning sent {date}",
+  "auth.sameEmailNotice": "Already have our app from Google Play or the App Store? Use the same email here — the one you sign into the app with — so your shop and your inventory come with you. A different email starts a totally new, empty storefront.",
+  "settings.deleteConfirmWord": "HAPUS",
 };

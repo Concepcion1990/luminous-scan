@@ -2310,9 +2310,9 @@ export const pcm = {
   "settings.canceled.endsOn": "Dem don cancel dis subscription and e go finish on {date}. You go keep full access until dat time.",
   "settings.delete.checking": "E dey check for deletion request wey already dey…",
   "settings.delete.description": "Request make dem remove your Luminous StockHaven sign-in account.",
-  "settings.delete.dialogDescription": "Dis one dey request review of account deletion. E no dey remove your login or stock immediately, and e no dey cancel any Stripe subscription. Type DELETE to confirm say you want submit di request.",
+  "settings.delete.dialogDescription": "Dis one dey request review of account deletion. E no dey remove your login or stock immediately, and e no dey cancel any Stripe subscription. Type {word} to confirm say you want submit di request.",
   "settings.delete.dialogTitle": "Request Account Deletion",
-  "settings.delete.enterDelete": "Enter DELETE to confirm",
+  "settings.delete.enterDelete": "Enter {word} to confirm",
   "settings.delete.exportFirst": "Export your stock first if you need to keep your records.",
   "settings.delete.intro": "To submit request no dey delete your account, businesses, or stock immediately. Dem dey review requests separate before deletion fit complete. Dis request no dey cancel Stripe subscription or stop future billing; subscription cancellation dem must handle am separate through di billing provider.",
   "settings.delete.keepAccount": "Keep Account",
@@ -3520,4 +3520,6 @@ export const pcm = {
   "training.track.staff": "Staff track",
   "training.track.staffHelp": "The everyday tools: scanning, the time clock, your schedule, your inbox and your pay stub.",
   "training.warningSentOn": "Warning sent {date}",
+  "auth.sameEmailNotice": "Already have our app from Google Play or the App Store? Use the same email here — the one you sign into the app with — so your shop and your inventory come with you. A different email starts a totally new, empty storefront.",
+  "settings.deleteConfirmWord": "DILIT",
 };

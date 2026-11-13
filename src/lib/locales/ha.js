@@ -2310,9 +2310,9 @@ export const ha = {
   "settings.canceled.endsOn": "An soke wannan biyan kuɗi kuma yana ƙare a {date}. Kana riƙe cikakken shiga har zuwa lokacin.",
   "settings.delete.checking": "Ana duba buƙatar sharewa da ke akwai…",
   "settings.delete.description": "Nemi cire asusun shiga na Luminous StockHaven.",
-  "settings.delete.dialogDescription": "Wannan yana neman duba share asusu. Ba ya cire shigarka ko kayanka nan take, kuma ba ya soke kowane biyan kuɗi na Stripe. Rubuta DELETE don tabbatar da kana son aika buƙatar.",
+  "settings.delete.dialogDescription": "Wannan yana neman duba share asusu. Ba ya cire shigarka ko kayanka nan take, kuma ba ya soke kowane biyan kuɗi na Stripe. Rubuta {word} don tabbatar da kana son aika buƙatar.",
   "settings.delete.dialogTitle": "Nemi Share Asusu",
-  "settings.delete.enterDelete": "Shigar da DELETE don tabbatarwa",
+  "settings.delete.enterDelete": "Shigar da {word} don tabbatarwa",
   "settings.delete.exportFirst": "Fitar da kayanka da farko idan kana buƙatar riƙe bayanan ka.",
   "settings.delete.intro": "Aika buƙata ba ya share asusunka, kasuwancinka, ko kayanka nan take. Ana duba buƙatu daban kafin a iya kammala sharewa. Wannan buƙata ba ta soke biyan kuɗi na Stripe ko dakatar da biyan kuɗi na gaba; dole ne a kula da sokewar biyan kuɗi daban ta hanyar mai bayar da biyan kuɗi.",
   "settings.delete.keepAccount": "Riƙe Asusu",
@@ -3520,4 +3520,6 @@ export const ha = {
   "training.track.staff": "Staff track",
   "training.track.staffHelp": "The everyday tools: scanning, the time clock, your schedule, your inbox and your pay stub.",
   "training.warningSentOn": "Warning sent {date}",
+  "auth.sameEmailNotice": "Already have our app from Google Play or the App Store? Use the same email here — the one you sign into the app with — so your shop and your inventory come with you. A different email starts a totally new, empty storefront.",
+  "settings.deleteConfirmWord": "SHARE",
 };
