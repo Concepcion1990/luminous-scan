@@ -2947,4 +2947,5 @@ export const frCA = {
   "apiLib.businessNotFound": "Entreprise introuvable",
   "apiLib.googleSignInUnavailable": "La connexion Google n’est pas disponible — veuillez vous connecter avec votre courriel et votre mot de passe.",
   "apiLib.chooseBusinessFirst": "Choisissez d’abord une entreprise.",
+  "policies.translationNotice": "Cette traduction vous est fournie pour que vous puissiez la lire dans votre langue. En cas de désaccord entre cette traduction et la version anglaise, la version anglaise est la version officielle.",
 };

@@ -2947,4 +2947,5 @@ export const pcm = {
   "apiLib.businessNotFound": "Dem no find business",
   "apiLib.googleSignInUnavailable": "Google sign-in no dey available — abeg log in with your email and password.",
   "apiLib.chooseBusinessFirst": "Choose one business first.",
+  "policies.translationNotice": "Na so dat you fit read am for your own language na im make we provide dis translation. If any wahala dey between dis translation and di English version, na di English version be di official one.",
 };

@@ -2947,4 +2947,5 @@ export const it = {
   "apiLib.businessNotFound": "Attività non trovata",
   "apiLib.googleSignInUnavailable": "L'accesso con Google non è disponibile: accedi con la tua email e password.",
   "apiLib.chooseBusinessFirst": "Scegli prima un'attività.",
+  "policies.translationNotice": "Questa traduzione è fornita affinché possiate leggerla nella vostra lingua. In caso di disaccordo tra questa traduzione e la versione inglese, fa fede la versione inglese.",
 };

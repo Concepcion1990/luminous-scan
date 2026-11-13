@@ -2947,4 +2947,5 @@ export const zhHans = {
   "apiLib.businessNotFound": "找不到该企业",
   "apiLib.googleSignInUnavailable": "Google 登录不可用——请使用邮箱和密码登录。",
   "apiLib.chooseBusinessFirst": "请先选择一家企业。",
+  "policies.translationNotice": "提供此译文是为了让您能以自己的语言阅读。如果此译文与英文版本之间存在任何不一致之处，以英文版本为准。",
 };
