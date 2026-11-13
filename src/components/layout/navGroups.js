@@ -23,6 +23,7 @@ import {
   FileUp,
   Users,
   CalendarClock,
+  GraduationCap,
   Wallet,
   CreditCard,
   Inbox,
@@ -101,6 +102,9 @@ export const NAV_GROUPS = [
       // the time clock and their own stubs. The server enforces the
       // owner > manager > staff hierarchy on every call.
       { to: '/workforce', label: 'Workforce', labelKey: 'nav.workforce', icon: CalendarClock },
+      // Training likewise: every team member has lessons matched to
+      // their role, and role grants assign more. No perm, both plans.
+      { to: '/training', label: 'Training', labelKey: 'nav.training', icon: GraduationCap },
       { to: '/payroll', label: 'Payroll', labelKey: 'nav.payroll', icon: Wallet },
       { to: '/upgrade', label: 'Plan & limits', labelKey: 'nav.upgrade', icon: CreditCard },
       { to: '/settings', label: 'Settings', labelKey: 'nav.settings', icon: Settings2, perm: 'settings.manage' },

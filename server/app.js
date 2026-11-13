@@ -29,6 +29,7 @@ import { createAuthRouter } from './authRoutes.js';
 import { createShopRouter } from './shopRoutes.js';
 import { createT6Router } from './t6Routes.js';
 import { createWorkforceRouter } from './workforceRoutes.js';
+import { createTrainingRouter } from './trainingRoutes.js';
 import { createBillingRouter, stripeWebhookHandler } from './billingRoutes.js';
 import { issueCsrfToken, requireCsrf } from './csrf.js';
 import { requireAuth } from './sessions.js';
@@ -83,6 +84,8 @@ export function createApp() {
   app.use('/api', createT6Router({ getPool }));
   // Workforce: scheduling, time clock, time-off, tasks, payroll.
   app.use('/api', createWorkforceRouter({ getPool }));
+  // Training: role-scoped lesson tracks, assignments, team progress.
+  app.use('/api', createTrainingRouter({ getPool }));
   app.use('/api', createShopRouter({ getPool }));
 
   app.use('/api', (_req, res) => {
