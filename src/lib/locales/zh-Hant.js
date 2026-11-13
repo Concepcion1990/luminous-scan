@@ -2310,9 +2310,9 @@ export const zhHant = {
   "settings.canceled.endsOn": "此訂閱已取消，將於 {date} 結束。在此之前您仍可完整使用。",
   "settings.delete.checking": "正在檢查是否已有刪除請求…",
   "settings.delete.description": "請求移除您的 Luminous StockHaven 登入帳戶。",
-  "settings.delete.dialogDescription": "這是請求審核帳戶刪除。不會立即移除您的登入帳戶或庫存，也不會取消任何 Stripe 訂閱。請輸入 DELETE 以確認您要提交此請求。",
+  "settings.delete.dialogDescription": "這是請求審核帳戶刪除。不會立即移除您的登入帳戶或庫存，也不會取消任何 Stripe 訂閱。請輸入 {word} 以確認您要提交此請求。",
   "settings.delete.dialogTitle": "請求刪除帳戶",
-  "settings.delete.enterDelete": "輸入 DELETE 以確認",
+  "settings.delete.enterDelete": "輸入 {word} 以確認",
   "settings.delete.exportFirst": "如果您需要保留記錄，請先匯出您的庫存。",
   "settings.delete.intro": "提交請求不會立即刪除您的帳戶、商家或庫存。請求會在刪除完成前另行審核。此請求不會取消 Stripe 訂閱或停止未來的計費；取消訂閱必須另外透過計費服務商辦理。",
   "settings.delete.keepAccount": "保留帳戶",
@@ -3520,4 +3520,6 @@ export const zhHant = {
   "training.track.staff": "Staff track",
   "training.track.staffHelp": "The everyday tools: scanning, the time clock, your schedule, your inbox and your pay stub.",
   "training.warningSentOn": "Warning sent {date}",
+  "auth.sameEmailNotice": "Already have our app from Google Play or the App Store? Use the same email here — the one you sign into the app with — so your shop and your inventory come with you. A different email starts a totally new, empty storefront.",
+  "settings.deleteConfirmWord": "刪除",
 };

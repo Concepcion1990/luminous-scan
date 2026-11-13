@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { UserPlus, Mail, Lock, Loader2 } from "lucide-react";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import AuthLayout from "@/components/AuthLayout";
+import SameEmailNotice from "@/components/SameEmailNotice";
 import TrademarkNotice from "@/components/TrademarkNotice";
 import { toast } from "@/components/ui/use-toast";
 import { safeReturnTo } from "@/lib/authReturnTo";
@@ -265,6 +266,8 @@ export default function Register() {
           </button>
         </div>
       )}
+
+      <SameEmailNotice className="mb-4" />
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
