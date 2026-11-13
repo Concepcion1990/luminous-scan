@@ -12,6 +12,7 @@
  *   POST /api/billing/cancel              cancel_at_period_end only, never immediate delete
  *   POST /api/billing/payment-update      past-due payment update (Checkout setup mode)
  *   POST /api/billing/wipe-sweep          daily wipe job (job-secret protected)
+ *   POST /api/billing/trial-reminder-sweep trial reminder job (job-secret protected)
  *   POST /webhooks/stripe                 Stripe webhook (mounted separately, express.raw)
  *
  * Every grant rides on Stripe-verified evidence (server/billing.js).
@@ -40,6 +41,7 @@ import {
   priceIdOfSubscription,
 } from './stripeCatalog.js';
 import { checkTrialEligibility, reserveTrial } from './trialEligibility.js';
+import { runTrialReminderSweep } from './trialReminders.js';
 import {
   evidenceFromSubscription,
   stripeTsToIso,
@@ -663,6 +665,21 @@ export function createBillingRouter({ getPool: getPoolFn }) {
       return res.status(401).json({ error: 'not_authorized', message: 'A valid job secret is required.' });
     }
     const summary = await runWipeSweep(pool, { now: new Date() });
+    return res.json(summary);
+  }));
+
+  // ---- Trial reminder sweep (job endpoint; job-secret protected) ---------
+  router.post('/billing/trial-reminder-sweep', asyncHandler(async (req, res) => {
+    const pool = getPoolFn();
+    const jobSecret = process.env.BILLING_JOB_SECRET;
+    if (!jobSecret) {
+      return res.status(503).json({ error: 'reminder_job_not_configured', message: 'The trial reminder sweep is not configured.' });
+    }
+    const provided = req.get('x-job-secret');
+    if (!provided || provided !== jobSecret) {
+      return res.status(401).json({ error: 'not_authorized', message: 'A valid job secret is required.' });
+    }
+    const summary = await runTrialReminderSweep(pool, { now: new Date() });
     return res.json(summary);
   }));
 
