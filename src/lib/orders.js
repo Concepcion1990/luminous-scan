@@ -77,6 +77,31 @@ export function shippedUnits(order) {
   return (order.lines || []).reduce((sum, l) => sum + (Number(l.shipped) || 0), 0);
 }
 
+/**
+ * The customer's ship-to address as stored on the order (Nov 14,
+ * 2026): lines for documents, or one text block for the label's
+ * address box. Empty when the order carries no address — the
+ * label then keeps its print-time behavior and saves nothing.
+ */
+export function orderShipAddressLines(order) {
+  if (!order) return [];
+  const street = String(order.ship_street || '').trim();
+  const cityLine = [
+    String(order.ship_city || '').trim(),
+    [String(order.ship_region || '').trim(), String(order.ship_postal || '').trim()]
+      .filter(Boolean)
+      .join(' '),
+  ]
+    .filter(Boolean)
+    .join(', ');
+  const country = String(order.ship_country || '').trim();
+  return [street, cityLine, country].filter(Boolean);
+}
+
+export function orderShipAddressText(order) {
+  return orderShipAddressLines(order).join('\n');
+}
+
 export function blankLine() {
   return { product_id: '', product_name: '', sku: '', quantity: 1, unit_price: '', reserved: 0, shipped: 0 };
 }
@@ -86,7 +111,14 @@ function productIndex(products) {
 }
 
 function orderLocation(order) {
-  if (!order.location_id) throw new Error(t('ordersLib.chooseShipFrom'));
+  if (!order.location_id) {
+    // The code lets the caller offer the door (Nov 14, 2026): a
+    // message that demands data must open the way to that data —
+    // the Orders page turns this into an "Edit order" action.
+    const err = new Error(t('ordersLib.chooseShipFrom'));
+    err.code = 'choose_ship_from';
+    throw err;
+  }
   return { id: order.location_id, name: order.location_name || t('ordersLib.locationFallback') };
 }
 
@@ -96,7 +128,11 @@ function orderLocation(order) {
  * leaves half the order held.
  */
 export async function reserveOrder({ order, products, levels = [], user }) {
-  if (!['new', 'pending'].includes(order.status || 'new')) {
+  // Packed is holdable too (Nov 14, 2026): an order packed without
+  // a hold can still claim its stock before it ships — holding is
+  // a stock claim, packing is a physical state, and the card
+  // offers Hold whenever nothing is held in a holdable state.
+  if (!['new', 'pending', 'packed'].includes(order.status || 'new')) {
     throw new Error(t('ordersLib.alreadyHoldingOrPast'));
   }
   const location = orderLocation(order);
@@ -155,7 +191,9 @@ export async function reserveOrder({ order, products, levels = [], user }) {
 
   await base44.entities.Order.update(order.id, {
     lines: updated,
-    status: 'reserved',
+    // A packed order stays packed — the hold is added to it, the
+    // packing is not undone.
+    status: order.status === 'packed' ? 'packed' : 'reserved',
     reserved_at: order.reserved_at || new Date().toISOString(),
     reserved_by: order.reserved_by || user?.full_name || user?.email || '',
   });

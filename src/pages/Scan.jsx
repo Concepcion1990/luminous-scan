@@ -36,6 +36,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import ResponsiveSelect from '@/components/ui/ResponsiveSelect';
+import AddLocationInline from '@/components/locations/AddLocationInline';
+import { useDataFresh } from '@/hooks/useDataFresh';
 
 const actions = [
   { key: 'receive', label: 'Receive', labelKey: 'scan.action.receive', hint: 'Stock that arrived', hintKey: 'scan.action.receiveHint' },
@@ -85,6 +87,7 @@ export default function Scan() {
     mobile: !isDesktop,
   });
   const [locations, setLocations] = useState([]);
+  const [locReload, setLocReload] = useState(0);
   const [locationId, setLocationId] = useState(localStorage.getItem('stockroom.location') || '');
   const [session, setSession] = useState(0);
   const [manual, setManual] = useState('');
@@ -129,7 +132,11 @@ export default function Scan() {
     })();
     base44.auth.me().then(setUser).catch(() => setUser(null));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeId]);
+  }, [activeId, locReload]);
+
+  // Locations are shared truth too: a rename in Locations shows
+  // here on next view, without a manual refresh.
+  useDataFresh('inventory', '/scan', () => setLocReload((r) => r + 1));
 
   // A different business has a different catalog: forget the scanned product.
   useEffect(() => {
@@ -458,6 +465,16 @@ export default function Scan() {
           />
         </div>
       </div>
+
+      {locations.length === 0 && activeId && (
+        <AddLocationInline
+          businessId={activeId}
+          onCreated={(loc) => {
+            setLocations([loc]);
+            setLocationId(loc.id);
+          }}
+        />
+      )}
 
       <SyncIndicator sync={sync} />
 

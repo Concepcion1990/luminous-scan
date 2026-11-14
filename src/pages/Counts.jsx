@@ -6,6 +6,7 @@ import CountSessionDialog from '@/components/counts/CountSessionDialog';
 import CountSheet from '@/components/counts/CountSheet';
 import { Button } from '@/components/ui/button';
 import { useBusiness } from '@/hooks/useBusiness';
+import { useDataFresh } from '@/hooks/useDataFresh';
 import { useOfflineSync } from '@/hooks/useOfflineSync';
 import SyncIndicator from '@/components/sync/SyncIndicator';
 import { scoped } from '@/lib/scoped';
@@ -30,6 +31,10 @@ export default function Counts() {
   const [expanded, setExpanded] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [flash, setFlash] = useState(null);
+
+  // Locations are shared truth: the store location appears in the
+  // Start-a-count picker, and renames propagate on next view.
+  useDataFresh('inventory', '/counts', () => setReload((r) => r + 1));
 
   useEffect(() => {
     (async () => {

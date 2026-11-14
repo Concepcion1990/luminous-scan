@@ -55,7 +55,7 @@ function statusTone(status) {
     case 'open':
       return 'bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-100';
     case 'acknowledged':
-      return 'bg-sky-100 text-sky-900 dark:bg-sky-900/40 dark:text-sky-100';
+      return 'bg-link/12 text-link';
     case 'resolved':
       return 'bg-ok/12 text-ok';
     case 'declined':

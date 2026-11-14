@@ -125,21 +125,33 @@ export async function rejectReturn(ret) {
 export async function completeReturn({ ret, products, user, linkedOrder }) {
   if (ret.status === 'completed') throw new Error(t('returnsLib.alreadyCompleted'));
   if (ret.status !== 'approved') throw new Error(t('returnsLib.approveBeforeComplete'));
-  if (!ret.location_id) throw new Error(t('returnsLib.chooseReturnLocation'));
-
-  const location = { id: ret.location_id, name: ret.location_name || t('returnsLib.locationFallback') };
-  const byProduct = new Map(products.map((p) => [p.id, p]));
-  const businessId = ret.business_id || '';
 
   const restockLines = (ret.lines || []).filter((l) => Number(l.quantity) > 0 && l.restock);
   const exchangeLines = (ret.exchange_lines || []).filter((l) => Number(l.quantity) > 0);
+  const hasAnyLine =
+    (ret.lines || []).some((l) => Number(l.quantity) > 0) || exchangeLines.length > 0;
 
-  // Everything is checked before anything is written. Applied line by line, a
-  // failure halfway would leave the return approved with some stock already
-  // moved, and completing it again would restock those lines twice.
-  if (!restockLines.length && !exchangeLines.length) {
+  // A return with NO lines at all still cannot complete — there
+  // is nothing on it to close.
+  if (!hasAnyLine) {
     throw new Error(t('returnsLib.setLineOrReplacement'));
   }
+
+  // A location is demanded ONLY when something actually moves
+  // (the owner's ruling, Nov 14, 2026): a return whose lines all
+  // say do-not-restock and which has no exchange lines completes
+  // as a record-only close — goods received, refund recorded,
+  // nothing re-enters stock — with no location asked for. This
+  // mirrors how Save already skips the location when nothing
+  // restocks.
+  const movesStock = restockLines.length > 0 || exchangeLines.length > 0;
+  if (movesStock && !ret.location_id) {
+    throw new Error(t('returnsLib.chooseReturnLocation'));
+  }
+
+  const location = { id: ret.location_id || '', name: ret.location_name || t('returnsLib.locationFallback') };
+  const byProduct = new Map(products.map((p) => [p.id, p]));
+  const businessId = ret.business_id || '';
   [...restockLines, ...exchangeLines].forEach((line) => {
     if (!byProduct.get(line.product_id)) {
       throw new Error(

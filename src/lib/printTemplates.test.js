@@ -84,17 +84,14 @@ test('the Print Center subtitle does not advertise purchase orders to Essentials
   assert.match(page, /\{showSupplierDocs\s*\n\s*\? 'Scannable labels, stock sheets, pick lists, purchase orders, customer invoices, receipts and return documents\.'\s*\n\s*: 'Scannable labels, stock sheets, pick lists, customer invoices, receipts and return documents\.'\}/);
 });
 
-test('supplier styles show as locked entries linking to /upgrade on Essentials', () => {
+test('supplier styles are invisible on Essentials — no lock row, no badge (Nov 14, 2026)', () => {
   const page = readFileSync('src/pages/PrintCenter.jsx', 'utf8');
-  // Only once Essentials is confirmed — while the plan is still loading
-  // the styles stay hidden, so a Business account never briefly sees them
-  // locked the way the limits flashed.
-  assert.match(page, /const lockedSupplierTemplates =\s*\n\s*isEssentials && !entitlementLoading/);
-  assert.match(page, /TEMPLATES\.filter\(\(entry\) => isSupplierPrintTemplate\(entry\.key\)\)/);
-  assert.match(page, /\{lockedSupplierTemplates\.map\(\(entry\) => \(/);
-  assert.match(page, /<Lock className="h-3\.5 w-3\.5 shrink-0 text-muted-foreground" \/>/);
-  // Locked entries link out to /upgrade — they never select the style, so
-  // the supplierBlocked preview guard underneath stays as defence in depth.
-  assert.match(page, /<Link\s*\n\s*key=\{entry\.key\}\s*\n\s*to="\/upgrade"/);
-  assert.match(page, /Business\s*\n\s*<\/span>/);
+  // The owner's invisibility ruling: on non-Business plans the two
+  // supplier document types are omitted from the Print list
+  // entirely. The visible list still filters them out; there is
+  // no locked-entries rendering anywhere.
+  assert.ok(!page.includes('lockedSupplierTemplates'), 'the locked rows are gone');
+  assert.ok(!page.includes('print.businessBadge'), 'the BUSINESS badge row is gone');
+  assert.match(page, /const visibleTemplates = TEMPLATES\.filter\(/);
+  assert.match(page, /showSupplierDocs \|\| !isSupplierPrintTemplate\(entry\.key\)/);
 });

@@ -9,6 +9,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import StaffMemberCard from '@/components/staff/StaffMemberCard';
+import { sendStaffPasswordReset } from '@/lib/recovery';
 import StaffMemberDialog from '@/components/staff/StaffMemberDialog';
 import StaffRoleCard from '@/components/staff/StaffRoleCard';
 import RoleDialog from '@/components/staff/RoleDialog';
@@ -92,6 +93,28 @@ export default function Staff() {
     await base44.entities.StaffMember.delete(member.id);
     toast({ title: t('staff.member.removed') });
     load();
+  };
+
+  // Owner-only (the server enforces it too, on every plan): email the
+  // member the standard password reset at their account email. The
+  // owner never sees the link or code — only where it went.
+  const sendReset = async (member) => {
+    if (!window.confirm(t('staff.member.resetConfirm', { name: member.full_name, email: member.email }))) return;
+    try {
+      const result = await sendStaffPasswordReset(activeId, member.id);
+      toast({
+        title: t('staff.member.resetSent', { email: result?.sent_to || member.email }),
+      });
+    } catch (error) {
+      toast({
+        title: t('staff.member.resetFailed'),
+        description:
+          error?.data?.error === 'staff_no_account'
+            ? t('staff.member.resetNoAccount')
+            : error?.message || t('staff.member.resetFailed'),
+        variant: 'destructive',
+      });
+    }
   };
 
   // Custom roles are a Business-only feature: Essentials uses the five
@@ -238,8 +261,10 @@ export default function Staff() {
                     member={member}
                     locations={locations}
                     planKey={cardPlanKey}
+                    isOwner={isAdmin}
                     onEdit={openEdit}
                     onRemove={removeMember}
+                    onSendReset={sendReset}
                   />
                 ))}
               </div>

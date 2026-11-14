@@ -6,6 +6,7 @@ import { t } from '@/lib/i18n';
 import { useBusiness } from '@/hooks/useBusiness';
 import useEntitlements from '@/hooks/useEntitlements';
 import { listProducts } from '@/lib/inventory';
+import { orderShipAddressText } from '@/lib/orders';
 import { isSupplierPrintTemplate } from '@/lib/plans';
 import { scoped } from '@/lib/scoped';
 import {
@@ -34,21 +35,19 @@ import { Label } from '@/components/ui/label';
 export default function PrintCenter() {
   const { profile, activeId } = useBusiness();
   const location = useLocation();
-  // Supplier print styles are Business-only: the two options stay hidden
-  // while the plan is still loading, so a Business account never briefly
-  // loses them the way the limits did. Once Essentials is confirmed, they
-  // show as visibly locked entries linking to /upgrade instead of staying
-  // hidden — hiding them entirely gave Essentials no upsell path and left
-  // the locked preview panel near-unreachable.
+  // Supplier print styles are Business-only, and INVISIBLE off
+  // Business (the owner's ruling, Nov 14, 2026 — the same
+  // principle as Till connections: a locked door with a padlock
+  // is still a tease). The two options stay hidden while the plan
+  // is still loading, so a Business account never briefly loses
+  // them; once Essentials is confirmed they are simply not in the
+  // list at all — no lock row, no badge. Server-side plan
+  // enforcement for these documents is unchanged.
   const { isEssentials, isLoading: entitlementLoading } = useEntitlements();
   const showSupplierDocs = !isEssentials && !entitlementLoading;
   const visibleTemplates = TEMPLATES.filter(
     (entry) => showSupplierDocs || !isSupplierPrintTemplate(entry.key)
   );
-  const lockedSupplierTemplates =
-    isEssentials && !entitlementLoading
-      ? TEMPLATES.filter((entry) => isSupplierPrintTemplate(entry.key))
-      : [];
   const [template, setTemplate] = useState('price');
   const [copies, setCopies] = useState('1');
   const [search, setSearch] = useState('');
@@ -179,10 +178,16 @@ export default function PrintCenter() {
   const customerOrder = customerOrders.find((entry) => entry.id === customerOrderId) || null;
 
   // Picking an order for the shipping label pre-fills the recipient
-  // name from the order (the address is typed fresh each time).
+  // name from the order — and, since Nov 14, 2026, the address too
+  // WHEN the order carries a stored ship-to address. When it
+  // doesn't, the address starts blank and is typed fresh each
+  // time. Either way, what is typed here is used for this print
+  // only and is never saved back — the Nov 13 rule stands; the
+  // stored address lives on the order, not in the print tool.
   useEffect(() => {
     if (template === 'shipping' && customerOrder) {
       setShipName(customerOrder.customer_name || '');
+      setShipAddress(orderShipAddressText(customerOrder));
     }
   }, [template, customerOrder]);
   const returnRecord = returnRecords.find((entry) => entry.id === returnId) || null;
@@ -384,22 +389,6 @@ export default function PrintCenter() {
                     {t(entry.hintKey)}
                   </span>
                 </button>
-              ))}
-              {lockedSupplierTemplates.map((entry) => (
-                <Link
-                  key={entry.key}
-                  to="/upgrade"
-                  className="rounded-lg border border-border px-3 py-2 text-left transition-colors hover:bg-muted"
-                >
-                  <span className="flex items-center gap-1.5 text-sm font-medium">
-                    <Lock className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                    {t(entry.labelKey)}
-                    <span className="ml-auto rounded-full bg-muted px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
-                      {t('print.businessBadge')}
-                    </span>
-                  </span>
-                  <span className="block text-[11px] text-muted-foreground">{t(entry.hintKey)}</span>
-                </Link>
               ))}
             </div>
           </div>

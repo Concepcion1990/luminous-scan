@@ -29,6 +29,7 @@
  *     the flush immediately — retrying auth failures is pointless.
  */
 import { csrfHeadersFor } from './csrf.js';
+import { bumpData } from './dataFreshness.js';
 
 export const SYNC_MAX_ATTEMPTS = 5;
 
@@ -61,7 +62,7 @@ export async function defaultSend(path, { method = 'GET', body } = {}) {
 }
 
 export async function applyQueuedChanges(businessId, changes, send = defaultSend) {
-  return send(`/api/businesses/${encodeURIComponent(businessId)}/sync/apply`, {
+  const result = await send(`/api/businesses/${encodeURIComponent(businessId)}/sync/apply`, {
     method: 'POST',
     body: {
       changes: changes.map((change) => ({
@@ -71,6 +72,10 @@ export async function applyQueuedChanges(businessId, changes, send = defaultSend
       })),
     },
   });
+  // Queued scans/movements just changed the catalog server-side:
+  // bump the freshness bus so kept-alive screens agree on return.
+  bumpData('inventory');
+  return result;
 }
 
 export async function fetchSyncState(businessId, send = defaultSend) {

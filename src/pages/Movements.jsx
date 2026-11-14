@@ -6,6 +6,7 @@ import { reversalBlocker, reverseMovement } from '@/lib/inventory';
 import { BUNDLE_MOVEMENT_TYPES } from '@/lib/plans';
 import { scoped } from '@/lib/scoped';
 import { useBusiness } from '@/hooks/useBusiness';
+import { useDataFresh } from '@/hooks/useDataFresh';
 import useEntitlements from '@/hooks/useEntitlements';
 import { localTimeZoneName } from '@/lib/dates';
 import MovementRow from '@/components/movements/MovementRow';
@@ -24,6 +25,7 @@ export default function Movements() {
   const showBundleTypes = !isEssentials && !entitlementLoading;
   const [movements, setMovements] = useState([]);
   const [locations, setLocations] = useState([]);
+  const [locReload, setLocReload] = useState(0);
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const cursorRef = useRef(null);
@@ -44,7 +46,12 @@ export default function Movements() {
     base44.entities.Location
       .filter(scoped({}, activeId), { sort: 'name', limit: 100 })
       .then((p) => setLocations(p.items ?? []));
-  }, [activeId]);
+  }, [activeId, locReload]);
+
+  // The location filter shares the one truth: the seeded store
+  // location appears here, and a rename in Locations shows its
+  // updated name on next view — no manual refresh.
+  useDataFresh('inventory', '/movements', () => setLocReload((r) => r + 1));
 
   // The ledger reads 100 rows at a time, newest first, and says so: older
   // movements are one tap away instead of silently unreachable.

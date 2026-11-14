@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import useDataFresh from '@/hooks/useDataFresh';
 import { format } from 'date-fns';
 import { Clock3, Lock, Plus, ScanLine } from 'lucide-react';
 import StatCard from '@/components/StatCard';
@@ -104,6 +105,11 @@ export default function Dashboard() {
   const [data, setData] = useState(null);
   const [ops, setOps] = useState({ orders: [], purchaseOrders: [] });
   const [loading, setLoading] = useState(true);
+  const [reload, setReload] = useState(0);
+  // Kept alive in a hidden tab layer like Products: when inventory
+  // changes on another screen, refetch on becoming visible so the
+  // summary (active SKUs, units on hand) agrees with the catalog.
+  useDataFresh('inventory', '/', () => setReload((r) => r + 1));
 
   useEffect(() => {
     let alive = true;
@@ -123,7 +129,7 @@ export default function Dashboard() {
     return () => {
       alive = false;
     };
-  }, [activeId, showPurchasing]);
+  }, [activeId, showPurchasing, reload]);
 
   const stats = data ? summarize(data) : null;
   const atProductLimit =

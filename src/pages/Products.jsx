@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { base44 } from '@/api/client';
-import { ArrowDown, ArrowUp, ChevronDown, Pencil, Plus, Search, Trash2 } from 'lucide-react';
+import useDataFresh from '@/hooks/useDataFresh';
+import { ArrowDown, ArrowUp, ChevronDown, ChevronUp, Pencil, Plus, Search, Trash2 } from 'lucide-react';
 import SortHeader from '@/components/products/SortHeader';
 import ProductThumb from '@/components/products/ProductThumb';
 import ResponsiveSelect from '@/components/ui/ResponsiveSelect';
@@ -11,10 +12,11 @@ import CopyGroupPanel from '@/components/products/CopyGroupPanel';
 import ProductFilterBar, { EMPTY_FILTERS } from '@/components/products/ProductFilterBar';
 import BulkEditDialog from '@/components/products/BulkEditDialog';
 import ProductRowMenu from '@/components/products/ProductRowMenu';
+import AdjustStockDialog from '@/components/inventory/AdjustStockDialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useBusiness } from '@/hooks/useBusiness';
 import { useCatalogVocabulary } from '@/hooks/useCatalogVocabulary';
-import { formatMoney, listProducts } from '@/lib/inventory';
+import { formatMoney, listProducts, recordMovement } from '@/lib/inventory';
 import { descendantIds, orderedLocations } from '@/lib/locations';
 import { scoped } from '@/lib/scoped';
 import { useAuth } from '@/lib/AuthContext';
@@ -29,6 +31,44 @@ import LimitBadge from '@/components/plan/LimitBadge';
 import { createProducts } from '@/lib/entitlements';
 import { t } from '@/lib/i18n';
 
+/**
+ * The little up/down stepper beside an on-hand number (Nov 14,
+ * 2026 — the interaction the owner missed from the old app). Each
+ * tap is a real ledger movement recorded by the caller; the down
+ * arrow is disabled at zero so a count can never be tapped below
+ * nothing.
+ */
+function InlineStockStepper({ value, busy, onStep, addLabel, removeLabel }) {
+  return (
+    <span className="inline-flex items-center gap-0.5">
+      <button
+        type="button"
+        aria-label={addLabel}
+        disabled={busy}
+        onClick={(e) => {
+          e.stopPropagation();
+          onStep(1);
+        }}
+        className="flex h-6 w-6 items-center justify-center rounded-md border border-border bg-card text-foreground transition-colors hover:bg-secondary disabled:opacity-40"
+      >
+        <ChevronUp className="h-3.5 w-3.5" />
+      </button>
+      <span className="numeric min-w-6 text-center text-sm font-semibold">{value}</span>
+      <button
+        type="button"
+        aria-label={removeLabel}
+        disabled={busy || value <= 0}
+        onClick={(e) => {
+          e.stopPropagation();
+          onStep(-1);
+        }}
+        className="flex h-6 w-6 items-center justify-center rounded-md border border-border bg-card text-foreground transition-colors hover:bg-secondary disabled:opacity-40"
+      >
+        <ChevronDown className="h-3.5 w-3.5" />
+      </button>
+    </span>
+  );
+}
 
 export default function Products() {
   const { user } = useAuth();
@@ -56,6 +96,11 @@ export default function Products() {
   const [editing, setEditing] = useState(null);
   const [seed, setSeed] = useState(null);
   const [reload, setReload] = useState(0);
+  // Kept alive in a hidden tab layer: if inventory changed on
+  // another screen (a product created from Scan, a stock movement),
+  // refetch through the same reload knob when this page is shown —
+  // the customer never has to pull-to-refresh to see their change.
+  useDataFresh('inventory', '/products', () => setReload((r) => r + 1));
   const [sort, setSort] = useState({ key: 'name', dir: 'asc' });
   const [activeCount, setActiveCount] = useState(0);
 
@@ -161,6 +206,48 @@ export default function Products() {
     shownLevels.forEach((l) => map.set(l.product_id, (map.get(l.product_id) || 0) + (l.quantity || 0)));
     return map;
   }, [shownLevels]);
+
+  // ---- Row stock stepper + Add stock sheet (Nov 14, 2026) --------
+  // The stepper acts only where ONE location is unambiguous: the
+  // business has a single location, or the list is filtered down to
+  // a single location. Anywhere else the number opens the stock
+  // sheet (AdjustStockDialog, the same one My inventory uses) with
+  // the location explicit — never a guess. Up = a receive of one;
+  // down = a correction setting the count one lower (the model's
+  // honest fix-a-quantity type); at zero the down tap is refused.
+  const [adjusting, setAdjusting] = useState(null);
+  const [steppingKey, setSteppingKey] = useState('');
+  const stepperLocation = useMemo(() => {
+    const candidates = filterLocationIds
+      ? locations.filter((l) => filterLocationIds.has(l.id))
+      : locations;
+    return candidates.length === 1 ? candidates[0] : null;
+  }, [locations, filterLocationIds]);
+
+  const stepStock = async (product, location, delta) => {
+    const key = `${product.id}:${location.id}`;
+    if (steppingKey) return;
+    const current =
+      levels.find((l) => l.product_id === product.id && l.location_id === location.id)?.quantity ?? 0;
+    if (delta < 0 && current <= 0) return;
+    setSteppingKey(key);
+    try {
+      if (delta > 0) {
+        await recordMovement({ product, location, type: 'receive', quantity: 1, businessId: activeId, user });
+      } else {
+        await recordMovement({ product, location, type: 'correction', quantity: current - 1, businessId: activeId, user });
+      }
+      setReload((r) => r + 1);
+    } catch (err) {
+      toast({
+        title: t('products.stockStepFailed'),
+        description: err?.message || '',
+        variant: 'destructive',
+      });
+    } finally {
+      setSteppingKey('');
+    }
+  };
 
   // Sorting runs on the loaded page so the columns stay instant while you work.
   const sortedItems = useMemo(() => {
@@ -494,11 +581,33 @@ export default function Products() {
                   <span className="hidden truncate text-xs text-muted-foreground md:block">
                     {product.category || '—'}
                   </span>
-                  <span className="numeric hidden text-right text-sm font-semibold md:block">
-                    {total}
-                    <span className="ml-1 font-mono text-[10px] font-normal uppercase text-muted-foreground">
-                      {product.unit || t('products.unitEach')}
-                    </span>
+                  <span className="hidden text-right md:block">
+                    {stepperLocation ? (
+                      <span className="inline-flex items-center gap-1">
+                        <InlineStockStepper
+                          value={total}
+                          busy={steppingKey === `${product.id}:${stepperLocation.id}`}
+                          onStep={(delta) => stepStock(product, stepperLocation, delta)}
+                          addLabel={t('products.addOneAria')}
+                          removeLabel={t('products.removeOneAria')}
+                        />
+                        <span className="font-mono text-[10px] font-normal uppercase text-muted-foreground">
+                          {product.unit || t('products.unitEach')}
+                        </span>
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        aria-label={t('products.adjustStockAria', { name: product.name })}
+                        onClick={() => setAdjusting(product)}
+                        className="numeric text-sm font-semibold underline decoration-dotted underline-offset-4"
+                      >
+                        {total}
+                        <span className="ml-1 font-mono text-[10px] font-normal uppercase text-muted-foreground">
+                          {product.unit || t('products.unitEach')}
+                        </span>
+                      </button>
+                    )}
                   </span>
                   <span className="numeric hidden text-right text-xs text-muted-foreground xl:block">
                     {product.reorder_point || 0}
@@ -508,7 +617,26 @@ export default function Products() {
                   </span>
 
                   <div className="flex items-center justify-end gap-1">
-                    <span className="numeric text-sm font-semibold md:hidden">{total}</span>
+                    <span className="md:hidden">
+                      {stepperLocation ? (
+                        <InlineStockStepper
+                          value={total}
+                          busy={steppingKey === `${product.id}:${stepperLocation.id}`}
+                          onStep={(delta) => stepStock(product, stepperLocation, delta)}
+                          addLabel={t('products.addOneAria')}
+                          removeLabel={t('products.removeOneAria')}
+                        />
+                      ) : (
+                        <button
+                          type="button"
+                          aria-label={t('products.adjustStockAria', { name: product.name })}
+                          onClick={() => setAdjusting(product)}
+                          className="numeric text-sm font-semibold underline decoration-dotted underline-offset-4"
+                        >
+                          {total}
+                        </button>
+                      )}
+                    </span>
                     <Button
                       variant="ghost"
                       size="icon"
@@ -522,6 +650,7 @@ export default function Products() {
                       product={product}
                       onDuplicate={duplicate}
                       onToggleArchive={toggleArchive}
+                      onAddStock={(p) => setAdjusting(p)}
                     />
                     {user?.role === 'admin' && (
                       <Button
@@ -549,9 +678,13 @@ export default function Products() {
                             style={depth ? { marginLeft: `${Math.min(depth, 3) * 12}px` } : undefined}
                           >
                             <span className="truncate">{place.name}</span>
-                            <span className={`numeric font-semibold ${q === 0 ? 'text-muted-foreground' : ''}`}>
-                              {q}
-                            </span>
+                            <InlineStockStepper
+                              value={q}
+                              busy={steppingKey === `${product.id}:${place.id}`}
+                              onStep={(delta) => stepStock(product, place, delta)}
+                              addLabel={t('products.addOneAria')}
+                              removeLabel={t('products.removeOneAria')}
+                            />
                           </div>
                         );
                       })}
@@ -629,6 +762,17 @@ export default function Products() {
         product={editing}
         seed={seed}
         onSaved={() => setReload((r) => r + 1)}
+      />
+
+      <AdjustStockDialog
+        open={Boolean(adjusting)}
+        onOpenChange={(next) => {
+          if (!next) setAdjusting(null);
+        }}
+        product={adjusting}
+        locations={locations}
+        businessId={activeId}
+        onDone={() => setReload((r) => r + 1)}
       />
     </div>
   );

@@ -11,12 +11,14 @@
  * screen for items a sale could not match, and the recent-sales
  * list in plain words.
  *
- * BUSINESS PLAN ONLY (the owner's ruling, Nov 13, 2026): the
- * page sits behind the PlanGate locked door — Essentials sees
- * the door, never a hidden absence — and the server refuses
- * Essentials on every POS route the same way. The server still
- * decides everything else — who may connect (owner/manager),
- * what a sale may move, and the never-double-count rule.
+ * BUSINESS PLAN ONLY (the owner's ruling, Nov 13, 2026), and
+ * INVISIBLE off Business (her ruling, Nov 14, 2026): no nav
+ * entry on Essentials, and the route bounces to the Overview
+ * instead of opening a gate page (PlanRedirect in App.jsx).
+ * The server refuses Essentials on every POS route the same
+ * way, and still decides everything else — who may connect
+ * (owner/manager), what a sale may move, and the
+ * never-double-count rule.
  * Statuses are honest: a provider that is not switched on yet
  * says so plainly instead of pretending.
  */
@@ -27,7 +29,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
 import { useBusiness } from '@/hooks/useBusiness';
-import PlanGate from '@/components/plan/PlanGate';
 import {
   getPosOverview,
   startSquareConnect,
@@ -296,13 +297,13 @@ function CredentialProviderCard({
 }
 
 export default function PosConnections() {
-  // Business-only module: Essentials gets the shown locked door,
-  // never a hidden absence (the server refuses the API the same way).
-  return (
-    <PlanGate feature="pos">
-      <PosConnectionsInner />
-    </PlanGate>
-  );
+  // Business-only module, and invisible off Business (the owner's
+  // ruling, Nov 14, 2026): the /pos route wraps this page in
+  // PlanRedirect, so Essentials never renders it at all — the nav
+  // hides the entry and a direct visit bounces to the Overview.
+  // The server refuses the API the same way, and off-Business
+  // webhook sales stay held, never lost.
+  return <PosConnectionsInner />;
 }
 
 function PosConnectionsInner() {

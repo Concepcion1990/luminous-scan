@@ -7,6 +7,7 @@ import { useTheme } from 'next-themes';
 import { useBusiness } from '@/hooks/useBusiness';
 import useEntitlements from '@/hooks/useEntitlements';
 import { useAuth } from '@/lib/AuthContext';
+import { prepareImageForUpload } from '@/lib/imagePrep';
 import { isPublisherOwner } from '@/lib/publisherAccess';
 import CancelSubscriptionDialog from '@/components/billing/CancelSubscriptionDialog';
 import { CANCELLATION_GRACE_PARAGRAPH } from '@/lib/cancellationGrace';
@@ -36,7 +37,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/components/ui/use-toast';
-import { t, deleteConfirmWord, matchesDeleteConfirm } from '@/lib/i18n';
+import { t, setLocale, deleteConfirmWord, matchesDeleteConfirm } from '@/lib/i18n';
 
 const VERIFIED_STRIPE_STATUS_LABELS = {
   ACTIVE: 'settings.billingStatus.active',
@@ -294,17 +295,22 @@ export default function Settings() {
       setError(t('settings.logo.typeError'));
       return;
     }
-    if (file.size > 2 * 1024 * 1024) {
-      setError(t('settings.logo.sizeError'));
-      return;
-    }
     setUploading(true);
     try {
+      // The app sizes the image for the owner (prepareImageForUpload,
+      // format preserved for logos) — nobody is ever told to shrink
+      // a picture themselves (owner's rule, Nov 14, 2026). The size
+      // check judges the PREPARED image and is only a backstop.
+      const prepared = await prepareImageForUpload(file, { preserveFormat: true });
+      if (prepared.size > 2 * 1024 * 1024) {
+        setError(t('settings.logo.sizeError'));
+        return;
+      }
       const dataUrl = await new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => resolve(String(reader.result));
         reader.onerror = () => reject(new Error(t('settings.logo.readError')));
-        reader.readAsDataURL(file);
+        reader.readAsDataURL(prepared);
       });
       const { logo_url } = await apiRequest(
         `/api/businesses/${encodeURIComponent(activeId)}/logo`,
@@ -315,6 +321,32 @@ export default function Settings() {
       setError(err?.message || t('settings.logo.uploadError'));
     } finally {
       setUploading(false);
+    }
+  };
+
+  // Language and currency apply the moment they are picked (the
+  // owner's ruling, Nov 14, 2026): a customer who does not speak
+  // the current language cannot be asked to hunt for a Save
+  // button in it. Each rides its OWN persistence path — a
+  // single-field PATCH carrying only that one field — so the
+  // switch neither saves nor discards any other unsaved edit on
+  // this form; everything else keeps the Save / Reset behavior.
+  // The persisted value lands in the workspace profile, so Reset
+  // to saved values keeps it too (it IS a saved value now).
+  const applyPreference = async (key, value) => {
+    const previous = values[key];
+    setValues((current) => ({ ...current, [key]: value }));
+    if (key === 'language') setLocale(value);
+    try {
+      await apiRequest(`/api/businesses/${encodeURIComponent(activeId)}`, {
+        method: 'PATCH',
+        body: { [key]: value },
+      });
+      await queryClient.invalidateQueries({ queryKey: ['workspace'] });
+    } catch (err) {
+      setValues((current) => ({ ...current, [key]: previous }));
+      if (key === 'language') setLocale(previous || 'en');
+      setError(err?.message || t('settings.save.error'));
     }
   };
 
@@ -404,7 +436,7 @@ export default function Settings() {
         uploading={uploading}
       />
 
-      <DetailsCard values={values} onChange={setValues} />
+      <DetailsCard values={values} onChange={setValues} onPreferenceChange={applyPreference} />
 
       <PlanSummaryCard />
 

@@ -5,6 +5,7 @@ import CategoryDialog from '@/components/categories/CategoryDialog';
 import CategorySyncPanel from '@/components/categories/CategorySyncPanel';
 import { countByField } from '@/lib/categories';
 import { useBusiness } from '@/hooks/useBusiness';
+import { useDataFresh } from '@/hooks/useDataFresh';
 import { scoped } from '@/lib/scoped';
 import { useAuth } from '@/lib/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -22,6 +23,10 @@ export default function Categories() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [reload, setReload] = useState(0);
+
+  // Categories & tags share the one inventory truth: a product
+  // reclassified anywhere refreshes these counts on next view.
+  useDataFresh('inventory', '/categories', () => setReload((r) => r + 1));
 
   useEffect(() => {
     (async () => {

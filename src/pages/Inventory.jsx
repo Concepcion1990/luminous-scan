@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { loadInventory, productTruncationNotice } from '@/lib/inventory';
 import { useBusiness } from '@/hooks/useBusiness';
+import useDataFresh from '@/hooks/useDataFresh';
 import { useOfflineSync } from '@/hooks/useOfflineSync';
 import SyncIndicator from '@/components/sync/SyncIndicator';
 import StatCard from '@/components/StatCard';
@@ -32,6 +33,11 @@ export default function Inventory() {
     if (!activeId) return;
     return loadInventory(activeId).then(setInventory);
   }, [activeId]);
+
+  // This route remounts on navigation, but while it sits open an
+  // inventory change elsewhere (a scan, an adjustment) refreshes it
+  // live through the same freshness bus.
+  useDataFresh('inventory', '/inventory', load);
 
   useEffect(() => {
     setInventory(null);

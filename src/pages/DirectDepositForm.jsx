@@ -14,8 +14,8 @@ import { t } from '@/lib/i18n';
 function Line({ label }) {
   return (
     <div className="mt-6">
-      <div className="h-6 border-b border-neutral-400" />
-      <p className="mt-1 text-xs text-neutral-600">{label}</p>
+      <div className="h-6 border-b border-stone-400" />
+      <p className="mt-1 text-xs text-stone-600">{label}</p>
     </div>
   );
 }
@@ -33,9 +33,9 @@ export default function DirectDepositForm() {
           {t('payroll.dd.form.back')}
         </Link>
       </div>
-      <div className="print-area rounded-xl border border-border bg-white p-6 text-neutral-900 sm:p-8">
+      <div className="print-area rounded-xl border border-border bg-white p-6 text-stone-900 sm:p-8">
         <h1 className="font-heading text-xl font-semibold">{t('payroll.dd.formTitle')}</h1>
-        {store && <p className="mt-1 text-sm text-neutral-600">{store}</p>}
+        {store && <p className="mt-1 text-sm text-stone-600">{store}</p>}
         <p className="mt-4 text-sm leading-relaxed">{t('payroll.dd.form.auth')}</p>
         <Line label={t('payroll.dd.form.employee')} />
         <Line label={t('payroll.dd.bankName')} />

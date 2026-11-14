@@ -5,6 +5,7 @@ import ReturnCard from '@/components/returns/ReturnCard';
 import ReturnFormDialog from '@/components/returns/ReturnFormDialog';
 import { Button } from '@/components/ui/button';
 import { useBusiness } from '@/hooks/useBusiness';
+import useDataFresh from '@/hooks/useDataFresh';
 import { scoped } from '@/lib/scoped';
 import { t } from '@/lib/i18n';
 import {
@@ -30,6 +31,9 @@ export default function Returns() {
   const [editing, setEditing] = useState(null);
   const [busyId, setBusyId] = useState('');
   const [flash, setFlash] = useState(null);
+  // Locations are shared truth too (Nov 14, 2026): a rename in
+  // Locations shows here on next view without a manual refresh.
+  useDataFresh('inventory', '/returns', () => setReload((r) => r + 1));
 
   useEffect(() => {
     (async () => {

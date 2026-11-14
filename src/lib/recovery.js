@@ -63,3 +63,21 @@ export function fixStaffEmail(businessId, memberId, email) {
     body: { email },
   });
 }
+
+/** Signed-in password change (Settings → Security). Account-level:
+ *  every plan, every role. Other sessions are revoked server-side. */
+export function changePassword(currentPassword, newPassword) {
+  return apiRequest('/api/auth/change-password', {
+    method: 'POST',
+    body: { currentPassword, newPassword },
+  });
+}
+
+/** Owner-only: email a staff member the standard password reset
+ *  (link + 6-digit code) at their current account email. */
+export function sendStaffPasswordReset(businessId, memberId) {
+  return apiRequest(`/api/businesses/${businessId}/staff/${memberId}/send-password-reset`, {
+    method: 'POST',
+    body: {},
+  });
+}

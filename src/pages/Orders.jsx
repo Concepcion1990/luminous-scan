@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Check, Plus, ShoppingBag } from 'lucide-react';
 import OrderCard from '@/components/orders/OrderCard';
 import OrderFormDialog from '@/components/orders/OrderFormDialog';
+import { useDataFresh } from '@/hooks/useDataFresh';
 import { Button } from '@/components/ui/button';
 import { useBusiness } from '@/hooks/useBusiness';
 import { scoped } from '@/lib/scoped';
@@ -31,6 +32,7 @@ export default function Orders() {
     routePath: '/orders',
     mobile: !isDesktop,
   });
+  const [focusShipsFrom, setFocusShipsFrom] = useState(false);
   const [orders, setOrders] = useState([]);
   const [products, setProducts] = useState([]);
   const [locations, setLocations] = useState([]);
@@ -41,6 +43,10 @@ export default function Orders() {
   const [editing, setEditing] = useState(null);
   const [busyId, setBusyId] = useState('');
   const [flash, setFlash] = useState(null);
+
+  // Orders shares the one inventory truth (products, locations,
+  // counts): changes made anywhere show here on next view.
+  useDataFresh('inventory', '/orders', () => setReload((r) => r + 1));
 
   useEffect(() => {
     (async () => {
@@ -77,7 +83,14 @@ export default function Orders() {
       setFlash({ ok: true, text: message || t('orders.updated', { number: order.number }) });
       setReload((n) => n + 1);
     } catch (e) {
-      setFlash({ ok: false, text: e.message || t('orders.failed') });
+      // A message that demands data carries its door (Nov 14,
+      // 2026): when the block is a missing ships-from, the banner
+      // itself offers Edit order for that order.
+      setFlash({
+        ok: false,
+        text: e.message || t('orders.failed'),
+        editOrderId: e?.code === 'choose_ship_from' ? order.id : undefined,
+      });
     } finally {
       setBusyId('');
     }
@@ -153,7 +166,24 @@ export default function Orders() {
           }`}
         >
           {flash.ok && <Check className="mt-0.5 h-4 w-4 shrink-0 text-ok" />}
-          <span>{flash.text}</span>
+          <span className="flex-1">{flash.text}</span>
+          {flash.editOrderId && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="shrink-0"
+              onClick={() => {
+                const target = orders.find((o) => o.id === flash.editOrderId);
+                if (target) {
+                  setEditing(target);
+                  setFocusShipsFrom(true);
+                  setEditOpen(true);
+                }
+              }}
+            >
+              {t('orders.editOrder')}
+            </Button>
+          )}
         </div>
       )}
 
@@ -195,6 +225,7 @@ export default function Orders() {
             busy={busyId === order.id}
             onEdit={() => {
               setEditing(order);
+              setFocusShipsFrom(false);
               setEditOpen(true);
             }}
             onAction={(key) => action(order, key)}
@@ -209,6 +240,7 @@ export default function Orders() {
         products={products}
         locations={locations}
         currency={currency}
+        focusShipsFrom={focusShipsFrom}
         onSaved={(text) => {
           setFlash({ ok: true, text });
           setReload((n) => n + 1);
