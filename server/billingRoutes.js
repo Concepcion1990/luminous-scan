@@ -45,6 +45,7 @@ import { runTrialReminderSweep } from './trialReminders.js';
 import {
   evidenceFromSubscription,
   stripeTsToIso,
+  subscriptionPeriodEndsAt,
   isRenewalInvoice,
 } from './stripeEvidence.js';
 import {
@@ -380,7 +381,7 @@ export function createBillingRouter({ getPool: getPoolFn }) {
         [
           subscription.status,
           stripeTsToIso(subscription.trial_end),
-          stripeTsToIso(subscription.current_period_end),
+          subscriptionPeriodEndsAt(subscription),
           subscription.cancel_at_period_end === true,
           business.id,
         ],
@@ -398,7 +399,7 @@ export function createBillingRouter({ getPool: getPoolFn }) {
       plan: planForPriceId(priceIdOfSubscription(subscription)) || record.plan,
       status: subscription.status,
       trial_ends_at: stripeTsToIso(subscription.trial_end),
-      period_ends_at: stripeTsToIso(subscription.current_period_end),
+      period_ends_at: subscriptionPeriodEndsAt(subscription),
       cancel_at_period_end: subscription.cancel_at_period_end === true,
       refund_window_open: refund.open,
       first_charge_at: refund.firstChargeAt,
@@ -430,7 +431,7 @@ export function createBillingRouter({ getPool: getPoolFn }) {
     }
     const isUpgrade = targetPlan === 'business';
     const trialEndsAt = stripeTsToIso(subscription.trial_end);
-    const periodEndsAt = stripeTsToIso(subscription.current_period_end);
+    const periodEndsAt = subscriptionPeriodEndsAt(subscription);
     // Upgrade: effective now, price difference on the NEXT invoice,
     // trial end unchanged (first Business charge at trial end).
     // Downgrade: Business until period end, then Essentials, no refund.
@@ -510,10 +511,10 @@ export function createBillingRouter({ getPool: getPoolFn }) {
     }
     const effectiveAt = isUpgrade
       ? new Date().toISOString()
-      : stripeTsToIso(verified.current_period_end);
+      : subscriptionPeriodEndsAt(verified);
     const firstChargeAt = isUpgrade
-      ? (verified.status === 'trialing' ? stripeTsToIso(verified.trial_end) : stripeTsToIso(verified.current_period_end))
-      : stripeTsToIso(verified.current_period_end);
+      ? (verified.status === 'trialing' ? stripeTsToIso(verified.trial_end) : subscriptionPeriodEndsAt(verified))
+      : subscriptionPeriodEndsAt(verified);
     await withTx(pool, async (client) => {
       await claimEvent(client, {
         eventId: `plan-change:${businessId}:${record.provider_subscription_id}:${targetPlan}`,
@@ -526,12 +527,12 @@ export function createBillingRouter({ getPool: getPoolFn }) {
         await client.query(
           `UPDATE subscriptions SET plan = $1, status = $2, trial_ends_at = $3, current_period_end = $4,
              pending_plan = NULL, pending_plan_effective_at = NULL, updated_at = NOW() WHERE business_id = $5`,
-          [targetPlan, verified.status, stripeTsToIso(verified.trial_end), stripeTsToIso(verified.current_period_end), businessId],
+          [targetPlan, verified.status, stripeTsToIso(verified.trial_end), subscriptionPeriodEndsAt(verified), businessId],
         );
         await client.query(
           `UPDATE entitlements SET plan = $1, status = $2, trial_ends_at = $3, period_ends_at = $4, updated_at = NOW()
             WHERE business_id = $5`,
-          [targetPlan, verified.status, stripeTsToIso(verified.trial_end), stripeTsToIso(verified.current_period_end), businessId],
+          [targetPlan, verified.status, stripeTsToIso(verified.trial_end), subscriptionPeriodEndsAt(verified), businessId],
         );
       } else {
         // Downgrade is effective next cycle: Business until period end.
@@ -594,10 +595,10 @@ export function createBillingRouter({ getPool: getPoolFn }) {
     );
     // Verify at Stripe before recording anything.
     const verified = await stripeApi.getSubscription(record.provider_subscription_id);
-    if (verified.cancel_at_period_end !== true || !verified.current_period_end) {
+    if (verified.cancel_at_period_end !== true || !subscriptionPeriodEndsAt(verified)) {
       throw err(502, 'subscription_paid_through_unverified', 'Stripe did not confirm the cancellation. Nothing was changed.');
     }
-    const periodEndsAt = stripeTsToIso(verified.current_period_end);
+    const periodEndsAt = subscriptionPeriodEndsAt(verified);
     const graceEndsAt = new Date(Date.parse(periodEndsAt) + CANCELLATION_GRACE_DAYS * 86_400_000).toISOString();
     await withTx(pool, async (client) => {
       await claimEvent(client, {
@@ -823,21 +824,21 @@ async function handleStripeEvent(pool, event) {
           await client.query(
             `UPDATE subscriptions SET plan = $1, status = $2, trial_ends_at = $3, current_period_end = $4,
                pending_plan = NULL, pending_plan_effective_at = NULL, updated_at = NOW() WHERE business_id = $5`,
-            [record.pending_plan, subscription.status, stripeTsToIso(subscription.trial_end), stripeTsToIso(subscription.current_period_end), business.id],
+            [record.pending_plan, subscription.status, stripeTsToIso(subscription.trial_end), subscriptionPeriodEndsAt(subscription), business.id],
           );
           await client.query(
             `UPDATE entitlements SET plan = $1, status = $2, trial_ends_at = $3, period_ends_at = $4, updated_at = NOW()
               WHERE business_id = $5`,
-            [record.pending_plan, subscription.status, stripeTsToIso(subscription.trial_end), stripeTsToIso(subscription.current_period_end), business.id],
+            [record.pending_plan, subscription.status, stripeTsToIso(subscription.trial_end), subscriptionPeriodEndsAt(subscription), business.id],
           );
         } else {
           await client.query(
             `UPDATE subscriptions SET status = $1, trial_ends_at = $2, current_period_end = $3,
                cancel_at_period_end = $4, updated_at = NOW() WHERE business_id = $5`,
-            [subscription.status, stripeTsToIso(subscription.trial_end), stripeTsToIso(subscription.current_period_end), subscription.cancel_at_period_end === true, business.id],
+            [subscription.status, stripeTsToIso(subscription.trial_end), subscriptionPeriodEndsAt(subscription), subscription.cancel_at_period_end === true, business.id],
           );
           if (subscription.status === 'canceled' || subscription.cancel_at_period_end === true) {
-            const periodEndsAt = stripeTsToIso(subscription.current_period_end);
+            const periodEndsAt = subscriptionPeriodEndsAt(subscription);
             const graceEndsAt = periodEndsAt
               ? new Date(Date.parse(periodEndsAt) + CANCELLATION_GRACE_DAYS * 86_400_000).toISOString()
               : null;
@@ -855,7 +856,7 @@ async function handleStripeEvent(pool, event) {
             await client.query(
               `UPDATE entitlements SET plan = $1, status = $2, trial_ends_at = $3, period_ends_at = $4, updated_at = NOW()
                 WHERE business_id = $5`,
-              [stripePlan, subscription.status, stripeTsToIso(subscription.trial_end), stripeTsToIso(subscription.current_period_end), business.id],
+              [stripePlan, subscription.status, stripeTsToIso(subscription.trial_end), subscriptionPeriodEndsAt(subscription), business.id],
             );
           }
         }
@@ -872,7 +873,7 @@ async function handleStripeEvent(pool, event) {
       }
       const { business } = await businessAndOwnerFor(pool, subscription.metadata || {});
       if (!business) return { handled: false, reason: 'unknown_business' };
-      const periodEndsAt = stripeTsToIso(subscription.current_period_end);
+      const periodEndsAt = subscriptionPeriodEndsAt(subscription);
       const graceEndsAt = periodEndsAt
         ? new Date(Date.parse(periodEndsAt) + CANCELLATION_GRACE_DAYS * 86_400_000).toISOString()
         : null;

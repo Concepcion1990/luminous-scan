@@ -14,6 +14,13 @@
  * Time is real time: a trial ends now + 7 days, a paid period ends
  * now + 30 days. advancePeriod() simulates a renewal.
  *
+ * Subscription objects mirror the CURRENT Stripe shape
+ * (API 2026-10-28.endive): there are NO top-level
+ * current_period_start / current_period_end fields — the period
+ * dates live on the subscription ITEM (items.data[0]); trial_end
+ * stays top-level. (An old-shape mock is what let the endive
+ * removal slip past this suite in production — Nov 14, 2026.)
+ *
  * This mock NEVER touches live Stripe and NEVER charges a real card.
  */
 import crypto from 'node:crypto';
@@ -73,15 +80,24 @@ export function createMockStripe() {
   function createSubscription({ customer, priceId, trial, metadata }) {
     const plan = pricePlan(priceId);
     const trialEnd = trial ? nowSec() + 7 * 24 * 60 * 60 : null;
+    const periodStart = nowSec();
+    const periodEnd = trial ? trialEnd : nowSec() + 30 * 24 * 60 * 60;
     const sub = {
       id: nextId('sub'),
       object: 'subscription',
       customer: customer.id,
       status: trial ? 'trialing' : 'active',
       trial_end: trialEnd,
-      current_period_end: trial ? trialEnd : nowSec() + 30 * 24 * 60 * 60,
       cancel_at_period_end: false,
-      items: { data: [{ id: nextId('si'), price: { id: priceId }, plan: { id: priceId } }] },
+      items: {
+        data: [{
+          id: nextId('si'),
+          price: { id: priceId },
+          plan: { id: priceId },
+          current_period_start: periodStart,
+          current_period_end: periodEnd,
+        }],
+      },
       metadata: { ...(metadata || {}) },
       created: nowSec(),
     };
@@ -242,7 +258,9 @@ export function createMockStripe() {
     if (!sub) throw new Error(`mock: no subscription ${subId}`);
     sub.status = 'active';
     sub.trial_end = null;
-    sub.current_period_end = sub.current_period_end + 30 * 24 * 60 * 60;
+    const item = sub.items.data[0];
+    item.current_period_start = item.current_period_end;
+    item.current_period_end = item.current_period_end + 30 * 24 * 60 * 60;
     sub.cancel_at_period_end = false;
     const plan = pricePlan(sub.items.data[0].price.id);
     const invoice = createInvoice(sub, 'subscription_cycle', AMOUNTS_CENTS[plan] || 0);

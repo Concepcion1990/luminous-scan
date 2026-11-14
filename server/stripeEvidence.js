@@ -9,7 +9,13 @@
  *
  * The grant NEVER trusts the browser: plan comes from the Stripe
  * Price ID (server catalog), dates come from Stripe's trial_end /
- * current_period_end, amounts come from the Stripe invoice.
+ * the subscription's period end, amounts come from the Stripe
+ * invoice. API 2026-10-28.endive removed current_period_start /
+ * current_period_end from the TOP LEVEL of subscription objects —
+ * the period dates now live on each subscription ITEM
+ * (items.data[0].current_period_end); trial_end stays top-level.
+ * subscriptionPeriodEndsAt() below is the ONLY way server code may
+ * read a subscription's paid-through date.
  */
 import { planForPriceId, priceIdOfSubscription } from './stripeCatalog.js';
 
@@ -27,6 +33,20 @@ export function stripeStatusToEntitlement(status) {
 export function stripeTsToIso(seconds) {
   if (!seconds || !Number.isFinite(Number(seconds))) return null;
   return new Date(Number(seconds) * 1000).toISOString();
+}
+
+/**
+ * Paid-through date of a Stripe subscription, as an ISO string
+ * (or null when Stripe confirms none). Reads the top-level
+ * current_period_end when present (older API shapes) and falls
+ * back to the first subscription item's current_period_end —
+ * where API 2026-10-28.endive and later actually put it.
+ */
+export function subscriptionPeriodEndsAt(subscription) {
+  if (!subscription || typeof subscription !== 'object') return null;
+  return stripeTsToIso(
+    subscription.current_period_end ?? subscription.items?.data?.[0]?.current_period_end,
+  );
 }
 
 /**
@@ -51,7 +71,7 @@ export function evidenceFromSubscription({ subscription, invoice = null, session
     throw Object.assign(new Error('The Stripe invoice is not in USD.'), { status: 502, code: 'currency_mismatch' });
   }
   const trialEndsAt = stripeTsToIso(subscription.trial_end);
-  const periodEndsAt = stripeTsToIso(subscription.current_period_end);
+  const periodEndsAt = subscriptionPeriodEndsAt(subscription);
   if (!periodEndsAt) {
     throw Object.assign(new Error('Stripe did not confirm a paid-through date.'), { status: 502, code: 'subscription_paid_through_unverified' });
   }

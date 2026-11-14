@@ -16,7 +16,7 @@ import {
   trialCheckout,
   mock,
 } from './helpers.js';
-import { evidenceFromSubscription } from '../../server/stripeEvidence.js';
+import { evidenceFromSubscription, subscriptionPeriodEndsAt } from '../../server/stripeEvidence.js';
 
 after(close);
 beforeEach(() => {
@@ -69,14 +69,17 @@ test('publisher-access is server-side yes/no and fails closed', async () => {
 });
 
 test('evidence mapping: trial and paid grants, wrong price/currency/status refused', () => {
+  const now = Math.floor(Date.now() / 1000);
+  const priceId = process.env.STRIPE_TEST_PRICE_ESSENTIALS;
+  // Current Stripe shape (API 2026-10-28.endive): period dates live
+  // on the subscription item; there is NO top-level period end.
   const base = {
     id: 'sub_ev1',
     customer: 'cus_ev1',
     status: 'trialing',
-    trial_end: Math.floor(Date.now() / 1000) + 7 * 86400,
-    current_period_end: Math.floor(Date.now() / 1000) + 7 * 86400,
+    trial_end: now + 7 * 86400,
     cancel_at_period_end: false,
-    items: { data: [{ price: { id: process.env.STRIPE_TEST_PRICE_ESSENTIALS } }] },
+    items: { data: [{ price: { id: priceId }, current_period_start: now, current_period_end: now + 7 * 86400 }] },
     metadata: {},
   };
   const trial = evidenceFromSubscription({ subscription: base });
@@ -84,7 +87,12 @@ test('evidence mapping: trial and paid grants, wrong price/currency/status refus
   assert.equal(trial.status, 'trialing');
   assert.ok(trial.trialEndsAt);
   const paid = evidenceFromSubscription({
-    subscription: { ...base, status: 'active', trial_end: null, current_period_end: Math.floor(Date.now() / 1000) + 30 * 86400 },
+    subscription: {
+      ...base,
+      status: 'active',
+      trial_end: null,
+      items: { data: [{ price: { id: priceId }, current_period_start: now, current_period_end: now + 30 * 86400 }] },
+    },
   });
   assert.equal(paid.status, 'active');
   // Unknown price id: refused.
@@ -102,11 +110,45 @@ test('evidence mapping: trial and paid grants, wrong price/currency/status refus
     () => evidenceFromSubscription({ subscription: { ...base, status: 'incomplete' } }),
     (error) => error.code === 'subscription_not_grantable',
   );
-  // No period end: refused (paid-through unverified).
+  // No period end anywhere: refused (paid-through unverified).
   assert.throws(
-    () => evidenceFromSubscription({ subscription: { ...base, current_period_end: null } }),
+    () => evidenceFromSubscription({
+      subscription: { ...base, items: { data: [{ price: { id: priceId }, current_period_end: null }] } },
+    }),
     (error) => error.code === 'subscription_paid_through_unverified',
   );
+});
+
+test('endive shape: the paid-through date is sourced from the subscription item', () => {
+  // Regression pin for the Nov 14, 2026 production failure: a real
+  // checkout completed, but evidenceFromSubscription threw
+  // subscription_paid_through_unverified because API
+  // 2026-10-28.endive subscriptions carry current_period_end ONLY
+  // on items.data[0] — exactly the shape of the live subscription
+  // (trialing, period end == trial_end, both on the item).
+  const now = Math.floor(Date.now() / 1000);
+  const priceId = process.env.STRIPE_TEST_PRICE_ESSENTIALS;
+  const endiveSub = {
+    id: 'sub_endive',
+    customer: 'cus_endive',
+    status: 'trialing',
+    trial_end: now + 7 * 86400,
+    cancel_at_period_end: false,
+    items: { data: [{ price: { id: priceId }, current_period_start: now, current_period_end: now + 7 * 86400 }] },
+    metadata: {},
+  };
+  assert.equal(subscriptionPeriodEndsAt(endiveSub), new Date((now + 7 * 86400) * 1000).toISOString());
+  const evidence = evidenceFromSubscription({ subscription: endiveSub });
+  assert.equal(evidence.status, 'trialing');
+  assert.equal(evidence.periodEndsAt, new Date((now + 7 * 86400) * 1000).toISOString());
+  assert.equal(evidence.trialEndsAt, evidence.periodEndsAt);
+  // Older shapes keep working: a top-level period end still wins.
+  const legacySub = { ...endiveSub, current_period_end: now + 30 * 86400 };
+  assert.equal(subscriptionPeriodEndsAt(legacySub), new Date((now + 30 * 86400) * 1000).toISOString());
+  assert.equal(evidenceFromSubscription({ subscription: legacySub }).periodEndsAt, new Date((now + 30 * 86400) * 1000).toISOString());
+  // No period end on either level: no date, and the grant refuses.
+  assert.equal(subscriptionPeriodEndsAt({ items: { data: [{ price: { id: priceId } }] } }), null);
+  assert.equal(subscriptionPeriodEndsAt(null), null);
 });
 
 test('past-due payment update returns a setup-mode Checkout URL', async () => {
