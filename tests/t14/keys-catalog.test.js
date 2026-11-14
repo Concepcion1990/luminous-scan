@@ -1,7 +1,7 @@
 /**
  * T14 — send-PO surface invariants: the new i18n keys exist in every
  * locale (3595 at send-PO; 3597 after the delete warning; 3664 after rewards;
- * 3749 after POS, 3754 after the POS gate, 3768 after plans parity, 3804 after in-app problem reporting, 3811 after the front-door fixes), and the
+ * 3749 after POS, 3754 after the POS gate, 3768 after plans parity, 3804 after in-app problem reporting, 3811 after the front-door fixes, 3830 after the transfer door, 3857 after clearance + rollback pricing, 3875 after shipping labels), and the
  * training catalogs (client + server) carry the feature's lessons in
  * agreement.
  */
@@ -14,7 +14,7 @@ import { TRAINING_LESSONS as SERVER_LESSONS } from '../../server/trainingCatalog
 
 test('keyset parity holds across all 52 locale files at the send-PO total', () => {
   const enKeys = Object.keys(en).sort();
-  assert.equal(enKeys.length, 3811);
+  assert.equal(enKeys.length, 3875);
   assert.equal(SUPPORTED_LOCALES.length, 52);
   for (const code of SUPPORTED_LOCALES) {
     const keys = Object.keys(LOCALES[code]).sort();

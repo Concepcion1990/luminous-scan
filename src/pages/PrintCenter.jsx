@@ -21,12 +21,14 @@ import PickList from '@/components/print/PickList';
 import OrderPicker from '@/components/print/OrderPicker';
 import PurchaseOrderDoc from '@/components/print/PurchaseOrderDoc';
 import CustomerDoc from '@/components/print/CustomerDoc';
+import ShippingLabelDoc from '@/components/print/ShippingLabelDoc';
 import ReturnDoc from '@/components/print/ReturnDoc';
 import CustomerOrderPicker from '@/components/print/CustomerOrderPicker';
 import ReturnPicker from '@/components/print/ReturnPicker';
 import ProductPicker from '@/components/print/ProductPicker';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 
 export default function PrintCenter() {
@@ -60,6 +62,12 @@ export default function PrintCenter() {
   const [customerOrderId, setCustomerOrderId] = useState('');
   const [returnRecords, setReturnRecords] = useState([]);
   const [returnId, setReturnId] = useState('');
+  // Shipping label (both plans): orders carry no postal address, so
+  // the address is typed here at print time and never saved. The
+  // recipient name pre-fills from the picked order.
+  const [shipName, setShipName] = useState('');
+  const [shipAddress, setShipAddress] = useState('');
+  const [shipFromAddress, setShipFromAddress] = useState('');
   // Direct printing (T5): Bluetooth / USB send label bytes straight
   // to the printer — no internet, no server round-trip. Availability
   // is a browser fact, not a plan fact: labels print on both plans.
@@ -102,7 +110,7 @@ export default function PrintCenter() {
   }, [debounced, activeId]);
 
   const needsOrder = template === 'po' || template === 'packing';
-  const needsCustomerOrder = ['invoice', 'receipt', 'custpacking'].includes(template);
+  const needsCustomerOrder = ['invoice', 'receipt', 'custpacking', 'shipping'].includes(template);
   const needsReturn = template === 'returndoc';
 
   // A supplier style picked on Business must not linger once the plan is
@@ -169,6 +177,14 @@ export default function PrintCenter() {
   const Sheet = template === 'count' ? CountSheet : PickList;
   const order = orders.find((entry) => entry.id === orderId) || null;
   const customerOrder = customerOrders.find((entry) => entry.id === customerOrderId) || null;
+
+  // Picking an order for the shipping label pre-fills the recipient
+  // name from the order (the address is typed fresh each time).
+  useEffect(() => {
+    if (template === 'shipping' && customerOrder) {
+      setShipName(customerOrder.customer_name || '');
+    }
+  }, [template, customerOrder]);
   const returnRecord = returnRecords.find((entry) => entry.id === returnId) || null;
 
   const labels = useMemo(() => {
@@ -208,7 +224,7 @@ export default function PrintCenter() {
     }
     if (template === 'po' && order) return `/api/businesses/${activeId}/print/po?po_id=${order.id}&mode=po`;
     if (template === 'packing' && order) return `/api/businesses/${activeId}/print/po?po_id=${order.id}&mode=packing`;
-    if (isCustomerDoc && customerOrder) {
+    if (isCustomerDoc && customerOrder && activeTemplate.mode !== 'shipping') {
       return `/api/businesses/${activeId}/print/packing-slip?order_id=${customerOrder.id}`;
     }
     return null;
@@ -391,11 +407,49 @@ export default function PrintCenter() {
           {isOrder ? (
             <OrderPicker orders={orders} value={orderId} onChange={setOrderId} />
           ) : isCustomerDoc ? (
-            <CustomerOrderPicker
-              orders={customerOrders}
-              value={customerOrderId}
-              onChange={setCustomerOrderId}
-            />
+            <>
+              <CustomerOrderPicker
+                orders={customerOrders}
+                value={customerOrderId}
+                onChange={setCustomerOrderId}
+              />
+              {template === 'shipping' && (
+                <div className="rounded-xl border border-border bg-card p-4">
+                  <Label className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                    {t('print.templateShipping')}
+                  </Label>
+                  <div className="mt-3 space-y-3">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="ship-name">{t('print.recipientNameLabel')}</Label>
+                      <Input
+                        id="ship-name"
+                        value={shipName}
+                        onChange={(event) => setShipName(event.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="ship-address">{t('print.recipientAddressLabel')}</Label>
+                      <Textarea
+                        id="ship-address"
+                        rows={3}
+                        value={shipAddress}
+                        onChange={(event) => setShipAddress(event.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="ship-from">{t('print.senderAddressLabel')}</Label>
+                      <Textarea
+                        id="ship-from"
+                        rows={2}
+                        value={shipFromAddress}
+                        onChange={(event) => setShipFromAddress(event.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <p className="mt-2 text-[11px] text-muted-foreground">{t('print.shippingNote')}</p>
+                </div>
+              )}
+            </>
           ) : isReturnDoc ? (
             <ReturnPicker returns={returnRecords} value={returnId} onChange={setReturnId} />
           ) : (
@@ -537,7 +591,17 @@ export default function PrintCenter() {
             ) : isOrder ? (
               <PurchaseOrderDoc order={order} business={profile} mode={activeTemplate.mode} />
             ) : isCustomerDoc ? (
-              <CustomerDoc order={customerOrder} business={profile} mode={activeTemplate.mode} />
+              activeTemplate.mode === 'shipping' ? (
+                <ShippingLabelDoc
+                  order={customerOrder}
+                  business={profile}
+                  recipientName={shipName}
+                  recipientAddress={shipAddress}
+                  senderAddress={shipFromAddress}
+                />
+              ) : (
+                <CustomerDoc order={customerOrder} business={profile} mode={activeTemplate.mode} />
+              )
             ) : isReturnDoc ? (
               <ReturnDoc ret={returnRecord} business={profile} />
             ) : isDocument ? (

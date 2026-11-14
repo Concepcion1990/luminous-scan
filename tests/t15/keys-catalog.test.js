@@ -1,7 +1,7 @@
 /**
  * T15 — trial-reminder surface invariants: the keyset total moved to
  * 3595 in every locale (3597 after the delete warning; 3664 after rewards;
- * 3749 after POS, 3754 after the POS gate, 3768 after plans parity, 3804 after in-app problem reporting, 3811 after the front-door fixes), her three
+ * 3749 after POS, 3754 after the POS gate, 3768 after plans parity, 3804 after in-app problem reporting, 3811 after the front-door fixes, 3830 after the transfer door, 3857 after clearance + rollback pricing, 3875 after shipping labels), her three
  * notice strings stand verbatim in English, and the training
  * catalogs carry the owner trial-reminders lesson in agreement.
  */
@@ -14,7 +14,7 @@ import { TRAINING_LESSONS as SERVER_LESSONS } from '../../server/trainingCatalog
 
 test('keyset parity holds across all 52 locale files at the trial-reminders total', () => {
   const enKeys = Object.keys(en).sort();
-  assert.equal(enKeys.length, 3811);
+  assert.equal(enKeys.length, 3875);
   assert.equal(SUPPORTED_LOCALES.length, 52);
   for (const code of SUPPORTED_LOCALES) {
     const keys = Object.keys(LOCALES[code]).sort();
@@ -41,7 +41,7 @@ test('training catalogs carry the trial-reminders lesson, client and server in a
   assert.equal(server.track, 'owner');
   assert.equal(client.module, 'billing');
   assert.equal(client.steps, 4);
-  assert.equal(CLIENT_LESSONS.length, 73); // 64 through rewards; POS added 6 (5 owner + 1 staff); problem reporting added 3 (one per role)
+  assert.equal(CLIENT_LESSONS.length, 78); // 64 through rewards; POS added 6 (5 owner + 1 staff); problem reporting added 3 (one per role); the transfer door added 1 (owner); pricing added 2 (owner + manager); shipping labels added 2 (staff + owner)
   assert.deepEqual(
     CLIENT_LESSONS.map((lesson) => lesson.id),
     SERVER_LESSONS.map((lesson) => lesson.id),

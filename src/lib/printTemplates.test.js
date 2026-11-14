@@ -30,6 +30,7 @@ const KEPT_STYLES = [
   'invoice',
   'receipt',
   'custpacking',
+  'shipping',
   'returndoc',
 ];
 

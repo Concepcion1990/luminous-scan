@@ -5,6 +5,7 @@ import SortHeader from '@/components/products/SortHeader';
 import ProductThumb from '@/components/products/ProductThumb';
 import ResponsiveSelect from '@/components/ui/ResponsiveSelect';
 import ProductFormDialog from '@/components/products/ProductFormDialog';
+import ProductPrice from '@/components/products/ProductPrice';
 import ExportCsvButton from '@/components/products/ExportCsvButton';
 import CopyGroupPanel from '@/components/products/CopyGroupPanel';
 import ProductFilterBar, { EMPTY_FILTERS } from '@/components/products/ProductFilterBar';
@@ -503,7 +504,7 @@ export default function Products() {
                     {product.reorder_point || 0}
                   </span>
                   <span className="numeric hidden text-right text-sm xl:block">
-                    {product.price ? formatMoney(product.price, profile.currency, 2) : '—'}
+                    <ProductPrice product={product} currency={profile.currency} digits={2} />
                   </span>
 
                   <div className="flex items-center justify-end gap-1">

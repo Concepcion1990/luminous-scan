@@ -58,6 +58,8 @@ export const TRAINING_LESSONS = [
   { id: 'scanner-damaged', track: 'staff', module: 'scanner', steps: 4 },
   { id: 'print-shelf-tag', track: 'staff', module: 'printing', steps: 4 },
   { id: 'products-find-edit', track: 'staff', module: 'products', steps: 4 },
+  { id: 'owner-pricing', track: 'owner', module: 'products', steps: 4 },
+  { id: 'mgr-pricing', track: 'manager', module: 'products', steps: 4 },
   { id: 'categories-basics', track: 'staff', module: 'categories', steps: 4 },
   { id: 'locations-basics', track: 'staff', module: 'locations', steps: 4 },
   { id: 'movements-what', track: 'staff', module: 'movements', steps: 4 },
@@ -111,6 +113,7 @@ export const TRAINING_LESSONS = [
   { id: 'owner-builds', track: 'owner', module: 'builds', steps: 4 },
   { id: 'owner-messages-oversight', track: 'owner', module: 'messaging', steps: 4 },
   { id: 'owner-cross-store', track: 'owner', module: 'cross-store', steps: 4 },
+  { id: 'owner-move-stock', track: 'owner', module: 'cross-store', steps: 4 },
   { id: 'owner-staff-email-fix', track: 'owner', module: 'staff', steps: 4 },
   { id: 'owner-send-supplier-order', track: 'owner', module: 'purchasing', steps: 4 },
   { id: 'owner-give-rewards', track: 'owner', module: 'rewards', steps: 4 },
@@ -120,6 +123,8 @@ export const TRAINING_LESSONS = [
   { id: 'owner-pos-mapping', track: 'owner', module: 'pos', steps: 4 },
   { id: 'owner-pos-csv', track: 'owner', module: 'pos', steps: 4 },
   { id: 'owner-pos-sales-list', track: 'owner', module: 'pos', steps: 4 },
+  { id: 'print-shipping-label', track: 'staff', module: 'printing', steps: 4 },
+  { id: 'owner-shipping-labels', track: 'owner', module: 'printing', steps: 4 },
 ];
 
 export const lessonById = (id) => TRAINING_LESSONS.find((lesson) => lesson.id === id) || null;

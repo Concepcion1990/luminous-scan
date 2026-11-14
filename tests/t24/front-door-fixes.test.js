@@ -211,7 +211,7 @@ test('recovery: every client recovery path carries /api and names a real server 
 test('locale parity: all 52 locales carry the 7 new keys; tranche-1 locales are translated', () => {
   assert.equal(NEW_KEYS.length, 7);
   const enKeys = Object.keys(en).sort();
-  assert.equal(enKeys.length, 3811);
+  assert.equal(enKeys.length, 3875);
   for (const key of NEW_KEYS) assert.ok(key in en, `en missing ${key}`);
   assert.equal(Object.keys(LOCALES).length, 52);
   for (const code of Object.keys(LOCALES)) {

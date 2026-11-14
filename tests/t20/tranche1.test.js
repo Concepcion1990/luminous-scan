@@ -94,7 +94,9 @@ const TRANCHE_1_LOCALES = [
 // Verified cognates: keys whose correct Spanish value is spelled
 // identically to the English (see the census definition above).
 // Verified key-by-key for every Spanish variant — the identical set
-// was the same 15 keys in all six.
+// was the same 15 keys in all six. The pricing batch (Nov 13, 2026)
+// adds 'pricing.rollbackBadge': "Rollback" is Walmart's actual
+// Spanish-language branding for the sale, verified for all six.
 const SPANISH_COGNATE_KEYS = new Set([
   'products.exportNo', 'print.no',
   'productForm.fulfillDigital', 'productForm.unitKg',
@@ -102,7 +104,7 @@ const SPANISH_COGNATE_KEYS = new Set([
   'purchasing.subtotal', 'purchasing.total',
   'reports.total', 'print.subtotal', 'print.total',
   'staff.rolesCount', 'staff.rolesHeading', 'staff.statRoles',
-  'bomLib.kindBundleShort',
+  'bomLib.kindBundleShort', 'pricing.rollbackBadge',
 ]);
 const FR_FR_COGNATE_KEYS = new Set([
   'dashboard.minReorder', 'importLib.field.description', 'importLib.updateField.description',
@@ -254,6 +256,11 @@ const VI_COGNATE_KEYS = new Set([
   'settings.identity.logoLabel', 'staff.memberDialog.emailLabel', 'suppliers.email',
 ]);
 const TL_COGNATE_KEYS = new Set([
+  // 'pricing.rollbackBadge' ("Rollback") added by the pricing batch
+  // (Nov 13, 2026): Tagalog retail uses the English word directly.
+  // 'print.templateShipping' added by the shipping batch the same
+  // day: Tagalog uses the English term for a shipping label.
+  'pricing.rollbackBadge', 'print.templateShipping',
   'auth.emailLabel', 'auth.passwordLabel', 'bomLib.kindBundle',
   'bomLib.kindBundleShort', 'bomLib.kindRecipe', 'businessLib.brandColor.plum',
   'categories.kindTag', 'dashboard.minReorder', 'exports.backupJson',
@@ -343,6 +350,12 @@ const PCM_COGNATE_KEYS = new Set([
   'workforce.day.0', 'workforce.day.1', 'workforce.day.2',
   'workforce.day.3', 'workforce.day.4', 'workforce.day.5',
   'workforce.day.6',
+  // Pricing batch (Nov 13, 2026): Pidgin keeps these English price
+  // labels verbatim — verified word-by-word.
+  'pricing.clearancePriceLabel', 'pricing.modeRegular', 'pricing.salePriceLabel',
+  // Shipping batch (Nov 13, 2026): Pidgin keeps the shipping-label
+  // wording in English — verified word-by-word.
+  'print.templateShipping', 'print.shipFrom', 'print.senderAddressLabel',
 ]);
 const COGNATE_KEYS = {
   'es-MX': SPANISH_COGNATE_KEYS,
