@@ -67,6 +67,11 @@ labels): its own finished strings already use those English forms
 (Email, Draft, Status, Barcode…), so the batch matched the file
 rather than fighting it. No sentence was left untranslated.
 
+Tranche 13 (Nov 13, 2026): `ha`, `sw`, `yo` — same terms, the
+African group. Hausa and Yoruba keep their Barcode/QR labels and
+the US Checking / Savings account-type labels in Latin form, as
+their own earlier batches do.
+
 ## What `t()` does when something is missing
 
 - Unknown locale code → English (never a blank screen).

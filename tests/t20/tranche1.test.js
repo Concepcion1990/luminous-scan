@@ -83,6 +83,8 @@ const TRANCHE_1_LOCALES = [
   'pa-Arab', 'id', 'ms',
   // Tranche 12 registrations (Nov 13, 2026)
   'th', 'vi', 'tl',
+  // Tranche 13 registrations (Nov 13, 2026)
+  'ha', 'sw', 'yo',
 ];
 
 // Verified cognates: keys whose correct Spanish value is spelled
@@ -292,6 +294,22 @@ const TL_COGNATE_KEYS = new Set([
   'training.module.payroll', 'training.module.scanner', 'upgrade.introTrial',
   'workforce.tab.clock', 'workforce.tab.inbox', 'workforce.title',
 ]);
+const HA_COGNATE_KEYS = new Set([
+  'bomLib.kindBundle', 'bomLib.kindBundleShort', 'businessLib.brandColor.plum',
+  'importLib.field.barcode', 'layout.scanCodes', 'payroll.bonus',
+  'payroll.dd.checking', 'payroll.dd.savings', 'print.barcodeLabel',
+  'print.qrLabel', 'print.templateBarcode', 'productDetails.codeBarcode',
+  'productDetails.rowSerial', 'productForm.barcodeLabel', 'productForm.unitKg',
+  'products.exportColBarcode', 'products.exportColQr', 'products.sortCodes',
+]);
+const SW_COGNATE_KEYS = new Set([
+  'exports.eyebrow', 'import.eyebrow', 'productForm.unitKg',
+]);
+const YO_COGNATE_KEYS = new Set([
+  'importLib.field.barcode', 'layout.scanCodes', 'payroll.dd.checking',
+  'payroll.dd.savings', 'productDetails.codeBarcode', 'productForm.barcodeLabel',
+  'productForm.unitKg', 'products.exportColBarcode', 'products.sortCodes',
+]);
 const COGNATE_KEYS = {
   'es-MX': SPANISH_COGNATE_KEYS,
   'es-ES': SPANISH_COGNATE_KEYS,
@@ -329,6 +347,10 @@ const COGNATE_KEYS = {
   'th': TH_COGNATE_KEYS,
   'vi': VI_COGNATE_KEYS,
   'tl': TL_COGNATE_KEYS,
+
+  'ha': HA_COGNATE_KEYS,
+  'sw': SW_COGNATE_KEYS,
+  'yo': YO_COGNATE_KEYS,
 };
 
 const TOKENS = [
@@ -454,7 +476,7 @@ test('completed-tranche policy bodies are registered and served, merged over Eng
       assert.notEqual(notice, en['policies.translationNotice'], `${code} protective line is still English`);
     }
     // A locale outside the completed tranches still falls back to English.
-    assert.equal(hasPolicyTranslation(kind, 'ha'), false, `${kind}/ha should not be registered yet`);
-    assert.equal(getPolicyDocument(kind, 'ha').translated, false);
+    assert.equal(hasPolicyTranslation(kind, 'jv'), false, `${kind}/jv should not be registered yet`);
+    assert.equal(getPolicyDocument(kind, 'jv').translated, false);
   }
 });
