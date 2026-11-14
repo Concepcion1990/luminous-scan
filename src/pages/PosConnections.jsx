@@ -4,9 +4,12 @@
  * The owner's decision (Nov 12, 2026): when somebody purchases
  * merchandise at the till, it also reflects in the app's
  * inventory. This page is where a store connects its till:
- * Square and Shopify POS cards, the CSV end-of-day fallback for
- * tills with no API, the mapping screen for items a sale could
- * not match, and the recent-sales list in plain words.
+ * Square and Shopify POS cards, the six providers of the
+ * Nov 14, 2026 expansion (Clover by OAuth; Toast, Lightspeed,
+ * PayPal Zettle, Stripe Terminal and Wix by credential paste),
+ * the CSV end-of-day fallback for tills with no API, the mapping
+ * screen for items a sale could not match, and the recent-sales
+ * list in plain words.
  *
  * BUSINESS PLAN ONLY (the owner's ruling, Nov 13, 2026): the
  * page sits behind the PlanGate locked door — Essentials sees
@@ -29,6 +32,12 @@ import {
   getPosOverview,
   startSquareConnect,
   connectShopify,
+  startCloverConnect,
+  connectToast,
+  connectLightspeed,
+  connectZettle,
+  connectStripeTerminal,
+  connectWix,
   disconnectProvider,
   setProviderLocation,
   savePosMapping,
@@ -80,6 +89,88 @@ function Chip({ status, label }) {
   );
 }
 
+/**
+ * The credential-paste providers (POS expansion, Nov 14, 2026):
+ * one card shape for all of them — the fields each provider's
+ * documented API actually uses, pasted from the owner's own
+ * provider account, stored server-side only. `connect` is the
+ * src/lib/pos.js wrapper; `webhookPendingKey` names the
+ * platform-readiness flag in overview.providers (null when the
+ * provider's readiness is per-connection instead).
+ */
+const CREDENTIAL_PROVIDERS = [
+  {
+    provider: 'toast',
+    titleKey: 'pos.provider.toast',
+    helpKey: 'pos.toast.help',
+    connectKey: 'pos.toast.connect',
+    connectedToastKey: 'pos.toast.connectedToast',
+    connectFn: connectToast,
+    fields: [
+      { name: 'client_id', placeholderKey: 'pos.toast.clientIdPlaceholder' },
+      { name: 'client_secret', placeholderKey: 'pos.toast.clientSecretPlaceholder', type: 'password' },
+      { name: 'restaurant_guid', placeholderKey: 'pos.toast.restaurantPlaceholder' },
+    ],
+    noteKey: 'pos.toast.credentialNote',
+    webhookPendingKey: 'toast',
+  },
+  {
+    provider: 'lightspeed',
+    titleKey: 'pos.provider.lightspeed',
+    helpKey: 'pos.lightspeed.help',
+    connectKey: 'pos.lightspeed.connect',
+    connectedToastKey: 'pos.lightspeed.connectedToast',
+    connectFn: connectLightspeed,
+    fields: [
+      { name: 'domain_prefix', placeholderKey: 'pos.lightspeed.domainPlaceholder' },
+      { name: 'api_token', placeholderKey: 'pos.lightspeed.tokenPlaceholder', type: 'password' },
+    ],
+    noteKey: 'pos.lightspeed.tokenNote',
+    webhookPendingKey: null,
+    showWebhookUrl: true,
+  },
+  {
+    provider: 'zettle',
+    titleKey: 'pos.provider.zettle',
+    helpKey: 'pos.zettle.help',
+    connectKey: 'pos.zettle.connect',
+    connectedToastKey: 'pos.zettle.connectedToast',
+    connectFn: connectZettle,
+    fields: [
+      { name: 'organization_uuid', placeholderKey: 'pos.zettle.orgPlaceholder' },
+      { name: 'signing_key', placeholderKey: 'pos.zettle.signingKeyPlaceholder', type: 'password' },
+    ],
+    noteKey: 'pos.zettle.credentialNote',
+    webhookPendingKey: null,
+  },
+  {
+    provider: 'stripe_terminal',
+    titleKey: 'pos.provider.stripeTerminal',
+    helpKey: 'pos.stripeTerminal.help',
+    connectKey: 'pos.stripeTerminal.connect',
+    connectedToastKey: 'pos.stripeTerminal.connectedToast',
+    connectFn: connectStripeTerminal,
+    fields: [
+      { name: 'account_id', placeholderKey: 'pos.stripeTerminal.accountPlaceholder' },
+      { name: 'webhook_secret', placeholderKey: 'pos.stripeTerminal.secretPlaceholder', type: 'password' },
+    ],
+    noteKey: 'pos.stripeTerminal.secretNote',
+    alwaysNoteKey: 'pos.stripeTerminal.itemsNote',
+    webhookPendingKey: null,
+  },
+  {
+    provider: 'wix',
+    titleKey: 'pos.provider.wix',
+    helpKey: 'pos.wix.help',
+    connectKey: 'pos.wix.connect',
+    connectedToastKey: 'pos.wix.connectedToast',
+    connectFn: connectWix,
+    fields: [{ name: 'instance_id', placeholderKey: 'pos.wix.instancePlaceholder' }],
+    noteKey: 'pos.wix.instanceNote',
+    webhookPendingKey: 'wix',
+  },
+];
+
 function LocationSelect({ locations, value, onChange, disabled }) {
   return (
     <select
@@ -95,6 +186,112 @@ function LocationSelect({ locations, value, onChange, disabled }) {
         </option>
       ))}
     </select>
+  );
+}
+
+function CredentialProviderCard({
+  config,
+  connection,
+  canManage,
+  locations,
+  busy,
+  form,
+  setField,
+  act,
+  activeId,
+  webhookPending,
+}) {
+  const provider = config.provider;
+  const connected = connection.status === 'connected';
+  return (
+    <section className="rounded-xl border border-border bg-card p-4 sm:p-5">
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <Cable className="h-4 w-4 text-muted-foreground" />
+          <h2 className="text-base font-semibold">{t(config.titleKey)}</h2>
+        </div>
+        <Chip status={connection.status} label={connectionStatusLabel(connection.status)} />
+      </div>
+      <p className="mt-2 text-sm text-muted-foreground">{t(config.helpKey)}</p>
+      {config.alwaysNoteKey && (
+        <p className="mt-2 text-xs text-muted-foreground">{t(config.alwaysNoteKey)}</p>
+      )}
+      {connected ? (
+        <div className="mt-3 space-y-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-sm">{connection.label || connection.provider_account_id}</span>
+            {canManage && (
+              <>
+                <LocationSelect
+                  locations={locations}
+                  value={connection.location_id}
+                  disabled={busy === `loc-${provider}`}
+                  onChange={(value) =>
+                    act(`loc-${provider}`, () => setProviderLocation(activeId, provider, value), t('pos.location.saved'))
+                  }
+                />
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={busy === `${provider}-disconnect`}
+                  onClick={() =>
+                    act(`${provider}-disconnect`, () => disconnectProvider(activeId, provider), t('pos.disconnectedToast'))
+                  }
+                >
+                  <Unplug className="mr-1.5 h-3.5 w-3.5" /> {t('pos.disconnect')}
+                </Button>
+              </>
+            )}
+          </div>
+          {config.showWebhookUrl && connection.webhook_path && (
+            <div>
+              <p className="text-xs font-medium">{t('pos.lightspeed.webhookUrlLabel')}</p>
+              <p className="mt-1 break-all rounded-lg bg-muted/60 px-3 py-2 font-mono text-xs">
+                {typeof window !== 'undefined' ? window.location.origin : ''}
+                {connection.webhook_path}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">{t('pos.lightspeed.webhookUrlNote')}</p>
+            </div>
+          )}
+        </div>
+      ) : canManage ? (
+        <div className="mt-3 grid max-w-xl gap-2">
+          {config.fields.map((field) => (
+            <Input
+              key={field.name}
+              type={field.type || 'text'}
+              placeholder={t(field.placeholderKey)}
+              value={form[field.name] || ''}
+              onChange={(event) => setField(provider, field.name, event.target.value)}
+            />
+          ))}
+          <p className="text-xs text-muted-foreground">{t(config.noteKey)}</p>
+          <div>
+            <Button
+              size="sm"
+              disabled={busy === `${provider}-connect`}
+              onClick={() =>
+                act(
+                  `${provider}-connect`,
+                  () => config.connectFn(activeId, { ...form }),
+                  t(config.connectedToastKey),
+                )
+              }
+            >
+              <Link2 className="mr-1.5 h-3.5 w-3.5" /> {t(config.connectKey)}
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <p className="mt-3 text-xs text-muted-foreground">{t('pos.managerOnly')}</p>
+      )}
+      {webhookPending && (
+        <p className="mt-3 flex items-start gap-1.5 text-xs text-muted-foreground">
+          <TriangleAlert className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+          {t('pos.webhookPending')}
+        </p>
+      )}
+    </section>
   );
 }
 
@@ -117,6 +314,10 @@ function PosConnectionsInner() {
   const [busy, setBusy] = useState('');
   const [shopDomain, setShopDomain] = useState('');
   const [shopToken, setShopToken] = useState('');
+  const [forms, setForms] = useState({});
+  const setField = useCallback((provider, name, value) => {
+    setForms((current) => ({ ...current, [provider]: { ...(current[provider] || {}), [name]: value } }));
+  }, []);
   const [products, setProducts] = useState([]);
   const [locations, setLocations] = useState([]);
   const [csvResult, setCsvResult] = useState(null);
@@ -159,6 +360,11 @@ function PosConnectionsInner() {
     if (flag === 'connected') toast({ title: t('pos.square.connectedToast') });
     if (flag === 'failed') {
       toast({ title: t('pos.square.failedToast'), variant: 'destructive' });
+    }
+    const cloverFlag = new URLSearchParams(window.location.search).get('clover');
+    if (cloverFlag === 'connected') toast({ title: t('pos.clover.connectedToast') });
+    if (cloverFlag === 'failed') {
+      toast({ title: t('pos.clover.failedToast'), variant: 'destructive' });
     }
   }, [toast]);
 
@@ -219,6 +425,16 @@ function PosConnectionsInner() {
       t('pos.shopify.connectedToast'),
     );
 
+  const onCloverConnect = () =>
+    act('clover-connect', async () => {
+      const result = await startCloverConnect(activeId);
+      if (!result.configured) {
+        toast({ title: result.message || t('pos.clover.notConfigured') });
+        return;
+      }
+      window.location.href = result.authorize_url;
+    });
+
   const onCsvFile = async (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -268,7 +484,9 @@ function PosConnectionsInner() {
 
   const square = connections.square || { status: 'not_connected' };
   const shopify = connections.shopify || { status: 'not_connected' };
+  const clover = connections.clover || { status: 'not_connected' };
   const squareReady = overview?.providers?.square?.oauth_configured;
+  const cloverReady = overview?.providers?.clover?.oauth_configured;
 
   return (
     <div className="space-y-5">
@@ -402,6 +620,75 @@ function PosConnectionsInner() {
               </p>
             )}
           </section>
+
+          {/* ---- Clover ---- */}
+          <section className="rounded-xl border border-border bg-card p-4 sm:p-5">
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Cable className="h-4 w-4 text-muted-foreground" />
+                <h2 className="text-base font-semibold">{t('pos.provider.clover')}</h2>
+              </div>
+              <Chip status={clover.status} label={connectionStatusLabel(clover.status)} />
+            </div>
+            <p className="mt-2 text-sm text-muted-foreground">{t('pos.clover.help')}</p>
+            {clover.status === 'connected' ? (
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <span className="text-sm">{clover.label || clover.provider_account_id}</span>
+                {canManage && (
+                  <>
+                    <LocationSelect
+                      locations={locations}
+                      value={clover.location_id}
+                      disabled={busy === 'loc-clover'}
+                      onChange={(value) =>
+                        act('loc-clover', () => setProviderLocation(activeId, 'clover', value), t('pos.location.saved'))
+                      }
+                    />
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={busy === 'clover-disconnect'}
+                      onClick={() => act('clover-disconnect', () => disconnectProvider(activeId, 'clover'), t('pos.disconnectedToast'))}
+                    >
+                      <Unplug className="mr-1.5 h-3.5 w-3.5" /> {t('pos.disconnect')}
+                    </Button>
+                  </>
+                )}
+              </div>
+            ) : canManage ? (
+              <div className="mt-3">
+                <Button size="sm" disabled={busy === 'clover-connect'} onClick={onCloverConnect}>
+                  <Link2 className="mr-1.5 h-3.5 w-3.5" /> {t('pos.clover.connect')}
+                </Button>
+                {!cloverReady && (
+                  <p className="mt-2 text-xs text-muted-foreground">{t('pos.clover.notConfigured')}</p>
+                )}
+              </div>
+            ) : (
+              <p className="mt-3 text-xs text-muted-foreground">{t('pos.managerOnly')}</p>
+            )}
+          </section>
+
+          {/* ---- Credential providers: Toast, Lightspeed, Zettle, Stripe Terminal, Wix ---- */}
+          {CREDENTIAL_PROVIDERS.map((config) => (
+            <CredentialProviderCard
+              key={config.provider}
+              config={config}
+              connection={connections[config.provider] || { status: 'not_connected' }}
+              canManage={canManage}
+              locations={locations}
+              busy={busy}
+              form={forms[config.provider] || {}}
+              setField={setField}
+              act={act}
+              activeId={activeId}
+              webhookPending={
+                config.webhookPendingKey
+                  ? !overview?.providers?.[config.webhookPendingKey]?.webhook_configured
+                  : false
+              }
+            />
+          ))}
 
           {/* ---- CSV fallback ---- */}
           <section className="rounded-xl border border-border bg-card p-4 sm:p-5">

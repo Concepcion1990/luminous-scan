@@ -341,7 +341,7 @@ const NEW_KEYS = [
 test('locale parity: all 52 locales carry the 36 new keys; tranche-1 locales are translated', async () => {
   assert.equal(NEW_KEYS.length, 36);
   const enKeys = Object.keys(en).sort();
-  assert.equal(enKeys.length, 3875);
+  assert.equal(enKeys.length, 3954);
   for (const key of NEW_KEYS) assert.ok(key in en, `en missing ${key}`);
   assert.equal(Object.keys(LOCALES).length, 52);
   for (const code of Object.keys(LOCALES)) {
@@ -357,8 +357,10 @@ test('locale parity: all 52 locales carry the 36 new keys; tranche-1 locales are
   }
 });
 
-test('training: three report-a-problem lessons, one per role, catalog at 78', () => {
-  assert.equal(trainingCatalog.length, 78);
+test('training: three report-a-problem lessons, one per role, catalog at 85', () => {
+  // 78 when this test was written; the POS provider expansion
+  // added 6 owner lessons and the deletion-request flow 1 more.
+  assert.equal(trainingCatalog.length, 85);
   const byId = new Map(trainingCatalog.map((lesson) => [lesson.id, lesson]));
   assert.equal(byId.get('report-problem')?.track, 'staff');
   assert.equal(byId.get('mgr-report-problem')?.track, 'manager');

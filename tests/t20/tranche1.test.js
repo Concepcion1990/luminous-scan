@@ -409,8 +409,14 @@ const TOKENS = [
   'EAN', 'ISBN-10 / ISBN-13', 'ISBN', 'QR', 'Excel', 'Bluetooth',
   'USB', 'Wi-Fi', 'Ethernet', 'AirPrint', 'CSV', 'Shopify',
   'TikTok Shop', 'eBay', 'Amazon', 'Walmart', 'Etsy', 'Facebook',
-  'Google', 'Business', 'Essentials', 'Stripe', 'USPS', 'UPS',
+  'Google', 'Business', 'Essentials', 'Stripe Terminal', 'Stripe', 'USPS', 'UPS',
   'Square', 'POS',
+  // POS provider expansion (Nov 14, 2026): the six new providers'
+  // brand names are proper nouns, identical in every locale by
+  // the same rule that keeps Square and Shopify above — they are
+  // the pos.provider.* labels and nothing else (every sentence
+  // around them is genuinely translated).
+  'Clover', 'Toast', 'Lightspeed', 'PayPal Zettle', 'Wix',
 ];
 const EXAMPLE_VALUES = new Set([
   'you@example.com', 'alex@example.com', 'Dana Ruiz',
