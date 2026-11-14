@@ -5,7 +5,6 @@ import AssembleDialog from '@/components/materials/AssembleDialog';
 import BomCard from '@/components/materials/BomCard';
 import BomDialog from '@/components/materials/BomDialog';
 import DisassembleDialog from '@/components/materials/DisassembleDialog';
-import PlanGate from '@/components/plan/PlanGate';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -15,7 +14,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useBusiness } from '@/hooks/useBusiness';
-import useEntitlements from '@/hooks/useEntitlements';
 import { scoped } from '@/lib/scoped';
 import { t } from '@/lib/i18n';
 import {
@@ -34,11 +32,6 @@ const FILTERS = [
 
 export default function Materials() {
   const { user, activeId } = useBusiness();
-  // In-page mirror of the route-level PlanGate (App.jsx): the page is safe
-  // on its own if it is ever rendered without the route gate. While the
-  // entitlement is still loading the plan is unknown, so nothing is locked
-  // yet — the same fail-open-while-loading shape PlanGate itself uses.
-  const { can, isLoading: entitlementLoading } = useEntitlements();
   const [boms, setBoms] = useState([]);
   const [products, setProducts] = useState([]);
   const [locations, setLocations] = useState([]);
@@ -88,8 +81,6 @@ export default function Materials() {
   };
 
   const locationName = locations.find((l) => l.id === locationId)?.name;
-
-  if (!entitlementLoading && !can('builds')) return <PlanGate feature="builds" />;
 
   return (
     <div className="space-y-5">

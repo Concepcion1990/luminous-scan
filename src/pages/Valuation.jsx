@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { CircleDollarSign, Download, FileSpreadsheet, Loader2, Lock, TriangleAlert } from 'lucide-react';
+import { CircleDollarSign, Download, FileSpreadsheet, Loader2, TriangleAlert } from 'lucide-react';
 import { t } from '@/lib/i18n';
 import StatCard from '@/components/StatCard';
 import { Button } from '@/components/ui/button';
@@ -25,8 +24,11 @@ function Panel({ title, hint, children }) {
 export default function Valuation() {
   const { profile, activeId } = useBusiness();
   const { toast } = useToast();
-  // In-page entitlement guard: the route is PlanGate-locked too, but this
-  // page must be safe on its own if it is ever rendered without the gate.
+  // Business-only: the /valuation route is PlanRedirect-wrapped in
+  // App.jsx, so on Essentials this page never renders at all (the
+  // owner's invisibility ruling, Nov 14, 2026). The content below
+  // stays entitlement-conditioned as a second lock; the server
+  // refuses Essentials on the valuation data regardless.
   const { can, isLoading: entitlementLoading } = useEntitlements();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -189,21 +191,6 @@ export default function Valuation() {
           </Button>
         </div>
       </div>
-
-      {!entitlementLoading && !can('valuation') && (
-        <div className="mx-auto max-w-xl py-10 text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-            <Lock className="h-5 w-5 text-muted-foreground" />
-          </div>
-          <h1 className="mt-4 text-xl font-semibold">{t('valuation.lockedTitle')}</h1>
-          <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
-            {t('valuation.lockedDesc')}
-          </p>
-          <Button asChild className="mt-5">
-            <Link to="/upgrade">{t('valuation.seeBusiness')}</Link>
-          </Button>
-        </div>
-      )}
 
       {loading && <p className="text-sm text-muted-foreground">{t('valuation.workingOut')}</p>}
 

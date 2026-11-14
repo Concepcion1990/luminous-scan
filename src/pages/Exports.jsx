@@ -1,19 +1,16 @@
-import { Link } from 'react-router-dom';
-import { FileDown, Lock, ShieldAlert } from 'lucide-react';
+import { FileDown, ShieldAlert } from 'lucide-react';
 import { t } from '@/lib/i18n';
 import { useBusiness } from '@/hooks/useBusiness';
 import { EXPORTS } from '@/lib/exportData';
 import ExportCard from '@/components/exports/ExportCard';
 import BackupCard from '@/components/exports/BackupCard';
-import { Button } from '@/components/ui/button';
-import useEntitlements from '@/hooks/useEntitlements';
 
 export default function Exports() {
   const { profile, activeId } = useBusiness();
-  // In-page entitlement guard: the route is PlanGate-locked too, but this
-  // page must be safe on its own if it is ever rendered without the gate.
-  const { can, isLoading: entitlementLoading } = useEntitlements();
-  const locked = !entitlementLoading && !can('exports');
+  // Business-only: the /exports route is PlanRedirect-wrapped in
+  // App.jsx, so on Essentials this page never renders at all (the
+  // owner's invisibility ruling, Nov 14, 2026). The server refuses
+  // Essentials on every export route regardless.
 
   return (
     <div className="space-y-5">
@@ -36,38 +33,21 @@ export default function Exports() {
         </p>
       )}
 
-      {locked && (
-        <div className="mx-auto max-w-xl py-10 text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-            <Lock className="h-5 w-5 text-muted-foreground" />
-          </div>
-          <h1 className="mt-4 text-xl font-semibold">{t('exports.lockedTitle')}</h1>
-          <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
-            {t('exports.lockedDesc')}
-          </p>
-          <Button asChild className="mt-5">
-            <Link to="/upgrade">{t('exports.seeBusiness')}</Link>
-          </Button>
+      <>
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {EXPORTS.map((dataset) => (
+            <ExportCard
+              key={dataset.id}
+              dataset={dataset}
+              businessId={activeId}
+              businessName={profile.name}
+              profile={profile}
+            />
+          ))}
         </div>
-      )}
 
-      {!locked && (
-        <>
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            {EXPORTS.map((dataset) => (
-              <ExportCard
-                key={dataset.id}
-                dataset={dataset}
-                businessId={activeId}
-                businessName={profile.name}
-                profile={profile}
-              />
-            ))}
-          </div>
-
-          <BackupCard businessId={activeId} businessName={profile.name} profile={profile} />
-        </>
-      )}
+        <BackupCard businessId={activeId} businessName={profile.name} profile={profile} />
+      </>
 
       <div className="rounded-xl border border-border bg-card p-4 text-xs leading-relaxed text-muted-foreground sm:p-5">
         <p className="flex items-center gap-1.5 font-medium text-foreground">

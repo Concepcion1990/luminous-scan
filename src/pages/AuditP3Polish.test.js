@@ -68,29 +68,28 @@ test('OAuthConsent is kept as-is with no route — the route decision is OPEN (f
   assert.doesNotMatch(readFileSync('src/pages/OAuthConsent.jsx', 'utf8'), /Route path=/);
 });
 
-// Finding 36: one-line in-page entitlement guards — each page is safe on
-// its own, not only via the route-level PlanGate in App.jsx.
-const GUARDED_PAGES = [
-  { file: 'src/pages/Materials.jsx', feature: 'builds' },
-  { file: 'src/pages/Purchasing.jsx', feature: 'purchasing' },
-  { file: 'src/pages/Suppliers.jsx', feature: 'suppliers' },
-  { file: 'src/pages/Alerts.jsx', feature: 'alerts' },
-  { file: 'src/pages/LowStock.jsx', feature: 'alerts' },
+// Finding 36, as superseded by the owner's invisibility ruling
+// (Nov 14, 2026): these pages once mirrored the route-level PlanGate
+// with one-line in-page guards. The ruling replaced the gate with
+// PlanRedirect — on Essentials the route bounces quietly to the
+// Overview and the page never renders, so the in-page guards are
+// gone with the gate. Business renders each page exactly as before.
+const REDIRECTED_PAGES = [
+  { file: 'src/pages/Materials.jsx', feature: 'builds', component: 'Materials' },
+  { file: 'src/pages/Purchasing.jsx', feature: 'purchasing', component: 'Purchasing' },
+  { file: 'src/pages/Suppliers.jsx', feature: 'suppliers', component: 'Suppliers' },
+  { file: 'src/pages/Alerts.jsx', feature: 'alerts', component: 'Alerts' },
+  { file: 'src/pages/LowStock.jsx', feature: 'alerts', component: 'LowStock' },
 ];
 
-for (const { file, feature } of GUARDED_PAGES) {
-  test(`${file} has an in-page entitlement guard for ${feature} (finding 36)`, () => {
+for (const { file, feature, component } of REDIRECTED_PAGES) {
+  test(`${file} carries no gate; its route bounces via PlanRedirect for ${feature} (finding 36, superseded)`, () => {
     const page = readFileSync(file, 'utf8');
-    assert.match(page, /import PlanGate from '@\/components\/plan\/PlanGate';/);
-    assert.match(page, /import useEntitlements from '@\/hooks\/useEntitlements';/);
-    assert.match(page, /const \{ can, isLoading: entitlementLoading \} = useEntitlements\(\);/);
-    // While the entitlement is still loading the plan is unknown, so the
-    // guard waits — the same fail-open-while-loading shape PlanGate uses.
+    assert.doesNotMatch(page, /PlanGate/);
+    const app = readFileSync('src/App.jsx', 'utf8');
     assert.match(
-      page,
-      new RegExp(
-        `if \\(!entitlementLoading && !can\\('${feature}'\\)\\) return <PlanGate feature="${feature}" \\/>;`
-      )
+      app,
+      new RegExp(`<PlanRedirect feature="${feature}">\\s*<${component} \\/>`)
     );
   });
 }

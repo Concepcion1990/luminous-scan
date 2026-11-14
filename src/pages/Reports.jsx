@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { BarChart3, Download, FileDown, FileSpreadsheet, Files, Loader2, Lock, TriangleAlert } from 'lucide-react';
+import { BarChart3, Download, FileDown, FileSpreadsheet, Files, Loader2, TriangleAlert } from 'lucide-react';
 import { t } from '@/lib/i18n';
 import StatCard from '@/components/StatCard';
 import ReportControls from '@/components/reports/ReportControls';
@@ -36,8 +35,11 @@ const INITIAL = {
 export default function Reports() {
   const { profile, activeId } = useBusiness();
   const { toast } = useToast();
-  // In-page entitlement guard: the route is PlanGate-locked too, but this
-  // page must be safe on its own if it is ever rendered without the gate.
+  // Business-only: the /reports route is PlanRedirect-wrapped in
+  // App.jsx, so on Essentials this page never renders at all (the
+  // owner's invisibility ruling, Nov 14, 2026). The content below
+  // stays entitlement-conditioned as a second lock; the server
+  // refuses Essentials on the report data regardless.
   const { can, isLoading: entitlementLoading } = useEntitlements();
   const [filters, setFilters] = useState(INITIAL);
   const [source, setSource] = useState(null);
@@ -257,21 +259,6 @@ export default function Reports() {
         <p className="flex items-center gap-2 text-sm text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" /> {t('reports.readingRecords')}
         </p>
-      )}
-
-      {!entitlementLoading && !can('reports') && (
-        <div className="mx-auto max-w-xl py-10 text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-            <Lock className="h-5 w-5 text-muted-foreground" />
-          </div>
-          <h1 className="mt-4 text-xl font-semibold">{t('reports.lockedTitle')}</h1>
-          <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
-            {t('reports.lockedDesc')}
-          </p>
-          <Button asChild className="mt-5">
-            <Link to="/upgrade">{t('reports.seeBusiness')}</Link>
-          </Button>
-        </div>
       )}
 
       {!loading && report && !entitlementLoading && can('reports') && (

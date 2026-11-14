@@ -11,9 +11,11 @@
  * requests below are for asking; the door is for the owner doing.
  *
  * Business-only by nature: Essentials has one store, so there is
- * nowhere else to look. The route is PlanGate-wrapped in App.jsx,
- * the nav entry carries feature 'crossStore', and this page mirrors
- * the gate in-page (finding 36 pattern) so it is safe on its own.
+ * nowhere else to look. The route is PlanRedirect-wrapped in
+ * App.jsx and the nav entry carries feature 'crossStore', so on
+ * Essentials the surface simply does not exist — a typed URL
+ * bounces quietly to the Overview (the owner's invisibility
+ * ruling, Nov 14, 2026; the old in-page gate mirror went with it).
  * The server still decides: create/lookup refuse Essentials with
  * cross_store_business_only, and only the target store's staff can
  * answer a request (everyone else gets 404).
@@ -22,11 +24,9 @@ import { useCallback, useEffect, useState } from 'react';
 import { ArrowRightLeft, Check, Inbox, Send, Store, X } from 'lucide-react';
 import { base44 } from '@/api/client';
 import { t } from '@/lib/i18n';
-import PlanGate from '@/components/plan/PlanGate';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { useBusiness } from '@/hooks/useBusiness';
-import useEntitlements from '@/hooks/useEntitlements';
 import {
   listCrossStoreRequests,
   updateCrossStoreRequest,
@@ -396,11 +396,6 @@ function TransferPanel({ activeId, businesses, user }) {
 export default function CrossStoreInbox() {
   const { profile, activeId, businesses, user, record } = useBusiness();
   const { toast } = useToast();
-  // In-page mirror of the route-level PlanGate (App.jsx): the page is safe
-  // on its own if it is ever rendered without the route gate. While the
-  // entitlement is still loading the plan is unknown, so nothing is locked
-  // yet — the same fail-open-while-loading shape PlanGate itself uses.
-  const { can, isLoading: entitlementLoading } = useEntitlements();
   const [incoming, setIncoming] = useState([]);
   const [outgoing, setOutgoing] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -446,8 +441,6 @@ export default function CrossStoreInbox() {
       setBusyId('');
     }
   };
-
-  if (!entitlementLoading && !can('crossStore')) return <PlanGate feature="crossStore" />;
 
   // The transfer door is the owner's alone (the endpoint 403s anyone
   // else): the panel renders only for the business's creator.

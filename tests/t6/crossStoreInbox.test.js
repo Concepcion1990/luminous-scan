@@ -10,11 +10,13 @@
  *
  * Plan gating: Essentials still gets cross_store_business_only on
  * the create call (the server rule T6 proved), the inbox never
- * appears in the Essentials nav (feature 'crossStore'), the route is
- * PlanGate-wrapped, and the page mirrors the gate in-page.
+ * appears in the Essentials nav (feature 'crossStore'), and the
+ * route is PlanRedirect-wrapped — a typed URL bounces quietly to
+ * the Overview and the page never renders (the owner's invisibility
+ * ruling, Nov 14, 2026, superseding the PlanGate treatment).
  * The list endpoint itself is read-only and scoped to the business,
  * so it answers 200 with empty lists on Essentials — the gate lives
- * on create/lookup and on the page, not on reading an empty inbox.
+ * on create/lookup and on the route, not on reading an empty inbox.
  */
 import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -216,7 +218,7 @@ test('the status labels and answer rules read plainly', () => {
   assert.equal(canAnswerCrossStoreRequest({ status: 'declined' }), false);
 });
 
-test('the inbox is reachable for Business and hidden/locked for Essentials', () => {
+test('the inbox is reachable for Business and invisible for Essentials', () => {
   // Nav: the entry carries the Business-only feature, so Layout hides
   // it on Essentials (same staff/plan filter as Exports, Suppliers…).
   const nav = readFileSync('src/components/layout/navGroups.js', 'utf8');
@@ -233,18 +235,18 @@ test('the inbox is reachable for Business and hidden/locked for Essentials', () 
   const plans = readFileSync('src/lib/plans.js', 'utf8');
   assert.match(plans, /get crossStore\(\) \{ return t\('plansLib\.feature\.crossStore'\); \},/);
   assert.match(en, /'plansLib\.feature\.crossStore': "Cross-store requests"/);
-  // The route is PlanGate-wrapped: a typed URL on Essentials lands on
-  // the locked screen, never on the page.
+  // The route is PlanRedirect-wrapped (the owner's invisibility
+  // ruling, Nov 14, 2026 — superseding the PlanGate treatment): a
+  // typed URL on Essentials bounces quietly to the Overview and the
+  // page never renders; Business renders it exactly as before.
   const app = readFileSync('src/App.jsx', 'utf8');
-  assert.match(app, /<PlanGate feature="crossStore">/);
+  assert.match(app, /<PlanRedirect feature="crossStore">\s*<CrossStoreInbox \/>/);
   assert.match(app, /path="\/cross-store-inbox"/);
   assert.match(app, /CrossStoreInbox/);
-  // The page mirrors the gate in-page (finding 36 pattern) and reads
-  // through the cross-store lib, never a bare endpoint string.
+  // The page carries no gate of its own anymore and reads through
+  // the cross-store lib, never a bare endpoint string.
   const page = readFileSync('src/pages/CrossStoreInbox.jsx', 'utf8');
-  assert.match(page, /import PlanGate from '@\/components\/plan\/PlanGate';/);
-  assert.match(page, /import useEntitlements from '@\/hooks\/useEntitlements';/);
-  assert.match(page, /if \(!entitlementLoading && !can\('crossStore'\)\) return <PlanGate feature="crossStore" \/>;/);
+  assert.doesNotMatch(page, /PlanGate/);
   assert.match(page, /listCrossStoreRequests/);
   assert.match(page, /updateCrossStoreRequest/);
   assert.doesNotMatch(page, /\/api\/businesses.*cross-store\/requests/);

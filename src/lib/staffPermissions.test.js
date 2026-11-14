@@ -369,15 +369,15 @@ test('StaffMemberCard offers Resend invite for invited members', () => {
   assert.match(dialog, /await base44\.users\.inviteUser\(email, form\.app_role\);/);
 });
 
-test('Bundles lives only on the gated /materials page', () => {
+test('Bundles lives only on the Business-only /materials page', () => {
   const app = readFileSync('src/App.jsx', 'utf8');
-  assert.match(app, /<PlanGate feature="builds">/);
+  assert.match(app, /<PlanRedirect feature="builds">/);
   assert.match(app, /path="\/materials"/);
   const nav = readFileSync('src/components/layout/navGroups.js', 'utf8');
   assert.match(nav, /\{ to: '\/materials', label: 'Bundles & builds'[^}]*feature: 'builds' \}/);
   // No bundle UI anywhere else: not on Products, Inventory or the Dashboard.
-  // (The /materials page itself is the feature, behind the gate above — and
-  // the Essentials menu has no Bundles entry.)
+  // (The /materials page itself is the feature, behind the redirect above —
+  // and the Essentials menu has no Bundles entry.)
   for (const page of ['Products', 'Inventory', 'Dashboard']) {
     const content = readFileSync(`src/pages/${page}.jsx`, 'utf8');
     assert.doesNotMatch(content, /bundle/i, `${page} must not contain bundle UI`);
@@ -406,15 +406,15 @@ test('the catalog Export button refuses to render on Essentials', () => {
   assert.match(products, /<ExportCsvButton businessName=\{profile\.name\} businessId=\{activeId\} \/>/);
 });
 
-test('every other export action lives on a Business-gated page', () => {
+test('every other export action lives on a Business-only page', () => {
   const app = readFileSync('src/App.jsx', 'utf8');
   for (const feature of ['valuation', 'reports', 'alerts', 'purchasing', 'suppliers', 'exports']) {
-    assert.match(app, new RegExp(`<PlanGate feature="${feature}">`), `${feature} must be PlanGate-locked`);
+    assert.match(app, new RegExp(`<PlanRedirect feature="${feature}">`), `${feature} must bounce via PlanRedirect`);
   }
   // Import is NOT gated: it is an Essentials feature and stays open.
   const importLine = app.split('\n').find((line) => line.includes('path="/import"'));
   assert.match(importLine, /<Route path="\/import" element=\{<ImportCenter \/>\} \/>/);
-  assert.doesNotMatch(importLine, /PlanGate/);
+  assert.doesNotMatch(importLine, /PlanGate|PlanRedirect/);
   // Import still goes through the server create path, and the import
   // template/problem-report downloads are import aids, not exports.
   const workbench = readFileSync('src/components/import/ImportWorkbench.jsx', 'utf8');

@@ -192,17 +192,21 @@ test('36b: exportData flags the 20,000-row cap in the filename', () => {
 });
 
 // Finding 36c — the gated pages must be safe on their own, not only via the route.
-// T6.3: the guard titles moved into en.js — assert the keys are referenced
-// and the English values, not source literals.
-test('36c: Valuation, Reports and Exports each carry an in-page entitlement guard', () => {
+// Superseded by the owner's invisibility ruling (Nov 14, 2026): the
+// in-page locked doors are gone — the routes bounce via PlanRedirect
+// (pinned in tests/t6/businessInvisibility.test.js), Valuation and
+// Reports keep entitlement-conditioned content as a second lock, and
+// Exports carries no in-page guard at all. The lockedTitle strings
+// stay in the catalog (they name the features on Plans/Welcome).
+test('36c: Valuation, Reports and Exports carry no locked door anymore', () => {
   assert.match(valuation, /can\('valuation'\)/);
-  assert.match(valuation, /t\('valuation\.lockedTitle'\)/);
+  assert.doesNotMatch(valuation, /t\('valuation\.lockedTitle'\)/);
   assert.equal(en['valuation.lockedTitle'], 'Stock valuation is a Business feature');
   assert.match(reports, /can\('reports'\)/);
-  assert.match(reports, /t\('reports\.lockedTitle'\)/);
+  assert.doesNotMatch(reports, /t\('reports\.lockedTitle'\)/);
   assert.equal(en['reports.lockedTitle'], 'Advanced reports is a Business feature');
-  assert.match(exportsPage, /can\('exports'\)/);
-  assert.match(exportsPage, /t\('exports\.lockedTitle'\)/);
+  assert.doesNotMatch(exportsPage, /can\('exports'\)/);
+  assert.doesNotMatch(exportsPage, /t\('exports\.lockedTitle'\)/);
   assert.equal(en['exports.lockedTitle'], 'CSV and Excel exports is a Business feature');
 });
 

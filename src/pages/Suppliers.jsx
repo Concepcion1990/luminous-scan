@@ -3,9 +3,7 @@ import { base44, apiDownload } from '@/api/client';
 import { Link } from 'react-router-dom';
 import { ClipboardList, FileDown, Mail, Pencil, Phone, Plus } from 'lucide-react';
 import SupplierFormDialog from '@/components/suppliers/SupplierFormDialog';
-import PlanGate from '@/components/plan/PlanGate';
 import { useBusiness } from '@/hooks/useBusiness';
-import useEntitlements from '@/hooks/useEntitlements';
 import { scoped } from '@/lib/scoped';
 import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
@@ -13,11 +11,6 @@ import { useToast } from '@/components/ui/use-toast';
 
 export default function Suppliers() {
   const { activeId } = useBusiness();
-  // In-page mirror of the route-level PlanGate (App.jsx): the page is safe
-  // on its own if it is ever rendered without the route gate. While the
-  // entitlement is still loading the plan is unknown, so nothing is locked
-  // yet — the same fail-open-while-loading shape PlanGate itself uses.
-  const { can, isLoading: entitlementLoading } = useEntitlements();
   const { toast } = useToast();
   const [suppliers, setSuppliers] = useState([]);
   const [openOrders, setOpenOrders] = useState([]);
@@ -67,8 +60,6 @@ export default function Suppliers() {
       setLoading(false);
     })();
   }, [reload, activeId]);
-
-  if (!entitlementLoading && !can('suppliers')) return <PlanGate feature="suppliers" />;
 
   return (
     <div className="space-y-5">

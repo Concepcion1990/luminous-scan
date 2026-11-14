@@ -12,7 +12,6 @@ import ScrollToTop from './components/ScrollToTop';
 import PullToRefreshShell from './components/PullToRefreshShell';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Layout from '@/components/Layout';
-import PlanGate from '@/components/plan/PlanGate';
 import PlanRedirect from '@/components/plan/PlanRedirect';
 import SubscriptionAccessRoute from '@/components/plan/SubscriptionAccessRoute';
 import Upgrade from '@/pages/Upgrade';
@@ -129,9 +128,9 @@ const AuthenticatedApp = () => {
           <Route
             path="/materials"
             element={
-              <PlanGate feature="builds">
+              <PlanRedirect feature="builds">
                 <Materials />
-              </PlanGate>
+              </PlanRedirect>
             }
           />
           <Route path="/listings" element={<Listings />} />
@@ -140,41 +139,41 @@ const AuthenticatedApp = () => {
           <Route
             path="/cross-store-inbox"
             element={
-              <PlanGate feature="crossStore">
+              <PlanRedirect feature="crossStore">
                 <CrossStoreInbox />
-              </PlanGate>
+              </PlanRedirect>
             }
           />
           <Route
             path="/valuation"
             element={
-              <PlanGate feature="valuation">
+              <PlanRedirect feature="valuation">
                 <Valuation />
-              </PlanGate>
+              </PlanRedirect>
             }
           />
           <Route
             path="/reports"
             element={
-              <PlanGate feature="reports">
+              <PlanRedirect feature="reports">
                 <Reports />
-              </PlanGate>
+              </PlanRedirect>
             }
           />
           <Route
             path="/alerts"
             element={
-              <PlanGate feature="alerts">
+              <PlanRedirect feature="alerts">
                 <Alerts />
-              </PlanGate>
+              </PlanRedirect>
             }
           />
           <Route
             path="/low-stock"
             element={
-              <PlanGate feature="alerts">
+              <PlanRedirect feature="alerts">
                 <LowStock />
-              </PlanGate>
+              </PlanRedirect>
             }
           />
           <Route path="/orders" element={<Orders />} />
@@ -191,26 +190,26 @@ const AuthenticatedApp = () => {
           <Route
             path="/purchasing"
             element={
-              <PlanGate feature="purchasing">
+              <PlanRedirect feature="purchasing">
                 <Purchasing />
-              </PlanGate>
+              </PlanRedirect>
             }
           />
           <Route
             path="/suppliers"
             element={
-              <PlanGate feature="suppliers">
+              <PlanRedirect feature="suppliers">
                 <Suppliers />
-              </PlanGate>
+              </PlanRedirect>
             }
           />
           <Route path="/print" element={<PrintCenter />} />
           <Route
             path="/exports"
             element={
-              <PlanGate feature="exports">
+              <PlanRedirect feature="exports">
                 <Exports />
-              </PlanGate>
+              </PlanRedirect>
             }
           />
           <Route path="/import" element={<ImportCenter />} />

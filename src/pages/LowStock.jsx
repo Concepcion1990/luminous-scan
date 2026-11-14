@@ -1,27 +1,18 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import ReorderPanel from '@/components/dashboard/ReorderPanel';
-import PlanGate from '@/components/plan/PlanGate';
 import { loadInventory, summarize } from '@/lib/inventory';
 import { useBusiness } from '@/hooks/useBusiness';
-import useEntitlements from '@/hooks/useEntitlements';
 import { t } from '@/lib/i18n';
 
 export default function LowStock() {
   const { profile, activeId } = useBusiness();
-  // In-page mirror of the route-level PlanGate (App.jsx): the page is safe
-  // on its own if it is ever rendered without the route gate. While the
-  // entitlement is still loading the plan is unknown, so nothing is locked
-  // yet — the same fail-open-while-loading shape PlanGate itself uses.
-  const { can, isLoading: entitlementLoading } = useEntitlements();
   const [low, setLow] = useState(null);
 
   useEffect(() => {
     setLow(null);
     loadInventory(activeId || '').then((inventory) => setLow(summarize(inventory).low));
   }, [activeId]);
-
-  if (!entitlementLoading && !can('alerts')) return <PlanGate feature="alerts" />;
 
   return (
     <div className="space-y-5">

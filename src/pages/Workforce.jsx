@@ -16,7 +16,7 @@ import { ArrowLeft, BellRing, CalendarClock, Check, Clock3, Gift, ListTodo, Mess
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { useBusiness } from '@/hooks/useBusiness';
-import PlanGate from '@/components/plan/PlanGate';
+import useEntitlements from '@/hooks/useEntitlements';
 import { t } from '@/lib/i18n';
 import {
   buildRewardSlipText,
@@ -884,15 +884,10 @@ function RewardsTab({ businessId, ctx, people, businessName }) {
     load().catch(() => setLoading(false));
   }, [load]);
 
-  // Business-only module: Essentials gets the shown locked door,
-  // never a hidden absence (the server refuses the API the same way).
-  if (ctx.plan !== 'business') {
-    return (
-      <PlanGate feature="rewards">
-        <div />
-      </PlanGate>
-    );
-  }
+  // Business-only module: this tab is only ever mounted on Business
+  // plans — the Workforce tab bar hides it entirely on Essentials
+  // (the owner's invisibility ruling, Nov 14, 2026), and the server
+  // refuses the rewards API off Business the same way.
 
   const canGive = ctx.level === 'owner' || ctx.level === 'manager';
   const recipients = people.filter((person) => {
@@ -1144,6 +1139,12 @@ const TABS = [
 export default function Workforce() {
   const { activeId, record } = useBusiness();
   const { toast } = useToast();
+  const { can, isLoading: entitlementLoading } = useEntitlements();
+  // Rewards is Business-only and INVISIBLE off Business (the owner's
+  // ruling, Nov 14, 2026): the tab does not appear at all on other
+  // plans — while entitlements are still loading the plan is unknown,
+  // so the tab stays hidden until Business is confirmed.
+  const showRewards = !entitlementLoading && can('rewards');
   const [tab, setTab] = useState('clock');
   const [ctx, setCtx] = useState(null);
   const [people, setPeople] = useState([]);
@@ -1188,7 +1189,7 @@ export default function Workforce() {
         <p className="mt-1 text-sm text-muted-foreground">{t('workforce.subtitle')}</p>
       </div>
       <div className="flex flex-wrap gap-2">
-        {TABS.map(({ id, labelKey, icon: Icon }) => (
+        {TABS.filter(({ id }) => id !== 'rewards' || showRewards).map(({ id, labelKey, icon: Icon }) => (
           <Button key={id} variant={tab === id ? 'default' : 'outline'} size="sm" onClick={() => setTab(id)}>
             <Icon className="mr-1.5 h-4 w-4" />
             {t(labelKey)}
@@ -1202,7 +1203,7 @@ export default function Workforce() {
       {tab === 'timeoff' && <TimeOffTab businessId={activeId} ctx={ctx} peopleById={peopleById} />}
       {tab === 'tasks' && <TasksTab businessId={activeId} ctx={ctx} people={people} peopleById={peopleById} />}
       {tab === 'inbox' && <InboxTab businessId={activeId} ctx={ctx} people={people} onRead={loadMeta} />}
-      {tab === 'rewards' && (
+      {tab === 'rewards' && showRewards && (
         <RewardsTab businessId={activeId} ctx={ctx} people={people} businessName={record?.name || ''} />
       )}
 

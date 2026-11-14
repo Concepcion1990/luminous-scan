@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { BellRing, Download, FileSpreadsheet, Plus } from 'lucide-react';
 import AlertRuleCard from '@/components/alerts/AlertRuleCard';
 import AlertRuleDialog from '@/components/alerts/AlertRuleDialog';
-import PlanGate from '@/components/plan/PlanGate';
 import StatCard from '@/components/StatCard';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
@@ -11,7 +10,6 @@ import { evaluateRule, loadAlertSource, ALERT_PRESETS } from '@/lib/alerts';
 import { downloadCsv, fileSlug, fileStamp, toCsv } from '@/lib/csv';
 import { scoped, withBusiness } from '@/lib/scoped';
 import { useBusiness } from '@/hooks/useBusiness';
-import useEntitlements from '@/hooks/useEntitlements';
 import { t } from '@/lib/i18n';
 
 // The columns for both download formats — CSV and Excel carry the same rows.
@@ -26,11 +24,6 @@ const ALERT_EXPORT_COLUMNS = [
 export default function Alerts() {
   const { profile, activeId } = useBusiness();
   const { toast } = useToast();
-  // In-page mirror of the route-level PlanGate (App.jsx): the page is safe
-  // on its own if it is ever rendered without the route gate. While the
-  // entitlement is still loading the plan is unknown, so nothing is locked
-  // yet — the same fail-open-while-loading shape PlanGate itself uses.
-  const { can, isLoading: entitlementLoading } = useEntitlements();
   const [rules, setRules] = useState([]);
   const [source, setSource] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -179,8 +172,6 @@ export default function Alerts() {
       });
     }
   };
-
-  if (!entitlementLoading && !can('alerts')) return <PlanGate feature="alerts" />;
 
   return (
     <div className="space-y-5">

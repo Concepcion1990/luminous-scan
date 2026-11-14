@@ -4,10 +4,8 @@ import { Link } from 'react-router-dom';
 import { Check, ClipboardList, Mail, Pencil, Plus } from 'lucide-react';
 import PurchaseOrderDialog from '@/components/purchasing/PurchaseOrderDialog';
 import ReceiveDialog from '@/components/purchasing/ReceiveDialog';
-import PlanGate from '@/components/plan/PlanGate';
 import { Button } from '@/components/ui/button';
 import { useBusiness } from '@/hooks/useBusiness';
-import useEntitlements from '@/hooks/useEntitlements';
 import { scoped } from '@/lib/scoped';
 import { t } from '@/lib/i18n';
 import { money, PO_STATUS, poProgress, statusQuery } from '@/lib/purchasing';
@@ -31,11 +29,6 @@ const PILL = {
 
 export default function Purchasing() {
   const { profile, activeId } = useBusiness();
-  // In-page mirror of the route-level PlanGate (App.jsx): the page is safe
-  // on its own if it is ever rendered without the route gate. While the
-  // entitlement is still loading the plan is unknown, so nothing is locked
-  // yet — the same fail-open-while-loading shape PlanGate itself uses.
-  const { can, isLoading: entitlementLoading } = useEntitlements();
   const currency = profile?.currency || 'USD';
   const [orders, setOrders] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
@@ -110,8 +103,6 @@ export default function Purchasing() {
       setLoading(false);
     })();
   }, [filter, reload, activeId]);
-
-  if (!entitlementLoading && !can('purchasing')) return <PlanGate feature="purchasing" />;
 
   return (
     <div className="space-y-5">
