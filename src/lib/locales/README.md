@@ -43,6 +43,11 @@ the strings; their Latin technical terms ride along exactly as the
 earlier batches established. Urdu keeps its format-example strings
 and SKU labels in Latin form, matching its own earlier batches.
 
+Tranche 8 (Nov 13, 2026): `hi`, `tg`, `tr` — same terms. Turkish
+keeps a handful of loanwords that are spelled as in English
+(Transfer, Logo, Kit and friends); they are pinned as cognates in
+the tranche tests rather than retranslated into different words.
+
 ## What `t()` does when something is missing
 
 - Unknown locale code → English (never a blank screen).
