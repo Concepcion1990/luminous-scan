@@ -201,7 +201,7 @@ export default function Upgrade() {
           <p className="font-semibold">{t('upgrade.pastDueTitle')}</p>
           <p className="leading-relaxed text-muted-foreground">
             {t('upgrade.pastDueBody')}{' '}
-            <a className="font-medium text-primary underline underline-offset-4" href="mailto:theluminousbookshop@outlook.com">
+            <a className="font-medium text-link underline underline-offset-4" href="mailto:theluminousbookshop@outlook.com">
               theluminousbookshop@outlook.com
             </a>
             .
@@ -476,15 +476,15 @@ export default function Upgrade() {
       <div className="space-y-2 rounded-xl border border-border bg-muted/40 px-4 py-3 text-xs leading-relaxed text-muted-foreground">
         <p>
           {t('upgrade.reviewOur')}{' '}
-          <Link to="/terms-of-service" className="font-semibold text-primary underline underline-offset-4">
+          <Link to="/terms-of-service" className="font-semibold text-link underline underline-offset-4">
             {t('upgrade.termsLink')}
           </Link>
           {t('upgrade.reviewJoin1')}{' '}
-          <Link to="/subscription-policy" className="font-semibold text-primary underline underline-offset-4">
+          <Link to="/subscription-policy" className="font-semibold text-link underline underline-offset-4">
             {t('upgrade.policyLink')}
           </Link>
           {' '}{t('upgrade.reviewJoin2')}{' '}
-          <Link to="/privacy-policy" className="font-semibold text-primary underline underline-offset-4">
+          <Link to="/privacy-policy" className="font-semibold text-link underline underline-offset-4">
             {t('upgrade.privacyLink')}
           </Link>
           {t('upgrade.reviewPeriod')} {policyEffectiveLine}

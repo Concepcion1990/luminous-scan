@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import SettingsCard from './SettingsCard';
 import { t } from '@/lib/i18n';
 import { BRAND_COLORS } from '@/lib/business';
+import { resolveBrandColor } from '@/lib/brandTheme';
 
 export default function IdentityCard({ values, onChange, onLogoSelected, uploading }) {
   const fileRef = useRef(null);
@@ -106,7 +107,7 @@ export default function IdentityCard({ values, onChange, onLogoSelected, uploadi
           <label className="ml-1 inline-flex items-center gap-2 text-xs text-muted-foreground">
             <input
               type="color"
-              value={values.brand_color || '#145042'}
+              value={resolveBrandColor(values.brand_color)}
               onChange={set('brand_color')}
               className="h-8 w-10 cursor-pointer rounded border border-border bg-transparent p-0.5"
             />

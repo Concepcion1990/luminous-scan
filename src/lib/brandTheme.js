@@ -14,6 +14,33 @@
  * the brand color is — the color only re-skins the store's own chrome.
  */
 
+/**
+ * The DEFAULT brand color — deep bronze, from the Luminous palette
+ * (warm cream, near-black ink, muted gold) — is what a workspace gets
+ * when the business has NOT chosen its own branding.
+ *
+ * The retired default, #145042, was a deep teal that no business ever
+ * picked: it was stamped silently onto new workspaces and served as
+ * the fallback for a missing color, and through this module it
+ * re-skinned the whole signed-in shell teal — in dark mode, a bright
+ * mint (the owner's catch, Nov 14, 2026: "I shouldn't be seeing that
+ * color"). resolveBrandColor treats that one exact hex as "unset"
+ * wherever a default is applied, so workspaces that never chose a
+ * color land on the bronze default. Any color a business actually
+ * chose — the picker presets, a custom hex, any hue at all — passes
+ * through untouched and renders exactly as chosen: the white-label
+ * freedom is the feature, and this default only fills the silence.
+ */
+export const DEFAULT_BRAND_COLOR = '#6d4c26';
+export const LEGACY_DEFAULT_BRAND_COLOR = '#145042';
+
+/** The brand color to render: the business's own choice, or the default. */
+export function resolveBrandColor(hex) {
+  const value = String(hex || '').trim().toLowerCase();
+  if (!value || value === LEGACY_DEFAULT_BRAND_COLOR) return DEFAULT_BRAND_COLOR;
+  return value;
+}
+
 export function hexToHsl(hex) {
   const match = /^#([0-9a-fA-F]{6})$/.exec(String(hex || '').trim());
   if (!match) return null;

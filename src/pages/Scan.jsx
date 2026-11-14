@@ -17,7 +17,6 @@ import useIsDesktop from '@/hooks/useIsDesktop';
 import useModalHistory from '@/hooks/useModalHistory';
 import useEntitlements from '@/hooks/useEntitlements';
 import { useOfflineSync } from '@/hooks/useOfflineSync';
-import PullToRefresh from '@/components/mobile/PullToRefresh';
 import {
   findProductsByCode,
   formatMoney,
@@ -436,11 +435,7 @@ export default function Scan() {
   };
 
   return (
-    <PullToRefresh
-      className="space-y-5"
-      onRefresh={refreshScanData}
-      disabled={!scanVisible || busy || createOpen || detailsOpen}
-    >
+<div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Scan station</p>
@@ -819,6 +814,6 @@ export default function Scan() {
           if (!next) setDetails(null);
         }}
       />
-    </PullToRefresh>
+    </div>
   );
 }

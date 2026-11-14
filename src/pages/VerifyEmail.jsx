@@ -76,7 +76,7 @@ export default function VerifyEmail() {
       footer={
         <>
           {t('verifyEmail.alreadyVerified')}{" "}
-          <Link to={loginPath} className="text-primary font-medium hover:underline">
+          <Link to={loginPath} className="text-link font-medium hover:underline">
             {t('verifyEmail.logIn')}
           </Link>
         </>
@@ -87,7 +87,7 @@ export default function VerifyEmail() {
           {error}
           {/already verified/i.test(error) && (
             <div className="mt-2">
-              <Link to={loginPath} className="text-primary font-medium hover:underline">
+              <Link to={loginPath} className="text-link font-medium hover:underline">
                 {t('verifyEmail.signInInstead')}
               </Link>
             </div>
@@ -145,7 +145,7 @@ export default function VerifyEmail() {
         </Button>
         <p className="text-center text-sm text-muted-foreground">
           {t('verifyEmail.didntReceiveCode')}{" "}
-          <button type="button" onClick={handleResend} className="text-primary font-medium hover:underline">
+          <button type="button" onClick={handleResend} className="text-link font-medium hover:underline">
             {t('verifyEmail.resend')}
           </button>
         </p>

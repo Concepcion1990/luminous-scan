@@ -7,7 +7,6 @@ import { BUNDLE_MOVEMENT_TYPES } from '@/lib/plans';
 import { scoped } from '@/lib/scoped';
 import { useBusiness } from '@/hooks/useBusiness';
 import useEntitlements from '@/hooks/useEntitlements';
-import PullToRefresh from '@/components/mobile/PullToRefresh';
 import { localTimeZoneName } from '@/lib/dates';
 import MovementRow from '@/components/movements/MovementRow';
 import ResponsiveSelect from '@/components/ui/ResponsiveSelect';
@@ -80,15 +79,6 @@ export default function Movements() {
     }
   };
 
-  // Refresh the filtered ledger and locations without resetting selections.
-  const refresh = useCallback(async () => {
-    const [_, locationPage] = await Promise.all([
-      load({ silent: true }),
-      base44.entities.Location.filter(scoped({}, activeId), { sort: 'name', limit: 100 }),
-    ]);
-    setLocations(locationPage.items ?? []);
-  }, [activeId, load]);
-
   useEffect(() => {
     load();
   }, [load]);
@@ -152,7 +142,7 @@ export default function Movements() {
   };
 
   return (
-    <PullToRefresh className="space-y-5" onRefresh={refresh} disabled={Boolean(busyId)}>
+    <div className="space-y-5">
       <div>
         <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">{t('movements.eyebrow')}</p>
         <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">{t('movements.title')}</h1>
@@ -246,6 +236,6 @@ export default function Movements() {
           </div>
         )}
       </div>
-    </PullToRefresh>
+    </div>
   );
 }

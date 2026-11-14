@@ -116,11 +116,16 @@ test('link color: the scoped auth and policy links use text-link, nothing else m
   assert.equal(readSrc('src/pages/Login.jsx').split('text-link').length - 1, 5);
   assert.equal(readSrc('src/pages/Register.jsx').split('text-link').length - 1, 7);
   assert.equal(readSrc('src/pages/ForgotPassword.jsx').split('text-link').length - 1, 1);
-  // TermsOfService: exactly the two INLINE policy links changed; the
-  // bottom related-pages nav keeps text-primary (deliberately narrow).
+  // TermsOfService: originally exactly the two INLINE policy links
+  // changed and the bottom related-pages nav kept text-primary
+  // (deliberately narrow, Nov 13). The owner widened the rule on
+  // Nov 14, 2026 — in-app links render green through --primary on the
+  // signed-in surfaces, and she ordered every prose link onto the
+  // bronze link token — so the nav links moved too: all six prose
+  // links are text-link now, and no text-primary prose link remains.
   const terms = readSrc('src/pages/TermsOfService.jsx');
-  assert.equal(terms.split('font-medium text-link underline underline-offset-4').length - 1, 2);
-  assert.equal(terms.split('font-medium text-primary underline underline-offset-4').length - 1, 4);
+  assert.equal(terms.split('font-medium text-link underline underline-offset-4').length - 1, 6);
+  assert.equal(terms.split('font-medium text-primary underline underline-offset-4').length - 1, 0);
 });
 
 // ---- Fix 4: reset page code entry -------------------------------------

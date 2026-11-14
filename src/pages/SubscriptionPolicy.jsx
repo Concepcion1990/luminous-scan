@@ -93,25 +93,25 @@ export default function SubscriptionPolicy() {
         <div className="mt-8 flex flex-wrap gap-4 text-sm">
           <Link
             to="/terms-of-service"
-            className="font-medium text-primary underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="font-medium text-link underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             Terms of Service
           </Link>
           <Link
             to="/privacy-policy"
-            className="font-medium text-primary underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="font-medium text-link underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             Privacy Policy
           </Link>
           <Link
             to="/plans"
-            className="font-medium text-primary underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="font-medium text-link underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             Compare plans
           </Link>
           <Link
             to="/welcome"
-            className="font-medium text-primary underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="font-medium text-link underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             Back to welcome
           </Link>

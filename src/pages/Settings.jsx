@@ -13,7 +13,7 @@ import { CANCELLATION_GRACE_PARAGRAPH } from '@/lib/cancellationGrace';
 import { STOCKHAVEN_SUBSCRIPTION_POLICY as policy } from '@/lib/stockhavenSubscriptionPolicy';
 import { STOCKHAVEN_TERMS_OF_SERVICE as terms } from '@/lib/stockhavenTermsOfService';
 import { resolveBusiness, saveBusiness } from '@/lib/business';
-import { applyBrandColor } from '@/lib/brandTheme';
+import { applyBrandColor, resolveBrandColor } from '@/lib/brandTheme';
 import BusinessListCard from '@/components/business/BusinessListCard';
 import IdentityCard from '@/components/business/IdentityCard';
 import DetailsCard from '@/components/business/DetailsCard';
@@ -282,7 +282,7 @@ export default function Settings() {
   // color changed nothing in the app — this preview is the fix, and
   // Layout applies the saved color on every page load.
   useEffect(() => {
-    if (values?.brand_color) applyBrandColor(values.brand_color);
+    if (values?.brand_color) applyBrandColor(resolveBrandColor(values.brand_color));
   }, [values?.brand_color]);
 
   const uploadLogo = async (file) => {
@@ -423,15 +423,15 @@ export default function Settings() {
       >
         <p className="mb-3 text-sm leading-relaxed text-muted-foreground">
           {t('settings.review.the')}{' '}
-          <Link to="/terms-of-service" className="font-medium text-primary underline underline-offset-4">
+          <Link to="/terms-of-service" className="font-medium text-link underline underline-offset-4">
             {t('settings.review.termsLink')}
           </Link>
           {t('settings.review.commaThe')}{' '}
-          <Link to="/subscription-policy" className="font-medium text-primary underline underline-offset-4">
+          <Link to="/subscription-policy" className="font-medium text-link underline underline-offset-4">
             {t('settings.review.policyLink')}
           </Link>
           {' '}{t('settings.review.andThe')}{' '}
-          <Link to="/privacy-policy" className="font-medium text-primary underline underline-offset-4">
+          <Link to="/privacy-policy" className="font-medium text-link underline underline-offset-4">
             {t('settings.review.privacyLink')}
           </Link>
           {t('settings.review.tail', { line: policyEffectiveLine })}

@@ -9,7 +9,7 @@ import BusinessSwitcher from '@/components/business/BusinessSwitcher';
 import { useBusiness } from '@/hooks/useBusiness';
 import { PUBLISHER } from '@/lib/business';
 import { t, setLocale, getLocale } from '@/lib/i18n';
-import { applyBrandColor } from '@/lib/brandTheme';
+import { applyBrandColor, resolveBrandColor } from '@/lib/brandTheme';
 import useStaffAccess from '@/hooks/useStaffAccess';
 import useEntitlements from '@/hooks/useEntitlements';
 import FirstLaunchRedirect from '@/components/plans/FirstLaunchRedirect';
@@ -43,7 +43,7 @@ export default function Layout() {
   // sidebar and in the footer) is never touched by either.
   const [locale, setLocaleState] = useState('en');
   useEffect(() => {
-    if (profile?.brand_color) applyBrandColor(profile.brand_color);
+    if (profile?.brand_color) applyBrandColor(resolveBrandColor(profile.brand_color));
   }, [profile?.brand_color]);
   useEffect(() => {
     const code = profile?.language || 'en';

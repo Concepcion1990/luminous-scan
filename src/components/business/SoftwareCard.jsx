@@ -38,7 +38,7 @@ export default function SoftwareCard() {
           href="https://theluminousbookshop.com"
           target="_blank"
           rel="noreferrer"
-          className="font-medium text-primary underline underline-offset-2"
+          className="font-medium text-link underline underline-offset-2"
         >
           {t('bookshop.visit')}
         </a>

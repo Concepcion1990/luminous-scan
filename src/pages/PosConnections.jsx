@@ -67,7 +67,7 @@ function statusTone(status) {
   switch (status) {
     case 'connected':
     case 'applied':
-      return 'bg-emerald-100 text-emerald-900 dark:bg-emerald-900/40 dark:text-emerald-100';
+      return 'bg-ok/12 text-ok';
     case 'partially_applied':
     case 'insufficient_stock':
     case 'held_plan':

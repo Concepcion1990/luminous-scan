@@ -57,7 +57,7 @@ function statusTone(status) {
     case 'acknowledged':
       return 'bg-sky-100 text-sky-900 dark:bg-sky-900/40 dark:text-sky-100';
     case 'resolved':
-      return 'bg-emerald-100 text-emerald-900 dark:bg-emerald-900/40 dark:text-emerald-100';
+      return 'bg-ok/12 text-ok';
     case 'declined':
       return 'bg-rose-100 text-rose-900 dark:bg-rose-900/40 dark:text-rose-100';
     default:
@@ -382,7 +382,7 @@ function TransferPanel({ activeId, businesses, user }) {
               {busy ? t('crossStore.sending') : t('crossStore.transferButton')}
             </Button>
             {done ? (
-              <p className="flex items-center gap-1.5 text-sm text-emerald-700 dark:text-emerald-300">
+              <p className="flex items-center gap-1.5 text-sm text-ok">
                 <Check className="h-4 w-4" /> {done}
               </p>
             ) : null}

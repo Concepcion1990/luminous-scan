@@ -9,6 +9,7 @@ import { shellShouldWait } from './lib/authReturnTo';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
+import PullToRefreshShell from './components/PullToRefreshShell';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Layout from '@/components/Layout';
 import PlanGate from '@/components/plan/PlanGate';
@@ -269,7 +270,9 @@ function App() {
       <QueryClientProvider client={queryClientInstance}>
         <Router>
           <ScrollToTop />
-          <AuthenticatedApp />
+          <PullToRefreshShell>
+            <AuthenticatedApp />
+          </PullToRefreshShell>
         </Router>
         <Toaster />
       </QueryClientProvider>

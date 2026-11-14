@@ -9,6 +9,10 @@ import { reconcileSubscriptionAccess } from '@/lib/entitlements';
 import {
   nextAutoRecovery,
 } from '@/lib/thankYouReconcileRetry';
+import {
+  ATTEMPT_TIMEOUT_MS,
+  withAttemptTimeout,
+} from '@/lib/withAttemptTimeout';
 
 /**
  * Stripe's return URL is exactly "/ThankYou" (see App.jsx).
@@ -21,7 +25,9 @@ import {
  *
  * Automatic recovery (src/lib/thankYouReconcileRetry.js): inside a
  * 5-minute window, keep retrying with backoff (10→15→20→25→30s, max
- * 20 attempts) after any failure time might fix. A manual "Check
+ * 20 attempts) after any failure time might fix. Each attempt is
+ * bounded by withAttemptTimeout, so a dropped connection settles as a
+ * retryable failure instead of hanging the page. A manual "Check
  * again" button stays available throughout. While unverified, the
  * app is NOT unlocked and the page says so plainly. Success takes
  * the customer directly inside the paid plan — no "verification
@@ -52,7 +58,16 @@ export default function ThankYou() {
     if (!sessionId) return;
     attemptsRef.current += 1;
     try {
-      const data = await reconcileSubscriptionAccess(activeId, sessionId);
+      // One attempt is bounded (withAttemptTimeout): a connection that
+      // drops mid-flight must settle as a retryable failure inside the
+      // budget, never hang — a hung attempt once froze this page with
+      // Check again disabled until a manual browser reload (Nov 14,
+      // 2026). The timeout lands in the catch below, which already
+      // feeds the auto-recovery policy as 'not_verified'.
+      const data = await withAttemptTimeout(
+        () => reconcileSubscriptionAccess(activeId, sessionId),
+        ATTEMPT_TIMEOUT_MS,
+      );
       if (!mountedRef.current) return;
       const state = data?.state;
       if (SUCCESS_STATES.has(state)) {

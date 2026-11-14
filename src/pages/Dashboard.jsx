@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { Clock3, Lock, Plus, ScanLine } from 'lucide-react';
@@ -18,7 +18,6 @@ import { trialLabel, trialWarningDetails } from '@/lib/entitlements';
 import { trialInAppNotice } from '@/lib/trialNotices';
 import { displayLimit } from '@/lib/plans';
 import { t } from '@/lib/i18n';
-import PullToRefresh from '@/components/mobile/PullToRefresh';
 
 /**
  * A stat card for a Business-only figure on Essentials: the number is never
@@ -38,7 +37,7 @@ function LockedStatCard({ label, hint }) {
       </div>
       <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
         {hint}{' '}
-        <Link to="/upgrade" className="font-medium text-primary underline underline-offset-2">
+        <Link to="/upgrade" className="font-medium text-link underline underline-offset-2">
           {t('dashboard.seeBusiness')}
         </Link>
       </p>
@@ -59,7 +58,7 @@ function LockedAttentionPanel() {
         </p>
         <Link
           to="/upgrade"
-          className="text-xs font-medium text-primary underline underline-offset-2"
+          className="text-xs font-medium text-link underline underline-offset-2"
         >
           {t('dashboard.seeWhatBusinessIncludes')}
         </Link>
@@ -105,19 +104,6 @@ export default function Dashboard() {
   const [data, setData] = useState(null);
   const [ops, setOps] = useState({ orders: [], purchaseOrders: [] });
   const [loading, setLoading] = useState(true);
-  const currentBusinessRef = useRef(activeId);
-  currentBusinessRef.current = activeId;
-
-  // Refetch both dashboard sources without clearing the displayed totals.
-  const refresh = useCallback(async () => {
-    const [inventory, operations] = await Promise.all([
-      loadInventory(activeId || ''),
-      loadOperations(activeId || '', { includePurchaseOrders: showPurchasing }),
-    ]);
-    if (currentBusinessRef.current !== activeId) return;
-    setData(inventory);
-    setOps(operations);
-  }, [activeId, showPurchasing]);
 
   useEffect(() => {
     let alive = true;
@@ -144,7 +130,7 @@ export default function Dashboard() {
     productLimit != null && stats != null && stats.activeSkus >= productLimit;
 
   return (
-    <PullToRefresh className="space-y-6" onRefresh={refresh}>
+    <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
@@ -185,7 +171,7 @@ export default function Dashboard() {
           {atProductLimit && (
             <p className="text-xs text-muted-foreground">
               {t('dashboard.productLimit', { count: stats.activeSkus, limit: productLimit })}{' '}
-              <Link to="/upgrade" className="font-medium text-primary underline underline-offset-2">
+              <Link to="/upgrade" className="font-medium text-link underline underline-offset-2">
                 {t('dashboard.upgradeUnlimited')}
               </Link>
             </p>
@@ -295,13 +281,13 @@ export default function Dashboard() {
               href="https://theluminousbookshop.com"
               target="_blank"
               rel="noreferrer"
-              className="font-medium text-primary underline underline-offset-2"
+              className="font-medium text-link underline underline-offset-2"
             >
               {t('bookshop.visit')}
             </a>
           </p>
         </>
       )}
-    </PullToRefresh>
+    </div>
   );
 }

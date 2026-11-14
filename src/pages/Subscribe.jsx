@@ -167,7 +167,7 @@ export default function Subscribe() {
               <Button variant="outline" asChild><Link to="/subscribe?plan=business">{t('subscribe.businessLink')}</Link></Button>
             </div>
             <p className="mt-4 text-sm text-muted-foreground">
-              <Link to="/plans" className="font-medium text-primary underline underline-offset-4">{t('subscribe.comparePlans')}</Link>
+              <Link to="/plans" className="font-medium text-link underline underline-offset-4">{t('subscribe.comparePlans')}</Link>
             </p>
           </>
         ) : (

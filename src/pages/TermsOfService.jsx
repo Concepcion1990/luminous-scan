@@ -96,16 +96,16 @@ export default function TermsOfService() {
         </div>
 
         <nav aria-label="Related legal and subscription information" className="mt-8 flex flex-wrap gap-4 text-sm">
-          <Link to="/subscription-policy" className="font-medium text-primary underline underline-offset-4">
+          <Link to="/subscription-policy" className="font-medium text-link underline underline-offset-4">
             Subscription and refunds
           </Link>
-          <Link to="/privacy-policy" className="font-medium text-primary underline underline-offset-4">
+          <Link to="/privacy-policy" className="font-medium text-link underline underline-offset-4">
             Privacy Policy
           </Link>
-          <Link to="/plans" className="font-medium text-primary underline underline-offset-4">
+          <Link to="/plans" className="font-medium text-link underline underline-offset-4">
             Compare plans
           </Link>
-          <Link to="/welcome" className="font-medium text-primary underline underline-offset-4">
+          <Link to="/welcome" className="font-medium text-link underline underline-offset-4">
             Back to welcome
           </Link>
         </nav>

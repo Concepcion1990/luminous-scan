@@ -138,7 +138,7 @@ export default function GraceInventory() {
             {t('grace.cannotDo', { paragraph: CANCELLATION_GRACE_PARAGRAPH })}
           </p>
           <p>
-            <Link to="/plans" className="font-medium text-primary underline underline-offset-4">
+            <Link to="/plans" className="font-medium text-link underline underline-offset-4">
               {t('grace.seePlansLink')}
             </Link>
           </p>

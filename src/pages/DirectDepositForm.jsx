@@ -29,7 +29,7 @@ export default function DirectDepositForm() {
         <Button onClick={() => window.print()}>
           <Printer className="mr-2 h-4 w-4" /> {t('payroll.dd.form.print')}
         </Button>
-        <Link to="/payroll" className="text-sm font-medium text-primary underline underline-offset-2">
+        <Link to="/payroll" className="text-sm font-medium text-link underline underline-offset-2">
           {t('payroll.dd.form.back')}
         </Link>
       </div>

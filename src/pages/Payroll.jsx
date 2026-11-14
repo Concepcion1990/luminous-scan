@@ -360,7 +360,7 @@ function RunsSection({ businessId, reloadKey }) {
                           {t('payroll.net')}: {formatMoneyPlain(stub.net)}
                         </span>
                         {stub.pushed ? (
-                          <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-900 dark:bg-emerald-900/40 dark:text-emerald-100">
+                          <span className="rounded-full bg-ok/12 px-2 py-0.5 text-xs text-ok">
                             {t('payroll.stubs.pushed')}
                           </span>
                         ) : (
@@ -656,7 +656,7 @@ function DirectDepositSection({ businessId, ctx, people, businessName }) {
       <div className="mt-3">
         <Link
           to={`/payroll/direct-deposit-form?store=${encodeURIComponent(businessName || '')}`}
-          className="inline-flex items-center gap-2 text-sm font-medium text-primary underline underline-offset-2"
+          className="inline-flex items-center gap-2 text-sm font-medium text-link underline underline-offset-2"
         >
           <Printer className="h-4 w-4" /> {t('payroll.dd.printForm')}
         </Link>

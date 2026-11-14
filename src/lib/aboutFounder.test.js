@@ -93,7 +93,10 @@ test('LegalFooter links to /about, small and subtle', () => {
 
 test('Plans links to /about near the trademark notice', () => {
   const screen = read('src/pages/Plans.jsx');
-  assert.match(screen, /<Link to="\/about" className="font-medium text-primary underline underline-offset-4">/);
+  // Nov 14, 2026: the owner widened the link rule app-wide — every
+  // prose link rides the bronze text-link token (see the t24 update);
+  // this Plans link moved with all the others.
+  assert.match(screen, /<Link to="\/about" className="font-medium text-link underline underline-offset-4">/);
   // T6.3: the link label moved into en.js (auth.aboutLink) — assert the
   // key is referenced and the English value, not a source literal.
   assert.match(screen, /t\('auth\.aboutLink'\)/);
@@ -111,8 +114,9 @@ test('Register shows the trademark notice below the form, with an About link', (
   assert.match(screen, /<TrademarkNotice \/>/);
   // T24: the Register copy of this link uses the readable bronze
   // text-link (the auth pages' pale text-primary was unreadable on
-  // white); the Plans copy above keeps text-primary, out of that
-  // fix's scope.
+  // white); the Plans copy above originally kept text-primary, out of
+  // that fix's scope — the owner's Nov 14, 2026 app-wide link ruling
+  // brought it onto text-link too.
   assert.match(screen, /<Link to="\/about" className="font-medium text-link underline underline-offset-4">/);
   // T6.3: the link label moved into en.js (auth.aboutLink) — assert the
   // key is referenced and the English value, not a source literal.

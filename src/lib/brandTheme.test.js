@@ -8,7 +8,16 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { hexToHsl, brandThemeVars, brandThemeCss, applyBrandColor, clearBrandColor } from './brandTheme.js';
+import {
+  hexToHsl,
+  brandThemeVars,
+  brandThemeCss,
+  applyBrandColor,
+  clearBrandColor,
+  resolveBrandColor,
+  DEFAULT_BRAND_COLOR,
+  LEGACY_DEFAULT_BRAND_COLOR,
+} from './brandTheme.js';
 
 function fakeDocument() {
   const tags = [];
@@ -76,4 +85,43 @@ test('an invalid color clears the overrides back to the defaults', () => {
 test('the stylesheet text is empty for an invalid color', () => {
   assert.equal(brandThemeCss('nope'), '');
   assert.match(brandThemeCss('#145042'), /--sidebar-background:/);
+});
+
+/**
+ * The default-color ruling (Nov 14, 2026): the old silent default was
+ * a deep teal (#145042) that re-skinned the signed-in shell — bright
+ * mint in dark mode. It is replaced by the Luminous deep bronze, and
+ * ONLY for workspaces that never chose a color: the white-label rule
+ * is that a business's own branding always wins, exactly as saved.
+ */
+test('the default brand color is the Luminous bronze, warm in both modes', () => {
+  assert.equal(DEFAULT_BRAND_COLOR, '#6d4c26');
+  const vars = brandThemeVars(DEFAULT_BRAND_COLOR);
+  // Every generated variable sits on the warm bronze hue (32) — no
+  // teal (160s) anywhere in the default theme, light or dark.
+  for (const block of [vars.light, vars.dark]) {
+    for (const value of Object.values(block)) {
+      assert.equal(value.split(' ')[0], '32');
+    }
+  }
+  assert.equal(vars.light['--primary'], '32 48% 29%');
+  assert.equal(vars.dark['--primary'], '32 48% 54%');
+});
+
+test('resolveBrandColor: unset and the legacy teal default land on bronze', () => {
+  assert.equal(LEGACY_DEFAULT_BRAND_COLOR, '#145042');
+  assert.equal(resolveBrandColor(null), DEFAULT_BRAND_COLOR);
+  assert.equal(resolveBrandColor(''), DEFAULT_BRAND_COLOR);
+  assert.equal(resolveBrandColor(undefined), DEFAULT_BRAND_COLOR);
+  assert.equal(resolveBrandColor('#145042'), DEFAULT_BRAND_COLOR);
+  assert.equal(resolveBrandColor('#145042'.toUpperCase()), DEFAULT_BRAND_COLOR);
+});
+
+test('resolveBrandColor: a color the business chose passes through untouched', () => {
+  // Including other greens — choosing green is a merchant's right;
+  // only the one silent default hex is treated as "never chosen".
+  assert.equal(resolveBrandColor('#1d3b2a'), '#1d3b2a');
+  assert.equal(resolveBrandColor('#7D4B34'), '#7d4b34');
+  assert.equal(resolveBrandColor('#22303a'), '#22303a');
+  assert.equal(resolveBrandColor('#b03060'), '#b03060');
 });

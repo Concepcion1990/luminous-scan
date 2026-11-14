@@ -15,7 +15,7 @@ export const DEFAULT_BUSINESS = {
   name: 'Your business',
   tagline: '',
   logo_url: '',
-  brand_color: '#145042',
+  brand_color: '#6d4c26',
   contact_email: '',
   contact_phone: '',
   website: '',
@@ -28,7 +28,6 @@ export const DEFAULT_BUSINESS = {
 };
 
 export const BRAND_COLORS = [
-  { get label() { return t('businessLib.brandColor.forest'); }, value: '#145042' },
   { get label() { return t('businessLib.brandColor.deepPine'); }, value: '#1d3b2a' },
   { get label() { return t('businessLib.brandColor.ink'); }, value: '#22303a' },
   { get label() { return t('businessLib.brandColor.clay'); }, value: '#7d4b34' },

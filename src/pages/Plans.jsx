@@ -178,15 +178,15 @@ export default function Plans() {
 
         <p className="mt-5 text-sm leading-relaxed text-muted-foreground">
           {t('plans.reviewBefore')}{' '}
-          <Link to="/terms-of-service" className="font-medium text-primary underline underline-offset-4">
+          <Link to="/terms-of-service" className="font-medium text-link underline underline-offset-4">
             {t('plans.termsLink')}
           </Link>
           {t('plans.reviewJoin1')}{' '}
-          <Link to="/subscription-policy" className="font-medium text-primary underline underline-offset-4">
+          <Link to="/subscription-policy" className="font-medium text-link underline underline-offset-4">
             {t('plans.policyLink')}
           </Link>{' '}
           {t('plans.reviewJoin2')}{' '}
-          <Link to="/privacy-policy" className="font-medium text-primary underline underline-offset-4">
+          <Link to="/privacy-policy" className="font-medium text-link underline underline-offset-4">
             {t('plans.privacyLink')}
           </Link>
           {t('plans.reviewPeriod')} {policyEffectiveLine}
@@ -195,7 +195,7 @@ export default function Plans() {
         <TrademarkNotice />
 
         <p className="mt-3 text-center text-sm">
-          <Link to="/about" className="font-medium text-primary underline underline-offset-4">
+          <Link to="/about" className="font-medium text-link underline underline-offset-4">
             {t('auth.aboutLink')}
           </Link>
         </p>

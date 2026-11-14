@@ -140,7 +140,7 @@ export default function BusinessListCard({ onRenamed }) {
       {mayCreate && plansError && (
         <p className="mt-3 text-xs text-muted-foreground" role="status">
           {t('settings.businesses.planLoadError')}{' '}
-          <button type="button" className="font-medium text-primary underline underline-offset-2" onClick={refetchPlans}>
+          <button type="button" className="font-medium text-link underline underline-offset-2" onClick={refetchPlans}>
             {t('settings.businesses.tryAgain')}
           </button>
         </p>

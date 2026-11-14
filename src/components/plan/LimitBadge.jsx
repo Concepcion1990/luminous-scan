@@ -24,7 +24,7 @@ export default function LimitBadge({ label, used, limit, className }) {
         {t('plan.limitBadge.usedOf', { used, limit })}
       </span>
       {full && (
-        <Link to="/upgrade" className="font-medium text-primary underline underline-offset-2">
+        <Link to="/upgrade" className="font-medium text-link underline underline-offset-2">
           {t('plan.limitBadge.upgrade')}
         </Link>
       )}

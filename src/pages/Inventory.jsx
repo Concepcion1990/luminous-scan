@@ -5,7 +5,6 @@ import { loadInventory, productTruncationNotice } from '@/lib/inventory';
 import { useBusiness } from '@/hooks/useBusiness';
 import { useOfflineSync } from '@/hooks/useOfflineSync';
 import SyncIndicator from '@/components/sync/SyncIndicator';
-import PullToRefresh from '@/components/mobile/PullToRefresh';
 import StatCard from '@/components/StatCard';
 import InventoryRow from '@/components/inventory/InventoryRow';
 import AdjustStockDialog from '@/components/inventory/AdjustStockDialog';
@@ -75,7 +74,7 @@ export default function Inventory() {
   }).length;
 
   return (
-    <PullToRefresh className="space-y-5" onRefresh={load}>
+    <div className="space-y-5">
       <div>
         <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
           {record?.name || t('inventory.thisBusiness')}
@@ -184,6 +183,6 @@ export default function Inventory() {
         defaultLocationId={locationId}
         onDone={load}
       />
-    </PullToRefresh>
+    </div>
   );
 }

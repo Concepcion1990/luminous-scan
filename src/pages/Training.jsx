@@ -88,7 +88,7 @@ function LessonCard({ lesson, done, completedAt, open, onToggle, onComplete, bus
       >
         <span
           className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${
-            done ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-100' : 'bg-muted text-muted-foreground'
+            done ? 'bg-ok/12 text-ok' : 'bg-muted text-muted-foreground'
           }`}
         >
           {done ? <Check className="h-4 w-4" /> : <GraduationCap className="h-4 w-4" />}
@@ -121,7 +121,7 @@ function LessonCard({ lesson, done, completedAt, open, onToggle, onComplete, bus
             </Button>
           )}
           {done && (
-            <p className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1.5 text-sm text-emerald-900 dark:bg-emerald-900/40 dark:text-emerald-100">
+            <p className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-ok/12 px-3 py-1.5 text-sm text-ok">
               <Check className="h-4 w-4" /> {t('training.done')}
             </p>
           )}
@@ -162,7 +162,7 @@ function MyAssignments({ assignments, completedSet }) {
                 return (
                   <li key={id} className="flex items-center gap-2 text-sm">
                     {done ? (
-                      <Check className="h-4 w-4 shrink-0 text-emerald-600" />
+                      <Check className="h-4 w-4 shrink-0 text-ok" />
                     ) : (
                       <span className="h-4 w-4 shrink-0 rounded-full border border-border" />
                     )}
