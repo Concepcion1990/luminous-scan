@@ -165,6 +165,9 @@ import { STOCKHAVEN_PRIVACY_POLICY_YO } from './policies/privacy.yo.js';
 import { STOCKHAVEN_TERMS_OF_SERVICE_JV } from './policies/terms.jv.js';
 import { STOCKHAVEN_SUBSCRIPTION_POLICY_JV } from './policies/subscription.jv.js';
 import { STOCKHAVEN_PRIVACY_POLICY_JV } from './policies/privacy.jv.js';
+import { STOCKHAVEN_TERMS_OF_SERVICE_PCM } from './policies/terms.pcm.js';
+import { STOCKHAVEN_SUBSCRIPTION_POLICY_PCM } from './policies/subscription.pcm.js';
+import { STOCKHAVEN_PRIVACY_POLICY_PCM } from './policies/privacy.pcm.js';
 
 export const POLICY_KINDS = Object.freeze(['terms', 'subscription', 'privacy']);
 
@@ -395,6 +398,13 @@ registerPolicyTranslation('privacy', 'yo', STOCKHAVEN_PRIVACY_POLICY_YO);
 registerPolicyTranslation('terms', 'jv', STOCKHAVEN_TERMS_OF_SERVICE_JV);
 registerPolicyTranslation('subscription', 'jv', STOCKHAVEN_SUBSCRIPTION_POLICY_JV);
 registerPolicyTranslation('privacy', 'jv', STOCKHAVEN_PRIVACY_POLICY_JV);
+
+// --- Tranche 15 registrations (Nov 13, 2026) — final locale ---
+// Nigerian-Pidgin (pcm): full UI translation debt retired and all three
+// policy bodies translated in the same pass.
+registerPolicyTranslation('terms', 'pcm', STOCKHAVEN_TERMS_OF_SERVICE_PCM);
+registerPolicyTranslation('subscription', 'pcm', STOCKHAVEN_SUBSCRIPTION_POLICY_PCM);
+registerPolicyTranslation('privacy', 'pcm', STOCKHAVEN_PRIVACY_POLICY_PCM);
 
 /** True when a translated body exists for this document + locale. */
 export function hasPolicyTranslation(kind, locale) {

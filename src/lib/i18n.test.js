@@ -977,9 +977,9 @@ test('Nigerian Pidgin has every English key, with matching value placeholders', 
 test('switching to Nigerian Pidgin renders the app in Nigerian Pidgin', () => {
   assert.equal(setLocale('pcm'), 'pcm');
   assert.equal(getLocale(), 'pcm');
-  assert.equal(t('nav.scan'), 'Scan');
-  assert.equal(t('nav.overview'), 'Overview');
-  assert.equal(t('scan.printShelfTag'), 'Print shelf tag');
+  assert.equal(t('nav.scan'), 'Scan am');
+  assert.equal(t('nav.overview'), 'Di overview');
+  assert.equal(t('scan.printShelfTag'), 'Print di shelf tag');
   assert.equal(t('sync.sent'), 'All changes don send');
   assert.equal(t('scan.onlyOnHand', { count: 3, location: 'Aisle 1' }), 'Na only 3 dey hand at Aisle 1.');
   assert.equal(isRTL(), false);

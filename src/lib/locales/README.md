@@ -76,6 +76,15 @@ Tranche 14 (Nov 13, 2026): `jv` — same terms. Javanese keeps its
 regional loanword labels (Status, Data, Invoice, Transfer and
 friends) as its Indonesian and Malay siblings do.
 
+Tranche 15 (Nov 13, 2026): `pcm` — the last locale, same terms.
+Nigerian Pidgin needed a second pass: the first draft left most
+phrases in plain English, while the file's own finished strings
+are only ~6% English-identical. The redo re-rendered 1,320 keys
+into genuine Pidgin grammar; what remains identical (31 keys) is
+document names, weekday names, format examples and unit symbols.
+With this tranche every locale in the app carries zero
+translation debt.
+
 ## What `t()` does when something is missing
 
 - Unknown locale code → English (never a blank screen).

@@ -87,6 +87,8 @@ const TRANCHE_1_LOCALES = [
   'ha', 'sw', 'yo',
   // Tranche 14 registrations (Nov 13, 2026)
   'jv',
+  // Tranche 15 registrations (Nov 13, 2026) — final locale
+  'pcm',
 ];
 
 // Verified cognates: keys whose correct Spanish value is spelled
@@ -329,6 +331,19 @@ const JV_COGNATE_KEYS = new Set([
   'settings.software.tagline', 'settings.switcher.taglineLabel', 'staff.member.administrator',
   'staff.memberDialog.emailLabel', 'staff.memberDialog.statusLabel', 'suppliers.email',
 ]);
+const PCM_COGNATE_KEYS = new Set([
+  'auth.aboutLink', 'auth.emailLabel', 'businessLib.dateFormat.dMmmYyyy',
+  'businessLib.dateFormat.mmmDyyyy', 'layout.aboutLink', 'layout.scanCodes',
+  'orders.email', 'plans.perMonthShort', 'plans.policyLink',
+  'plans.privacyLink', 'plans.termsLink', 'productForm.unitKg',
+  'products.sortCodes', 'recovery.orDivider', 'scan.codePlaceholder',
+  'settings.review.policyLink', 'settings.review.privacyLink', 'settings.review.termsLink',
+  'staff.memberDialog.emailLabel', 'suppliers.email', 'upgrade.introTrial',
+  'upgrade.policyLink', 'upgrade.privacyLink', 'upgrade.termsLink',
+  'workforce.day.0', 'workforce.day.1', 'workforce.day.2',
+  'workforce.day.3', 'workforce.day.4', 'workforce.day.5',
+  'workforce.day.6',
+]);
 const COGNATE_KEYS = {
   'es-MX': SPANISH_COGNATE_KEYS,
   'es-ES': SPANISH_COGNATE_KEYS,
@@ -372,6 +387,8 @@ const COGNATE_KEYS = {
   'yo': YO_COGNATE_KEYS,
 
   'jv': JV_COGNATE_KEYS,
+
+  'pcm': PCM_COGNATE_KEYS,
 };
 
 const TOKENS = [
@@ -497,7 +514,7 @@ test('completed-tranche policy bodies are registered and served, merged over Eng
       assert.notEqual(notice, en['policies.translationNotice'], `${code} protective line is still English`);
     }
     // A locale outside the completed tranches still falls back to English.
-    assert.equal(hasPolicyTranslation(kind, 'pcm'), false, `${kind}/pcm should not be registered yet`);
-    assert.equal(getPolicyDocument(kind, 'pcm').translated, false);
+    assert.equal(hasPolicyTranslation(kind, 'en-GB'), false, `${kind}/en-GB should not be registered yet`);
+    assert.equal(getPolicyDocument(kind, 'en-GB').translated, false);
   }
 });
