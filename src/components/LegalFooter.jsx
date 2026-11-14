@@ -18,11 +18,16 @@ import { t } from '@/lib/i18n';
  * `className` is extra spacing for the context it sits in — the shared
  * Layout passes bottom padding so the line clears the fixed mobile tab
  * bar; every other page leaves it off.
+ *
+ * The footer is app chrome, never a document: it carries `no-print`
+ * so it can never trail onto paper behind a Print Center document or
+ * the direct-deposit form (print scoping, Nov 14, 2026 — a print
+ * action prints only its own document).
  */
 export default function LegalFooter({ className = '' }) {
   return (
     <footer
-      className={`mt-10 border-t border-border pt-4 text-center text-[11px] leading-relaxed text-muted-foreground ${className}`}
+      className={`no-print mt-10 border-t border-border pt-4 text-center text-[11px] leading-relaxed text-muted-foreground ${className}`}
     >
       {/* The official globe as the footer's brand mark (owner's
           placement rule, Nov 13, 2026). The legal lines below stay

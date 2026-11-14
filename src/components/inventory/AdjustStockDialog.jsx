@@ -4,6 +4,7 @@ import { t } from '@/lib/i18n';
 
 import { useAuth } from '@/lib/AuthContext';
 import { recordMovement } from '@/lib/inventory';
+import AddLocationInline from '@/components/locations/AddLocationInline';
 import QuantityStepper from '@/components/inventory/QuantityStepper';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -44,6 +45,11 @@ export default function AdjustStockDialog({
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  // The dialog keeps its own copy of the location list so the
+  // inline "add a location" door (shown when the list is empty —
+  // the dead end the owner hit) can add + preselect a location
+  // without leaving the dialog.
+  const [localLocations, setLocalLocations] = useState(locations);
 
   const MODES = [
     { key: 'receive', label: t('inventory.modeReceive'), hint: t('inventory.modeReceiveHint') },
@@ -53,6 +59,7 @@ export default function AdjustStockDialog({
 
   useEffect(() => {
     if (!open) return;
+    setLocalLocations(locations);
     setMode('receive');
     setQuantity('1');
     setNote('');
@@ -63,7 +70,7 @@ export default function AdjustStockDialog({
 
   if (!product) return null;
 
-  const location = locations.find((place) => place.id === locationId) || null;
+  const location = localLocations.find((place) => place.id === locationId) || null;
 
   const save = async () => {
     const qty = Number(quantity) || 0;
@@ -132,18 +139,29 @@ export default function AdjustStockDialog({
 
           <div className="grid gap-2">
             <Label>{t('inventory.locationLabel')}</Label>
-            <Select value={locationId} onValueChange={setLocationId}>
-              <SelectTrigger>
-                <SelectValue placeholder={t('inventory.chooseLocationPlaceholder')} />
-              </SelectTrigger>
-              <SelectContent>
-                {locations.map((place) => (
-                  <SelectItem key={place.id} value={place.id}>
-                    {place.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {localLocations.length === 0 ? (
+              <AddLocationInline
+                businessId={businessId}
+                onCreated={(place) => {
+                  setLocalLocations([place]);
+                  setLocationId(place.id);
+                  setError('');
+                }}
+              />
+            ) : (
+              <Select value={locationId} onValueChange={setLocationId}>
+                <SelectTrigger>
+                  <SelectValue placeholder={t('inventory.chooseLocationPlaceholder')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {localLocations.map((place) => (
+                    <SelectItem key={place.id} value={place.id}>
+                      {place.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
 
           <div className="grid gap-2">

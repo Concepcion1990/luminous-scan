@@ -66,15 +66,15 @@ export const NAV_GROUPS = [
     label: 'Sales', labelKey: 'nav.group.sales',
     items: [
       { to: '/orders', label: 'Orders', labelKey: 'nav.orders', icon: ShoppingBag, perm: 'orders.manage' },
-      // Till connections carry no `perm`: the item stays visible
-      // to every plan (the Rewards precedent — Workforce stays in
-      // the menu and its Business-only tab shows the locked door).
-      // Till connections are Business only (owner's ruling, Nov
-      // 13, 2026): the PAGE shows Essentials the PlanGate door,
-      // and the server refuses Essentials on every POS route,
-      // plus gates connecting, mapping and importing to
-      // owner/manager on Business.
-      { to: '/pos', label: 'Till connections', labelKey: 'nav.pos', icon: Receipt },
+      // Till connections are Business only, and INVISIBLE off
+      // Business (the owner's ruling, Nov 14, 2026, superseding
+      // the Nov 13 locked-door treatment): the `feature` tag makes
+      // Layout hide this entry on Essentials everywhere, and the
+      // /pos route itself bounces to the Overview via
+      // PlanRedirect — no gate page. The server still refuses
+      // Essentials on every POS route, and off-Business webhook
+      // sales are still held, never lost.
+      { to: '/pos', label: 'Till connections', labelKey: 'nav.pos', icon: Receipt, feature: 'pos' },
       { to: '/returns', label: 'Returns', labelKey: 'nav.returns', icon: Undo2, perm: 'returns.manage' },
       { to: '/listings', label: 'Listings', labelKey: 'nav.listings', icon: Store, perm: 'listings.manage' },
     ],

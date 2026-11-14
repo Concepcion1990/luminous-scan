@@ -15,7 +15,7 @@ export const DEFAULT_BUSINESS = {
   name: 'Your business',
   tagline: '',
   logo_url: '',
-  brand_color: '#6d4c26',
+  brand_color: '#e3d5bf',
   contact_email: '',
   contact_phone: '',
   website: '',
@@ -34,7 +34,36 @@ export const BRAND_COLORS = [
   { get label() { return t('businessLib.brandColor.plum'); }, value: '#5b3352' },
 ];
 
-export const CURRENCIES = ['USD', 'CAD', 'GBP', 'EUR', 'AUD', 'NZD', 'MXN', 'JPY'];
+/**
+ * Every active ISO 4217 currency a workspace may display its money in
+ * (owner's ruling, Nov 14, 2026: the app is for everyone, worldwide —
+ * the original eight codes were nowhere near enough). This is the
+ * canonical list; the server's SUPPORTED_CURRENCIES in
+ * server/authRoutes.js mirrors it exactly, and tests/t6 pins the two
+ * identical. Codes the platform retired are gone (HRK→EUR, SLL→SLE,
+ * ZWL→ZWG); every code here formats through Intl.NumberFormat, which
+ * is all formatMoney uses. DISPLAY ONLY: subscription billing never
+ * reads this list — Stripe charges the plan prices as configured.
+ * The familiar eight stay first; the rest are alphabetical.
+ */
+export const CURRENCIES = [
+  'USD', 'CAD', 'GBP', 'EUR', 'AUD', 'NZD', 'MXN', 'JPY', 'AED', 'AFN',
+  'ALL', 'AMD', 'ANG', 'AOA', 'ARS', 'AWG', 'AZN', 'BAM', 'BBD', 'BDT',
+  'BGN', 'BHD', 'BIF', 'BMD', 'BND', 'BOB', 'BRL', 'BSD', 'BTN', 'BWP',
+  'BYN', 'BZD', 'CDF', 'CHF', 'CLP', 'CNY', 'COP', 'CRC', 'CUC', 'CUP',
+  'CVE', 'CZK', 'DJF', 'DKK', 'DOP', 'DZD', 'EGP', 'ERN', 'ETB', 'FJD',
+  'FKP', 'GEL', 'GHS', 'GIP', 'GMD', 'GNF', 'GTQ', 'GYD', 'HKD', 'HNL',
+  'HTG', 'HUF', 'IDR', 'ILS', 'INR', 'IQD', 'IRR', 'ISK', 'JMD', 'JOD',
+  'KES', 'KGS', 'KHR', 'KMF', 'KPW', 'KRW', 'KWD', 'KYD', 'KZT', 'LAK',
+  'LBP', 'LKR', 'LRD', 'LSL', 'LYD', 'MAD', 'MDL', 'MGA', 'MKD', 'MMK',
+  'MNT', 'MOP', 'MRU', 'MUR', 'MVR', 'MWK', 'MYR', 'MZN', 'NAD', 'NGN',
+  'NIO', 'NOK', 'NPR', 'OMR', 'PAB', 'PEN', 'PGK', 'PHP', 'PKR', 'PLN',
+  'PYG', 'QAR', 'RON', 'RSD', 'RUB', 'RWF', 'SAR', 'SBD', 'SCR', 'SDG',
+  'SEK', 'SGD', 'SHP', 'SLE', 'SOS', 'SRD', 'SSP', 'STN', 'SVC', 'SYP',
+  'SZL', 'THB', 'TJS', 'TMT', 'TND', 'TOP', 'TRY', 'TTD', 'TWD', 'TZS',
+  'UAH', 'UGX', 'UYU', 'UZS', 'VES', 'VND', 'VUV', 'WST', 'XAF', 'XCD',
+  'XCG', 'XDR', 'XOF', 'XPF', 'XSU', 'YER', 'ZAR', 'ZMW', 'ZWG',
+];
 
 export const DATE_FORMATS = [
   { value: 'MMM d, yyyy', get label() { return t('businessLib.dateFormat.mmmDyyyy'); } },

@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { base44 } from '@/api/client';
+import { useEffect, useRef, useState } from 'react';
+import { base44, apiRequest } from '@/api/client';
 import { Plus } from 'lucide-react';
 import OrderLineRow from '@/components/orders/OrderLineRow';
 import { Button } from '@/components/ui/button';
@@ -21,20 +21,76 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import AddLocationInline from '@/components/locations/AddLocationInline';
 import { blankLine, CHANNELS, orderNumber, orderTotals } from '@/lib/orders';
 import { money, todayIso } from '@/lib/purchasing';
 import { useBusiness } from '@/hooks/useBusiness';
 import { withBusiness } from '@/lib/scoped';
 import { t } from '@/lib/i18n';
 
-export default function OrderFormDialog({ open, onOpenChange, order, products, locations, currency, onSaved }) {
+export default function OrderFormDialog({ open, onOpenChange, order, products, locations, currency, onSaved, focusShipsFrom = false }) {
   const { activeId } = useBusiness();
   const [form, setForm] = useState(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [addressOnFile, setAddressOnFile] = useState(false);
+  const shipsFromRef = useRef(null);
+
+  // Opened from a blocked-action banner: bring the ships-from
+  // picker into view — the door opens at the missing field.
+  useEffect(() => {
+    if (open && focusShipsFrom && shipsFromRef.current) {
+      const id = setTimeout(
+        () => shipsFromRef.current?.scrollIntoView({ block: 'center', behavior: 'smooth' }),
+        90,
+      );
+      return () => clearTimeout(id);
+    }
+  }, [open, focusShipsFrom]);
+
+  // Returning customer (create mode): the address book may hold
+  // saved addresses under this customer's name (identity is name
+  // + address — a name alone identifies no one). Offer them: one
+  // entry prefills; several become a chooser. Choosing binds the
+  // order to that entry, and saving refreshes its 90 days. Never
+  // overwrites anything already typed.
+  const [savedAddresses, setSavedAddresses] = useState([]);
+  const applySavedAddress = (saved) => {
+    setForm((f) => ({
+      ...f,
+      ship_street: saved.ship_street || '',
+      ship_city: saved.ship_city || '',
+      ship_region: saved.ship_region || '',
+      ship_postal: saved.ship_postal || '',
+      ship_country: saved.ship_country || '',
+    }));
+    setAddressOnFile(true);
+    setSavedAddresses([]);
+  };
+  const lookupSavedAddress = async () => {
+    if (order || !form) return;
+    const name = form.customer_name.trim();
+    if (!name) return;
+    if (form.ship_street || form.ship_city || form.ship_region || form.ship_postal || form.ship_country) return;
+    try {
+      const params = new URLSearchParams({ name });
+      const res = await apiRequest(`/api/businesses/${activeId}/customer-addresses?${params.toString()}`);
+      const entries = res?.addresses || [];
+      if (entries.length === 1) applySavedAddress(entries[0]);
+      else if (entries.length > 1) setSavedAddresses(entries);
+    } catch {
+      /* no saved addresses — the form simply stays blank */
+    }
+  };
+  // Own copy of the location list so the Ships-from picker can
+  // offer the inline add-a-location door when the list is empty.
+  const [localLocations, setLocalLocations] = useState(locations);
 
   useEffect(() => {
     if (!open) return;
+    setLocalLocations(locations);
+    setAddressOnFile(false);
+    setSavedAddresses([]);
     setError('');
     if (order) {
       setForm({
@@ -43,6 +99,11 @@ export default function OrderFormDialog({ open, onOpenChange, order, products, l
         customer_ref: order.customer_ref || '',
         customer_email: order.customer_email || '',
         customer_phone: order.customer_phone || '',
+        ship_street: order.ship_street || '',
+        ship_city: order.ship_city || '',
+        ship_region: order.ship_region || '',
+        ship_postal: order.ship_postal || '',
+        ship_country: order.ship_country || '',
         channel: order.channel || 'manual',
         order_date: order.order_date || todayIso(),
         location_id: order.location_id || locations[0]?.id || '',
@@ -61,6 +122,11 @@ export default function OrderFormDialog({ open, onOpenChange, order, products, l
         customer_ref: '',
         customer_email: '',
         customer_phone: '',
+        ship_street: '',
+        ship_city: '',
+        ship_region: '',
+        ship_postal: '',
+        ship_country: '',
         channel: 'manual',
         order_date: todayIso(),
         location_id: locations[0]?.id || '',
@@ -103,13 +169,18 @@ export default function OrderFormDialog({ open, onOpenChange, order, products, l
 
     setSaving(true);
     setError('');
-    const location = locations.find((l) => l.id === form.location_id);
+    const location = localLocations.find((l) => l.id === form.location_id);
     const payload = {
       number: form.number,
       customer_name: form.customer_name.trim(),
       customer_ref: form.customer_ref.trim(),
       customer_email: form.customer_email.trim(),
       customer_phone: form.customer_phone.trim(),
+      ship_street: form.ship_street.trim(),
+      ship_city: form.ship_city.trim(),
+      ship_region: form.ship_region.trim(),
+      ship_postal: form.ship_postal.trim(),
+      ship_country: form.ship_country.trim(),
       channel: form.channel,
       order_date: form.order_date || todayIso(),
       location_id: location?.id || '',
@@ -163,6 +234,7 @@ export default function OrderFormDialog({ open, onOpenChange, order, products, l
               <Input
                 value={form.customer_name}
                 onChange={(e) => setForm({ ...form, customer_name: e.target.value })}
+                onBlur={lookupSavedAddress}
                 placeholder={t('orders.customerNamePlaceholder')}
               />
             </div>
@@ -220,24 +292,99 @@ export default function OrderFormDialog({ open, onOpenChange, order, products, l
             </div>
           </div>
 
-          <div className="grid gap-1">
+          <div className="grid gap-1" ref={shipsFromRef}>
             <Label className="text-xs">{t('orders.shipsFrom')}</Label>
-            <Select
-              value={form.location_id || 'none'}
-              onValueChange={(v) => setForm({ ...form, location_id: v === 'none' ? '' : v })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder={t('orders.chooseLocation')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">{t('orders.chooseLocation')}</SelectItem>
-                {locations.map((l) => (
-                  <SelectItem key={l.id} value={l.id}>
-                    {l.name}
-                  </SelectItem>
+            {localLocations.length === 0 ? (
+              <AddLocationInline
+                businessId={activeId}
+                onCreated={(place) => {
+                  setLocalLocations([place]);
+                  setForm({ ...form, location_id: place.id });
+                }}
+              />
+            ) : (
+              <Select
+                value={form.location_id || 'none'}
+                onValueChange={(v) => setForm({ ...form, location_id: v === 'none' ? '' : v })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={t('orders.chooseLocation')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">{t('orders.chooseLocation')}</SelectItem>
+                  {localLocations.map((l) => (
+                    <SelectItem key={l.id} value={l.id}>
+                      {l.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
+
+          <div className="grid gap-2 rounded-lg border border-border p-3">
+            <p className="text-xs font-medium">{t('orders.shipToTitle')}</p>
+            {addressOnFile && (
+              <p className="text-xs text-muted-foreground">{t('orders.addressOnFile')}</p>
+            )}
+            {savedAddresses.length > 1 && (
+              <div className="grid gap-1.5">
+                <p className="text-xs text-muted-foreground">{t('orders.chooseSavedAddress')}</p>
+                {savedAddresses.map((saved, index) => (
+                  <Button
+                    key={index}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-auto justify-start whitespace-normal py-2 text-left"
+                    onClick={() => applySavedAddress(saved)}
+                  >
+                    {[saved.ship_street, saved.ship_city, saved.ship_region, saved.ship_postal, saved.ship_country]
+                      .filter(Boolean)
+                      .join(', ')}
+                  </Button>
                 ))}
-              </SelectContent>
-            </Select>
+              </div>
+            )}
+            <div className="grid gap-1">
+              <Label className="text-xs">{t('orders.shipStreet')}</Label>
+              <Input
+                value={form.ship_street}
+                onChange={(e) => setForm({ ...form, ship_street: e.target.value })}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="grid gap-1">
+                <Label className="text-xs">{t('orders.shipCity')}</Label>
+                <Input
+                  value={form.ship_city}
+                  onChange={(e) => setForm({ ...form, ship_city: e.target.value })}
+                />
+              </div>
+              <div className="grid gap-1">
+                <Label className="text-xs">{t('orders.shipRegion')}</Label>
+                <Input
+                  value={form.ship_region}
+                  onChange={(e) => setForm({ ...form, ship_region: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="grid gap-1">
+                <Label className="text-xs">{t('orders.shipPostal')}</Label>
+                <Input
+                  value={form.ship_postal}
+                  onChange={(e) => setForm({ ...form, ship_postal: e.target.value })}
+                />
+              </div>
+              <div className="grid gap-1">
+                <Label className="text-xs">{t('orders.shipCountry')}</Label>
+                <Input
+                  value={form.ship_country}
+                  onChange={(e) => setForm({ ...form, ship_country: e.target.value })}
+                />
+              </div>
+            </div>
           </div>
 
           <div className="space-y-2">

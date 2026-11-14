@@ -11,7 +11,9 @@ import {
   generateBackupCodes,
   startBackupEmail,
   verifyBackupEmail,
+  changePassword,
 } from "@/lib/recovery";
+import { printBackupCodes } from "@/lib/backupCodesPrint";
 
 /**
  * Settings → Security: the spare keys, set up while safely signed in
@@ -24,6 +26,9 @@ import {
  *     that can receive a recovery code later.
  *   - Change email: the normal path into the same machinery the
  *     recovery page graduates through.
+ *   - Change password: the signed-in password change (added Nov 14,
+ *     2026 — before this, only the signed-out reset chain existed).
+ *     Every other session is revoked; this device stays signed in.
  *
  * Phone/SMS is deliberately absent: no SMS provider exists yet, and
  * a dead control would be worse than an honest gap.
@@ -36,6 +41,11 @@ export default function SecurityCard() {
   const [backupEmail, setBackupEmailInput] = useState("");
   const [backupCode, setBackupCode] = useState("");
   const [backupStep, setBackupStep] = useState("idle"); // idle -> code
+  const [pwCurrent, setPwCurrent] = useState("");
+  const [pwNew, setPwNew] = useState("");
+  const [pwConfirm, setPwConfirm] = useState("");
+  const [pwError, setPwError] = useState("");
+  const [pwDone, setPwDone] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -78,6 +88,35 @@ export default function SecurityCard() {
     setBackupStep("idle");
     setBackupCode("");
     await load();
+  });
+
+  // The two refusals a customer can act on get their own localized
+  // lines; anything else falls through to the card-level error.
+  const onChangePassword = () => run("password", async () => {
+    setPwError("");
+    setPwDone(false);
+    if (pwNew !== pwConfirm) {
+      setPwError(t("auth.passwordsDoNotMatch"));
+      return;
+    }
+    try {
+      await changePassword(pwCurrent, pwNew);
+    } catch (err) {
+      const code = err?.data?.error;
+      if (code === "current_password_incorrect") {
+        setPwError(t("settings.security.currentPasswordWrong"));
+        return;
+      }
+      if (code === "password_unchanged") {
+        setPwError(t("settings.security.passwordUnchanged"));
+        return;
+      }
+      throw err;
+    }
+    setPwCurrent("");
+    setPwNew("");
+    setPwConfirm("");
+    setPwDone(true);
   });
 
   return (
@@ -123,7 +162,18 @@ export default function SecurityCard() {
               ))}
             </div>
             <p className="text-xs text-muted-foreground">{t("settings.security.codesOnceWarning")}</p>
-            <Button type="button" variant="ghost" size="sm" onClick={() => window.print()}>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() =>
+                printBackupCodes({
+                  title: t("settings.security.newCodesTitle"),
+                  note: t("settings.security.codesOnceWarning"),
+                  codes: freshCodes,
+                })
+              }
+            >
               <Printer className="w-4 h-4 mr-2" />
               {t("settings.security.printCodes")}
             </Button>
@@ -196,6 +246,66 @@ export default function SecurityCard() {
           <p className="mt-1 text-xs text-muted-foreground">{t("settings.security.changeEmailDesc")}</p>
         </div>
         <ChangeEmailForm requirePassword onChanged={load} />
+      </div>
+
+      <div className="border-t border-border pt-5 space-y-3">
+        <div>
+          <h3 className="text-sm font-medium">{t("settings.security.changePasswordTitle")}</h3>
+          <p className="mt-1 text-xs text-muted-foreground">{t("settings.security.changePasswordDesc")}</p>
+        </div>
+        {pwDone ? (
+          <p className="text-sm flex items-center gap-2">
+            <Check className="h-4 w-4 text-ok" />
+            {t("settings.security.passwordChangedOk")}
+          </p>
+        ) : (
+          <div className="space-y-3 max-w-sm">
+            <div className="space-y-2">
+              <Label htmlFor="security-current-password">{t("settings.security.currentPasswordLabel")}</Label>
+              <Input
+                id="security-current-password"
+                type="password"
+                autoComplete="current-password"
+                value={pwCurrent}
+                onChange={(e) => setPwCurrent(e.target.value)}
+                className="h-11"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="security-new-password">{t("settings.security.newPasswordLabel")}</Label>
+              <Input
+                id="security-new-password"
+                type="password"
+                autoComplete="new-password"
+                value={pwNew}
+                onChange={(e) => setPwNew(e.target.value)}
+                className="h-11"
+              />
+              <p className="text-xs text-muted-foreground">{t("register.passwordHint")}</p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="security-confirm-password">{t("reset.confirmPasswordLabel")}</Label>
+              <Input
+                id="security-confirm-password"
+                type="password"
+                autoComplete="new-password"
+                value={pwConfirm}
+                onChange={(e) => setPwConfirm(e.target.value)}
+                className="h-11"
+              />
+            </div>
+            {pwError && <p className="text-sm text-destructive">{pwError}</p>}
+            <Button
+              type="button"
+              disabled={busy === "password" || !pwCurrent || !pwNew || !pwConfirm}
+              onClick={onChangePassword}
+              className="h-11"
+            >
+              {busy === "password" ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+              {t("settings.security.changePasswordButton")}
+            </Button>
+          </div>
+        )}
       </div>
     </SettingsCard>
   );

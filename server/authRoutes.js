@@ -46,6 +46,7 @@ import {
   createSession,
   revokeSession,
   revokeAllSessions,
+  revokeOtherSessions,
   requireAuth,
   sessionSecretConfigured,
   signSessionId,
@@ -53,6 +54,7 @@ import {
   parseCookies,
 } from './sessions.js';
 import { activateStaffRowsForEmail } from './staff.js';
+import { DEFAULT_LOCATION_NAME } from './defaultLocation.js';
 
 /** Essentials business cap until T4 (no entitlements yet — see header). */
 export const ESSENTIALS_BUSINESS_LIMIT = 1;
@@ -102,14 +104,15 @@ function publicBusiness(row) {
     // T6 identity fields (migration 006). The app name is NOT here —
     // Luminous StockHaven stays the app name and is not changeable.
     logo_url: row.logo_url || '',
-    // The default brand color is the Luminous deep bronze (#6d4c26).
-    // The retired teal #145042 was a silent default, never a choice —
+    // The default brand color is the approved Luminous cream-tan
+    // (#e3d5bf) — the app's own theme color, not an override. The
+    // retired teal #145042 was a silent default, never a choice —
     // a row still holding it (or no color) is "unset" and resolves to
-    // the bronze here, mirroring resolveBrandColor in
+    // the cream-tan here, mirroring resolveBrandColor in
     // src/lib/brandTheme.js. A color the business actually saved is
     // returned untouched: white-label choices always win.
     brand_color: !row.brand_color || row.brand_color.toLowerCase() === '#145042'
-      ? '#6d4c26'
+      ? '#e3d5bf'
       : row.brand_color,
     contact_email: row.contact_email || '',
     contact_phone: row.contact_phone || '',
@@ -131,7 +134,27 @@ const BUSINESS_UPDATE_FIELDS = [
   'date_format', 'unit_system', 'language',
 ];
 const SUPPORTED_LANGUAGES = ['am', 'ar', 'bho', 'bn', 'de', 'en', 'en-AU', 'en-CA', 'en-GB', 'en-IN', 'es-CU', 'es-ES', 'es-MX', 'es-PR', 'es-US', 'es-VE', 'fa', 'fr-CA', 'fr-FR', 'gu', 'ha', 'hi', 'id', 'it', 'ja', 'jv', 'kn', 'ko', 'mr', 'ms', 'pa-Arab', 'pa-Guru', 'pcm', 'prs', 'pt-BR', 'pt-PT', 'ru', 'sw', 'ta', 'te', 'tg', 'th', 'tl', 'tr', 'uk', 'ur', 'vi', 'wuu', 'yo', 'yue', 'zh-Hans', 'zh-Hant'];
-const SUPPORTED_CURRENCIES = ['USD', 'CAD', 'GBP', 'EUR', 'AUD', 'NZD', 'MXN', 'JPY'];
+// Mirrors CURRENCIES in src/lib/business.js EXACTLY (tests/t6 pins the
+// two identical): every active ISO 4217 code. This validates the
+// workspace's DISPLAY currency only; billing never reads it.
+const SUPPORTED_CURRENCIES = [
+  'USD', 'CAD', 'GBP', 'EUR', 'AUD', 'NZD', 'MXN', 'JPY', 'AED', 'AFN',
+  'ALL', 'AMD', 'ANG', 'AOA', 'ARS', 'AWG', 'AZN', 'BAM', 'BBD', 'BDT',
+  'BGN', 'BHD', 'BIF', 'BMD', 'BND', 'BOB', 'BRL', 'BSD', 'BTN', 'BWP',
+  'BYN', 'BZD', 'CDF', 'CHF', 'CLP', 'CNY', 'COP', 'CRC', 'CUC', 'CUP',
+  'CVE', 'CZK', 'DJF', 'DKK', 'DOP', 'DZD', 'EGP', 'ERN', 'ETB', 'FJD',
+  'FKP', 'GEL', 'GHS', 'GIP', 'GMD', 'GNF', 'GTQ', 'GYD', 'HKD', 'HNL',
+  'HTG', 'HUF', 'IDR', 'ILS', 'INR', 'IQD', 'IRR', 'ISK', 'JMD', 'JOD',
+  'KES', 'KGS', 'KHR', 'KMF', 'KPW', 'KRW', 'KWD', 'KYD', 'KZT', 'LAK',
+  'LBP', 'LKR', 'LRD', 'LSL', 'LYD', 'MAD', 'MDL', 'MGA', 'MKD', 'MMK',
+  'MNT', 'MOP', 'MRU', 'MUR', 'MVR', 'MWK', 'MYR', 'MZN', 'NAD', 'NGN',
+  'NIO', 'NOK', 'NPR', 'OMR', 'PAB', 'PEN', 'PGK', 'PHP', 'PKR', 'PLN',
+  'PYG', 'QAR', 'RON', 'RSD', 'RUB', 'RWF', 'SAR', 'SBD', 'SCR', 'SDG',
+  'SEK', 'SGD', 'SHP', 'SLE', 'SOS', 'SRD', 'SSP', 'STN', 'SVC', 'SYP',
+  'SZL', 'THB', 'TJS', 'TMT', 'TND', 'TOP', 'TRY', 'TTD', 'TWD', 'TZS',
+  'UAH', 'UGX', 'UYU', 'UZS', 'VES', 'VND', 'VUV', 'WST', 'XAF', 'XCD',
+  'XCG', 'XDR', 'XOF', 'XPF', 'XSU', 'YER', 'ZAR', 'ZMW', 'ZWG',
+];
 const SUPPORTED_DATE_FORMATS = ['MMM d, yyyy', 'd MMM yyyy', 'M/d/yyyy', 'yyyy-MM-dd'];
 
 function validateBusinessPatch(patch) {
@@ -558,6 +581,60 @@ export function createAuthRouter({ getPool }) {
     }
   });
 
+  // ---- Change password (signed in) ------------------------------------
+  // The signed-in counterpart to the reset chain above (owner's catch,
+  // Nov 14, 2026: Settings had no way to change a password while
+  // signed in). A FULL session is required: the app-level recovery
+  // scope guard refuses scope='recovery' sessions from this route
+  // automatically (it is not on the recovery allowlist), the same
+  // refusal the /api/account/* routes get.
+  router.post('/auth/change-password', requireDb, authed, async (req, res) => {
+    const pool = getPool();
+    const ip = req.ip || '';
+    const limited = checkLimit(`change-password:${req.user.id}:${ip}`, 10, 15 * 60 * 1000);
+    if (!limited.allowed) return rateLimited(res, limited.retryAfterSeconds);
+    const { currentPassword, newPassword } = req.body || {};
+    const pwError = passwordError(newPassword);
+    if (pwError) return res.status(400).json({ error: 'invalid_password', message: pwError });
+    try {
+      const { rows } = await pool.query('SELECT password_hash FROM users WHERE id = $1', [req.user.id]);
+      const user = rows[0];
+      if (!user) return res.status(401).json({ error: 'not_signed_in' });
+      // One refusal for anything wrong with the current password —
+      // the caller learns only "that is not your current password",
+      // never which part failed.
+      const matches =
+        typeof currentPassword === 'string' && (await verifyPassword(currentPassword, user.password_hash));
+      if (!matches) {
+        return res.status(400).json({
+          error: 'current_password_incorrect',
+          message: 'That is not your current password.',
+        });
+      }
+      if (await verifyPassword(newPassword, user.password_hash)) {
+        return res.status(400).json({
+          error: 'password_unchanged',
+          message: 'Your new password must be different from your current one.',
+        });
+      }
+      const passwordHash = await hashPassword(newPassword);
+      await withTx(pool, async (client) => {
+        await client.query(
+          'UPDATE users SET password_hash = $1, updated_at = NOW() WHERE id = $2',
+          [passwordHash, req.user.id],
+        );
+        // Every OTHER session dies; the device making the change
+        // stays signed in (the change-email precedent in
+        // server/recoveryRoutes.js).
+        await revokeOtherSessions(client, req.user.id, req.sessionId);
+      });
+      return res.json({ ok: true });
+    } catch (error) {
+      console.error('[twin] change-password failed:', error.message);
+      return res.status(500).json({ error: 'change_password_failed', message: 'Password change failed. Please try again.' });
+    }
+  });
+
   // ---- Businesses ------------------------------------------------------
   router.get('/businesses', authed, async (req, res) => {
     const pool = getPool();
@@ -625,6 +702,17 @@ export function createAuthRouter({ getPool }) {
            VALUES ($1, $2, $3, 'owner', $3)`,
           [crypto.randomUUID(), id, req.user.id],
         );
+        // The store location simply IS there from the start
+        // (Nov 14, 2026): a business with zero locations cannot
+        // stock anything — every picker is an empty dropdown. One
+        // default 'store' location, seeded in the same transaction,
+        // named after the business itself (its Settings identity),
+        // with the deterministic default id.
+        await client.query(
+          `INSERT INTO locations (id, business_id, name, kind, created_by_id)
+           VALUES ($1, $2, $3, 'store', $2)`,
+          [`default-${id}`, id, (name || '').trim() || DEFAULT_LOCATION_NAME],
+        );
         return inserted.rows[0];
       });
       if (!business) {
@@ -663,6 +751,19 @@ export function createAuthRouter({ getPool }) {
         `UPDATE businesses SET ${sets}, updated_at = NOW() WHERE id = $${columns.length + 1} RETURNING *`,
         [...columns.map((col) => clean[col]), req.params.id],
       );
+      // Default-location follow (Nov 14, 2026): the seeded store
+      // location carries the business's name — Settings is the one
+      // source of truth. While the location still wears the OLD
+      // business name (untouched), a rename flows through; once
+      // the owner renames the location itself, its name no longer
+      // matches and their name sticks. The name = old-name
+      // condition makes exactly that distinction, atomically.
+      if (clean.name && clean.name !== business.name) {
+        await pool.query(
+          'UPDATE locations SET name = $1 WHERE id = $2 AND name = $3',
+          [clean.name, `default-${business.id}`, business.name],
+        );
+      }
       return res.json(publicBusiness(updated.rows[0]));
     } catch (error) {
       console.error('[twin] update business failed:', error.message);

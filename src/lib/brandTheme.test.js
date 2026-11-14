@@ -8,6 +8,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import {
   hexToHsl,
   brandThemeVars,
@@ -90,25 +91,45 @@ test('the stylesheet text is empty for an invalid color', () => {
 /**
  * The default-color ruling (Nov 14, 2026): the old silent default was
  * a deep teal (#145042) that re-skinned the signed-in shell — bright
- * mint in dark mode. It is replaced by the Luminous deep bronze, and
- * ONLY for workspaces that never chose a color: the white-label rule
- * is that a business's own branding always wins, exactly as saved.
+ * mint in dark mode. A deep-bronze replacement (#6d4c26) shipped the
+ * same morning, but through the derivation it painted a solid brown
+ * band and brown buttons, and the owner rejected it on sight: the
+ * default is the ORIGINAL look from her Base44 app — warm cream,
+ * charcoal ink, tan pills. That look already exists as the
+ * stylesheet's approved theme in src/index.css, so the default color
+ * is that theme's cream-tan #E3D5BF and it produces NO override at
+ * all. It applies ONLY to workspaces that never chose a color: the
+ * white-label rule is that a business's own branding always wins,
+ * exactly as saved.
  */
-test('the default brand color is the Luminous bronze, warm in both modes', () => {
-  assert.equal(DEFAULT_BRAND_COLOR, '#6d4c26');
-  const vars = brandThemeVars(DEFAULT_BRAND_COLOR);
-  // Every generated variable sits on the warm bronze hue (32) — no
-  // teal (160s) anywhere in the default theme, light or dark.
-  for (const block of [vars.light, vars.dark]) {
-    for (const value of Object.values(block)) {
-      assert.equal(value.split(' ')[0], '32');
-    }
-  }
-  assert.equal(vars.light['--primary'], '32 48% 29%');
-  assert.equal(vars.dark['--primary'], '32 48% 54%');
+test('the default brand color is the approved cream-tan, and it is not an override', () => {
+  assert.equal(DEFAULT_BRAND_COLOR, '#e3d5bf');
+  // No variables, no stylesheet: the app's approved theme rules.
+  assert.equal(brandThemeVars(DEFAULT_BRAND_COLOR), null);
+  assert.equal(brandThemeVars('#E3D5BF'), null);
+  assert.equal(brandThemeCss(DEFAULT_BRAND_COLOR), '');
+  // The pin tying the default to the stylesheet: the approved block
+  // in src/index.css pins --primary to the #E3D5BF values, both modes.
+  const css = readFileSync(new URL('../index.css', import.meta.url), 'utf8');
+  assert.match(css, /--primary: 36\.67 39\.13% 81\.96%/);
+  assert.match(css, /--sidebar-background: 36\.67 39\.13% 81\.96%/);
 });
 
-test('resolveBrandColor: unset and the legacy teal default land on bronze', () => {
+test('applying the resolved default clears any override — the cream theme rules', () => {
+  const doc = fakeDocument();
+  // A merchant color is in force...
+  assert.equal(applyBrandColor('#7d4b34', doc), true);
+  assert.equal(doc.tags.length, 1);
+  // ...then the workspace resolves to the default (no branding of its
+  // own — unset, or a row still holding the retired teal): the tag
+  // goes away and the app's own cream theme takes over, both modes.
+  assert.equal(applyBrandColor(resolveBrandColor(''), doc), false);
+  assert.equal(doc.tags.length, 0);
+  assert.equal(applyBrandColor(resolveBrandColor('#145042'), doc), false);
+  assert.equal(doc.tags.length, 0);
+});
+
+test('resolveBrandColor: unset and the legacy teal default land on the cream-tan default', () => {
   assert.equal(LEGACY_DEFAULT_BRAND_COLOR, '#145042');
   assert.equal(resolveBrandColor(null), DEFAULT_BRAND_COLOR);
   assert.equal(resolveBrandColor(''), DEFAULT_BRAND_COLOR);

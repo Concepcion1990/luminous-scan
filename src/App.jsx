@@ -13,6 +13,7 @@ import PullToRefreshShell from './components/PullToRefreshShell';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Layout from '@/components/Layout';
 import PlanGate from '@/components/plan/PlanGate';
+import PlanRedirect from '@/components/plan/PlanRedirect';
 import SubscriptionAccessRoute from '@/components/plan/SubscriptionAccessRoute';
 import Upgrade from '@/pages/Upgrade';
 import About from '@/pages/About';
@@ -177,7 +178,14 @@ const AuthenticatedApp = () => {
             }
           />
           <Route path="/orders" element={<Orders />} />
-          <Route path="/pos" element={<PosConnections />} />
+          <Route
+            path="/pos"
+            element={
+              <PlanRedirect feature="pos">
+                <PosConnections />
+              </PlanRedirect>
+            }
+          />
           <Route path="/returns" element={<Returns />} />
           <Route path="/counts" element={<Counts />} />
           <Route
@@ -231,7 +239,7 @@ const AuthenticatedApp = () => {
   if (shellShouldWait({ openToEveryone, authPage, isLoadingAuth })) {
     return (
       <div className="fixed inset-0 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-4 border-muted border-t-foreground rounded-full animate-spin"></div>
       </div>
     );
   }

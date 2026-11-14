@@ -37,6 +37,7 @@ import {
   accountRecoveryCodeEmail,
   newEmailCodeEmail,
   emailChangedNoticeEmail,
+  passwordResetEmail,
 } from './email.js';
 import {
   issueOtp,
@@ -541,6 +542,83 @@ export function createRecoveryRouter({ getPool: getPoolOverride } = {}) {
       return res.json({ ok: true, member: staffMemberPublic(freshRows[0]) });
     } catch (error) {
       return shaped(res, error, 'staff_email_failed', "Could not change the team member's email.");
+    }
+  });
+
+  // ---- Owner sends a staff member a password reset --------------------
+  // Owner's ask (Nov 14, 2026): when a staff member forgets their
+  // password, the owner can send the reset instead of walking them
+  // through the self-serve door. Gating mirrors the staff-email fix
+  // exactly: owner of THIS business only, any plan (Essentials has
+  // staff too — ownership is the gate, never the plan). The reset
+  // itself is the standard forgot-password machinery — same 6-digit
+  // code (hashed, 10 minutes, single use), same email with link +
+  // code — addressed to the member's CURRENT account email. The
+  // owner never sees the code or the link; the response only names
+  // the address it went to (owners already see staff emails in-app).
+  router.post('/businesses/:bid/staff/:memberId/send-password-reset', requireDb, authed, async (req, res) => {
+    const pool = poolOf();
+    const businessId = req.params.bid;
+    const memberId = req.params.memberId;
+    const ip = req.ip || '';
+    try {
+      const access = await resolveAccess(pool, req.user, businessId);
+      if (!access) return res.status(404).json({ error: 'business_not_found' });
+      if (!access.isOwner) {
+        return res.status(403).json({
+          error: 'owner_only',
+          message: 'Only the business owner can send a password reset to a team member.',
+        });
+      }
+      await assertNotInGrace(pool, businessId);
+      const { rows: memberRows } = await pool.query(
+        'SELECT * FROM staff_members WHERE id = $1 AND business_id = $2',
+        [memberId, businessId],
+      );
+      const member = memberRows[0];
+      if (!member) return res.status(404).json({ error: 'staff_not_found', message: 'That team member is not on this business.' });
+      const memberEmail = String(member.email).toLowerCase();
+      const { rows: accounts } = await pool.query('SELECT * FROM users WHERE LOWER(email) = $1', [memberEmail]);
+      const account = accounts[0] || null;
+      if (!account) {
+        // An invited row that never signed up has no password —
+        // there is nothing to reset.
+        return res.status(409).json({
+          error: 'staff_no_account',
+          message: 'This team member has not signed up yet, so there is no password to reset. They will set their password when they accept the invite.',
+        });
+      }
+      // Anti-spam, the forgot-password discipline aimed at the
+      // target: at most 5 sends per hour for this member, and the
+      // standard 60-second OTP resend cooldown between sends.
+      const capped = checkLimit(`staff-reset:${account.id}`, 5, 60 * 60 * 1000);
+      if (!capped.allowed) return rateLimited(res, capped.retryAfterSeconds);
+      const ownerCapped = checkLimit(`staff-reset-owner:${req.user.id}:${ip}`, 20, 60 * 60 * 1000);
+      if (!ownerCapped.allowed) return rateLimited(res, ownerCapped.retryAfterSeconds);
+      const since = await secondsSinceLastOtp(pool, account.id, 'reset');
+      if (since !== null && since < OTP_RESEND_COOLDOWN_SECONDS) {
+        return rateLimited(res, Math.ceil(OTP_RESEND_COOLDOWN_SECONDS - since));
+      }
+      const result = await withTx(pool, async (client) => {
+        const { code } = await issueOtp(client, account.id, 'reset');
+        const protocol = req.protocol || 'https';
+        const resetUrl = `${protocol}://${req.get('host')}/reset-password?token=${code}`;
+        return { code, resetUrl };
+      });
+      try {
+        await sendMail(passwordResetEmail({ to: account.email, resetUrl: result.resetUrl, code: result.code }));
+      } catch (error) {
+        if (error instanceof EmailNotConfigured) {
+          return res.status(503).json({
+            error: 'email_not_configured',
+            message: 'Email is not set up yet, so the reset could not be sent.',
+          });
+        }
+        throw error;
+      }
+      return res.json({ ok: true, sent_to: account.email });
+    } catch (error) {
+      return shaped(res, error, 'staff_reset_failed', 'Could not send the password reset.');
     }
   });
 

@@ -14,9 +14,17 @@ import { localTimeZoneName } from '@/lib/dates';
 
 const timezones = timezoneOptions();
 
-export default function DetailsCard({ values, onChange }) {
+export default function DetailsCard({ values, onChange, onPreferenceChange }) {
   const set = (key) => (event) => onChange({ ...values, [key]: event.target.value });
   const pick = (key) => (value) => onChange({ ...values, [key]: value });
+  // Language and currency apply on selection (the owner's
+  // ruling, Nov 14, 2026): they route through the page's own
+  // immediate-persistence path instead of the form's Save flow.
+  // Every other field keeps the ordinary form behavior.
+  const pickPreference = (key) => (value) => {
+    if (onPreferenceChange) onPreferenceChange(key, value);
+    else pick(key)(value);
+  };
 
   return (
     <div className="space-y-4">
@@ -72,7 +80,7 @@ export default function DetailsCard({ values, onChange }) {
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <Label>{t('settings.details.currency')}</Label>
-            <Select value={values.currency} onValueChange={pick('currency')}>
+            <Select value={values.currency} onValueChange={pickPreference('currency')}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -133,7 +141,7 @@ export default function DetailsCard({ values, onChange }) {
 
           <div className="space-y-2">
             <Label>{t('settings.details.language')}</Label>
-            <Select value={values.language} onValueChange={pick('language')}>
+            <Select value={values.language} onValueChange={pickPreference('language')}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>

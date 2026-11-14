@@ -27,6 +27,8 @@
 
 import { csrfHeadersFor } from '../lib/csrf.js';
 import { loginBounceTarget } from '../lib/authReturnTo.js';
+import { bumpData } from '../lib/dataFreshness.js';
+import { prepareImageForUpload } from '../lib/imagePrep.js';
 import { t } from '../lib/i18n.js';
 
 const notImplemented = (area) =>
@@ -61,27 +63,47 @@ function entityClient(name) {
   // checked there, never trusted from the browser.
   const base = `/api/entities/${name}`;
   const encode = (id) => encodeURIComponent(id);
+  // Data freshness (Nov 14, 2026): every inventory write through
+  // this factory bumps the shared freshness bus, so kept-alive
+  // screens (Products, Overview) refetch when they become visible
+  // instead of showing the world from before the change. See
+  // src/lib/dataFreshness.js and src/hooks/useDataFresh.js.
+  const announce = (promise) =>
+    INVENTORY_ENTITIES.has(name)
+      ? promise.then((result) => {
+          bumpData('inventory');
+          return result;
+        })
+      : promise;
   return {
     filter: (query = {}, options = {}) =>
       request(`${base}/query`, { method: 'POST', body: { filter: query, ...options } }),
     list: (options = {}) =>
       request(`${base}/query`, { method: 'POST', body: { filter: {}, ...options } }),
     get: (id) => request(`${base}/${encode(id)}`),
-    create: (values) => request(base, { method: 'POST', body: values }),
-    update: (id, patch) => request(`${base}/${encode(id)}`, { method: 'PATCH', body: patch }),
-    delete: (id) => request(`${base}/${encode(id)}`, { method: 'DELETE' }),
+    create: (values) => announce(request(base, { method: 'POST', body: values })),
+    update: (id, patch) => announce(request(`${base}/${encode(id)}`, { method: 'PATCH', body: patch })),
+    delete: (id) => announce(request(`${base}/${encode(id)}`, { method: 'DELETE' })),
     count: async (query = {}) => {
       const data = await request(`${base}/count`, { method: 'POST', body: { filter: query } });
       return data.count;
     },
-    bulkCreate: (rows) => request(`${base}/bulk`, { method: 'POST', body: rows }),
-    bulkUpdate: (rows) => request(`${base}/bulk`, { method: 'PATCH', body: rows }),
+    bulkCreate: (rows) => announce(request(`${base}/bulk`, { method: 'POST', body: rows })),
+    bulkUpdate: (rows) => announce(request(`${base}/bulk`, { method: 'PATCH', body: rows })),
     updateMany: (filter, patch) =>
-      request(`${base}/update-many`, { method: 'POST', body: { filter, patch } }),
+      announce(request(`${base}/update-many`, { method: 'POST', body: { filter, patch } })),
     deleteMany: (filter) =>
-      request(`${base}/delete-many`, { method: 'POST', body: { filter } }),
+      announce(request(`${base}/delete-many`, { method: 'POST', body: { filter } })),
   };
 }
+
+// Category and Location ride the same bus (Nov 14, 2026):
+// categories, tags and location names are inventory truth too —
+// a rename anywhere must show on Products facets, the form's
+// suggestions, the Categories & tags counts, the Movements
+// location filter and every picker without a refresh. Tags also
+// live on products, whose writes already announce.
+const INVENTORY_ENTITIES = new Set(['Product', 'StockLevel', 'StockMovement', 'Category', 'Location']);
 
 // T2: the Business entity is real — the workspace loader
 // (src/lib/business.js loadWorkspace) lists the caller's businesses,
@@ -348,7 +370,32 @@ export const base44 = {  entities: Object.fromEntries(
 
   integrations: {
     Core: {
-      UploadPublicFile: () => Promise.reject(notImplemented('integrations.Core.UploadPublicFile')),
+      // Product photos (Nov 14, 2026): real at last — this was the
+      // twin's one dead stub, and the product form's upload silently
+      // failed on it. Reads the file as a data URL (the store-logo
+      // upload's pattern) and posts it to the active business's
+      // photo endpoint; the server stores the bytes in Postgres and
+      // returns the public URL the form saves into photo_urls.
+      UploadPublicFile: async ({ file }) => {
+        const me = await request('/api/auth/me');
+        const businessId = me?.active_business_id;
+        if (!businessId) throw new Error(t('apiLib.chooseBusinessFirst'));
+        // The app sizes the photo FOR the customer (owner's rule:
+        // nobody is ever told to shrink a picture themselves) —
+        // downscaled + re-encoded before it ever leaves the device.
+        const prepared = await prepareImageForUpload(file);
+        const dataUrl = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result));
+          reader.onerror = () => reject(new Error(t('productForm.uploadFailed')));
+          reader.readAsDataURL(prepared);
+        });
+        const { url } = await request(`/api/businesses/${businessId}/product-photos`, {
+          method: 'POST',
+          body: { dataUrl },
+        });
+        return { file_url: url };
+      },
     },
   },
 

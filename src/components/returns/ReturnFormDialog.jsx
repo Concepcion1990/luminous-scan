@@ -30,6 +30,7 @@ import {
   returnTotals,
 } from '@/lib/returns';
 import { money, todayIso } from '@/lib/purchasing';
+import AddLocationInline from '@/components/locations/AddLocationInline';
 import { useBusiness } from '@/hooks/useBusiness';
 import { withBusiness } from '@/lib/scoped';
 import { t } from '@/lib/i18n';
@@ -48,10 +49,15 @@ export default function ReturnFormDialog({
   const [form, setForm] = useState(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  // Same no-dead-end rule as every location picker (Nov 14,
+  // 2026): the list is kept locally so an empty "Returned to"
+  // picker can offer the inline add-a-location door.
+  const [localLocations, setLocalLocations] = useState(locations);
 
   useEffect(() => {
     if (!open) return;
     setError('');
+    setLocalLocations(locations);
     if (record) {
       setForm({
         number: record.number || returnNumber(),
@@ -156,7 +162,7 @@ export default function ReturnFormDialog({
 
     setSaving(true);
     setError('');
-    const location = locations.find((l) => l.id === form.location_id);
+    const location = localLocations.find((l) => l.id === form.location_id);
     const payload = {
       number: form.number,
       kind: form.kind,
@@ -278,22 +284,32 @@ export default function ReturnFormDialog({
             </div>
             <div className="grid gap-1">
               <Label className="text-xs">{t('returns.returnedTo')}</Label>
-              <Select
-                value={form.location_id || 'none'}
-                onValueChange={(v) => setForm({ ...form, location_id: v === 'none' ? '' : v })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={t('returns.chooseLocation')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">{t('returns.chooseLocation')}</SelectItem>
-                  {locations.map((l) => (
-                    <SelectItem key={l.id} value={l.id}>
-                      {l.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {localLocations.length === 0 ? (
+                <AddLocationInline
+                  businessId={activeId}
+                  onCreated={(created) => {
+                    setLocalLocations([created]);
+                    setForm((f) => ({ ...f, location_id: created.id }));
+                  }}
+                />
+              ) : (
+                <Select
+                  value={form.location_id || 'none'}
+                  onValueChange={(v) => setForm({ ...form, location_id: v === 'none' ? '' : v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={t('returns.chooseLocation')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">{t('returns.chooseLocation')}</SelectItem>
+                    {localLocations.map((l) => (
+                      <SelectItem key={l.id} value={l.id}>
+                        {l.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
           </div>
 

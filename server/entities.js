@@ -50,6 +50,8 @@ import {
   BUNDLE_MOVEMENT_TYPES,
 } from './plans.js';
 import { createStaffMember, staffSeatCount } from './staff.js';
+import { ensureDefaultLocation } from './defaultLocation.js';
+import { rememberOrderAddress } from './customerAddresses.js';
 import { withTx } from './billing.js';
 import {
   assertSubscriptionAccess,
@@ -425,6 +427,68 @@ function pricingPayloadActive(values) {
   return false;
 }
 
+/** SKU generation (Nov 14, 2026): a SKU is NOT required to create
+ *  a product — the owner hit the old refusal creating a product
+ *  from a barcode scan, where the scan fills name + UPC and there
+ *  is no SKU yet. A blank SKU is generated with the SAME scheme
+ *  the spreadsheet import already uses (src/lib/csvImport.js
+ *  uniqueSku): the name slug, ITEM-<n> when the name slugs to
+ *  nothing, -2/-3… until unique within the business. The generated
+ *  SKU is stored on the product like any typed one — visible and
+ *  editable afterward. A TYPED sku keeps the catalog's uniqueness
+ *  rule (the import layer's wording): duplicates are refused. */
+function slugSku(name) {
+  return String(name || '')
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 24);
+}
+
+async function generateProductSku(pool, businessId, name) {
+  const { rows } = await pool.query(
+    'SELECT sku FROM products WHERE business_id = $1',
+    [businessId],
+  );
+  const taken = new Set(
+    rows.map((r) => String(r.sku || '').toLowerCase()).filter(Boolean),
+  );
+  const base = slugSku(name) || `ITEM-${rows.length + 1}`;
+  let candidate = base;
+  let attempt = 2;
+  while (taken.has(candidate.toLowerCase())) {
+    candidate = `${base}-${attempt}`;
+    attempt += 1;
+  }
+  return candidate;
+}
+
+async function assertSkuAvailable(pool, businessId, sku) {
+  const { rows } = await pool.query(
+    'SELECT 1 FROM products WHERE business_id = $1 AND LOWER(sku) = LOWER($2) LIMIT 1',
+    [businessId, sku],
+  );
+  if (rows.length) {
+    throw err(400, 'sku_already_exists', `SKU ${sku} is already in the catalog.`);
+  }
+}
+
+/** Product photos: at most 6 per product (the form's own promise),
+ *  each a string URL. Enforced here — the one door every product
+ *  write passes through — so the cap holds for imports and bulk
+ *  edits too, not just the form. */
+export const MAX_PRODUCT_PHOTOS = 6;
+function assertPhotoUrls(values) {
+  if (values.photo_urls === undefined) return;
+  const urls = values.photo_urls;
+  if (!Array.isArray(urls) || urls.some((u) => typeof u !== 'string')) {
+    throw err(400, 'invalid_photo_urls', 'Photos must be a list of image links.');
+  }
+  if (urls.length > MAX_PRODUCT_PHOTOS) {
+    throw err(400, 'too_many_photos', `A product can carry at most ${MAX_PRODUCT_PHOTOS} photos.`);
+  }
+}
+
 function assertPricingShape(values) {
   if (values.pricing_mode !== undefined && values.pricing_mode !== null && !PRICING_MODES.includes(values.pricing_mode)) {
     throw err(400, 'invalid_value', 'Pricing mode must be regular, clearance or rollback.');
@@ -494,6 +558,12 @@ async function guardCreate(pool, def, name, access, values) {
       throw err(403, 'pricing_business_only', 'Clearance and rollback pricing is part of the Business plan.');
     }
     assertPricingShape(values);
+    assertPhotoUrls(values);
+    if (!String(values.sku || '').trim()) {
+      values.sku = await generateProductSku(pool, business.id, values.name);
+    } else {
+      await assertSkuAvailable(pool, business.id, String(values.sku).trim());
+    }
     await assertProductCap(pool, business.id, planKey, values.status === 'archived' ? 0 : 1);
   }
   if (name === 'Location' && isOperatingSite(values)) {
@@ -546,6 +616,7 @@ async function guardUpdate(pool, def, name, access, row, patch) {
       throw err(403, 'pricing_business_only', 'Clearance and rollback pricing is part of the Business plan.');
     }
     assertPricingShape(patch);
+    assertPhotoUrls(patch);
   }
   if (name === 'PurchaseOrder') {
     const current = row;
@@ -651,6 +722,13 @@ export async function listEntities(pool, user, name, filter = {}, options = {}) 
   for (const businessId of accessible) {
     const access = await resolveAccess(pool, user, businessId);
     if (!access) continue;
+    // Default-location heal (Nov 14, 2026): a business found with
+    // zero locations gains its one store location before the list
+    // is read, so no stock surface ever shows an empty picker.
+    // Businesses that have locations are never touched.
+    if (name === 'Location') {
+      await ensureDefaultLocation(pool, businessId, user.id);
+    }
     // Subscription access gate (2026-11-13): an unpaid workspace
     // contributes NO rows; in grace only the grace view's entities
     // (products + stock levels) are readable. The Entitlement entity
@@ -746,7 +824,18 @@ export async function createEntity(pool, user, name, values) {
     return publicRow(def, row);
   }
   await guardCreate(pool, def, name, access, values);
-  return insertRow(pool, def, businessId, user, values);
+  const createdRow = await insertRow(pool, def, businessId, user, values);
+  // The 90-day customer address book: an order save remembers /
+  // refreshes the customer's reusable ship-to address. Never
+  // allowed to fail the order itself.
+  if (name === 'Order') {
+    try {
+      await rememberOrderAddress(pool, createdRow);
+    } catch {
+      /* the address book is a convenience, never a blocker */
+    }
+  }
+  return createdRow;
 }
 
 export async function bulkCreateEntities(pool, user, name, rows) {
@@ -813,6 +902,13 @@ export async function updateEntity(pool, user, name, id, patch) {
     const hookArgs = { business: access.business, planKey: access.planKey, before: publicExisting, after: result, actor };
     if (name === 'StaffMember') await trainingFlagForMemberChange(pool, hookArgs);
     else await trainingFlagForRoleChange(pool, hookArgs);
+  }
+  if (name === 'Order') {
+    try {
+      await rememberOrderAddress(pool, result);
+    } catch {
+      /* the address book is a convenience, never a blocker */
+    }
   }
   return result;
 }

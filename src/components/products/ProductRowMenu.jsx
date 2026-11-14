@@ -1,4 +1,4 @@
-import { Archive, ArchiveRestore, CopyPlus, MoreHorizontal } from 'lucide-react';
+import { Archive, ArchiveRestore, CopyPlus, MoreHorizontal, PackagePlus } from 'lucide-react';
 import { t } from '@/lib/i18n';
 
 import { Button } from '@/components/ui/button';
@@ -9,8 +9,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-/** Secondary catalog actions for one product: duplicate, archive or restore. */
-export default function ProductRowMenu({ product, onDuplicate, onToggleArchive }) {
+/** Secondary catalog actions for one product: add stock, duplicate, archive or restore. */
+export default function ProductRowMenu({ product, onDuplicate, onToggleArchive, onAddStock }) {
   const archived = product.status === 'archived';
 
   return (
@@ -21,6 +21,11 @@ export default function ProductRowMenu({ product, onDuplicate, onToggleArchive }
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-44">
+        {onAddStock && (
+          <DropdownMenuItem onSelect={() => onAddStock(product)}>
+            <PackagePlus className="mr-2 h-3.5 w-3.5" /> {t('products.addStock')}
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem onSelect={() => onDuplicate(product)}>
           <CopyPlus className="mr-2 h-3.5 w-3.5" /> {t('products.duplicate')}
         </DropdownMenuItem>

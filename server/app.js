@@ -105,6 +105,30 @@ export function createApp() {
   // skips safe methods, the pre-auth endpoints, and requests with
   // no live session.
   app.use('/api', requireCsrf(getPool()));
+  // Product photos (Nov 14, 2026): PUBLIC by design — the product
+  // form promises "anyone with the link can open them", and the id
+  // is an unguessable UUID. Bytes live in Postgres (migration 020)
+  // so they survive deploys. A GET, so CSRF passes it through; no
+  // session is consulted, which is also what lets marketplaces and
+  // shared links render the image.
+  app.get('/api/photos/:id', async (req, res) => {
+    const pool = getPool();
+    if (!pool) return res.status(404).json({ error: 'photo_not_found' });
+    try {
+      const { rows } = await pool.query(
+        'SELECT content_type, data_base64 FROM product_photos WHERE id = $1',
+        [req.params.id],
+      );
+      const photo = rows[0];
+      if (!photo) return res.status(404).json({ error: 'photo_not_found' });
+      res.setHeader('Content-Type', photo.content_type);
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      return res.send(Buffer.from(photo.data_base64, 'base64'));
+    } catch (error) {
+      console.error('[twin] photo serve failed:', error.message);
+      return res.status(404).json({ error: 'photo_not_found' });
+    }
+  });
   // The token endpoint (signed in only — the token is bound to the
   // caller's session). A GET, so the middleware passes it through.
   app.get('/api/csrf-token', requireAuth(getPool()), (req, res) => {

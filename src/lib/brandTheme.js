@@ -15,23 +15,33 @@
  */
 
 /**
- * The DEFAULT brand color — deep bronze, from the Luminous palette
- * (warm cream, near-black ink, muted gold) — is what a workspace gets
- * when the business has NOT chosen its own branding.
+ * The DEFAULT brand color — the approved Luminous cream-tan #E3D5BF —
+ * is what a workspace wears when the business has NOT chosen its own
+ * branding. It is not an override: #E3D5BF is the exact tone the
+ * stylesheet's approved theme (src/index.css) already pins as
+ * --primary on every surface, so a business with no branding simply
+ * gets the app's own cream theme — warm cream band, charcoal ink
+ * text, tan pills — the look of the original app and of the public
+ * pages. brandThemeVars therefore returns null for the default and
+ * applying it CLEARS any override tag: no custom color, no re-skin.
  *
- * The retired default, #145042, was a deep teal that no business ever
- * picked: it was stamped silently onto new workspaces and served as
- * the fallback for a missing color, and through this module it
- * re-skinned the whole signed-in shell teal — in dark mode, a bright
- * mint (the owner's catch, Nov 14, 2026: "I shouldn't be seeing that
- * color"). resolveBrandColor treats that one exact hex as "unset"
- * wherever a default is applied, so workspaces that never chose a
- * color land on the bronze default. Any color a business actually
- * chose — the picker presets, a custom hex, any hue at all — passes
- * through untouched and renders exactly as chosen: the white-label
- * freedom is the feature, and this default only fills the silence.
+ * Two retired defaults sit behind this one. #145042, a deep teal no
+ * business ever picked, was stamped silently onto new workspaces and
+ * re-skinned the whole signed-in shell teal — bright mint in dark
+ * mode (the owner's catch, Nov 14, 2026: "I shouldn't be seeing that
+ * color"). A deep bronze #6d4c26 replaced it for a few hours the same
+ * day, but run through the derivation below it painted a solid brown
+ * band and brown buttons, and the owner rejected that too: the
+ * default should look like the original app in her Base44
+ * screenshots — cream, not a saturated band of anything.
+ * resolveBrandColor treats the teal hex as "unset" wherever a
+ * default is applied, so workspaces that never chose a color land on
+ * the cream default. Any color a business actually chose — the
+ * picker presets, a custom hex, any hue at all — passes through
+ * untouched and renders exactly as chosen: the white-label freedom
+ * is the feature, and this default only fills the silence.
  */
-export const DEFAULT_BRAND_COLOR = '#6d4c26';
+export const DEFAULT_BRAND_COLOR = '#e3d5bf';
 export const LEGACY_DEFAULT_BRAND_COLOR = '#145042';
 
 /** The brand color to render: the business's own choice, or the default. */
@@ -64,9 +74,14 @@ export function hexToHsl(hex) {
 /**
  * The theme variables for one brand color. Light values come from the
  * color as saved; dark values lift the lightness so the same hue
- * reads on a dark background. `null` when the color is not a hex color.
+ * reads on a dark background. `null` when the color is not a hex
+ * color — and for the default cream-tan, whose theme is the
+ * stylesheet itself (see DEFAULT_BRAND_COLOR above): a single hex
+ * run through this derivation can only ever produce a saturated
+ * band, which is exactly how both retired defaults went wrong.
  */
 export function brandThemeVars(hex) {
+  if (String(hex || '').trim().toLowerCase() === DEFAULT_BRAND_COLOR) return null;
   const hsl = hexToHsl(hex);
   if (!hsl) return null;
   const { h, s, l } = hsl;
@@ -94,7 +109,12 @@ function varsBlock(selector, vars) {
   return `${selector}{${Object.entries(vars).map(([k, v]) => `${k}:${v};`).join('')}}`;
 }
 
-/** The full stylesheet text for one brand color (empty when invalid). */
+/**
+ * The full stylesheet text for one brand color. Empty when the color
+ * is invalid — and for the default cream-tan, whose theme is the
+ * stylesheet itself, so applying the default removes the override
+ * tag and the app's approved cream theme rules every surface.
+ */
 export function brandThemeCss(hex) {
   const vars = brandThemeVars(hex);
   if (!vars) return '';

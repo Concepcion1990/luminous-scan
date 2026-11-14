@@ -36,6 +36,7 @@ import { assertNotInGrace } from './billing.js';
 import { hasFullSubscriptionAccess } from './subscriptionAccess.js';
 import { applySyncBatch, syncState } from './sync.js';
 import { entityDef, publicRow } from './entities.js';
+import { findCustomerAddressesByName } from './customerAddresses.js';
 
 function err(status, code, message) {
   return Object.assign(new Error(message), { status, code });
@@ -65,6 +66,28 @@ async function accessOr403(pool, user, businessId, permission) {
 const LOGO_MAX_BYTES = 2 * 1024 * 1024;
 const LOGO_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
 
+/** Product photos share the logo's discipline exactly: the same
+ *  three image types and the same 2 MB cap (which also keeps the
+ *  base64 body inside the app's 3 MB JSON limit). */
+const PHOTO_MAX_BYTES = LOGO_MAX_BYTES;
+const PHOTO_TYPES = LOGO_TYPES;
+
+function parsePhotoDataUrl(value) {
+  const text = String(value || '');
+  const match = text.match(/^data:(image\/(png|jpeg|webp));base64,([A-Za-z0-9+/=]+)$/);
+  if (!match) return null;
+  const mime = match[1];
+  if (!PHOTO_TYPES.includes(mime)) return null;
+  let bytes;
+  try {
+    bytes = Buffer.from(match[3], 'base64');
+  } catch {
+    return null;
+  }
+  if (!bytes.length || bytes.length > PHOTO_MAX_BYTES) return null;
+  return { mime, bytes, base64: match[3] };
+}
+
 function parseLogoDataUrl(value) {
   const text = String(value || '');
   const match = text.match(/^data:(image\/(png|jpeg|webp));base64,([A-Za-z0-9+/=]+)$/);
@@ -91,6 +114,28 @@ export function createT6Router({ getPool: getPoolFn }) {
     if (!p) throw err(503, 'database_not_configured', 'Postgres is not configured yet.');
     return p;
   };
+
+  // ---- Customer address book (90-day rolling, Nov 14, 2026) --------
+  // The new-order form asks: what saved addresses do we hold under
+  // this customer's NAME? A name alone never identifies a customer
+  // (the identity is name + address), so this returns the offer
+  // list — choosing one binds the order to that entry.
+  router.get('/businesses/:bid/customer-addresses', asyncHandler(async (req, res) => {
+    const access = await accessOr403(pool(), req.user, req.params.bid, 'orders.manage');
+    if (!access) return;
+    const entries = await findCustomerAddressesByName(pool(), req.params.bid, req.query.name);
+    return res.json({
+      addresses: entries.map((entry) => ({
+        customer_name: entry.customer_name,
+        ship_street: entry.ship_street,
+        ship_city: entry.ship_city,
+        ship_region: entry.ship_region,
+        ship_postal: entry.ship_postal,
+        ship_country: entry.ship_country,
+        expires_at: entry.expires_at,
+      })),
+    });
+  }));
 
   // ---- Offline-first sync -------------------------------------------
   router.post('/businesses/:bid/sync/apply', asyncHandler(async (req, res) => {
@@ -333,6 +378,37 @@ export function createT6Router({ getPool: getPoolFn }) {
       [parsed.dataUrl, req.params.bid],
     );
     return res.json({ logo_url: updated.rows[0].logo_url });
+  }));
+
+  // ---- Product-photo upload -------------------------------------------
+  // The twin's missing half of the product form (Nov 14, 2026): the
+  // form always promised "Images are stored publicly — anyone with
+  // the link can open them", but the upload call was a dead stub.
+  // Any member of the business may upload (photos are product work,
+  // not branding — the logo stays owner-only above). Bytes are
+  // stored in Postgres (migration 020), never on the app machine's
+  // ephemeral disk, and served from the public /api/photos/:id
+  // route in server/app.js under an unguessable id. The per-product
+  // cap of 6 is enforced where photo_urls are saved
+  // (server/entities.js) as well as in the form.
+  router.post('/businesses/:bid/product-photos', asyncHandler(async (req, res) => {
+    await accessOr403(pool(), req.user, req.params.bid);
+    const parsed = parsePhotoDataUrl(req.body?.dataUrl);
+    if (!parsed) {
+      throw err(
+        400,
+        'invalid_photo',
+        'Send a PNG, JPG or WebP image under 2 MB.',
+      );
+    }
+    const id = crypto.randomUUID();
+    await pool().query(
+      'INSERT INTO product_photos (id, business_id, content_type, size_bytes, data_base64) VALUES ($1, $2, $3, $4, $5)',
+      [id, req.params.bid, parsed.mime, parsed.bytes.length, parsed.base64],
+    );
+    const protocol = req.protocol || 'https';
+    const url = `${protocol}://${req.get('host')}/api/photos/${id}`;
+    return res.status(201).json({ url, photo_id: id });
   }));
 
   return router;

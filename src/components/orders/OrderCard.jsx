@@ -1,6 +1,6 @@
 import { Pencil, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { channelLabel, ORDER_STATUS } from '@/lib/orders';
+import { channelLabel, heldUnits, ORDER_STATUS, orderShipAddressLines } from '@/lib/orders';
 import { money } from '@/lib/purchasing';
 import { t } from '@/lib/i18n';
 
@@ -15,7 +15,15 @@ const PILL = {
 export default function OrderCard({ order, currency, busy, onEdit, onAction }) {
   const status = ORDER_STATUS[order.status] || ORDER_STATUS.new;
   const lines = order.lines || [];
-  const canEdit = ['new', 'pending'].includes(order.status);
+  // The actions tell the truth about THIS order (Nov 14, 2026):
+  // Hold/Release follow the order's real held units, not its
+  // status label — a packed order that never held anything offers
+  // Hold stock, never a Release whose only answer is a scold.
+  const held = heldUnits(order) > 0;
+  const holdable = ['new', 'pending', 'reserved', 'packed'].includes(order.status);
+  // Edit stays available in every state where Ship is still ahead
+  // (new, pending, reserved, packed); terminal states unchanged.
+  const canEdit = ['new', 'pending', 'reserved', 'packed'].includes(order.status);
 
   return (
     <div className="rounded-xl border border-border bg-card p-3.5">
@@ -36,6 +44,11 @@ export default function OrderCard({ order, currency, busy, onEdit, onAction }) {
               .filter(Boolean)
               .join(' · ')}
           </p>
+          {orderShipAddressLines(order).length > 0 && (
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              {t('orders.shipToTitle')}: {orderShipAddressLines(order).join(', ')}
+            </p>
+          )}
         </div>
         <p className="numeric text-sm font-semibold">{money(order.total, currency)}</p>
       </div>
@@ -68,7 +81,7 @@ export default function OrderCard({ order, currency, busy, onEdit, onAction }) {
       )}
 
       <div className="mt-3 flex flex-wrap gap-1.5">
-        {['new', 'pending'].includes(order.status) && (
+        {holdable && !held && (
           <Button size="sm" className="min-h-11 lg:min-h-0" disabled={busy} onClick={() => onAction('reserve')}>
             {t('orders.holdStock')}
           </Button>
@@ -78,7 +91,7 @@ export default function OrderCard({ order, currency, busy, onEdit, onAction }) {
             {t('orders.packButton')}
           </Button>
         )}
-        {['reserved', 'packed'].includes(order.status) && (
+        {held && (
           <Button size="sm" variant="outline" className="min-h-11 lg:min-h-0" disabled={busy} onClick={() => onAction('release')}>
             {t('orders.releaseHold')}
           </Button>

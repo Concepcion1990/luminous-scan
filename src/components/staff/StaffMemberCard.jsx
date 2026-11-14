@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { base44 } from '@/api/client';
-import { Mail, MailPlus, MapPin, Pencil, Trash2, UserCog } from 'lucide-react';
+import { KeyRound, Mail, MailPlus, MapPin, Pencil, Trash2, UserCog } from 'lucide-react';
 import { permissionSummary, statusMeta } from '@/lib/staff';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
@@ -17,9 +17,10 @@ function initials(name = '') {
   );
 }
 
-export default function StaffMemberCard({ member, locations = [], planKey = 'business', onEdit, onRemove }) {
+export default function StaffMemberCard({ member, locations = [], planKey = 'business', isOwner = false, onEdit, onRemove, onSendReset }) {
   const { toast } = useToast();
   const [resending, setResending] = useState(false);
+  const [sendingReset, setSendingReset] = useState(false);
   const status = statusMeta(member.status);
   // Count only what the plan may offer: an Essentials Manager member with
   // the preset's 17 stored keys reads "14 permissions", never "17", and
@@ -59,6 +60,20 @@ export default function StaffMemberCard({ member, locations = [], planKey = 'bus
       });
     } finally {
       setResending(false);
+    }
+  };
+
+  // Owner-only: send the standard password reset to the member's
+  // account email (they have an account once they are no longer a
+  // pending invite — an invite has no password to reset). The page
+  // handler confirms first and toasts the outcome.
+  const sendReset = async () => {
+    if (sendingReset || !onSendReset) return;
+    setSendingReset(true);
+    try {
+      await onSendReset(member);
+    } finally {
+      setSendingReset(false);
     }
   };
 
@@ -111,6 +126,11 @@ export default function StaffMemberCard({ member, locations = [], planKey = 'bus
         {member.status === 'invited' && (
           <Button size="sm" variant="outline" onClick={resendInvite} disabled={resending}>
             <MailPlus className="mr-1.5 h-3.5 w-3.5" /> {resending ? t('staff.member.sending') : t('staff.member.resendInvite')}
+          </Button>
+        )}
+        {isOwner && member.status !== 'invited' && (
+          <Button size="sm" variant="outline" onClick={sendReset} disabled={sendingReset}>
+            <KeyRound className="mr-1.5 h-3.5 w-3.5" /> {sendingReset ? t('staff.member.sending') : t('staff.member.sendReset')}
           </Button>
         )}
         <Button

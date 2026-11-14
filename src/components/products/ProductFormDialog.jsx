@@ -8,6 +8,7 @@ import { useCatalogVocabulary } from '@/hooks/useCatalogVocabulary';
 import { copyGroupKey } from '@/lib/copies';
 import { scoped, withBusiness } from '@/lib/scoped';
 import { createProducts } from '@/lib/entitlements';
+import { recordMovement } from '@/lib/inventory';
 import { Image } from '@/components/ui/image';
 import { t } from '@/lib/i18n';
 
@@ -15,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import AddLocationInline from '@/components/locations/AddLocationInline';
 import {
   Dialog,
   DialogContent,
@@ -78,7 +80,7 @@ const empty = {
 };
 
 export default function ProductFormDialog({ open, onOpenChange, product, seed, defaultCode, onSaved }) {
-  const { activeId } = useBusiness();
+  const { activeId, user } = useBusiness();
   // Clearance + rollback pricing is Business-only (migration 018).
   // Off-Business the section is a locked note AND the submit payload
   // omits the pricing fields entirely: an unrelated edit must never
@@ -86,11 +88,27 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
   // refuses pricing writes off-Business and strips them from reads).
   const { can } = useEntitlements();
   const canPricing = can('pricing');
+  // Suppliers are Business-only too (the entity is plan-gated): off
+  // Business the field shows the same polite note as sale pricing,
+  // and the payload omits supplier_id/supplier_name entirely, so a
+  // downgraded business's stored supplier is held untouched.
+  const canSuppliers = can('suppliers');
   const vocabulary = useCatalogVocabulary(open ? activeId : '');
   const [form, setForm] = useState(empty);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [photoError, setPhotoError] = useState('');
   const [suppliers, setSuppliers] = useState([]);
+  // Starting quantity (create mode only, Nov 14, 2026): how many
+  // the owner has right now, stocked as a 'receive' movement the
+  // moment the product is created — one act instead of create-
+  // then-go-Receive. Edit mode never shows it: stock in edit is
+  // changed through movements, not a silent form field.
+  const [quantity, setQuantity] = useState('');
+  const [locations, setLocations] = useState([]);
+  const [quantityLocationId, setQuantityLocationId] = useState('');
+  const [createdProduct, setCreatedProduct] = useState(null);
+  const [openingStockDone, setOpeningStockDone] = useState(false);
   const [error, setError] = useState('');
   const fileRef = useRef(null);
 
@@ -195,13 +213,52 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
     base44.entities.Supplier
       .filter(scoped({}, activeId), { sort: 'name', limit: 200 })
       .then((page) => setSuppliers(page.items ?? []));
+    base44.entities.Location
+      .filter(scoped({}, activeId), { sort: 'name', limit: 100 })
+      .then((page) => {
+        const list = page.items ?? [];
+        setLocations(list);
+        // The scan flow's own rule: the remembered location wins,
+        // else the first location (locations load sorted by name).
+        let remembered = null;
+        try {
+          remembered = localStorage.getItem('stockroom.location');
+        } catch {
+          remembered = null;
+        }
+        setQuantityLocationId((current) =>
+          list.find((l) => l.id === current)
+            ? current
+            : list.find((l) => l.id === remembered)?.id || list[0]?.id || '',
+        );
+      });
   }, [open, activeId]);
+
+  useEffect(() => {
+    if (open) {
+      setQuantity('');
+      setCreatedProduct(null);
+      setOpeningStockDone(false);
+    }
+  }, [open, product, seed, defaultCode]);
 
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e?.target ? e.target.value : e }));
 
   const addPhotos = async (files) => {
     if (!files?.length) return;
-    setError('');
+    // The failure shows HERE, at the photos field — the old code set
+    // the form-level error, far from the field, and the owner never
+    // saw why her photo "didn't take" (Nov 14, 2026). The only
+    // client-side refusal is a file that is not an image at all:
+    // size is NEVER the customer's problem — UploadPublicFile
+    // downscales and re-encodes the photo for them before upload.
+    setPhotoError('');
+    for (const file of files) {
+      if (!file.type?.startsWith('image/')) {
+        setPhotoError(t('productForm.uploadFailed'));
+        return;
+      }
+    }
     setUploading(true);
     try {
       const urls = [];
@@ -210,17 +267,44 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
         urls.push(file_url);
       }
       setForm((f) => ({ ...f, photo_urls: [...f.photo_urls, ...urls].slice(0, 6) }));
-    } catch {
-      setError(t('productForm.uploadFailed'));
+    } catch (err) {
+      setPhotoError(err?.message || t('productForm.uploadFailed'));
     } finally {
       setUploading(false);
     }
   };
 
   const handleSave = async () => {
-    if (!form.name.trim() || !form.sku.trim()) {
-      setError(t('productForm.nameSkuRequired'));
+    // Only the name is required (Nov 14, 2026): a SKU is optional —
+    // the server generates one from the name when the field is left
+    // blank (a barcode scan fills name + UPC, not a SKU). The old
+    // combined message also lied, claiming the name was missing
+    // when only the SKU was; the message now names only what is
+    // actually missing.
+    if (!form.name.trim()) {
+      setError(t('productForm.nameRequired'));
       return;
+    }
+    // Starting quantity validation (create mode only): blank means
+    // zero; anything else must be a whole number of zero or more.
+    const effectiveProduct = product || createdProduct;
+    let startQty = 0;
+    if (!product) {
+      const raw = quantity.trim();
+      if (raw !== '') {
+        if (!/^\d+$/.test(raw)) {
+          setError(t('productForm.quantityInvalid'));
+          return;
+        }
+        startQty = Number(raw);
+      }
+      // Stock needs somewhere to sit: refuse BEFORE creating
+      // anything when there is no location at all (the inline add
+      // door in the quantity block is the way out).
+      if (startQty > 0 && locations.length === 0) {
+        setError(t('inventory.chooseLocation'));
+        return;
+      }
     }
     setSaving(true);
     setError('');
@@ -251,8 +335,12 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
           }
         : {}),
       reorder_point: Number(form.reorder_point) || 0,
-      supplier_id: form.supplier_id,
-      supplier_name: suppliers.find((s) => s.id === form.supplier_id)?.name || '',
+      ...(canSuppliers
+        ? {
+            supplier_id: form.supplier_id,
+            supplier_name: suppliers.find((s) => s.id === form.supplier_id)?.name || '',
+          }
+        : {}),
       notes: form.notes.trim(),
       barcode: form.barcode.trim(),
       qr_code: form.qr_code.trim(),
@@ -286,9 +374,29 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
       photo_urls: form.photo_urls,
     };
     try {
-      const saved = product
-        ? await base44.entities.Product.update(product.id, payload)
+      const saved = effectiveProduct
+        ? await base44.entities.Product.update(effectiveProduct.id, payload)
         : (await createProducts(activeId, [withBusiness(payload, activeId)]))[0];
+      if (!effectiveProduct) {
+        // Remember the create landed: if the opening movement ever
+        // failed, a retry updates this product instead of making a
+        // duplicate.
+        setCreatedProduct(saved);
+      }
+      if (!product && startQty > 0 && !openingStockDone) {
+        const location = locations.find((l) => l.id === quantityLocationId) || locations[0];
+        if (location) {
+          await recordMovement({
+            product: saved,
+            location,
+            type: 'receive',
+            quantity: startQty,
+            businessId: activeId,
+            user,
+          });
+          setOpeningStockDone(true);
+        }
+      }
       onSaved?.(saved);
       onOpenChange(false);
     } catch (err) {
@@ -442,6 +550,9 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
                 event.target.value = '';
               }}
             />
+            {photoError && (
+              <p className="text-xs font-medium text-destructive" role="alert">{photoError}</p>
+            )}
             <p className="text-xs text-muted-foreground">
               {t('productForm.photosHint')}
             </p>
@@ -467,6 +578,51 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
               />
             </div>
           </div>
+
+          {!product && !createdProduct && (
+            <div className="grid gap-3 rounded-lg border border-border p-3">
+              <div className="grid gap-2">
+                <Label htmlFor="start_quantity">{t('productForm.quantityLabel')}</Label>
+                <Input
+                  id="start_quantity"
+                  type="number"
+                  inputMode="numeric"
+                  min="0"
+                  step="1"
+                  value={quantity}
+                  onChange={(e) => setQuantity(e.target.value)}
+                  placeholder="0"
+                />
+                <p className="text-xs text-muted-foreground">{t('productForm.quantityHint')}</p>
+              </div>
+              {locations.length > 1 && (
+                <div className="grid gap-2">
+                  <Label>{t('inventory.locationLabel')}</Label>
+                  <Select value={quantityLocationId} onValueChange={setQuantityLocationId}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {locations.map((l) => (
+                        <SelectItem key={l.id} value={l.id}>
+                          {l.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              {locations.length === 0 && (
+                <AddLocationInline
+                  businessId={activeId}
+                  onCreated={(place) => {
+                    setLocations([place]);
+                    setQuantityLocationId(place.id);
+                  }}
+                />
+              )}
+            </div>
+          )}
 
           <div className="grid gap-3 rounded-lg border border-border p-3">
             <p className="text-sm font-medium">{t('pricing.sectionTitle')}</p>
@@ -559,25 +715,31 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
 
           <div className="grid gap-2">
             <Label>{t('productForm.supplierLabel')}</Label>
-            <Select
-              value={form.supplier_id || 'none'}
-              onValueChange={(v) => setForm((f) => ({ ...f, supplier_id: v === 'none' ? '' : v }))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder={t('productForm.notSet')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">{t('productForm.notSet')}</SelectItem>
-                {suppliers.map((s) => (
-                  <SelectItem key={s.id} value={s.id}>
-                    {s.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-muted-foreground">
-              {t('productForm.supplierHint')}
-            </p>
+            {canSuppliers ? (
+              <>
+                <Select
+                  value={form.supplier_id || 'none'}
+                  onValueChange={(v) => setForm((f) => ({ ...f, supplier_id: v === 'none' ? '' : v }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={t('productForm.notSet')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">{t('productForm.notSet')}</SelectItem>
+                    {suppliers.map((s) => (
+                      <SelectItem key={s.id} value={s.id}>
+                        {s.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  {t('productForm.supplierHint')}
+                </p>
+              </>
+            ) : (
+              <p className="text-xs text-muted-foreground">{t('productForm.supplierBusinessOnly')}</p>
+            )}
           </div>
 
           <ProductDetailsFields form={form} set={set} setForm={setForm} vocabulary={vocabulary} />

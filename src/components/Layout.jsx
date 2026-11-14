@@ -9,7 +9,7 @@ import BusinessSwitcher from '@/components/business/BusinessSwitcher';
 import { useBusiness } from '@/hooks/useBusiness';
 import { PUBLISHER } from '@/lib/business';
 import { t, setLocale, getLocale } from '@/lib/i18n';
-import { applyBrandColor, resolveBrandColor } from '@/lib/brandTheme';
+import { applyBrandColor, clearBrandColor, resolveBrandColor } from '@/lib/brandTheme';
 import useStaffAccess from '@/hooks/useStaffAccess';
 import useEntitlements from '@/hooks/useEntitlements';
 import FirstLaunchRedirect from '@/components/plans/FirstLaunchRedirect';
@@ -43,7 +43,16 @@ export default function Layout() {
   // sidebar and in the footer) is never touched by either.
   const [locale, setLocaleState] = useState('en');
   useEffect(() => {
+    // No branding of the business's own → the app's default cream
+    // theme: resolveBrandColor yields the default cream-tan and
+    // applying it clears any override, so the stylesheet theme rules.
+    // No profile or no color clears too, so a stale merchant color
+    // never lingers on the default surfaces. This is document-level
+    // and plan/role-blind: every login in an unbranded workspace —
+    // owner, manager, staff, Essentials or Business — gets the same
+    // default theme.
     if (profile?.brand_color) applyBrandColor(resolveBrandColor(profile.brand_color));
+    else clearBrandColor();
   }, [profile?.brand_color]);
   useEffect(() => {
     const code = profile?.language || 'en';

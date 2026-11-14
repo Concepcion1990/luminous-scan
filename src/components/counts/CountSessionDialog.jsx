@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { base44 } from '@/api/client';
+import AddLocationInline from '@/components/locations/AddLocationInline';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -31,9 +32,13 @@ export default function CountSessionDialog({ open, onOpenChange, products, locat
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  // Own copy of the list so the inline add-a-location door (the
+  // empty-picker safety net) can add + preselect in place.
+  const [localLocations, setLocalLocations] = useState(locations);
 
   useEffect(() => {
     if (!open) return;
+    setLocalLocations(locations);
     setLocationId(locations[0]?.id || '');
     setCategory('');
     setNotes('');
@@ -51,7 +56,7 @@ export default function CountSessionDialog({ open, onOpenChange, products, locat
   );
 
   const create = async () => {
-    const location = locations.find((l) => l.id === locationId);
+    const location = localLocations.find((l) => l.id === locationId);
     if (!location) {
       setError(t('counts.chooseLocation'));
       return;
@@ -99,19 +104,30 @@ export default function CountSessionDialog({ open, onOpenChange, products, locat
         <div className="grid gap-3">
           <div className="grid gap-1">
             <Label className="text-xs">{t('counts.locationLabel')}</Label>
-            <Select value={locationId || 'none'} onValueChange={(v) => setLocationId(v === 'none' ? '' : v)}>
-              <SelectTrigger>
-                <SelectValue placeholder={t('counts.chooseLocationOption')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">{t('counts.chooseLocationOption')}</SelectItem>
-                {locations.map((l) => (
-                  <SelectItem key={l.id} value={l.id}>
-                    {l.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {localLocations.length === 0 ? (
+              <AddLocationInline
+                businessId={activeId}
+                onCreated={(place) => {
+                  setLocalLocations([place]);
+                  setLocationId(place.id);
+                  setError('');
+                }}
+              />
+            ) : (
+              <Select value={locationId || 'none'} onValueChange={(v) => setLocationId(v === 'none' ? '' : v)}>
+                <SelectTrigger>
+                  <SelectValue placeholder={t('counts.chooseLocationOption')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">{t('counts.chooseLocationOption')}</SelectItem>
+                  {localLocations.map((l) => (
+                    <SelectItem key={l.id} value={l.id}>
+                      {l.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
 
           <div className="grid gap-1">

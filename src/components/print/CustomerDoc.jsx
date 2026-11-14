@@ -1,5 +1,5 @@
 import DocHeader from './DocHeader';
-import { channelLabel } from '@/lib/orders';
+import { channelLabel, orderShipAddressLines } from '@/lib/orders';
 import { formatMoney } from '@/lib/inventory';
 import { t } from '@/lib/i18n';
 
@@ -74,6 +74,8 @@ export default function CustomerDoc({ order, business, mode = 'invoice' }) {
           {order.customer_email ? ` · ${order.customer_email}` : ''}
           {order.customer_phone ? ` · ${order.customer_phone}` : ''}
         </p>
+        {packing &&
+          orderShipAddressLines(order).map((line, index) => <p key={index}>{line}</p>)}
         <p>
           <span className="font-mono text-[6.5pt] uppercase tracking-wide text-black/60">
             {packing ? t('print.shipsFrom') : t('print.fulfilledFrom')}{' '}

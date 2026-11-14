@@ -4,9 +4,12 @@ import { t } from '@/lib/i18n';
  * The 4×6 shipping label (both plans, Nov 13, 2026).
  *
  * Built from a customer order: the recipient name comes from the
- * order; the postal address is typed at print time in the Print
- * Center and is never saved — orders carry no address field, and
- * customer addresses stay out of the app entirely.
+ * order. The address starts from the order's stored ship-to
+ * address when it has one (Nov 14, 2026 — the address lives on
+ * the order, a business record); when it doesn't, the address is
+ * typed at print time in the Print Center. Either way, what is
+ * typed in the Print Center is used for that print only and is
+ * never saved back — the print tool itself stores nothing.
  *
  * White-label, like every customer document: the sender block is
  * the business's own name (plus its address when the sender types

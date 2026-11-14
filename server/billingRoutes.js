@@ -42,6 +42,7 @@ import {
 } from './stripeCatalog.js';
 import { checkTrialEligibility, reserveTrial } from './trialEligibility.js';
 import { runTrialReminderSweep } from './trialReminders.js';
+import { runCustomerAddressSweep } from './customerAddresses.js';
 import {
   evidenceFromSubscription,
   stripeTsToIso,
@@ -666,7 +667,11 @@ export function createBillingRouter({ getPool: getPoolFn }) {
       return res.status(401).json({ error: 'not_authorized', message: 'A valid job secret is required.' });
     }
     const summary = await runWipeSweep(pool, { now: new Date() });
-    return res.json(summary);
+    // The 90-day customer address purge rides the same daily job
+    // (Nov 14, 2026): lapsed reusable addresses are deleted; the
+    // orders that carried them are never touched.
+    const addressSweep = await runCustomerAddressSweep(pool, new Date());
+    return res.json({ ...summary, customerAddresses: addressSweep });
   }));
 
   // ---- Trial reminder sweep (job endpoint; job-secret protected) ---------
