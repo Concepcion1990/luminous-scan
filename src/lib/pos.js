@@ -34,6 +34,30 @@ export function connectShopify(businessId, values) {
   return apiRequest(`${base(businessId)}/shopify/connect`, { method: 'POST', body: values });
 }
 
+export function startCloverConnect(businessId) {
+  return apiRequest(`${base(businessId)}/clover/connect`, { method: 'POST', body: {} });
+}
+
+export function connectToast(businessId, values) {
+  return apiRequest(`${base(businessId)}/toast/connect`, { method: 'POST', body: values });
+}
+
+export function connectLightspeed(businessId, values) {
+  return apiRequest(`${base(businessId)}/lightspeed/connect`, { method: 'POST', body: values });
+}
+
+export function connectZettle(businessId, values) {
+  return apiRequest(`${base(businessId)}/zettle/connect`, { method: 'POST', body: values });
+}
+
+export function connectStripeTerminal(businessId, values) {
+  return apiRequest(`${base(businessId)}/stripe-terminal/connect`, { method: 'POST', body: values });
+}
+
+export function connectWix(businessId, values) {
+  return apiRequest(`${base(businessId)}/wix/connect`, { method: 'POST', body: values });
+}
+
 export function disconnectProvider(businessId, provider) {
   return apiRequest(`${base(businessId)}/connections/${encodeURIComponent(provider)}/disconnect`, {
     method: 'POST',
@@ -85,6 +109,18 @@ export function providerLabel(provider) {
       return t('pos.provider.square');
     case 'shopify':
       return t('pos.provider.shopify');
+    case 'clover':
+      return t('pos.provider.clover');
+    case 'toast':
+      return t('pos.provider.toast');
+    case 'lightspeed':
+      return t('pos.provider.lightspeed');
+    case 'zettle':
+      return t('pos.provider.zettle');
+    case 'stripe_terminal':
+      return t('pos.provider.stripeTerminal');
+    case 'wix':
+      return t('pos.provider.wix');
     case 'csv':
       return t('pos.provider.csv');
     default:
