@@ -51,6 +51,11 @@ the tranche tests rather than retranslated into different words.
 Tranche 9 (Nov 13, 2026): `gu`, `kn`, `mr` — same terms, South
 Asian group continued.
 
+Tranche 10 (Nov 13, 2026): `ta`, `te`, `pa-Guru` — same terms.
+Telugu keeps its US account-type labels (Checking / Savings) and
+its date-format examples in Latin form, as its own lesson strings
+do; those keys are pinned as cognates in the tranche tests.
+
 ## What `t()` does when something is missing
 
 - Unknown locale code → English (never a blank screen).

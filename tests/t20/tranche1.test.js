@@ -77,6 +77,8 @@ const TRANCHE_1_LOCALES = [
   'hi', 'tg', 'tr',
   // Tranche 9 registrations (Nov 13, 2026)
   'gu', 'kn', 'mr',
+  // Tranche 10 registrations (Nov 13, 2026)
+  'ta', 'te', 'pa-Guru',
 ];
 
 // Verified cognates: keys whose correct Spanish value is spelled
@@ -196,6 +198,16 @@ const KN_COGNATE_KEYS = new Set([
 const MR_COGNATE_KEYS = new Set([
   'productForm.unitKg',
 ]);
+const TA_COGNATE_KEYS = new Set([
+  'productForm.unitKg',
+]);
+const TE_COGNATE_KEYS = new Set([
+  'businessLib.dateFormat.dMmmYyyy', 'businessLib.dateFormat.mmmDyyyy', 'payroll.dd.checking',
+  'payroll.dd.savings', 'productForm.unitKg',
+]);
+const PA_GURU_COGNATE_KEYS = new Set([
+  'locations.skusLabel', 'productForm.unitKg',
+]);
 const COGNATE_KEYS = {
   'es-MX': SPANISH_COGNATE_KEYS,
   'es-ES': SPANISH_COGNATE_KEYS,
@@ -221,6 +233,10 @@ const COGNATE_KEYS = {
 
   'kn': KN_COGNATE_KEYS,
   'mr': MR_COGNATE_KEYS,
+
+  'ta': TA_COGNATE_KEYS,
+  'te': TE_COGNATE_KEYS,
+  'pa-Guru': PA_GURU_COGNATE_KEYS,
 };
 
 const TOKENS = [
@@ -346,7 +362,7 @@ test('completed-tranche policy bodies are registered and served, merged over Eng
       assert.notEqual(notice, en['policies.translationNotice'], `${code} protective line is still English`);
     }
     // A locale outside the completed tranches still falls back to English.
-    assert.equal(hasPolicyTranslation(kind, 'ta'), false, `${kind}/ta should not be registered yet`);
-    assert.equal(getPolicyDocument(kind, 'ta').translated, false);
+    assert.equal(hasPolicyTranslation(kind, 'id'), false, `${kind}/id should not be registered yet`);
+    assert.equal(getPolicyDocument(kind, 'id').translated, false);
   }
 });
