@@ -56,6 +56,11 @@ Telugu keeps its US account-type labels (Checking / Savings) and
 its date-format examples in Latin form, as its own lesson strings
 do; those keys are pinned as cognates in the tranche tests.
 
+Tranche 11 (Nov 13, 2026): `pa-Arab`, `id`, `ms` — same terms.
+Malay and Indonesian keep their many English-spelled loanwords
+(Status, Data, Edit, Unit and friends); those keys are pinned as
+cognates in the tranche tests rather than respelled.
+
 ## What `t()` does when something is missing
 
 - Unknown locale code → English (never a blank screen).

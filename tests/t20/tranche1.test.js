@@ -79,6 +79,8 @@ const TRANCHE_1_LOCALES = [
   'gu', 'kn', 'mr',
   // Tranche 10 registrations (Nov 13, 2026)
   'ta', 'te', 'pa-Guru',
+  // Tranche 11 registrations (Nov 13, 2026)
+  'pa-Arab', 'id', 'ms',
 ];
 
 // Verified cognates: keys whose correct Spanish value is spelled
@@ -208,6 +210,34 @@ const TE_COGNATE_KEYS = new Set([
 const PA_GURU_COGNATE_KEYS = new Set([
   'locations.skusLabel', 'productForm.unitKg',
 ]);
+const PA_ARAB_COGNATE_KEYS = new Set([
+  'businessLib.dateFormat.dMmmYyyy', 'businessLib.dateFormat.mmmDyyyy', 'layout.scanCodes',
+  'productForm.unitKg',
+]);
+const ID_COGNATE_KEYS = new Set([
+  'dashboard.minReorder', 'exports.eyebrow', 'import.eyebrow',
+  'listings.status', 'orders.subtotal', 'payroll.bonus',
+  'print.status', 'print.subtotal', 'productDetails.rowSerial',
+  'productDetails.rowStatus', 'productForm.customLabelPlaceholder', 'productForm.statusLabel',
+  'productForm.unitKg', 'products.bulkChangeStatus', 'purchasing.status',
+  'purchasing.subtotal', 'staff.member.administrator', 'staff.memberDialog.statusLabel',
+]);
+const MS_COGNATE_KEYS = new Set([
+  'alerts.editRule', 'bomLib.kindBundleShort', 'businessLib.brandColor.plum',
+  'businessLib.dateFormat.dMmmYyyy', 'categories.editAria', 'categories.kindTag',
+  'dashboard.minReorder', 'exports.eyebrow', 'import.eyebrow',
+  'listings.editAria', 'listings.status', 'locations.editAria',
+  'locations.kindVan', 'materials.edit', 'nav.import',
+  'orders.edit', 'orders.editTitle', 'payroll.bonus',
+  'print.colItem', 'print.factUnit', 'print.status',
+  'productDetails.rowStatus', 'productDetails.rowUnit', 'productForm.customLabelPlaceholder',
+  'productForm.fulfillDigital', 'productForm.statusLabel', 'productForm.unitKg',
+  'products.bulkChangeStatus', 'products.editAria', 'products.exportColUnit',
+  'purchasing.edit', 'purchasing.editTitle', 'purchasing.status',
+  'returns.edit', 'returns.editTitle', 'settings.identity.logoLabel',
+  'staff.member.edit', 'staff.memberDialog.statusLabel', 'staff.roleCard.edit',
+  'staffLib.importOnly',
+]);
 const COGNATE_KEYS = {
   'es-MX': SPANISH_COGNATE_KEYS,
   'es-ES': SPANISH_COGNATE_KEYS,
@@ -237,6 +267,10 @@ const COGNATE_KEYS = {
   'ta': TA_COGNATE_KEYS,
   'te': TE_COGNATE_KEYS,
   'pa-Guru': PA_GURU_COGNATE_KEYS,
+
+  'pa-Arab': PA_ARAB_COGNATE_KEYS,
+  'id': ID_COGNATE_KEYS,
+  'ms': MS_COGNATE_KEYS,
 };
 
 const TOKENS = [
@@ -362,7 +396,7 @@ test('completed-tranche policy bodies are registered and served, merged over Eng
       assert.notEqual(notice, en['policies.translationNotice'], `${code} protective line is still English`);
     }
     // A locale outside the completed tranches still falls back to English.
-    assert.equal(hasPolicyTranslation(kind, 'id'), false, `${kind}/id should not be registered yet`);
-    assert.equal(getPolicyDocument(kind, 'id').translated, false);
+    assert.equal(hasPolicyTranslation(kind, 'th'), false, `${kind}/th should not be registered yet`);
+    assert.equal(getPolicyDocument(kind, 'th').translated, false);
   }
 });

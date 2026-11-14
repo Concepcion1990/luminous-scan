@@ -50,6 +50,7 @@ const TRANCHE_1_LOCALES = [
   'hi', 'tg', 'tr',
   'gu', 'kn', 'mr',
   'ta', 'te', 'pa-Guru',
+  'pa-Arab', 'id', 'ms',
 ];
 
 test('keyset parity holds across all 52 locale files with the two new keys counted', () => {
