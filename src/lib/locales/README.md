@@ -72,6 +72,10 @@ African group. Hausa and Yoruba keep their Barcode/QR labels and
 the US Checking / Savings account-type labels in Latin form, as
 their own earlier batches do.
 
+Tranche 14 (Nov 13, 2026): `jv` — same terms. Javanese keeps its
+regional loanword labels (Status, Data, Invoice, Transfer and
+friends) as its Indonesian and Malay siblings do.
+
 ## What `t()` does when something is missing
 
 - Unknown locale code → English (never a blank screen).

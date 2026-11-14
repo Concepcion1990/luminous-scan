@@ -162,6 +162,9 @@ import { STOCKHAVEN_PRIVACY_POLICY_SW } from './policies/privacy.sw.js';
 import { STOCKHAVEN_TERMS_OF_SERVICE_YO } from './policies/terms.yo.js';
 import { STOCKHAVEN_SUBSCRIPTION_POLICY_YO } from './policies/subscription.yo.js';
 import { STOCKHAVEN_PRIVACY_POLICY_YO } from './policies/privacy.yo.js';
+import { STOCKHAVEN_TERMS_OF_SERVICE_JV } from './policies/terms.jv.js';
+import { STOCKHAVEN_SUBSCRIPTION_POLICY_JV } from './policies/subscription.jv.js';
+import { STOCKHAVEN_PRIVACY_POLICY_JV } from './policies/privacy.jv.js';
 
 export const POLICY_KINDS = Object.freeze(['terms', 'subscription', 'privacy']);
 
@@ -385,6 +388,13 @@ registerPolicyTranslation('privacy', 'sw', STOCKHAVEN_PRIVACY_POLICY_SW);
 registerPolicyTranslation('terms', 'yo', STOCKHAVEN_TERMS_OF_SERVICE_YO);
 registerPolicyTranslation('subscription', 'yo', STOCKHAVEN_SUBSCRIPTION_POLICY_YO);
 registerPolicyTranslation('privacy', 'yo', STOCKHAVEN_PRIVACY_POLICY_YO);
+
+// --- Tranche 14 registrations (Nov 13, 2026) ---
+// Javanese (jv): full UI translation debt retired and all three
+// policy bodies translated in the same pass.
+registerPolicyTranslation('terms', 'jv', STOCKHAVEN_TERMS_OF_SERVICE_JV);
+registerPolicyTranslation('subscription', 'jv', STOCKHAVEN_SUBSCRIPTION_POLICY_JV);
+registerPolicyTranslation('privacy', 'jv', STOCKHAVEN_PRIVACY_POLICY_JV);
 
 /** True when a translated body exists for this document + locale. */
 export function hasPolicyTranslation(kind, locale) {

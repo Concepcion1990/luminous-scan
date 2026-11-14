@@ -85,6 +85,8 @@ const TRANCHE_1_LOCALES = [
   'th', 'vi', 'tl',
   // Tranche 13 registrations (Nov 13, 2026)
   'ha', 'sw', 'yo',
+  // Tranche 14 registrations (Nov 13, 2026)
+  'jv',
 ];
 
 // Verified cognates: keys whose correct Spanish value is spelled
@@ -310,6 +312,23 @@ const YO_COGNATE_KEYS = new Set([
   'payroll.dd.savings', 'productDetails.codeBarcode', 'productForm.barcodeLabel',
   'productForm.unitKg', 'products.exportColBarcode', 'products.sortCodes',
 ]);
+const JV_COGNATE_KEYS = new Set([
+  'auth.emailLabel', 'bomLib.kindBundleShort', 'businessLib.brandColor.plum',
+  'businessLib.dateFormat.dMmmYyyy', 'dashboard.minReorder', 'exports.eyebrow',
+  'import.eyebrow', 'importLib.field.barcode', 'inventoryLib.movementTransfer',
+  'layout.scanCodes', 'listings.status', 'locations.kindVan',
+  'orders.email', 'payroll.bonus', 'print.barcodeLabel',
+  'print.factUnit', 'print.invoiceTitle', 'print.refSuffix',
+  'print.status', 'print.templateBarcode', 'productDetails.codeBarcode',
+  'productDetails.rowBatch', 'productDetails.rowSerial', 'productDetails.rowStatus',
+  'productDetails.rowUnit', 'productForm.barcodeLabel', 'productForm.batchLabel',
+  'productForm.customLabelPlaceholder', 'productForm.fulfillDigital', 'productForm.statusLabel',
+  'productForm.unitKg', 'products.bulkChangeStatus', 'products.exportColBarcode',
+  'products.exportColUnit', 'products.sortCodes', 'purchasing.status',
+  'scan.action.transfer', 'settings.identity.logoLabel', 'settings.identity.taglineLabel',
+  'settings.software.tagline', 'settings.switcher.taglineLabel', 'staff.member.administrator',
+  'staff.memberDialog.emailLabel', 'staff.memberDialog.statusLabel', 'suppliers.email',
+]);
 const COGNATE_KEYS = {
   'es-MX': SPANISH_COGNATE_KEYS,
   'es-ES': SPANISH_COGNATE_KEYS,
@@ -351,6 +370,8 @@ const COGNATE_KEYS = {
   'ha': HA_COGNATE_KEYS,
   'sw': SW_COGNATE_KEYS,
   'yo': YO_COGNATE_KEYS,
+
+  'jv': JV_COGNATE_KEYS,
 };
 
 const TOKENS = [
@@ -476,7 +497,7 @@ test('completed-tranche policy bodies are registered and served, merged over Eng
       assert.notEqual(notice, en['policies.translationNotice'], `${code} protective line is still English`);
     }
     // A locale outside the completed tranches still falls back to English.
-    assert.equal(hasPolicyTranslation(kind, 'jv'), false, `${kind}/jv should not be registered yet`);
-    assert.equal(getPolicyDocument(kind, 'jv').translated, false);
+    assert.equal(hasPolicyTranslation(kind, 'pcm'), false, `${kind}/pcm should not be registered yet`);
+    assert.equal(getPolicyDocument(kind, 'pcm').translated, false);
   }
 });
