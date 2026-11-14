@@ -48,6 +48,9 @@ keeps a handful of loanwords that are spelled as in English
 (Transfer, Logo, Kit and friends); they are pinned as cognates in
 the tranche tests rather than retranslated into different words.
 
+Tranche 9 (Nov 13, 2026): `gu`, `kn`, `mr` — same terms, South
+Asian group continued.
+
 ## What `t()` does when something is missing
 
 - Unknown locale code → English (never a blank screen).
