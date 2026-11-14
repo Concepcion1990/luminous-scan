@@ -1,5 +1,6 @@
 import { Image } from '@/components/ui/image';
 import { formatMoney } from '@/lib/inventory';
+import { effectivePrice } from '@/lib/pricing';
 import { toLabel } from '@/lib/labelPayload';
 import { t } from '@/lib/i18n';
 import BarcodeSvg from './BarcodeSvg';
@@ -74,6 +75,16 @@ export const TEMPLATES = [
     mode: 'packing',
   },
   {
+    key: 'shipping',
+    label: 'Shipping label',
+    labelKey: 'print.templateShipping',
+    hint: '4×6 label with the buyer name and address',
+    hintKey: 'print.templateShippingHint',
+    width: 'w-[102mm]',
+    kind: 'customer',
+    mode: 'shipping',
+  },
+  {
     key: 'returndoc',
     label: 'Return document',
     labelKey: 'print.templateReturnDoc',
@@ -130,10 +141,14 @@ export default function LabelCard({ template, product: productProp, label, busin
       }
     : productProp;
   const { barcode, qr } = labelCodes(product);
+  // Printed labels carry the EFFECTIVE price — the clearance price,
+  // or the rollback price while its window runs (migration 018) —
+  // because the label must match what the customer pays today.
+  const effective = effectivePrice(product);
   const price =
-    product.price === null || product.price === undefined || product.price === ''
+    (product.price === null || product.price === undefined || product.price === '') && effective === 0
       ? ''
-      : formatMoney(product.price, business.currency);
+      : formatMoney(effective, business.currency);
   const condition = product.condition || '';
 
   if (template === 'price') {

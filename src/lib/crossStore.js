@@ -37,6 +37,25 @@ export async function updateCrossStoreRequest(businessId, requestId, status) {
   return data?.request;
 }
 
+/**
+ * Move stock directly between two businesses the caller owns —
+ * POST /businesses/:bid/cross-business-move (the transfer door,
+ * Nov 13, 2026). The endpoint is owner-only: it refuses unless the
+ * caller owns BOTH businesses, merges into a matching SKU in the
+ * target (otherwise copies the product), enforces the target's plan
+ * product limit, and writes both sides of the ledger. `items` is
+ * [{ product_id, location_id, quantity, to_location_id? }] — omit
+ * to_location_id and the stock lands in the target's first
+ * location. Resolves to the server's `moved` rows.
+ */
+export async function moveStockBetweenBusinesses(businessId, { targetBusinessId, items }) {
+  const data = await apiRequest(
+    `/api/businesses/${encodeURIComponent(businessId)}/cross-business-move`,
+    { method: 'POST', body: { target_business_id: targetBusinessId, items } },
+  );
+  return data?.moved ?? [];
+}
+
 /** The four request states, in the order a request moves through them. */
 export const CROSS_STORE_STATUSES = ['open', 'acknowledged', 'resolved', 'declined'];
 

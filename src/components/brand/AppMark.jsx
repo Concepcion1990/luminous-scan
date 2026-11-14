@@ -1,20 +1,24 @@
-import { ScanLine } from 'lucide-react';
 import { APP_NAME, APP_TAGLINE } from '@/lib/business';
 
 /**
  * The permanent software identity. It is never affected by the merchant's
  * business name, tagline or logo.
+ *
+ * The mark is the official 3D Earth globe (owner's decision, Nov 13,
+ * 2026): wherever the name Luminous StockHaven appears on a surface
+ * that allows an image, the globe sits next to it, sized to match
+ * the lettering. The web asset is public/globe-mark.svg, rendered
+ * from the masters in ~/workspace/luminous-stockhaven/logo/.
  */
 export default function AppMark({ compact = false }) {
   return (
     <div className="flex items-center gap-2.5">
-      <span
-        className={`grid shrink-0 place-items-center rounded-lg bg-accent text-accent-foreground ${
-          compact ? 'h-5 w-5' : 'h-8 w-8'
-        }`}
-      >
-        <ScanLine className={compact ? 'h-3 w-3' : 'h-4 w-4'} />
-      </span>
+      <img
+        src="/globe-mark.svg"
+        alt=""
+        aria-hidden="true"
+        className={`shrink-0 object-contain ${compact ? 'h-5 w-5' : 'h-8 w-8'}`}
+      />
       <div className="min-w-0 leading-tight">
         <p
           className={

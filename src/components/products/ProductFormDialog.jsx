@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { base44 } from '@/api/client';
 import { ImagePlus, Loader2, X } from 'lucide-react';
 import { useBusiness } from '@/hooks/useBusiness';
+import useEntitlements from '@/hooks/useEntitlements';
 import ProductDetailsFields from './ProductDetailsFields';
 import { useCatalogVocabulary } from '@/hooks/useCatalogVocabulary';
 import { copyGroupKey } from '@/lib/copies';
@@ -43,6 +44,11 @@ const empty = {
   unit: 'each',
   cost: '',
   price: '',
+  pricing_mode: 'regular',
+  clearance_price: '',
+  sale_price: '',
+  sale_start: '',
+  sale_end: '',
   reorder_point: '',
   supplier_id: '',
   notes: '',
@@ -73,6 +79,13 @@ const empty = {
 
 export default function ProductFormDialog({ open, onOpenChange, product, seed, defaultCode, onSaved }) {
   const { activeId } = useBusiness();
+  // Clearance + rollback pricing is Business-only (migration 018).
+  // Off-Business the section is a locked note AND the submit payload
+  // omits the pricing fields entirely: an unrelated edit must never
+  // erase pricing a downgraded business is holding (the server also
+  // refuses pricing writes off-Business and strips them from reads).
+  const { can } = useEntitlements();
+  const canPricing = can('pricing');
   const vocabulary = useCatalogVocabulary(open ? activeId : '');
   const [form, setForm] = useState(empty);
   const [saving, setSaving] = useState(false);
@@ -113,6 +126,11 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
         unit: product.unit || 'each',
         cost: product.cost ?? '',
         price: product.price ?? '',
+        pricing_mode: product.pricing_mode || 'regular',
+        clearance_price: product.clearance_price ?? '',
+        sale_price: product.sale_price ?? '',
+        sale_start: product.sale_start || '',
+        sale_end: product.sale_end || '',
         reorder_point: product.reorder_point ?? '',
         notes: product.notes || '',
         barcode: product.barcode || '',
@@ -155,6 +173,11 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
         unit: seed.unit || 'each',
         cost: seed.cost ?? '',
         price: seed.price ?? '',
+        pricing_mode: seed.pricing_mode || 'regular',
+        clearance_price: seed.clearance_price ?? '',
+        sale_price: seed.sale_price ?? '',
+        sale_start: seed.sale_start || '',
+        sale_end: seed.sale_end || '',
         reorder_point: seed.reorder_point ?? '',
         supplier_id: seed.supplier_id || '',
         fulfillment_method: seed.fulfillment_method || 'owner_stocked',
@@ -212,6 +235,21 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
       unit: form.unit,
       cost: Number(form.cost) || 0,
       price: Number(form.price) || 0,
+      ...(canPricing
+        ? {
+            pricing_mode: form.pricing_mode,
+            clearance_price:
+              form.pricing_mode === 'clearance' && form.clearance_price !== ''
+                ? Number(form.clearance_price)
+                : null,
+            sale_price:
+              form.pricing_mode === 'rollback' && form.sale_price !== ''
+                ? Number(form.sale_price)
+                : null,
+            sale_start: form.pricing_mode === 'rollback' ? form.sale_start || null : null,
+            sale_end: form.pricing_mode === 'rollback' ? form.sale_end || null : null,
+          }
+        : {}),
       reorder_point: Number(form.reorder_point) || 0,
       supplier_id: form.supplier_id,
       supplier_name: suppliers.find((s) => s.id === form.supplier_id)?.name || '',
@@ -428,6 +466,79 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
                 onChange={set('reorder_point')}
               />
             </div>
+          </div>
+
+          <div className="grid gap-3 rounded-lg border border-border p-3">
+            <p className="text-sm font-medium">{t('pricing.sectionTitle')}</p>
+            {canPricing ? (
+              <>
+                <div className="grid gap-2">
+                  <Label>{t('pricing.modeLabel')}</Label>
+                  <Select value={form.pricing_mode} onValueChange={set('pricing_mode')}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="regular">{t('pricing.modeRegular')}</SelectItem>
+                      <SelectItem value="clearance">{t('pricing.modeClearance')}</SelectItem>
+                      <SelectItem value="rollback">{t('pricing.modeRollback')}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                {form.pricing_mode === 'clearance' && (
+                  <>
+                    <div className="grid gap-2">
+                      <Label htmlFor="clearance_price">{t('pricing.clearancePriceLabel')}</Label>
+                      <Input
+                        id="clearance_price"
+                        type="number"
+                        inputMode="decimal"
+                        value={form.clearance_price}
+                        onChange={set('clearance_price')}
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground">{t('pricing.clearanceHint')}</p>
+                  </>
+                )}
+                {form.pricing_mode === 'rollback' && (
+                  <>
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="grid gap-2">
+                        <Label htmlFor="sale_price">{t('pricing.salePriceLabel')}</Label>
+                        <Input
+                          id="sale_price"
+                          type="number"
+                          inputMode="decimal"
+                          value={form.sale_price}
+                          onChange={set('sale_price')}
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="sale_start">{t('pricing.startLabel')}</Label>
+                        <Input
+                          id="sale_start"
+                          type="date"
+                          value={form.sale_start}
+                          onChange={set('sale_start')}
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="sale_end">{t('pricing.endLabel')}</Label>
+                        <Input
+                          id="sale_end"
+                          type="date"
+                          value={form.sale_end}
+                          onChange={set('sale_end')}
+                        />
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground">{t('pricing.rollbackHint')}</p>
+                  </>
+                )}
+              </>
+            ) : (
+              <p className="text-xs text-muted-foreground">{t('pricing.businessOnly')}</p>
+            )}
           </div>
 
           <div className="grid gap-2">

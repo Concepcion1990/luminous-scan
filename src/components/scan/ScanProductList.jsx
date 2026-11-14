@@ -3,7 +3,8 @@ import { base44 } from '@/api/client';
 import { Search } from 'lucide-react';
 import { t } from '@/lib/i18n';
 import { Input } from '@/components/ui/input';
-import { formatMoney, listProducts } from '@/lib/inventory';
+import { listProducts } from '@/lib/inventory';
+import ProductPrice from '@/components/products/ProductPrice';
 import { buildLocationTree, descendantIds, locationPath } from '@/lib/locations';
 import { scoped } from '@/lib/scoped';
 
@@ -128,7 +129,9 @@ const ScanProductList = forwardRef(function ScanProductList(
                   ))}
                 </p>
               </div>
-              <span className="numeric shrink-0 text-sm font-semibold">{formatMoney(product.price, currency)}</span>
+              <span className="numeric shrink-0 text-sm">
+                <ProductPrice product={product} currency={currency} digits={0} />
+              </span>
             </div>
           );
         })}

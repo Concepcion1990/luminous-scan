@@ -1,7 +1,6 @@
 import React from "react";
 import { t, useLocale } from '@/lib/i18n';
 import LanguagePicker from "@/components/LanguagePicker";
-import { ScanLine } from "lucide-react";
 
 export default function AuthLayout({ icon: Icon, title, subtitle, footer, below, children }) {
   // The auth pages are public pages: the language picker sits at the
@@ -18,9 +17,14 @@ export default function AuthLayout({ icon: Icon, title, subtitle, footer, below,
         </div>
         <div className="flex flex-col items-center mb-8">
           <div className="inline-flex items-center gap-2">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground">
-              <ScanLine className="h-4 w-4" aria-hidden="true" />
-            </span>
+            {/* The official globe beside the name (owner's placement
+                rule, Nov 13, 2026) — same mark as AppMark. */}
+            <img
+              src="/globe-mark.svg"
+              alt=""
+              aria-hidden="true"
+              className="h-8 w-8 shrink-0 object-contain"
+            />
             <span className="font-heading text-sm font-semibold tracking-tight text-foreground">
               Luminous StockHaven
             </span>

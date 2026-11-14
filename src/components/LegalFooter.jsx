@@ -24,6 +24,15 @@ export default function LegalFooter({ className = '' }) {
     <footer
       className={`mt-10 border-t border-border pt-4 text-center text-[11px] leading-relaxed text-muted-foreground ${className}`}
     >
+      {/* The official globe as the footer's brand mark (owner's
+          placement rule, Nov 13, 2026). The legal lines below stay
+          byte-exact — the image is added, no text is touched. */}
+      <img
+        src="/globe-mark.svg"
+        alt=""
+        aria-hidden="true"
+        className="mx-auto mb-2 h-6 w-6 object-contain"
+      />
       <p>
         <Link to="/about" className="font-medium underline underline-offset-4 hover:text-foreground">
           {t('layout.aboutLink')}

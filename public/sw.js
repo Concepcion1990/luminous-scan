@@ -30,10 +30,13 @@
  *    fresh — unsaved work in an open form is never thrown away by an
  *    update landing mid-typing.
  *
- * Scope note: the icons referenced by the manifest do not exist yet
- * (no icon files ship in T6) — the manifest lists them so the
- * installable shell is complete once the artwork lands; a missing
- * icon file does not block the worker or the queue.
+ * Scope note: the icons referenced by the manifest landed with the
+ * globe wiring (Nov 13, 2026) — public/icon-192.svg and
+ * public/icon-512.svg are rendered from the official app-icon
+ * masters, and public/globe-mark.svg is the header/footer mark.
+ * The .svg files wrap the PNG masters as base64 data URIs: the
+ * GitHub snapshot push is UTF-8 only, so the globe travels as
+ * text and renders byte-identically in the browser.
  */
 const CACHE = 'luminous-stockhaven-shell-__SW_VERSION__';
 const SHELL = ['/', '/index.html', '/manifest.webmanifest'];

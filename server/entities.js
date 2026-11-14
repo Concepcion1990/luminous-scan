@@ -63,7 +63,7 @@ const DEFS = {
   Product: {
     table: 'products',
     json: ['variant_options', 'photo_urls', 'tags', 'custom_fields'],
-    numeric: ['cost', 'price', 'reorder_point'],
+    numeric: ['cost', 'price', 'reorder_point', 'clearance_price', 'sale_price'],
     bool: ['active'],
     required: ['name'],
     writePerm: 'products.edit',
@@ -399,6 +399,47 @@ export async function assertProductCap(pool, businessId, planKey, additionalActi
   }
 }
 
+// ---- Clearance + rollback pricing (migration 018, Nov 13, 2026) ----
+// Business-only, like the POS till gate: the pricing fields may only
+// be SET on Business (403 pricing_business_only), and reads on any
+// other plan see them stripped back to defaults — held, never lost,
+// applying again if the business returns to Business. The regular
+// `price` is never part of this: it is retained untouched in every
+// mode, and the effective price is derived client-side from the
+// window (src/lib/pricing.js).
+const PRICING_DEFAULTS = Object.freeze({
+  pricing_mode: 'regular',
+  clearance_price: null,
+  sale_price: null,
+  sale_start: null,
+  sale_end: null,
+});
+const PRICING_MODES = ['regular', 'clearance', 'rollback'];
+
+function pricingPayloadActive(values) {
+  if (!values) return false;
+  if (values.pricing_mode && values.pricing_mode !== 'regular') return true;
+  if (values.clearance_price != null && values.clearance_price !== '') return true;
+  if (values.sale_price != null && values.sale_price !== '') return true;
+  if (values.sale_start || values.sale_end) return true;
+  return false;
+}
+
+function assertPricingShape(values) {
+  if (values.pricing_mode !== undefined && values.pricing_mode !== null && !PRICING_MODES.includes(values.pricing_mode)) {
+    throw err(400, 'invalid_value', 'Pricing mode must be regular, clearance or rollback.');
+  }
+  for (const field of ['clearance_price', 'sale_price']) {
+    if (values[field] != null && values[field] !== '' && !(Number(values[field]) >= 0)) {
+      throw err(400, 'invalid_value', 'A sale price cannot be negative.');
+    }
+  }
+}
+
+function stripPricing(row) {
+  return { ...row, ...PRICING_DEFAULTS };
+}
+
 async function guardCreate(pool, def, name, access, values) {
   const { business, planKey } = access;
   // Specific error first: suppliers refuse with their own code,
@@ -449,6 +490,10 @@ async function guardCreate(pool, def, name, access, values) {
     await validateBom(pool, business, values.product_id, values.kind, values.lines);
   }
   if (name === 'Product') {
+    if (pricingPayloadActive(values) && !featureAllowed(planKey, 'pricing')) {
+      throw err(403, 'pricing_business_only', 'Clearance and rollback pricing is part of the Business plan.');
+    }
+    assertPricingShape(values);
     await assertProductCap(pool, business.id, planKey, values.status === 'archived' ? 0 : 1);
   }
   if (name === 'Location' && isOperatingSite(values)) {
@@ -495,6 +540,12 @@ async function guardUpdate(pool, def, name, access, row, patch) {
   // the create guard. Custom roles are Business-only, full stop.
   if (name === 'StaffRole' && planKey !== 'business') {
     throw err(403, 'custom_roles_business_only', customRolesBusinessOnlyMessage());
+  }
+  if (name === 'Product') {
+    if (pricingPayloadActive(patch) && !featureAllowed(planKey, 'pricing')) {
+      throw err(403, 'pricing_business_only', 'Clearance and rollback pricing is part of the Business plan.');
+    }
+    assertPricingShape(patch);
   }
   if (name === 'PurchaseOrder') {
     const current = row;
@@ -620,6 +671,11 @@ export async function listEntities(pool, user, name, filter = {}, options = {}) 
     }
     if (def.planGate && !featureAllowed(access.planKey, def.planGate)) continue;
     let businessRows = await fetchBusinessRows(pool, def, businessId);
+    if (name === 'Product' && !featureAllowed(access.planKey, 'pricing')) {
+      // Pricing is Business-only: off-Business reads see the fields
+      // held at defaults (kept in the row, inert — migration 018).
+      businessRows = businessRows.map(stripPricing);
+    }
     if (name === 'StaffMember' && !access.isOwner) {
       // Staff read-by-email: a non-owner sees only their own row, and
       // only when that row is trusted (owner-created or chained).
@@ -659,6 +715,9 @@ export async function getEntity(pool, user, name, id) {
   }
   if (def.planGate && !featureAllowed(access.planKey, def.planGate)) {
     throw err(403, 'plan_gated', 'This feature is part of the Business plan.');
+  }
+  if (name === 'Product' && !featureAllowed(access.planKey, 'pricing')) {
+    return publicRow(def, stripPricing(row));
   }
   if (name === 'StaffMember' && !access.isOwner) {
     if (String(row.email || '').toLowerCase() !== String(user.email || '').toLowerCase()) {
