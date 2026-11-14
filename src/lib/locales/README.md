@@ -61,6 +61,12 @@ Malay and Indonesian keep their many English-spelled loanwords
 (Status, Data, Edit, Unit and friends); those keys are pinned as
 cognates in the tranche tests rather than respelled.
 
+Tranche 12 (Nov 13, 2026): `th`, `vi`, `tl` — same terms.
+Tagalog carries the largest cognate set of any locale (129 short
+labels): its own finished strings already use those English forms
+(Email, Draft, Status, Barcode…), so the batch matched the file
+rather than fighting it. No sentence was left untranslated.
+
 ## What `t()` does when something is missing
 
 - Unknown locale code → English (never a blank screen).

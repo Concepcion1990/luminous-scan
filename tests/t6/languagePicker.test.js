@@ -155,7 +155,7 @@ test('policies: no translation registered -> the English body, cleanly', () => {
   // ar, bn and bho; tranche 2 registered the six Spanish variants —
   // sampled here are locales still unregistered.)
   for (const kind of POLICY_KINDS) {
-    for (const locale of ['th', 'vi', 'tl']) {
+    for (const locale of ['ha', 'sw', 'yo']) {
       assert.equal(hasPolicyTranslation(kind, locale), false);
       const { document, translated } = getPolicyDocument(kind, locale);
       assert.equal(translated, false, `${kind}/${locale} should not claim a translation`);

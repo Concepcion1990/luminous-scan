@@ -81,6 +81,8 @@ const TRANCHE_1_LOCALES = [
   'ta', 'te', 'pa-Guru',
   // Tranche 11 registrations (Nov 13, 2026)
   'pa-Arab', 'id', 'ms',
+  // Tranche 12 registrations (Nov 13, 2026)
+  'th', 'vi', 'tl',
 ];
 
 // Verified cognates: keys whose correct Spanish value is spelled
@@ -238,6 +240,58 @@ const MS_COGNATE_KEYS = new Set([
   'staff.member.edit', 'staff.memberDialog.statusLabel', 'staff.roleCard.edit',
   'staffLib.importOnly',
 ]);
+const TH_COGNATE_KEYS = new Set([
+  'productForm.unitKg', 'products.exportColQr',
+]);
+const VI_COGNATE_KEYS = new Set([
+  'auth.emailLabel', 'orders.email', 'productForm.unitKg',
+  'settings.identity.logoLabel', 'staff.memberDialog.emailLabel', 'suppliers.email',
+]);
+const TL_COGNATE_KEYS = new Set([
+  'auth.emailLabel', 'auth.passwordLabel', 'bomLib.kindBundle',
+  'bomLib.kindBundleShort', 'bomLib.kindRecipe', 'businessLib.brandColor.plum',
+  'categories.kindTag', 'dashboard.minReorder', 'exports.backupJson',
+  'exports.excelWorkbook', 'exports.eyebrow', 'forgot.emailLabel',
+  'import.colField', 'import.dryRunTitle', 'import.eyebrow',
+  'import.previewTitle', 'import.worksheet', 'importLib.field.barcode',
+  'importLib.field.brand', 'importLib.field.publisher', 'importLib.receiveField.supplierName',
+  'importLib.updateField.brand', 'importLib.updateField.publisher', 'layout.scanCodes',
+  'listings.channel', 'listingsLib.filterDraft', 'listingsLib.filterLive',
+  'listingsLib.statusDraft', 'listingsLib.statusLive', 'locations.addressLabel',
+  'locations.eyebrow', 'locations.kindBin', 'locations.kindVan',
+  'movements.eyebrow', 'nav.group.workspace', 'nav.payroll',
+  'nav.workforce', 'orders.carrier', 'orders.channel',
+  'orders.customer', 'orders.email', 'orders.subtotal',
+  'ordersLib.orderNote', 'payroll.bonus', 'payroll.dd.checking',
+  'payroll.dd.savings', 'payroll.dd.title', 'payroll.title',
+  'plans.featureHeader', 'pos.csv.problemRow', 'print.barcodeLabel',
+  'print.carrier', 'print.colItem', 'print.customer',
+  'print.fieldOrderBatch', 'print.fieldSheet', 'print.invoiceTitle',
+  'print.packingSlipTitle', 'print.purchaseOrderTitle', 'print.qrLabel',
+  'print.refSuffix', 'print.subtotal', 'print.templateBarcode',
+  'productDetails.codeBarcode', 'productDetails.rowBatch', 'productDetails.rowBrand',
+  'productDetails.rowFulfillment', 'productDetails.rowManufacturer', 'productDetails.rowPublisher',
+  'productDetails.rowSerial', 'productDetails.rowStatus', 'productDetails.rowSupplier',
+  'productForm.barcodeLabel', 'productForm.batchLabel', 'productForm.brandLabel',
+  'productForm.coverBadge', 'productForm.customLabelPlaceholder', 'productForm.fulfillDigital',
+  'productForm.fulfillmentLabel', 'productForm.manufacturerLabel', 'productForm.publisherLabel',
+  'productForm.serialLabel', 'productForm.statusDraft', 'productForm.statusLabel',
+  'productForm.unitKg', 'products.bulkChangeStatus', 'products.bulkPreview',
+  'products.exportColBarcode', 'products.exportColQr', 'products.exportXlsx',
+  'products.sortCodes', 'products.statusDraft', 'purchasing.statusDraft',
+  'purchasing.subtotal', 'purchasing.supplier', 'purchasingLib.statusDraft',
+  'reports.fieldSnapshot', 'reportsLib.grouping.supplier', 'returns.customer',
+  'rewards.code', 'rewards.give.currency', 'rewards.kind.giftCard',
+  'rewards.slip.code', 'rewards.value.giftCard', 'settings.identity.logoLabel',
+  'settings.identity.taglineLabel', 'settings.security.backupEmailTitle', 'settings.software.tagline',
+  'settings.switcher.taglineLabel', 'staff.member.administrator', 'staff.memberDialog.emailLabel',
+  'staff.roleCard.builtIn', 'staffLib.area.catalog', 'staffLib.area.stock',
+  'staffLib.role.managerName', 'subscribe.eyebrow', 'suppliers.accountNumber',
+  'suppliers.address', 'suppliers.contact', 'suppliers.email',
+  'suppliers.website', 'training.module.cross-store', 'training.module.direct-deposit',
+  'training.module.payroll', 'training.module.scanner', 'upgrade.introTrial',
+  'workforce.tab.clock', 'workforce.tab.inbox', 'workforce.title',
+]);
 const COGNATE_KEYS = {
   'es-MX': SPANISH_COGNATE_KEYS,
   'es-ES': SPANISH_COGNATE_KEYS,
@@ -271,6 +325,10 @@ const COGNATE_KEYS = {
   'pa-Arab': PA_ARAB_COGNATE_KEYS,
   'id': ID_COGNATE_KEYS,
   'ms': MS_COGNATE_KEYS,
+
+  'th': TH_COGNATE_KEYS,
+  'vi': VI_COGNATE_KEYS,
+  'tl': TL_COGNATE_KEYS,
 };
 
 const TOKENS = [
@@ -396,7 +454,7 @@ test('completed-tranche policy bodies are registered and served, merged over Eng
       assert.notEqual(notice, en['policies.translationNotice'], `${code} protective line is still English`);
     }
     // A locale outside the completed tranches still falls back to English.
-    assert.equal(hasPolicyTranslation(kind, 'th'), false, `${kind}/th should not be registered yet`);
-    assert.equal(getPolicyDocument(kind, 'th').translated, false);
+    assert.equal(hasPolicyTranslation(kind, 'ha'), false, `${kind}/ha should not be registered yet`);
+    assert.equal(getPolicyDocument(kind, 'ha').translated, false);
   }
 });
