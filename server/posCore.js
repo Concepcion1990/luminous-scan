@@ -47,6 +47,12 @@ function err(status, code, message) {
 export const POS_PROVIDER_LABELS = {
   square: 'Square',
   shopify: 'Shopify',
+  clover: 'Clover',
+  toast: 'Toast',
+  lightspeed: 'Lightspeed',
+  zettle: 'PayPal Zettle',
+  stripe_terminal: 'Stripe Terminal',
+  wix: 'Wix',
   csv: 'CSV import',
 };
 

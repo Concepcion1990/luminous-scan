@@ -35,10 +35,17 @@ import { createRewardsRouter } from './rewardsRoutes.js';
 import { createPosRouter } from './posRoutes.js';
 import { squareWebhookHandler, squareOAuthCallbackHandler } from './posSquare.js';
 import { shopifyWebhookHandler } from './posShopify.js';
+import { cloverWebhookHandler, cloverOAuthCallbackHandler } from './posClover.js';
+import { toastWebhookHandler } from './posToast.js';
+import { lightspeedWebhookHandler } from './posLightspeed.js';
+import { zettleWebhookHandler } from './posZettle.js';
+import { stripeTerminalWebhookHandler } from './posStripeTerminal.js';
+import { wixWebhookHandler } from './posWix.js';
 import { createTrainingRouter } from './trainingRoutes.js';
 import { createBillingRouter, stripeWebhookHandler } from './billingRoutes.js';
 import { createRecoveryRouter } from './recoveryRoutes.js';
 import { createSupportRouter } from './supportRoutes.js';
+import { createDeletionRouter } from './deletionRoutes.js';
 import { assertSubscriptionAccess } from './subscriptionAccess.js';
 import { issueCsrfToken, requireCsrf } from './csrf.js';
 import { SESSION_COOKIE, loadSessionUser, parseCookies, requireAuth } from './sessions.js';
@@ -60,9 +67,23 @@ export function createApp() {
   // Shopify's HMAC are both computed over the untouched body.
   app.post('/webhooks/pos/square', express.raw({ type: '*/*' }), squareWebhookHandler);
   app.post('/webhooks/pos/shopify', express.raw({ type: '*/*' }), shopifyWebhookHandler);
+  // POS provider expansion (Nov 14, 2026): the six remaining
+  // providers over the same shared core — each adapter verifies
+  // its own documented signature scheme over the raw body.
+  // Lightspeed destinations carry the store's domain prefix (the
+  // per-retailer target URL its webhook registration uses).
+  app.post('/webhooks/pos/clover', express.raw({ type: '*/*' }), cloverWebhookHandler);
+  app.post('/webhooks/pos/toast', express.raw({ type: '*/*' }), toastWebhookHandler);
+  app.post('/webhooks/pos/lightspeed/:storeKey', express.raw({ type: '*/*' }), lightspeedWebhookHandler);
+  app.post('/webhooks/pos/zettle', express.raw({ type: '*/*' }), zettleWebhookHandler);
+  app.post('/webhooks/pos/stripe-terminal', express.raw({ type: '*/*' }), stripeTerminalWebhookHandler);
+  app.post('/webhooks/pos/wix', express.raw({ type: '*/*' }), wixWebhookHandler);
   // Square OAuth callback: a browser redirect from Square, no
   // session — the HMAC-signed state is its credential.
   app.get('/api/pos/square/callback', squareOAuthCallbackHandler);
+  // Clover OAuth callback: same shape — a browser redirect from
+  // Clover, the HMAC-signed state is its credential.
+  app.get('/api/pos/clover/callback', cloverOAuthCallbackHandler);
   // 3 MB JSON bodies: a store logo (up to 2 MB as a data URL) must
   // reach the logo endpoint's own clear 400, not the parser's 413.
   app.use(express.json({ limit: '3mb' }));
@@ -170,6 +191,11 @@ export function createApp() {
   // the subscription gate never stands between a customer and the
   // help door, on any plan or none.
   app.use('/api', createSupportRouter({ getPool }));
+  // Account-deletion requests (server/deletionRoutes.js): the
+  // Settings Delete Account flow's server side. Account-level on
+  // purpose, like support — a request for review that deletes
+  // nothing and touches no billing.
+  app.use('/api', createDeletionRouter({ getPool }));
   // Billing BEFORE shop: the shop router applies requireAuth to every
   // request that reaches it, and the wipe-sweep job endpoint is
   // job-secret protected, not session protected — it must be reachable

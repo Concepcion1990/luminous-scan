@@ -306,6 +306,21 @@ export const base44 = {  entities: Object.fromEntries(
         });
         return { data };
       }
+      if (name === 'request-account-deletion') {
+        // Settings → Delete account (Deletion-request phase,
+        // Nov 14, 2026): the twin's account-level endpoint. A
+        // request for review — it stores the request and deletes
+        // nothing; status reads only the caller's own request.
+        if (payload?.action === 'status') {
+          const data = await request('/api/account/deletion-request');
+          return { data };
+        }
+        const data = await request('/api/account/deletion-request', {
+          method: 'POST',
+          body: { confirmation: payload?.confirmation },
+        });
+        return { data };
+      }
       if (name === 'check-trial-eligibility') {
         const data = await request(`/api/billing/trial-eligibility?business_id=${encodeURIComponent(payload.business_id)}`);
         return { data };

@@ -6,6 +6,12 @@
  *   GET  /api/businesses/:bid/pos/unmatched           held lines (unmatched / insufficient stock)
  *   POST /api/businesses/:bid/pos/square/connect      OAuth start (or the plain not-configured answer)
  *   POST /api/businesses/:bid/pos/shopify/connect     per-store credential connect { shop_domain, access_token }
+ *   POST /api/businesses/:bid/pos/clover/connect      OAuth start (or the plain not-configured answer)
+ *   POST /api/businesses/:bid/pos/toast/connect       per-restaurant credentials { client_id, client_secret, restaurant_guid }
+ *   POST /api/businesses/:bid/pos/lightspeed/connect  per-store credentials { domain_prefix, api_token, webhook_secret? }
+ *   POST /api/businesses/:bid/pos/zettle/connect      per-organization credentials { organization_uuid, signing_key }
+ *   POST /api/businesses/:bid/pos/stripe-terminal/connect  per-account credentials { account_id, webhook_secret }
+ *   POST /api/businesses/:bid/pos/wix/connect         per-site identity { instance_id }
  *   POST /api/businesses/:bid/pos/connections/:provider/disconnect
  *   POST /api/businesses/:bid/pos/connections/:provider/location  { location_id } — which location the till deducts from
  *   POST /api/businesses/:bid/pos/mappings            { provider, provider_item_key, product_id }
@@ -47,6 +53,10 @@ import { featureAllowed } from './plans.js';
 import { applyPosSale, parseSalesCsv, publicEvent, retryHeldLines } from './posCore.js';
 import { squareConfig, squareAuthorizeUrl } from './posSquare.js';
 import { shopifyConfig } from './posShopify.js';
+import { cloverConfig, cloverAuthorizeUrl } from './posClover.js';
+import { toastConfig } from './posToast.js';
+import { lightspeedConfig } from './posLightspeed.js';
+import { wixConfig } from './posWix.js';
 
 function err(status, code, message) {
   return Object.assign(new Error(message), { status, code });
@@ -67,7 +77,7 @@ function asyncHandler(fn) {
 /** The ONLY shape a connection ever takes on the wire — no credentials. */
 export function publicConnection(row) {
   if (!row) return null;
-  return {
+  const connection = {
     id: row.id,
     business_id: row.business_id,
     provider: row.provider,
@@ -81,9 +91,18 @@ export function publicConnection(row) {
     created_at: row.created_at,
     updated_at: row.updated_at,
   };
+  // Lightspeed webhooks are registered per retailer against a
+  // target URL carrying the store's domain prefix (see
+  // server/posLightspeed.js) — the owner needs that exact path to
+  // paste into Lightspeed. It is derived from provider_account_id,
+  // which is already public here; it is NOT credential material.
+  if (row.provider === 'lightspeed' && row.provider_account_id) {
+    connection.webhook_path = `/webhooks/pos/lightspeed/${row.provider_account_id}`;
+  }
+  return connection;
 }
 
-const PROVIDERS = ['square', 'shopify'];
+const PROVIDERS = ['square', 'shopify', 'clover', 'toast', 'lightspeed', 'zettle', 'stripe_terminal', 'wix'];
 
 export function createPosRouter({ getPool: getPoolFn }) {
   const router = Router();
@@ -195,6 +214,10 @@ export function createPosRouter({ getPool: getPoolFn }) {
     }
     const square = squareConfig();
     const shopify = shopifyConfig();
+    const clover = cloverConfig();
+    const toast = toastConfig();
+    const lightspeed = lightspeedConfig();
+    const wix = wixConfig();
     const heldPlan = await pool().query(
       "SELECT COUNT(*)::int AS n FROM pos_sale_events WHERE business_id = $1 AND status = 'held_plan'",
       [req.params.bid],
@@ -207,6 +230,12 @@ export function createPosRouter({ getPool: getPoolFn }) {
       providers: {
         square: { oauth_configured: square.oauthConfigured, webhook_configured: square.webhookConfigured },
         shopify: { webhook_configured: shopify.webhookConfigured },
+        clover: { oauth_configured: clover.oauthConfigured, webhook_configured: clover.webhookConfigured },
+        toast: { webhook_configured: toast.webhookConfigured },
+        lightspeed: { webhook_configured: lightspeed.webhookConfigured },
+        zettle: {},
+        stripe_terminal: {},
+        wix: { webhook_configured: wix.webhookConfigured },
       },
       events: await recentEvents(req.params.bid, 25),
       held: await heldLines(req.params.bid),
@@ -283,6 +312,163 @@ export function createPosRouter({ getPool: getPoolFn }) {
     return res.status(201).json({ connection: publicConnection(row) });
   }));
 
+  // ---- Connect: Clover (OAuth start) ----------------------------------------
+
+  router.post(`${base}/clover/connect`, asyncHandler(async (req, res) => {
+    await ctx(req, { write: true });
+    const url = cloverAuthorizeUrl(req.params.bid);
+    if (!url) {
+      return res.json({
+        provider: 'clover',
+        configured: false,
+        message: 'Clover connections are not switched on yet. Everything else — the CSV import below included — works today.',
+      });
+    }
+    return res.json({ provider: 'clover', configured: true, authorize_url: url });
+  }));
+
+  // ---- Connect: per-provider credential routes (Nov 14, 2026) ----------------
+  // Toast, Lightspeed, Zettle, Stripe Terminal and Wix all connect
+  // the Shopify way: the owner pastes the credential material that
+  // provider's documented API actually uses, from their own
+  // provider account. Server-side only, never rendered back; one
+  // provider account connects to one workspace here (webhooks
+  // find their business by that account identity).
+
+  async function assertAccountFree(provider, accountId, businessId, label) {
+    const clash = await pool().query(
+      `SELECT business_id FROM pos_connections
+        WHERE provider = $1 AND LOWER(provider_account_id) = $2 AND status = 'connected' AND business_id <> $3 LIMIT 1`,
+      [provider, accountId.toLowerCase(), businessId],
+    );
+    if (clash.rows[0]) {
+      throw err(409, 'store_already_connected', `That ${label} account is already connected to another workspace here. Disconnect it there first.`);
+    }
+  }
+
+  async function optionalLocationId(body, businessId) {
+    if (!body.location_id) return null;
+    const loc = await pool().query(
+      'SELECT id FROM locations WHERE id = $1 AND business_id = $2 LIMIT 1',
+      [String(body.location_id), businessId],
+    );
+    if (!loc.rows[0]) throw err(400, 'invalid_reference', 'That location is not in this business.');
+    return String(body.location_id);
+  }
+
+  router.post(`${base}/toast/connect`, asyncHandler(async (req, res) => {
+    await ctx(req, { write: true });
+    const body = req.body || {};
+    const clientId = String(body.client_id || '').trim();
+    const clientSecret = String(body.client_secret || '').trim();
+    const restaurantGuid = String(body.restaurant_guid || '').trim();
+    if (!clientId || clientSecret.length < 8 || !restaurantGuid) {
+      throw err(400, 'invalid_value', 'Paste the client ID, client secret and restaurant GUID from your Toast partner credentials.');
+    }
+    await assertAccountFree('toast', restaurantGuid, req.params.bid, 'Toast');
+    const locationId = await optionalLocationId(body, req.params.bid);
+    const row = await upsertConnection(req.params.bid, 'toast', {
+      status: 'connected',
+      label: String(body.label || '').trim() || restaurantGuid,
+      provider_account_id: restaurantGuid,
+      ...(locationId ? { location_id: locationId } : {}),
+      credentials: JSON.stringify({ client_id: clientId, client_secret: clientSecret }),
+      last_error: '',
+    }, req.user);
+    return res.status(201).json({ connection: publicConnection(row) });
+  }));
+
+  router.post(`${base}/lightspeed/connect`, asyncHandler(async (req, res) => {
+    await ctx(req, { write: true });
+    const body = req.body || {};
+    const domainPrefix = String(body.domain_prefix || '').trim().toLowerCase()
+      .replace(/^https?:\/\//, '').replace(/\.retail\.lightspeed\.app.*$/, '').replace(/\/.*$/, '');
+    const apiToken = String(body.api_token || '').trim();
+    const webhookSecret = String(body.webhook_secret || '').trim();
+    if (!/^[a-z0-9][a-z0-9-]*$/.test(domainPrefix)) {
+      throw err(400, 'invalid_value', 'Enter your Lightspeed domain prefix — the part before .retail.lightspeed.app.');
+    }
+    if (apiToken.length < 8) {
+      throw err(400, 'invalid_value', 'Paste the API token from your Lightspeed store.');
+    }
+    await assertAccountFree('lightspeed', domainPrefix, req.params.bid, 'Lightspeed');
+    const locationId = await optionalLocationId(body, req.params.bid);
+    const row = await upsertConnection(req.params.bid, 'lightspeed', {
+      status: 'connected',
+      label: String(body.label || '').trim() || `${domainPrefix}.retail.lightspeed.app`,
+      provider_account_id: domainPrefix,
+      ...(locationId ? { location_id: locationId } : {}),
+      credentials: JSON.stringify({ api_token: apiToken, webhook_secret: webhookSecret }),
+      last_error: '',
+    }, req.user);
+    return res.status(201).json({ connection: publicConnection(row) });
+  }));
+
+  router.post(`${base}/zettle/connect`, asyncHandler(async (req, res) => {
+    await ctx(req, { write: true });
+    const body = req.body || {};
+    const organizationUuid = String(body.organization_uuid || '').trim();
+    const signingKey = String(body.signing_key || '').trim();
+    if (organizationUuid.length < 8 || signingKey.length < 8) {
+      throw err(400, 'invalid_value', 'Paste your Zettle organization UUID and the signing key from your Pusher subscription.');
+    }
+    await assertAccountFree('zettle', organizationUuid, req.params.bid, 'Zettle');
+    const locationId = await optionalLocationId(body, req.params.bid);
+    const row = await upsertConnection(req.params.bid, 'zettle', {
+      status: 'connected',
+      label: String(body.label || '').trim() || organizationUuid,
+      provider_account_id: organizationUuid,
+      ...(locationId ? { location_id: locationId } : {}),
+      credentials: JSON.stringify({ signing_key: signingKey }),
+      last_error: '',
+    }, req.user);
+    return res.status(201).json({ connection: publicConnection(row) });
+  }));
+
+  router.post(`${base}/stripe-terminal/connect`, asyncHandler(async (req, res) => {
+    await ctx(req, { write: true });
+    const body = req.body || {};
+    const accountId = String(body.account_id || '').trim();
+    const webhookSecret = String(body.webhook_secret || '').trim();
+    if (!/^acct_[A-Za-z0-9]+$/.test(accountId)) {
+      throw err(400, 'invalid_value', 'Enter your Stripe account ID — it starts with acct_.');
+    }
+    if (!webhookSecret.startsWith('whsec_') || webhookSecret.length < 12) {
+      throw err(400, 'invalid_value', 'Paste the signing secret of the webhook endpoint you registered in your Stripe dashboard — it starts with whsec_.');
+    }
+    await assertAccountFree('stripe_terminal', accountId, req.params.bid, 'Stripe');
+    const locationId = await optionalLocationId(body, req.params.bid);
+    const row = await upsertConnection(req.params.bid, 'stripe_terminal', {
+      status: 'connected',
+      label: String(body.label || '').trim() || accountId,
+      provider_account_id: accountId,
+      ...(locationId ? { location_id: locationId } : {}),
+      credentials: JSON.stringify({ webhook_secret: webhookSecret }),
+      last_error: '',
+    }, req.user);
+    return res.status(201).json({ connection: publicConnection(row) });
+  }));
+
+  router.post(`${base}/wix/connect`, asyncHandler(async (req, res) => {
+    await ctx(req, { write: true });
+    const body = req.body || {};
+    const instanceId = String(body.instance_id || '').trim();
+    if (instanceId.length < 8) {
+      throw err(400, 'invalid_value', 'Paste your Wix site instance ID from your Wix dashboard.');
+    }
+    await assertAccountFree('wix', instanceId, req.params.bid, 'Wix');
+    const locationId = await optionalLocationId(body, req.params.bid);
+    const row = await upsertConnection(req.params.bid, 'wix', {
+      status: 'connected',
+      label: String(body.label || '').trim() || instanceId,
+      provider_account_id: instanceId,
+      ...(locationId ? { location_id: locationId } : {}),
+      credentials: '',
+      last_error: '',
+    }, req.user);
+    return res.status(201).json({ connection: publicConnection(row) });
+  }));
+
   // ---- Disconnect / till location -------------------------------------------
 
   router.post(`${base}/connections/:provider/disconnect`, asyncHandler(async (req, res) => {
@@ -317,7 +503,7 @@ export function createPosRouter({ getPool: getPoolFn }) {
     const provider = String(body.provider || '');
     const itemKey = String(body.provider_item_key || '').trim();
     const productId = String(body.product_id || '');
-    if (!['square', 'shopify', 'csv'].includes(provider) || !itemKey) {
+    if (![...PROVIDERS, 'csv'].includes(provider) || !itemKey) {
       throw err(400, 'invalid_value', 'A mapping needs the provider and the item it came in as.');
     }
     const product = await pool().query(

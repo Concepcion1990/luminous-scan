@@ -383,6 +383,36 @@ export function supportReportEmail({
   };
 }
 
+/**
+ * Account-deletion REQUEST email (Deletion-request phase,
+ * Nov 14, 2026) — the notification copy of a request filed from
+ * Settings → Delete account, sent to the owner's support inbox.
+ * The request is a REQUEST FOR REVIEW: this mail says, in words,
+ * that nothing has been deleted and billing is untouched — the
+ * database row is the record of truth and the review happens by
+ * a person, never automatically from this mail.
+ */
+export function deletionRequestEmail({ to, requesterEmail, requestId, requestedAt }) {
+  const lines = [
+    'A Luminous StockHaven user has asked for their account to be deleted.',
+    '',
+    `From: ${requesterEmail || 'unknown'} — the account email on the request.`,
+    `Requested at: ${requestedAt || 'not recorded'}`,
+    '',
+    'This is a request for review only. Nothing has been deleted,',
+    'and the account’s billing has not been changed. Review the',
+    'request in the app database (account_deletion_requests,',
+    `id ${requestId}, status requested) and handle it by hand.`,
+    '',
+    '— Luminous StockHaven',
+  ];
+  return {
+    to,
+    subject: 'Account deletion request — Luminous StockHaven',
+    text: lines.join('\n'),
+  };
+}
+
 export function staffInviteEmail({ to, businessName, inviterName }) {
   return {
     to,
