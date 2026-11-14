@@ -25,6 +25,7 @@ import {
   ownerWithBusiness,
   setPlan,
   createLocation,
+  seededLocation,
   createProducts,
   receive,
   onHand,
@@ -54,7 +55,7 @@ test('the token endpoint needs a session, and issues a token bound to it', async
 
 test('a mutating request without a token is rejected, on every surface', async () => {
   const owner = await ownerWithBusiness('csrf-none@example.com');
-  const location = await createLocation(owner.cookie, owner.business.id, { name: 'Aisle 1' });
+  const location = await seededLocation(owner.cookie, owner.business.id);
   const [product] = await createProducts(owner.cookie, owner.business.id, [
     { name: 'CSRF Book', sku: 'CSRF-001', price: 10 },
   ]);
@@ -201,7 +202,7 @@ test('only the pre-auth endpoints and the job endpoint are exempt', () => {
 
 test('offline flush: a queued change carries no token and applies with a token fetched at send time', async () => {
   const owner = await ownerWithBusiness('csrf-flush@example.com');
-  const location = await createLocation(owner.cookie, owner.business.id, { name: 'Aisle 1' });
+  const location = await seededLocation(owner.cookie, owner.business.id);
   const [product] = await createProducts(owner.cookie, owner.business.id, [
     { name: 'Flush Book', sku: 'FLUSH-001', price: 10 },
   ]);

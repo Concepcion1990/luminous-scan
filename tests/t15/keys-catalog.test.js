@@ -1,7 +1,7 @@
 /**
  * T15 — trial-reminder surface invariants: the keyset total moved to
  * 3595 in every locale (3597 after the delete warning; 3664 after rewards;
- * 3749 after POS, 3754 after the POS gate, 3768 after plans parity, 3804 after in-app problem reporting, 3811 after the front-door fixes, 3830 after the transfer door, 3857 after clearance + rollback pricing, 3875 after shipping labels, 3954 after the POS provider expansion + deletion-request batch), her three
+ * 3749 after POS, 3754 after the POS gate, 3768 after plans parity, 3804 after in-app problem reporting, 3811 after the front-door fixes, 3830 after the transfer door, 3857 after clearance + rollback pricing, 3875 after shipping labels, 3954 after the POS provider expansion + deletion-request batch, 3968 after the account-security batch (change password + owner-sent staff reset), 3994 after the white-label reset-clarification step and the locations/orders train (+13)), her three
  * notice strings stand verbatim in English, and the training
  * catalogs carry the owner trial-reminders lesson in agreement.
  */
@@ -14,7 +14,7 @@ import { TRAINING_LESSONS as SERVER_LESSONS } from '../../server/trainingCatalog
 
 test('keyset parity holds across all 52 locale files at the trial-reminders total', () => {
   const enKeys = Object.keys(en).sort();
-  assert.equal(enKeys.length, 3954);
+  assert.equal(enKeys.length, 3994);
   assert.equal(SUPPORTED_LOCALES.length, 52);
   for (const code of SUPPORTED_LOCALES) {
     const keys = Object.keys(LOCALES[code]).sort();

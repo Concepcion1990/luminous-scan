@@ -42,6 +42,7 @@ import {
   registerVerifiedUser,
   ownerWithBusiness,
   createLocation,
+  seededLocation,
   createProducts,
   receive,
   onHand,
@@ -114,7 +115,7 @@ async function postShopifyOrder(order, domain = 'till-shop.myshopify.com') {
 async function shopSetup(email, name = 'Till Shop') {
   const setup = await ownerWithBusiness(email, name);
   await setPlan(setup.business.id, 'business', setup.user.id);
-  const location = await createLocation(setup.cookie, setup.business.id, { name: 'Main store' });
+  const location = await seededLocation(setup.cookie, setup.business.id);
   const [mug, journal] = await createProducts(setup.cookie, setup.business.id, [
     { name: 'Enamel Mug', sku: 'SKU-MUG', upc: '012345678905', price: 12 },
     { name: 'Linen Journal', sku: 'SKU-JRN', upc: '012345678912', price: 18 },
@@ -458,7 +459,7 @@ test('staff can look but cannot connect, map or import; disconnect unmatches the
 test('plan gate: Essentials gets plan_gated on every POS route, reads included', async () => {
   const setup = await ownerWithBusiness('pos-gate-ess@example.com', 'Gate Shop');
   const { cookie, business } = setup; // no setPlan: Essentials by default
-  await createLocation(cookie, business.id, { name: 'Main store' });
+  await seededLocation(cookie, business.id);
 
   const attempts = [
     ['GET', `${POS(business.id)}/overview`, undefined],

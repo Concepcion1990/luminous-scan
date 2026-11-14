@@ -13,6 +13,7 @@ import {
   resetRateLimits,
   ownerWithBusiness,
   createLocation,
+  seededLocation,
   createProducts,
   receive,
   setPlan,
@@ -23,7 +24,7 @@ beforeEach(() => resetRateLimits());
 
 async function setup(email) {
   const owner = await ownerWithBusiness(email);
-  const location = await createLocation(owner.cookie, owner.business.id, { name: 'Main store' });
+  const location = await seededLocation(owner.cookie, owner.business.id);
   const shelf = await createLocation(owner.cookie, owner.business.id, {
     name: 'Shelf A',
     kind: 'shelf',
@@ -142,7 +143,7 @@ test('transfer refuses more than is on hand, and a transfer to another business 
   });
   assert.equal(over.status, 400);
   const other = await ownerWithBusiness('mv-xfer-other@example.com', 'Other shop');
-  const otherLocation = await createLocation(other.cookie, other.business.id, { name: 'Elsewhere' });
+  const otherLocation = await seededLocation(other.cookie, other.business.id);
   const cross = await move(cookie, business.id, {
     product_id: product.id,
     location_id: location.id,

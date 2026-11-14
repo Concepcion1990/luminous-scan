@@ -24,6 +24,7 @@ import {
   ownerWithBusiness,
   setPlan,
   createLocation,
+  seededLocation,
   createProducts,
   receive,
   onHand,
@@ -38,7 +39,7 @@ after(close);
 
 async function stockedSetup(email) {
   const owner = await ownerWithBusiness(email);
-  const location = await createLocation(owner.cookie, owner.business.id, { name: 'Aisle 1' });
+  const location = await seededLocation(owner.cookie, owner.business.id);
   const [product] = await createProducts(owner.cookie, owner.business.id, [
     { name: 'Test Notebook', sku: 'SYNC-001', cost: 5, price: 12 },
   ]);

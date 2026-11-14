@@ -11,6 +11,7 @@ import {
   resetRateLimits,
   ownerWithBusiness,
   createLocation,
+  seededLocation,
   createProducts,
   receive,
 } from './helpers.js';
@@ -20,7 +21,7 @@ beforeEach(() => resetRateLimits());
 
 async function setup(email) {
   const owner = await ownerWithBusiness(email);
-  const location = await createLocation(owner.cookie, owner.business.id, { name: 'Main store' });
+  const location = await seededLocation(owner.cookie, owner.business.id);
   const [product] = await createProducts(owner.cookie, owner.business.id, [
     { name: 'Bookmark', sku: 'BM-1', upc: '001234567890', price: 9 },
   ]);

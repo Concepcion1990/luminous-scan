@@ -200,7 +200,9 @@ function serverRouteSet() {
 test('recovery: every client recovery path carries /api and names a real server route', () => {
   const routes = serverRouteSet();
   const libPaths = apiRequestPaths(readSrc('src/lib/recovery.js'));
-  assert.equal(libPaths.length, 10, 'recovery.js should make exactly 10 apiRequest calls');
+  // 10 at the fix-batch; the account-security batch (Nov 14, 2026)
+  // added changePassword + sendStaffPasswordReset, for 12.
+  assert.equal(libPaths.length, 12, 'recovery.js should make exactly 12 apiRequest calls');
   for (const p of libPaths) {
     assert.ok(p.startsWith('/api/'), `recovery.js path misses the API prefix: ${p}`);
     assert.ok(routes.has(normalizePath(p)), `recovery.js path has no matching server route: ${p}`);
@@ -216,7 +218,7 @@ test('recovery: every client recovery path carries /api and names a real server 
 test('locale parity: all 52 locales carry the 7 new keys; tranche-1 locales are translated', () => {
   assert.equal(NEW_KEYS.length, 7);
   const enKeys = Object.keys(en).sort();
-  assert.equal(enKeys.length, 3954);
+  assert.equal(enKeys.length, 3994); // 3954 at the POS + deletion batch; +14 account-security (change password + staff reset); +1 white-label reset step; +13 locations/orders train
   for (const key of NEW_KEYS) assert.ok(key in en, `en missing ${key}`);
   assert.equal(Object.keys(LOCALES).length, 52);
   for (const code of Object.keys(LOCALES)) {

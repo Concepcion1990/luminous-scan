@@ -41,6 +41,7 @@ import {
   resetRateLimits,
   ownerWithBusiness,
   createLocation,
+  seededLocation,
   createProducts,
   receive,
   onHand,
@@ -119,7 +120,7 @@ async function rawPost(path, bodyText, headers = {}) {
 async function shopSetup(email, name = 'Till Shop') {
   const setup = await ownerWithBusiness(email, name);
   await setPlan(setup.business.id, 'business', setup.user.id);
-  const location = await createLocation(setup.cookie, setup.business.id, { name: 'Main store' });
+  const location = await seededLocation(setup.cookie, setup.business.id);
   const [mug, journal] = await createProducts(setup.cookie, setup.business.id, [
     { name: 'Enamel Mug', sku: 'SKU-MUG', upc: '012345678905', price: 12 },
     { name: 'Linen Journal', sku: 'SKU-JRN', upc: '012345678912', price: 18 },

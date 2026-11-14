@@ -15,6 +15,7 @@ import {
   resetRateLimits,
   ownerWithBusiness,
   createLocation,
+  seededLocation,
   createProducts,
   receive,
   setPlan,
@@ -27,7 +28,7 @@ beforeEach(() => resetRateLimits());
 async function setup(email, plan = null) {
   const owner = await ownerWithBusiness(email);
   if (plan) await setPlan(owner.business.id, plan, owner.user.id);
-  const location = await createLocation(owner.cookie, owner.business.id, { name: 'Main store' });
+  const location = await seededLocation(owner.cookie, owner.business.id);
   return { ...owner, location };
 }
 

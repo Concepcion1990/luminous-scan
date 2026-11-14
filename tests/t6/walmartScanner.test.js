@@ -29,6 +29,7 @@ import {
   ownerWithBusiness,
   setPlan,
   createLocation,
+  seededLocation,
   createProducts,
   createBusiness,
   createSupplier,
@@ -44,7 +45,7 @@ after(close);
 async function businessSetup(email, plan = 'business') {
   const owner = await ownerWithBusiness(email);
   await setPlan(owner.business.id, plan, owner.user.id);
-  const location = await createLocation(owner.cookie, owner.business.id, { name: 'Aisle 1' });
+  const location = await seededLocation(owner.cookie, owner.business.id);
   return { owner, location };
 }
 

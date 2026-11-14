@@ -64,6 +64,24 @@ export async function ownerWithBusiness(email, name = 'Test Shop', { grant = tru
 }
 
 /** Create a location as the caller. */
+/**
+ * The business's seeded default location (Nov 14, 2026: every
+ * business starts with its one store location). Tests that just
+ * need A location use this instead of creating one — on
+ * Essentials a create would rightly hit the 1-site limit.
+ */
+export async function seededLocation(cookie, businessId) {
+  const res = await req('/api/entities/Location/query', {
+    method: 'POST',
+    body: { filter: { business_id: businessId } },
+    cookie,
+  });
+  if (res.status !== 200 || !res.json.items?.length) {
+    throw new Error(`seeded location missing: ${res.status} ${res.text}`);
+  }
+  return res.json.items[0];
+}
+
 export async function createLocation(cookie, businessId, values = {}) {
   const res = await req(`/api/businesses/${businessId}/locations`, {
     method: 'POST',

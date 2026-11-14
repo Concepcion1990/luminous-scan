@@ -22,6 +22,7 @@ import {
   ownerWithBusiness,
   setPlan,
   createLocation,
+  seededLocation,
   createProducts,
 } from './helpers.js';
 
@@ -68,7 +69,7 @@ test('custom roles are Business-only: create, edit and delete refuse on Essentia
 test('every server-testable PR #44/#45 item refuses on Essentials', async () => {
   const ess = await ownerWithBusiness('limits-ess@example.com');
   const bid = ess.business.id;
-  const location = await createLocation(ess.cookie, bid);
+  const location = await seededLocation(ess.cookie, bid);
   const [product] = await createProducts(ess.cookie, bid, [
     { name: 'Cat Bookmark', sku: 'BM-001', cost: 4, price: 10 },
   ]);
@@ -170,9 +171,10 @@ test('frontend gates: no PO / supplier packing-slip print styles on Essentials',
   assert.match(printCenter, /const showSupplierDocs = !isEssentials && !entitlementLoading;/);
   assert.match(printCenter, /const visibleTemplates = TEMPLATES\.filter\(/);
   assert.match(printCenter, /!isSupplierPrintTemplate\(entry\.key\)/);
-  // On Essentials the supplier styles show as visibly locked entries
-  // linking to /upgrade, never as usable templates.
-  assert.match(printCenter, /const lockedSupplierTemplates =/);
+  // On Essentials the supplier styles do not appear at all — no
+  // lock row, no badge (the owner's invisibility ruling, Nov 14,
+  // 2026). Business sees them as normal templates.
+  assert.ok(!printCenter.includes('lockedSupplierTemplates'), 'no locked rows on any plan');
   assert.match(printCenter, /isEssentials && !entitlementLoading/);
 });
 

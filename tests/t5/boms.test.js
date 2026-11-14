@@ -14,6 +14,7 @@ import {
   ownerWithBusiness,
   setPlan,
   createLocation,
+  seededLocation,
   createProducts,
   createBom,
   receive,
@@ -25,7 +26,7 @@ after(close);
 async function businessSetup(email, plan = 'business') {
   const owner = await ownerWithBusiness(email);
   await setPlan(owner.business.id, plan, owner.user.id);
-  const location = await createLocation(owner.cookie, owner.business.id);
+  const location = await seededLocation(owner.cookie, owner.business.id);
   const [compA, compB, finished] = await createProducts(owner.cookie, owner.business.id, [
     { name: 'Bookmark A', sku: 'BM-A', cost: 2, price: 9 },
     { name: 'Notepad B', sku: 'NB-B', cost: 3, price: 9 },

@@ -15,6 +15,7 @@ import {
   ownerWithBusiness,
   createBusiness,
   createLocation,
+  seededLocation,
   createProducts,
   receive,
   setPlan,
@@ -26,7 +27,9 @@ beforeEach(() => resetRateLimits());
 async function setup(email, plan = null) {
   const owner = await ownerWithBusiness(email);
   if (plan) await setPlan(owner.business.id, plan, owner.user.id);
-  const location = await createLocation(owner.cookie, owner.business.id, { name: 'Main store' });
+  // Every business now starts with its seeded store location
+  // (Nov 14, 2026) — setups use it instead of creating one.
+  const location = await seededLocation(owner.cookie, owner.business.id);
   return { ...owner, location };
 }
 
@@ -53,7 +56,9 @@ test('categories CRUD and location tree (shelf under a store)', async () => {
 test('Essentials allows exactly one operating site; a second store is refused', async () => {
   const owner = await ownerWithBusiness('shop-site@example.com');
   const { cookie, business } = owner;
-  await createLocation(cookie, business.id, { name: 'First store', kind: 'store' });
+  // The one site is the seeded store location the business is
+  // born with (Nov 14, 2026) — it consumes the Essentials site.
+  const seeded = await seededLocation(cookie, business.id);
   const second = await req(`/api/businesses/${business.id}/locations`, {
     method: 'POST',
     body: { location: { name: 'Second store', kind: 'store' } },
@@ -64,7 +69,7 @@ test('Essentials allows exactly one operating site; a second store is refused', 
   // A shelf under the store is not a site and still fits.
   const shelf = await req(`/api/businesses/${business.id}/locations`, {
     method: 'POST',
-    body: { location: { name: 'Shelf', kind: 'shelf', parent_name: 'First store' } },
+    body: { location: { name: 'Shelf', kind: 'shelf', parent_name: seeded.name } },
     cookie,
   });
   assert.equal(shelf.status, 201);

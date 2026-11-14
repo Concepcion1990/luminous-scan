@@ -149,6 +149,23 @@ test('registration: the create call carries the chosen locale', () => {
   );
 });
 
+test('sign-in: the account’s saved language wins over the door choice (Nov 14, 2026)', () => {
+  // The smooth-door rule: the public picker's choice seeds a NEW
+  // account at signup (above). For an EXISTING account, signing
+  // in restores the language saved on the workspace — Layout
+  // syncs the UI locale from the loaded profile, so the saved
+  // language overrides whatever the browser's door choice was.
+  const layout = read('src/components/Layout.jsx');
+  assert.ok(
+    layout.includes('const code = profile?.language || \'en\';'),
+    'Layout does not read the saved language from the profile',
+  );
+  assert.ok(
+    layout.includes('if (code !== getLocale()) setLocale(code);'),
+    'Layout does not restore the saved language over the door choice',
+  );
+});
+
 test('policies: no translation registered -> the English body, cleanly', () => {
   // For locales without a registered translation, every kind falls
   // back to the English document itself. (Tranche 1 registered am,
