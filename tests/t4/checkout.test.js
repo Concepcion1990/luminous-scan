@@ -112,6 +112,24 @@ test('trial checkout creates a pending purchase first, then reconcile grants tri
   assert.equal(done.rows[0].status, 'completed');
 });
 
+test('checkout sends the trial under subscription_data, never top-level (Stripe shape pin)', async () => {
+  // Real Stripe rejects a top-level trial_period_days on Checkout Session
+  // creation ("Received unknown parameter: trial_period_days" — live
+  // finding, Nov 14, 2026). The trial belongs under subscription_data.
+  const owner = await ownerWithBusiness('trial-shape@example.com');
+  const checkout = await req('/api/billing/checkout', {
+    method: 'POST',
+    body: { plan: 'essentials', business_id: owner.business.id },
+    cookie: owner.cookie,
+  });
+  assert.equal(checkout.status, 200);
+  assert.equal(checkout.json.trial_eligible, true);
+  const params = mock.getLastCheckoutParams();
+  assert.ok(params, 'mock Stripe recorded the checkout params');
+  assert.equal(params['subscription_data[trial_period_days]'], '7');
+  assert.ok(!('trial_period_days' in params), 'no top-level trial_period_days key');
+});
+
 test('reconcile is idempotent: a second call is already_active, no duplicate rows', async () => {
   const owner = await ownerWithBusiness('trial-twice@example.com');
   const { checkout } = await trialCheckout(owner, owner.business.id, 'essentials');

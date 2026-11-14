@@ -29,6 +29,7 @@ export function createMockStripe() {
   const sessions = new Map();
   const invoices = new Map();
   const charges = new Map();
+  let lastCheckoutParams = null;
 
   const nowSec = () => Math.floor(Date.now() / 1000);
   const nextId = (prefix) => `${prefix}_${crypto.randomBytes(8).toString('hex')}`;
@@ -113,6 +114,7 @@ export function createMockStripe() {
 
     // POST /v1/checkout/sessions
     if (method === 'POST' && path === '/checkout/sessions') {
+      lastCheckoutParams = Object.fromEntries(params.entries());
       const mode = get('mode');
       const email = get('customer_email') || 'customer@example.com';
       const customer = findOrCreateCustomer(email);
@@ -136,7 +138,7 @@ export function createMockStripe() {
       };
       if (mode === 'subscription') {
         const priceId = get('line_items[0][price]');
-        const trialDays = Number.parseInt(get('trial_period_days') || '0', 10);
+        const trialDays = Number.parseInt(get('subscription_data[trial_period_days]') || '0', 10);
         const subMetadata = {};
         for (const [key, value] of params.entries()) {
           const m = key.match(/^subscription_data\[metadata\]\[(.+)\]$/);
@@ -315,6 +317,10 @@ export function createMockStripe() {
     return [...invoices.values()].filter((inv) => inv.subscription === subId);
   }
 
+  function getLastCheckoutParams() {
+    return lastCheckoutParams ? { ...lastCheckoutParams } : null;
+  }
+
   function reset() {
     customersByEmail.clear();
     customersById.clear();
@@ -323,6 +329,7 @@ export function createMockStripe() {
     invoices.clear();
     charges.clear();
     invoiceSeq = 0;
+    lastCheckoutParams = null;
   }
 
   return {
@@ -334,6 +341,7 @@ export function createMockStripe() {
     reshapeInvoiceNewApi,
     getSubscription,
     getSession,
+    getLastCheckoutParams,
     listInvoices,
     findOrCreateCustomer,
   };

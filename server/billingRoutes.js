@@ -233,7 +233,7 @@ export function createBillingRouter({ getPool: getPoolFn }) {
       mode: 'subscription',
       'line_items[0][price]': priceId,
       'line_items[0][quantity]': 1,
-      ...(trialEligible ? { trial_period_days: 7 } : {}),
+      ...(trialEligible ? { 'subscription_data[trial_period_days]': 7 } : {}),
       success_url: `${origin}/ThankYou?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/subscribe?canceled=1`,
       customer_email: req.user.email,
