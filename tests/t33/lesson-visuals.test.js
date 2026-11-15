@@ -83,3 +83,29 @@ test('StepVisual renders the live page inert, rings the target, mounts lazily', 
   assert.match(training, /lesson\.visuals\?\.\[i\]/);
   assert.match(training, /<StepVisual visual=\{lesson\.visuals\[i\]\}/);
 });
+
+test('StepVisual pans inside the picture and opens it wide (owner fix, Nov 15, 2026)', () => {
+  const visual = readFileSync('src/components/training/StepVisual.jsx', 'utf8');
+  // A gesture layer translates drags into scrolling inside the
+  // still-inert frame, both axes; pull-to-refresh must not claim
+  // drags that start on the picture.
+  assert.match(visual, /data-visual-gesture/);
+  assert.match(visual, /data-pull-refresh-ignore/);
+  assert.match(visual, /contentWindow\?\.scrollBy/);
+  assert.match(visual, /touch-none/);
+  // The stage is measured against the viewport (full bleed
+  // below the desktop breakpoint) so the framed page renders
+  // at the reader's true width, never squeezed.
+  assert.match(visual, /documentElement\.clientWidth/);
+  assert.match(visual, /getBoundingClientRect/);
+  // The wide view: the same live page, full screen, portaled
+  // out of the page-transition wrappers, with the labelled
+  // open/close affordances.
+  assert.match(visual, /data-visual-wide/);
+  assert.match(visual, /createPortal/);
+  assert.match(visual, /training\.visualOpen/);
+  assert.match(visual, /training\.visualClose/);
+  // The ring re-measures when the frame scrolls (it rides
+  // along with a pan instead of detaching from its target).
+  assert.match(visual, /addEventListener\('scroll', scheduleMeasure/);
+});
