@@ -878,7 +878,17 @@ export async function createEntity(pool, user, name, values) {
     if (!access.isOwner && !access.can('staff.manage')) {
       throw err(403, 'forbidden', 'You are not allowed to manage staff here.');
     }
-    const row = await createStaffMember(pool, { business: access.business, planKey: access.planKey, caller: user, member: values });
+    const row = await createStaffMember(pool, {
+      business: access.business,
+      planKey: access.planKey,
+      caller: user,
+      member: values,
+      actor: {
+        userId: user.id,
+        staffId: access.staffRow?.id ?? null,
+        name: access.isOwner ? 'Owner' : access.staffRow?.full_name || user.email,
+      },
+    });
     return publicRow(def, row);
   }
   await guardCreate(pool, def, name, access, values);
