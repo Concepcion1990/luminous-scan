@@ -89,7 +89,10 @@ export async function planFor(pool, businessId) {
 }
 
 export function productLimitMessage(limit, used) {
-  return `This plan includes ${limit} active products and ${used} are already in the catalog. Archive a product you no longer sell to free a slot, or move to Business for unlimited products.`;
+  // The doors named here must be the true ones (owner ruling,
+  // Nov 14, 2026): archiving frees NOTHING under the counting law —
+  // only a true delete lowers the count.
+  return `This plan includes ${limit} products and ${used} are already in the catalog. Delete a product you no longer need to free a slot, or move to Business for unlimited products.`;
 }
 
 export function staffLimitMessage(limit) {

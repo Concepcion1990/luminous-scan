@@ -2,7 +2,7 @@ import { CheckCircle2, FlaskConical, TriangleAlert } from 'lucide-react';
 import { t } from '@/lib/i18n';
 
 /** The dry-run verdict: what would be created, what would be skipped, nothing written. */
-export default function DryRunPanel({ dryRun, report, needsCheck, withStock }) {
+export default function DryRunPanel({ dryRun, report, needsCheck, withStock, capInfo }) {
   if (!dryRun) {
     return (
       <div className="rounded-lg border border-dashed border-border px-3 py-3 text-xs text-muted-foreground">
@@ -18,6 +18,12 @@ export default function DryRunPanel({ dryRun, report, needsCheck, withStock }) {
 
   const view = needsCheck ? report : dryRun;
   const problems = needsCheck ? report.problems : dryRun.problems;
+  // Cap awareness (owner ruling, Nov 14, 2026): the verdict states
+  // the room in plain words — what you have, what the plan holds,
+  // how many more can come in — and counts the rows that don't fit.
+  const capView = needsCheck
+    ? { have: capInfo?.have, cap: capInfo?.cap, room: capInfo?.room, over: report.over }
+    : { have: dryRun.have, cap: dryRun.cap, room: dryRun.room, over: dryRun.over };
 
   return (
     <div
@@ -44,6 +50,17 @@ export default function DryRunPanel({ dryRun, report, needsCheck, withStock }) {
           </>
         ) : null}
       </p>
+
+      {capView.cap != null && (
+        <p className="mt-1 text-foreground">
+          {t('import.dryRunRoom', { have: capView.have, cap: capView.cap, room: capView.room })}
+        </p>
+      )}
+      {capView.over > 0 && (
+        <p className="mt-1 font-medium text-foreground">
+          {t('import.dryRunOver', { count: capView.over })}
+        </p>
+      )}
 
       {problems.length > 0 && (
         <ul className="mt-2 space-y-0.5 text-muted-foreground">

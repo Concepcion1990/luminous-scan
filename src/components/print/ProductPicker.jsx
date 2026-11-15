@@ -1,8 +1,18 @@
 import { Check, Search } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { t } from '@/lib/i18n';
 
-export default function ProductPicker({ products, loading, search, onSearch, selectedIds, onToggle }) {
+export default function ProductPicker({ products, loading, search, onSearch, selectedIds, onToggle, onToggleAll }) {
+  // The master box speaks only about the products CURRENTLY LISTED
+  // (the search result — which is everything when no search runs):
+  // checked when all listed are picked, indeterminate when some
+  // are, and the count beside it says how many are picked so the
+  // state is never a guess (owner ruling, Nov 14, 2026).
+  const listedSelected = products.filter((p) => selectedIds.includes(p.id)).length;
+  const allListedSelected = products.length > 0 && listedSelected === products.length;
+  const masterState = allListedSelected ? true : listedSelected > 0 ? 'indeterminate' : false;
+  const toggleMaster = () => onToggleAll?.(products, !allListedSelected);
   return (
     <div className="space-y-2">
       <div className="relative">
@@ -14,6 +24,26 @@ export default function ProductPicker({ products, loading, search, onSearch, sel
           className="pl-9"
         />
       </div>
+
+      {!loading && products.length > 0 && (
+        <div className="flex items-center justify-between gap-2 px-1">
+          <div className="flex items-center gap-2">
+            <Checkbox checked={masterState} onCheckedChange={toggleMaster} aria-label={t('products.selectAllAria')} />
+            <button
+              type="button"
+              onClick={toggleMaster}
+              className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+            >
+              {t('products.selectAllCount', { count: products.length })}
+            </button>
+          </div>
+          {listedSelected > 0 && (
+            <span className="text-xs text-muted-foreground">
+              {t('products.selectedCount', { count: listedSelected })}
+            </span>
+          )}
+        </div>
+      )}
 
       <ul className="max-h-[340px] divide-y divide-border overflow-y-auto rounded-lg border border-border">
         {loading && <li className="px-3 py-4 text-xs text-muted-foreground">{t('print.loadingCatalog')}</li>}
@@ -40,7 +70,7 @@ export default function ProductPicker({ products, loading, search, onSearch, sel
                 >
                   {active && <Check className="h-3 w-3" />}
                 </span>
-                <span className="min-w-0">
+                <span className="min-w-0 flex-1 overflow-hidden">
                   <span className="block truncate text-sm">{product.name}</span>
                   <span className="numeric block truncate text-[11px] text-muted-foreground">
                     {[product.sku, product.isbn, product.upc].filter(Boolean).join(' · ')}

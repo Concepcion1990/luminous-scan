@@ -51,10 +51,18 @@ export function escPosLabelBytes(item) {
     push(0x0a);
   }
   if (label.code) {
-    // GS k 73 — Code 128, code set B ("{B" prefix), n = data length.
-    const data = `{B${label.code}`;
-    push(0x1d, 0x6b, 0x49, data.length);
-    pushText(bytes, data);
+    // Native symbology on the thermal path too (Nov 14, 2026):
+    // GS k function B — UPC-A is 0x41 with the 12 digits, EAN-13
+    // is 0x43 with the 13 digits (the printer verifies the check
+    // digit); everything else stays Code 128 set B (0x49, "{B").
+    if (label.codeType === 'UPC-A' || label.codeType === 'EAN-13') {
+      push(0x1d, 0x6b, label.codeType === 'UPC-A' ? 0x41 : 0x43, label.code.length);
+      pushText(bytes, label.code);
+    } else {
+      const data = `{B${label.code}`;
+      push(0x1d, 0x6b, 0x49, data.length);
+      pushText(bytes, data);
+    }
     push(0x0a);
   }
   pushText(bytes, `Code: ${label.code || '—'}`);

@@ -68,6 +68,18 @@ export default function useImportSheet(guess = () => '') {
     setError('');
   };
 
+  /** Put a saved draft's sheet back exactly as it was staged. */
+  const hydrate = (snap) => {
+    if (!snap) return;
+    setFileName(snap.fileName || '');
+    setSheets(snap.sheets || []);
+    setSheetName(snap.sheetName || '');
+    setTable(snap.table || null);
+    setWarnings(snap.warnings || []);
+    setMapping(snap.mapping || []);
+    setError('');
+  };
+
   return {
     fileName,
     sheets,
@@ -82,5 +94,6 @@ export default function useImportSheet(guess = () => '') {
     chooseSheet,
     changeMapping,
     reset,
+    hydrate,
   };
 }

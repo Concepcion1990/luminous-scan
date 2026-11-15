@@ -2,6 +2,7 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useBusiness } from '@/hooks/useBusiness';
 import useEntitlements from '@/hooks/useEntitlements';
 import { assessCancellationGrace } from '@/lib/cancellationGrace';
+import { isBoss } from '@/lib/bossAuthority';
 
 /**
  * Do not render the inventory workspace until the selected business has a
@@ -14,13 +15,13 @@ import { assessCancellationGrace } from '@/lib/cancellationGrace';
  */
 export default function SubscriptionAccessRoute() {
   const location = useLocation();
-  const { user, isLoading: workspaceLoading } = useBusiness();
+  const { user, record: businessRecord, isLoading: workspaceLoading } = useBusiness();
   const { activeId, status, record, planKey, isLoading: entitlementLoading } = useEntitlements();
 
   if (workspaceLoading || entitlementLoading) {
     return (
       <div className="fixed inset-0 flex items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-slate-800" />
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-muted border-t-foreground" />
       </div>
     );
   }
@@ -33,7 +34,7 @@ export default function SubscriptionAccessRoute() {
       status === 'trialing' ||
       status === 'past_due' ||
       (status === 'canceled' && withinPaidPeriod) ||
-      (status === 'grandfathered' && user?.role === 'admin' && planKey === 'business'));
+      (status === 'grandfathered' && isBoss(user, businessRecord) && planKey === 'business'));
 
   if (!allowed) {
     const grace = assessCancellationGrace({ status, paidThrough: record?.period_ends_at });

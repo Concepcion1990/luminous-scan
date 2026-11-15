@@ -33,11 +33,17 @@ export default function OrderLineRow({ line, products, currency, onChange, onRem
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="none">{t('orders.chooseProduct')}</SelectItem>
-            {products.map((p) => (
-              <SelectItem key={p.id} value={p.id}>
-                {p.name} · {p.sku}
-              </SelectItem>
-            ))}
+            {/* Archived products are frozen (Nov 14, 2026): they
+                cannot be picked for a new line. A line that already
+                holds one keeps it visible so old orders stay
+                truthful — it just cannot be picked again. */}
+            {products
+              .filter((p) => (p.status || 'active') !== 'archived' || p.id === line.product_id)
+              .map((p) => (
+                <SelectItem key={p.id} value={p.id}>
+                  {p.name} · {p.sku}
+                </SelectItem>
+              ))}
           </SelectContent>
         </Select>
         <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0" onClick={onRemove} aria-label={t('orders.removeLine')}>
