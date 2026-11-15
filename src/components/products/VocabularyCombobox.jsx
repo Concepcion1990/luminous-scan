@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { ChevronDown, Plus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import useDismissOnOutside from '@/hooks/useDismissOnOutside';
 import { cn } from '@/lib/utils';
 
 /**
@@ -38,9 +39,18 @@ export default function VocabularyCombobox({
 }) {
   const [open, setOpen] = useState(false);
   const inputRef = useRef(null);
+  const rootRef = useRef(null);
   const typed = String(value || '').trim().toLowerCase();
   const filtered = options.filter((name) => !typed || name.toLowerCase().includes(typed));
   const showList = open && (filtered.length > 0 || Boolean(onAddNewRequest));
+
+  // Outside-tap dismissal (Nov 15, 2026): blur alone does not
+  // close the list when a tap lands on dead space — on a phone
+  // the input keeps focus and the list hangs open. The shared
+  // hook closes it on any pointer-down outside this root (and
+  // on Escape); selection still happens on pointerdown inside,
+  // before any of this can race it.
+  useDismissOnOutside({ open, onDismiss: () => setOpen(false), rootRef });
 
   const pick = (name) => {
     onChange(name);
@@ -49,6 +59,7 @@ export default function VocabularyCombobox({
 
   return (
     <div
+      ref={rootRef}
       className="relative"
       onBlur={(e) => {
         if (!e.currentTarget.contains(e.relatedTarget)) setOpen(false);
