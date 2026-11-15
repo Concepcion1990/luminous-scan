@@ -26,8 +26,8 @@ const combobox = readFileSync(
   new URL('../../src/components/products/VocabularyCombobox.jsx', import.meta.url),
   'utf8',
 );
-const inline = readFileSync(
-  new URL('../../src/components/products/AddVocabularyInline.jsx', import.meta.url),
+const addWindow = readFileSync(
+  new URL('../../src/components/products/AddVocabularyDialog.jsx', import.meta.url),
   'utf8',
 );
 const dialog = readFileSync(
@@ -67,11 +67,37 @@ test('no native datalist remains in the product form', () => {
   assert.ok(dialog.includes('VocabularyCombobox'), 'category uses the combobox');
 });
 
-test('add-new inline: creates through the managed Category machinery and selects the result', () => {
-  assert.ok(inline.includes('base44.entities.Category.create'), 'creation goes through the Category entity');
-  assert.ok(inline.includes('withBusiness('), 'the new row is business-scoped');
-  assert.ok(inline.includes('onCreated?.('), 'the created name is handed back for selection');
-  assert.ok(inline.includes('if (existing) {'), 'an existing name is selected without a second create');
+test('add-new window: creates through the managed Category machinery and selects the result', () => {
+  assert.ok(addWindow.includes('base44.entities.Category.create'), 'creation goes through the Category entity');
+  assert.ok(addWindow.includes('withBusiness('), 'the new row is business-scoped');
+  assert.ok(addWindow.includes('onCreated?.('), 'the created name is handed back for selection');
+  assert.ok(addWindow.includes('if (existing) {'), 'an existing name is selected without a second create');
+});
+
+test('add-new window: a real overlay window, not an inline panel (owner ruling, Nov 14, 2026)', () => {
+  // The inline panel squeezed into the form's right-hand column as a
+  // narrow sliver and reflowed the grid — her "it freaks out on me".
+  // The replacement is a fixed overlay: the form behind it cannot
+  // move, and the one name field is full-width and autofocused.
+  assert.ok(addWindow.includes('fixed inset-0 z-[70]'), 'the window is a fixed overlay above the form');
+  assert.ok(addWindow.includes('role="dialog"'), 'the window presents as a dialog');
+  assert.ok(addWindow.includes('aria-modal="true"'), 'the window is modal');
+  assert.ok(addWindow.includes('autoFocus'), 'the name field is focused on open');
+  assert.ok(addWindow.includes('useState(initialName)'), 'the field is prefilled with the typed text');
+  assert.ok(addWindow.includes("t('productForm.cancel')"), 'Cancel uses the shared cancel string');
+  assert.ok(addWindow.includes("t('categories.addButton')"), 'Save uses the shared add string');
+  assert.ok(!addWindow.includes('border-dashed'), 'no trace of the old inline panel styling');
+});
+
+test('add-new window: both form doors open it; the inline panel is gone', () => {
+  assert.ok(dialog.includes('<AddVocabularyDialog'), 'the product form renders the window');
+  assert.ok(dialog.includes("addNewField === 'category' ? form.category : form.subcategory"), 'the window prefills from the field being edited');
+  assert.ok(
+    dialog.includes("addNewField === 'category' ? 'productForm.addNewCategory' : 'productForm.addNewSubcategory'"),
+    'the window title switches between the add-category and add-subcategory strings by field',
+  );
+  assert.ok(!dialog.includes('AddVocabularyInline'), 'the form no longer renders the inline panel');
+  assert.ok(!details.includes('AddVocabularyInline'), 'the details fields no longer render the inline panel');
 });
 
 test('judge: typed-but-unmatched text is refused — no silent birth', () => {

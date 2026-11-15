@@ -1,4 +1,6 @@
 import { base44 } from '@/api/client';
+import { isBoss } from '@/lib/bossAuthority';
+import { countDistinctProducts } from '@/lib/productDuplicates';
 import { DEFAULT_PLAN, featureAllowed, limitFor, planOf } from '@/lib/plans';
 import { t } from './i18n.js';
 
@@ -70,17 +72,23 @@ export function trialLabel(record) {
 }
 
 /** Missing billing records resolve to restricted Essentials. */
-export function effectivePlanKey(record, user) {
-  // Preserve the publisher's existing complimentary admin workspace, but do not
-  // let a legacy/default grandfathered Business row grant access to new users.
+export function effectivePlanKey(record, user, businessRecord = null) {
+  // A grandfathered Business row is a complimentary workspace: it
+  // counts only for that business's boss (the owner's doctrine,
+  // Nov 14, 2026 — admin is owner; see lib/bossAuthority). Anyone
+  // else resolving the same row — a staff member of that business,
+  // a stranger — gets the restricted default, so the complimentary
+  // Business plan can never leak to ordinary users. Callers that
+  // have no business record in scope pass none and get exactly the
+  // old behavior: the row counts for nobody but a badge holder.
   if (record?.plan === 'business' &&
       record?.status === 'grandfathered' &&
-      user?.role !== 'admin') return DEFAULT_PLAN;
+      !isBoss(user, businessRecord)) return DEFAULT_PLAN;
   return record?.plan === 'business' ? 'business' : DEFAULT_PLAN;
 }
 
-export function resolveEntitlement(record, user = null) {
-  const planKey = effectivePlanKey(record, user);
+export function resolveEntitlement(record, user = null, businessRecord = null) {
+  const planKey = effectivePlanKey(record, user, businessRecord);
   const plan = planOf(planKey);
   return {
     planKey,
@@ -94,10 +102,19 @@ export function resolveEntitlement(record, user = null) {
   };
 }
 
-/** Active catalog products: distinct sellable records, archived ones excluded. */
+/**
+ * The catalog's product count — the one counting rule (owner,
+ * Nov 14, 2026), shared by the Products pill, the plan cap and the
+ * Overview: DISTINCT ORIGINAL products, any status. Copies never
+ * count (lib/productDuplicates), archived originals always do, and
+ * only a true delete lowers the number. The generic count endpoint
+ * cannot express the duplicate predicate, so the signature fields
+ * are read and the pure counter decides.
+ */
 export async function countActiveProducts(businessId) {
   if (!businessId) return 0;
-  return base44.entities.Product.count({ business_id: businessId, status: { $ne: 'archived' } });
+  const page = await base44.entities.Product.filter({ business_id: businessId }, { limit: 2000 });
+  return countDistinctProducts(page.items ?? []);
 }
 
 /** Staff seats: active members plus invitations, which reserve a seat. */

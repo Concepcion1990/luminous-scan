@@ -116,7 +116,7 @@ test('import enforces the Essentials product cap', async () => {
   });
   assert.equal(res.json.created, 1);
   assert.equal(res.json.skipped, 1);
-  assert.match(res.json.problems[0].problem, /50 active products/);
+  assert.match(res.json.problems[0].problem, /includes 50 products/);
 });
 
 test('export is refused on Essentials (403) and works on Business', async () => {

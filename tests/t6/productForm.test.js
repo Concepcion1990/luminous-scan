@@ -18,6 +18,10 @@ const dialog = readFileSync(
   new URL('../../src/components/products/ProductFormDialog.jsx', import.meta.url),
   'utf8',
 );
+const inventoryLib = readFileSync(
+  new URL('../../src/lib/inventory.js', import.meta.url),
+  'utf8',
+);
 
 test('supplier field: gated on the suppliers feature with the Business-plan note off-Business', () => {
   assert.ok(dialog.includes("const canSuppliers = can('suppliers');"), 'the form gates suppliers like pricing');
@@ -111,10 +115,18 @@ test('photos: the add tile offers camera or gallery, both feeding the same uploa
   assert.ok(!galleryInput.includes('capture'), 'the gallery input never forces the camera');
 });
 
-test('scan button: the UPC and Barcode fields each open the in-form scanner', () => {
+test('scan button: the UPC, Barcode and QR fields each open the in-form scanner', () => {
   assert.ok(dialog.includes("onClick={() => openCodeScanner('upc')}"), 'the UPC field has a scan button');
   assert.ok(dialog.includes("onClick={() => openCodeScanner('barcode')}"), 'the Barcode field has a scan button');
+  // Owner ask (Nov 14, 2026): the QR field gets the same button — a
+  // QR code can encode a whole URL, the one value nobody can type.
+  assert.ok(dialog.includes("onClick={() => openCodeScanner('qr_code')}"), 'the QR field has a scan button');
   assert.ok(dialog.includes("t('productForm.scanCode')"), 'the scan buttons use the scan-code string');
+  // The capture handler writes via set(field) and returns focus via
+  // document.getElementById(field): the QR input's id must BE the
+  // field name or the capture would land nowhere and focus nowhere.
+  assert.ok(dialog.includes('id="qr_code"'), 'the QR input id matches its form field name');
+  assert.ok(dialog.includes('htmlFor="qr_code"'), 'the QR label points at the same id');
   assert.ok(
     dialog.includes("import BarcodeScanner from '@/components/scan/BarcodeScanner';"),
     'the overlay reuses the app scanner component',
@@ -157,6 +169,11 @@ test('scan capture: a code belonging to another product is named at the field', 
   );
   assert.ok(dialog.includes("codeTaken?.field === 'upc'"), 'the notice renders at the UPC field');
   assert.ok(dialog.includes("codeTaken?.field === 'barcode'"), 'the notice renders at the Barcode field');
+  assert.ok(dialog.includes("codeTaken?.field === 'qr_code'"), 'the notice renders at the QR field');
+  assert.ok(
+    dialog.includes("if (codeTaken?.field === 'qr_code') setCodeTaken(null);"),
+    'editing the QR field by hand clears a stale notice',
+  );
   assert.ok(
     dialog.includes("t('productForm.codeTakenNotice', { name: codeTaken.name })"),
     'the notice names the product that already holds the code',
@@ -165,6 +182,18 @@ test('scan capture: a code belonging to another product is named at the field', 
     dialog.includes("if (codeTaken?.field === 'upc') setCodeTaken(null);"),
     'editing the field by hand clears a stale notice',
   );
+});
+
+test('scan capture: the code-taken lookup covers the QR field too', () => {
+  // handleScanDetect is field-generic, so a QR capture runs the same
+  // findProductsByCode courtesy check as UPC/Barcode — which only
+  // protects the QR field if the lookup itself matches qr_code.
+  const lookup = inventoryLib.slice(
+    inventoryLib.indexOf('export async function findProductsByCode'),
+    inventoryLib.indexOf('export async function findProductByCode'),
+  );
+  assert.ok(lookup.includes('{ qr_code: { $in: variants } }'), 'the exact-pass lookup matches qr_code');
+  assert.ok(lookup.includes("{ qr_code: { $regex: pattern, $options: 'i' } }"), 'the loose-pass lookup matches qr_code');
 });
 
 test('scan button: plan-independent — no plan or entitlement check touches the scanner', () => {

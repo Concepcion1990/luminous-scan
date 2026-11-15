@@ -26,11 +26,23 @@ import {
  *  - Only from the very top of the window scroller, only for a
  *    deliberate downward pull (the math lives in src/lib/pullToRefresh
  *    and is unit-tested). A short pull snaps back with no action.
- *  - It never fights the app: listeners are passive and nothing calls
- *    preventDefault, so normal scrolling is untouched; the gesture is
- *    ignored inside dialogs/drawers, on interactive elements and form
- *    fields, inside nested scroll regions, and on the Scan screen,
- *    where a pull must never disturb a live scanning session.
+ *  - It never fights the app: the gesture is ignored inside
+ *    dialogs/drawers, on interactive elements and form fields, inside
+ *    nested scroll regions, and on the Scan screen, where a pull must
+ *    never disturb a live scanning session. Ordinary scrolling is
+ *    never claimed either — an upward or sideways drag, or any drag
+ *    that starts away from the very top, is left entirely to the
+ *    browser.
+ *  - The ONE claim it makes: once a touch has armed as a downward
+ *    pull at the very top (eligible target, no overlay, top of the
+ *    window), the touchmove listener — registered NON-passive for
+ *    exactly this — calls preventDefault. A real phone browser
+ *    classifies a downward drag as its own scroll/overscroll gesture
+ *    and takes it over (touchcancel) unless the page claims it first;
+ *    with passive-only listeners the gesture died on the owner's
+ *    phone while every synthetic-touch harness test passed (Nov 14,
+ *    2026). At the very top a downward drag has nothing to scroll, so
+ *    claiming it costs normal scrolling nothing.
  *  - The indicator is the brand globe alone — no words, so no locale
  *    strings ride along.
  *
@@ -134,6 +146,12 @@ export default function PullToRefreshShell({ children }) {
         setDistance(0);
         return;
       }
+      // The gesture is armed and moving down at the very top: claim
+      // it before the browser takes the drag over as its own scroll
+      // gesture and cancels the touch stream (see the header note).
+      // Only this path ever prevents default — 'cancel' above has
+      // already handed every ordinary scroll back to the browser.
+      if (event.cancelable) event.preventDefault();
       if (verdict.action === 'pull') {
         current.distance = verdict.distance;
         setDistance(verdict.distance);
@@ -151,7 +169,7 @@ export default function PullToRefreshShell({ children }) {
     };
 
     window.addEventListener('touchstart', onTouchStart, { passive: true });
-    window.addEventListener('touchmove', onTouchMove, { passive: true });
+    window.addEventListener('touchmove', onTouchMove, { passive: false });
     window.addEventListener('touchend', onTouchEnd);
     window.addEventListener('touchcancel', onTouchEnd);
     return () => {

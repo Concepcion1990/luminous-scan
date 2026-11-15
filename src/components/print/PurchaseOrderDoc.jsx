@@ -9,7 +9,8 @@ import { t } from '@/lib/i18n';
 export default function PurchaseOrderDoc({ order, business, mode = 'po' }) {
   const packing = mode === 'packing';
   const lines = order.lines || [];
-  const money = (value) => formatMoney(value || 0, business?.currency);
+  // Exact prices on paper (Nov 14, 2026): cents always, never rounded.
+  const money = (value) => formatMoney(value || 0, business?.currency, 2);
 
   return (
     <div className="print-label print-page-break w-[180mm] bg-white p-2 text-black">

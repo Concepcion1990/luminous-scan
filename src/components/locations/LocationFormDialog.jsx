@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/client';
 import { useBusiness } from '@/hooks/useBusiness';
+import useEntitlements from '@/hooks/useEntitlements';
 import { t } from '@/lib/i18n';
 
 import { withBusiness } from '@/lib/scoped';
@@ -35,6 +36,16 @@ export default function LocationFormDialog({
   onSaved,
 }) {
   const { activeId } = useBusiness();
+  // The Address field is Business-only (owner ruling, Nov 14,
+  // 2026): a Business owner may want an address on any of their
+  // locations, so there it stays, optional, exactly as it always
+  // was. On Essentials it is not rendered at all — not optional,
+  // not present — nested or top-level alike. While the plan is
+  // still loading the entitlement resolves to the Essentials
+  // default, so the field simply appears once a Business plan is
+  // actually known, and never flashes for Essentials.
+  const { isEssentials } = useEntitlements();
+  const showAddress = !isEssentials;
   const [form, setForm] = useState({ name: '', code: '', kind: 'store', address: '', parent_id: '' });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -157,10 +168,12 @@ export default function LocationFormDialog({
               {t('locations.nestHint')}
             </p>
           </div>
-          <div className="grid gap-2">
-            <Label htmlFor="loc-address">{t('locations.addressLabel')}</Label>
-            <Input id="loc-address" value={form.address} onChange={set('address')} placeholder={t('locations.optionalPlaceholder')} />
-          </div>
+          {showAddress && (
+            <div className="grid gap-2">
+              <Label htmlFor="loc-address">{t('locations.addressLabel')}</Label>
+              <Input id="loc-address" value={form.address} onChange={set('address')} placeholder={t('locations.optionalPlaceholder')} />
+            </div>
+          )}
           {error && <p className="text-sm text-destructive">{error}</p>}
         </div>
         <DialogFooter>

@@ -87,6 +87,20 @@ export function countSummary(lines = []) {
   return { total: lines.length, counted: counted.length, differing: differing.length, net };
 }
 
+/**
+ * One scanned unit on a count sheet (Nov 14, 2026): the product's
+ * line gains +1 from its current counted value (0 when untouched).
+ * A product that is NOT on the sheet returns null — a scan never
+ * silently adds a line, because counts are audited; the caller
+ * shows a plain notice naming the product instead.
+ */
+export function bumpCountedLine(lines = [], productId) {
+  if (!lines.some((l) => l.product_id === productId)) return null;
+  return lines.map((l) =>
+    l.product_id === productId ? { ...l, counted: (Number(l.counted) || 0) + 1 } : l
+  );
+}
+
 export async function saveCounts(sessionId, lines) {
   await base44.entities.CountSession.update(sessionId, { lines });
 }

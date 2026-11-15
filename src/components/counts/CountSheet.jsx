@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { AlertTriangle, Check, Save, ScanLine, Send, Undo2 } from 'lucide-react';
 import { t } from '@/lib/i18n';
 
+import BarcodeScanner from '@/components/scan/BarcodeScanner';
 import CountLineRow from '@/components/counts/CountLineRow';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { findProductsByCode } from '@/lib/inventory';
 import {
   applyCounts,
+  bumpCountedLine,
   countSummary,
   discrepancies,
   expectedAt,
@@ -20,6 +22,8 @@ import {
 export default function CountSheet({ session, products, levels, user, onChanged }) {
   const [lines, setLines] = useState(session.lines || []);
   const [scan, setScan] = useState('');
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const scanHandledRef = useRef(false);
   const [busy, setBusy] = useState('');
   const [error, setError] = useState('');
   const [dirty, setDirty] = useState(false);
@@ -73,6 +77,51 @@ export default function CountSheet({ session, products, levels, user, onChanged 
       setError(e.message || t('counts.codeReadFailed'));
     } finally {
       setBusy('');
+    }
+  };
+
+  // The Add button's second job (owner ruling, Nov 14, 2026): with
+  // the code box EMPTY, tapping it opens the scanner over the sheet —
+  // the button carries the scan icon, so it should scan. A scanned
+  // product already on the sheet gains +1 on its line (from its
+  // current counted value, or 0 if untouched); a scanned product NOT
+  // on the sheet is never silently added (counts are audited) — a
+  // plain notice names it and the sheet stays exactly as it was. With
+  // a code typed in the box, Add keeps its original behavior above.
+  const handleScanDetect = async (raw) => {
+    // One capture per opening: a scanner double-fire must never
+    // double-count an audited sheet.
+    if (scanHandledRef.current) return;
+    scanHandledRef.current = true;
+    setScannerOpen(false);
+    const code = String(raw || '').trim();
+    if (!code) return;
+    setError('');
+    setBusy('scan');
+    try {
+      const matches = await findProductsByCode(code, session.business_id);
+      if (!matches.length) throw new Error(t('counts.noProductMatch', { code }));
+      const product = matches[0];
+      const bumped = bumpCountedLine(lines, product.id);
+      if (!bumped) {
+        setError(t('counts.notOnSheet', { name: product.name }));
+        return;
+      }
+      setLines(bumped);
+      setDirty(true);
+    } catch (e) {
+      setError(e.message || t('counts.codeReadFailed'));
+    } finally {
+      setBusy('');
+    }
+  };
+
+  const onAddPressed = () => {
+    if (scan.trim()) {
+      addByScan();
+    } else {
+      scanHandledRef.current = false;
+      setScannerOpen(true);
     }
   };
 
@@ -156,9 +205,23 @@ export default function CountSheet({ session, products, levels, user, onChanged 
             className="font-mono text-xs"
             aria-label={t('counts.scanAria')}
           />
-          <Button variant="outline" onClick={addByScan} disabled={busy === 'scan'}>
+          <Button variant="outline" onClick={onAddPressed} disabled={busy === 'scan'}>
             <ScanLine className="mr-1 h-4 w-4" /> {t('counts.addButton')}
           </Button>
+        </div>
+      )}
+
+      {/* In-sheet scanner overlay: same in-dialog scanner as the
+          product form; the sheet underneath never unmounts, so every
+          counted value typed so far is preserved. */}
+      {scannerOpen && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-sm space-y-3 rounded-xl bg-card p-4 shadow-lg">
+            <BarcodeScanner onDetect={handleScanDetect} />
+            <Button type="button" variant="outline" className="w-full" onClick={() => setScannerOpen(false)}>
+              {t('productForm.cancel')}
+            </Button>
+          </div>
         </div>
       )}
 

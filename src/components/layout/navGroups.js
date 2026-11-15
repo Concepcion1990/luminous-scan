@@ -116,8 +116,13 @@ export const NAV_GROUPS = [
       // their role, and role grants assign more. No perm, both plans.
       { to: '/training', label: 'Training', labelKey: 'nav.training', icon: GraduationCap },
       { to: '/payroll', label: 'Payroll', labelKey: 'nav.payroll', icon: Wallet },
-      { to: '/upgrade', label: 'Plan & limits', labelKey: 'nav.upgrade', icon: CreditCard },
+      // Settings sits directly after Payroll (owner ruling,
+      // Nov 14, 2026): it used to be the menu's very last item,
+      // rendered below the All screens menu's scroll fold next to
+      // Plan & limits, so owners could not see it and reported it
+      // missing. Same route as the bottom tab bar's Settings tab.
       { to: '/settings', label: 'Settings', labelKey: 'nav.settings', icon: Settings2, perm: 'settings.manage' },
+      { to: '/upgrade', label: 'Plan & limits', labelKey: 'nav.upgrade', icon: CreditCard },
     ],
   },
 ];

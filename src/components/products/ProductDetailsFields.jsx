@@ -13,7 +13,6 @@ import {
 } from '@/components/ui/select';
 import VariationFields from './VariationFields';
 import VocabularyCombobox from './VocabularyCombobox';
-import AddVocabularyInline from './AddVocabularyInline';
 import { t } from '@/lib/i18n';
 
 
@@ -23,10 +22,7 @@ export default function ProductDetailsFields({
   set,
   setForm,
   vocabulary = {},
-  businessId,
-  addNewField,
   setAddNewField,
-  onVocabularyCreated,
 }) {
   const [open, setOpen] = useState(false);
 
@@ -119,17 +115,6 @@ export default function ProductDetailsFields({
                 addNewLabel={t('productForm.addNewSubcategory')}
                 onAddNewRequest={() => setAddNewField('subcategory')}
               />
-              {addNewField === 'subcategory' && (
-                <AddVocabularyInline
-                  businessId={businessId}
-                  kind="subcategory"
-                  initialName={form.subcategory}
-                  existingNames={vocabulary.subcategories || []}
-                  title={t('productForm.addNewSubcategory')}
-                  onCreated={(name) => onVocabularyCreated('subcategory', name)}
-                  onCancel={() => setAddNewField(null)}
-                />
-              )}
             </div>
             <div className="grid gap-2">
               <Label htmlFor="tags">{t('productForm.tagsLabel')}</Label>

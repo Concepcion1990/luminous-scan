@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { loadInventory, productMatchesSearch, productTruncationNotice, searchWords } from '@/lib/inventory';
+import { countDistinctProducts, isDuplicateProduct } from '@/lib/productDuplicates';
 import { useBusiness } from '@/hooks/useBusiness';
 import useDataFresh from '@/hooks/useDataFresh';
 import { useOfflineSync } from '@/hooks/useOfflineSync';
@@ -68,8 +69,17 @@ export default function Inventory() {
   }, [products, scopedLevels, search]);
 
   const units = scopedLevels.reduce((sum, level) => sum + (level.quantity || 0), 0);
-  const stocked = rows.filter((row) => row.own.some((level) => (level.quantity || 0) > 0)).length;
+  // The card numbers follow the one counting rule (owner ruling,
+  // Nov 14, 2026): a copy is not a product, so it belongs in NEITHER
+  // number — not in "products stocked", not in the "of N" total, and
+  // never in the low-stock count (a copy inherits its original's
+  // reorder point through Duplicate and sits at 0 units, so without
+  // the exclusion it cries low-stock forever).
+  const stocked = rows.filter(
+    (row) => !isDuplicateProduct(row.product) && row.own.some((level) => (level.quantity || 0) > 0)
+  ).length;
   const low = rows.filter(({ product, own }) => {
+    if (isDuplicateProduct(product)) return false;
     if (!product.reorder_point) return false;
     return own.reduce((sum, level) => sum + (level.quantity || 0), 0) <= product.reorder_point;
   }).length;
@@ -96,7 +106,7 @@ export default function Inventory() {
         <>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <StatCard label={t('inventory.statUnits')} value={units} unit={t('inventory.unitUnits')} />
-            <StatCard label={t('inventory.statStocked')} value={stocked} unit={t('inventory.ofProducts', { count: products.length })} />
+            <StatCard label={t('inventory.statStocked')} value={stocked} unit={t('inventory.ofProducts', { count: countDistinctProducts(products) })} />
             <StatCard label={t('inventory.statLow')} value={low} tone={low ? 'warn' : 'default'} hint={t('inventory.lowHint')} />
             <StatCard label={t('inventory.statLocations')} value={locations.length} unit={t('inventory.unitPlaces')} />
           </div>

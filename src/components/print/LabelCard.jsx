@@ -7,7 +7,7 @@ import BarcodeSvg from './BarcodeSvg';
 import QrSvg from './QrSvg';
 
 export const TEMPLATES = [
-  { key: 'price', label: 'Price tag', labelKey: 'print.templatePrice', hint: 'Large price with name and SKU', hintKey: 'print.templatePriceHint', width: 'w-[52mm]' },
+  { key: 'price', label: 'Price tag', labelKey: 'print.templatePrice', hint: 'Large price with name, UPC barcode and SKU', hintKey: 'print.templatePriceHint', width: 'w-[52mm]' },
   { key: 'shelf', label: 'Shelf label', labelKey: 'print.templateShelf', hint: 'Name, price and barcode', hintKey: 'print.templateShelfHint', width: 'w-[70mm]' },
   { key: 'barcode', label: 'Barcode / SKU', labelKey: 'print.templateBarcode', hint: 'Scannable Code 128', hintKey: 'print.templateBarcodeHint', width: 'w-[62mm]' },
   { key: 'qr', label: 'QR label', labelKey: 'print.templateQr', hint: 'Scans straight into the app', hintKey: 'print.templateQrHint', width: 'w-[44mm]' },
@@ -141,6 +141,10 @@ export default function LabelCard({ template, product: productProp, label, busin
       }
     : productProp;
   const { barcode, qr } = labelCodes(product);
+  // The price tag carries the product's UPC barcode (owner ruling,
+  // Nov 14, 2026): UPC first, then the barcode field, then the SKU
+  // (Code 128) for products that have no UPC at all.
+  const priceCode = (product.upc || product.barcode || product.sku || '').trim();
   // Printed labels carry the EFFECTIVE price — the clearance price,
   // or the rollback price while its window runs (migration 018) —
   // because the label must match what the customer pays today.
@@ -148,15 +152,33 @@ export default function LabelCard({ template, product: productProp, label, busin
   const price =
     (product.price === null || product.price === undefined || product.price === '') && effective === 0
       ? ''
-      : formatMoney(effective, business.currency);
+      : // Exact prices on paper (owner ruling, Nov 14, 2026): the
+        // stored price verbatim, cents and all — formatMoney's
+        // default is whole dollars, which printed $4.99 as $5.
+        formatMoney(effective, business.currency, 2);
   const condition = product.condition || '';
 
   if (template === 'price') {
+    // The price tag, top to bottom (owner's design, Nov 14, 2026):
+    // the exact price large on top, the UPC barcode in the middle
+    // with its digits legible beneath the bars, then the name,
+    // and the SKU small at the bottom — unless the middle slot
+    // already shows the SKU (the no-UPC fallback), where it is
+    // not repeated.
+    const skuAtBottom = product.sku && priceCode !== product.sku;
     return (
       <div className={`${shell} w-[52mm] gap-1 p-2`}>
-        <Name product={product} className="text-[8pt]" />
         <p className="text-[20pt] font-bold leading-none">{price}</p>
-        <p className="truncate font-mono text-[6pt] uppercase tracking-wide">{product.sku}</p>
+        {priceCode && (
+          <>
+            <BarcodeSvg value={priceCode} className="h-8 self-center" />
+            <p className="text-center font-mono text-[9pt] font-semibold tracking-wider">{priceCode}</p>
+          </>
+        )}
+        <Name product={product} className="text-[8pt]" />
+        {skuAtBottom && (
+          <p className="truncate font-mono text-[6pt] uppercase tracking-wide">{product.sku}</p>
+        )}
       </div>
     );
   }
@@ -169,7 +191,7 @@ export default function LabelCard({ template, product: productProp, label, busin
           <p className="text-[14pt] font-bold leading-none">{price}</p>
           <p className="truncate font-mono text-[6pt]">{product.sku}</p>
         </div>
-        <BarcodeSvg value={barcode} className="h-8 w-full" />
+        <BarcodeSvg value={barcode} className="h-8 self-center" />
       </div>
     );
   }
@@ -178,7 +200,7 @@ export default function LabelCard({ template, product: productProp, label, busin
     return (
       <div className={`${shell} w-[62mm] gap-1 p-2`}>
         <Name product={product} className="text-[8pt]" />
-        <BarcodeSvg value={barcode} className="h-10 w-full" />
+        <BarcodeSvg value={barcode} className="h-10 self-center" />
         <p className="text-center font-mono text-[7pt] tracking-wide">{barcode}</p>
       </div>
     );
@@ -205,7 +227,7 @@ export default function LabelCard({ template, product: productProp, label, busin
           </div>
           <QrSvg value={qr} className="h-[18mm] w-[18mm] shrink-0" />
         </div>
-        <BarcodeSvg value={barcode} className="h-7 w-full" />
+        <BarcodeSvg value={barcode} className="h-7 w-full" variant="legacy" />
       </div>
     );
   }
@@ -255,7 +277,7 @@ export default function LabelCard({ template, product: productProp, label, busin
 
       <div className="mt-auto flex items-end gap-4 pt-2">
         <div className="min-w-0 flex-1">
-          <BarcodeSvg value={barcode} className="h-10 w-full" />
+          <BarcodeSvg value={barcode} className="mx-auto block h-10" />
           <p className="text-center font-mono text-[7pt]">{barcode}</p>
         </div>
         <QrSvg value={qr} className="h-[22mm] w-[22mm] shrink-0" />
