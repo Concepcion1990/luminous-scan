@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Search } from 'lucide-react';
-import { loadInventory, productTruncationNotice } from '@/lib/inventory';
+import { loadInventory, productMatchesSearch, productTruncationNotice, searchWords } from '@/lib/inventory';
+import { countDistinctProducts, isDuplicateProduct } from '@/lib/productDuplicates';
 import { useBusiness } from '@/hooks/useBusiness';
+import useDataFresh from '@/hooks/useDataFresh';
 import { useOfflineSync } from '@/hooks/useOfflineSync';
 import SyncIndicator from '@/components/sync/SyncIndicator';
-import PullToRefresh from '@/components/mobile/PullToRefresh';
 import StatCard from '@/components/StatCard';
 import InventoryRow from '@/components/inventory/InventoryRow';
 import AdjustStockDialog from '@/components/inventory/AdjustStockDialog';
@@ -34,6 +35,11 @@ export default function Inventory() {
     return loadInventory(activeId).then(setInventory);
   }, [activeId]);
 
+  // This route remounts on navigation, but while it sits open an
+  // inventory change elsewhere (a scan, an adjustment) refreshes it
+  // live through the same freshness bus.
+  useDataFresh('inventory', '/inventory', load);
+
   useEffect(() => {
     setInventory(null);
     setLocationId('');
@@ -53,29 +59,33 @@ export default function Inventory() {
   );
 
   const rows = useMemo(() => {
-    const term = search.trim().toLowerCase();
+    const words = searchWords(search);
     return products
       .map((product) => ({
         product,
         own: scopedLevels.filter((level) => level.product_id === product.id),
       }))
-      .filter(({ product }) => {
-        if (!term) return true;
-        return [product.name, product.sku, product.category]
-          .filter(Boolean)
-          .some((value) => String(value).toLowerCase().includes(term));
-      });
+      .filter(({ product }) => productMatchesSearch(product, words));
   }, [products, scopedLevels, search]);
 
   const units = scopedLevels.reduce((sum, level) => sum + (level.quantity || 0), 0);
-  const stocked = rows.filter((row) => row.own.some((level) => (level.quantity || 0) > 0)).length;
+  // The card numbers follow the one counting rule (owner ruling,
+  // Nov 14, 2026): a copy is not a product, so it belongs in NEITHER
+  // number — not in "products stocked", not in the "of N" total, and
+  // never in the low-stock count (a copy inherits its original's
+  // reorder point through Duplicate and sits at 0 units, so without
+  // the exclusion it cries low-stock forever).
+  const stocked = rows.filter(
+    (row) => !isDuplicateProduct(row.product) && row.own.some((level) => (level.quantity || 0) > 0)
+  ).length;
   const low = rows.filter(({ product, own }) => {
+    if (isDuplicateProduct(product)) return false;
     if (!product.reorder_point) return false;
     return own.reduce((sum, level) => sum + (level.quantity || 0), 0) <= product.reorder_point;
   }).length;
 
   return (
-    <PullToRefresh className="space-y-5" onRefresh={load}>
+    <div className="space-y-5">
       <div>
         <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
           {record?.name || t('inventory.thisBusiness')}
@@ -96,7 +106,7 @@ export default function Inventory() {
         <>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <StatCard label={t('inventory.statUnits')} value={units} unit={t('inventory.unitUnits')} />
-            <StatCard label={t('inventory.statStocked')} value={stocked} unit={t('inventory.ofProducts', { count: products.length })} />
+            <StatCard label={t('inventory.statStocked')} value={stocked} unit={t('inventory.ofProducts', { count: countDistinctProducts(products) })} />
             <StatCard label={t('inventory.statLow')} value={low} tone={low ? 'warn' : 'default'} hint={t('inventory.lowHint')} />
             <StatCard label={t('inventory.statLocations')} value={locations.length} unit={t('inventory.unitPlaces')} />
           </div>
@@ -184,6 +194,6 @@ export default function Inventory() {
         defaultLocationId={locationId}
         onDone={load}
       />
-    </PullToRefresh>
+    </div>
   );
 }

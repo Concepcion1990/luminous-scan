@@ -12,7 +12,7 @@
     --card-foreground: 195 24% 11%;
     --popover: 0 0% 100%;
     --popover-foreground: 195 24% 11%;
-    --primary: 165 62% 15%;
+    --primary: 32 48% 29%;
     --primary-foreground: 40 24% 97%;
     --secondary: 40 16% 93%;
     --secondary-foreground: 195 24% 15%;
@@ -24,26 +24,26 @@
     --destructive-foreground: 0 0% 100%;
     --border: 40 14% 88%;
     --input: 40 14% 86%;
-    --ring: 165 62% 15%;
-    --ok: 160 55% 28%;
+    --ring: 32 48% 29%;
+    --ok: 145 45% 30%;
     --warn: 32 94% 44%;
-    --chart-1: 165 62% 27%;
+    --chart-1: 32 48% 35%;
     --chart-2: 38 92% 51%;
-    --chart-3: 195 40% 30%;
-    --chart-4: 160 40% 55%;
+    --chart-3: 33 12% 42%;
+    --chart-4: 41 45% 52%;
     --chart-5: 12 70% 55%;
     --radius: 0.75rem;
     --font-heading: 'Sora', ui-sans-serif, system-ui, sans-serif;
     --font-body: 'Inter', ui-sans-serif, system-ui, sans-serif;
     --font-display: 'Sora', ui-sans-serif, system-ui, sans-serif;
     --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
-    --sidebar-background: 165 62% 15%;
+    --sidebar-background: 32 48% 25%;
     --sidebar-foreground: 40 24% 97%;
     --sidebar-primary: 38 92% 51%;
     --sidebar-primary-foreground: 195 40% 10%;
-    --sidebar-accent: 165 50% 22%;
+    --sidebar-accent: 32 48% 40%;
     --sidebar-accent-foreground: 40 24% 97%;
-    --sidebar-border: 165 40% 26%;
+    --sidebar-border: 32 45% 43%;
     --sidebar-ring: 38 92% 51%;
   }
 
@@ -54,7 +54,7 @@
     --card-foreground: 40 20% 96%;
     --popover: 195 26% 10%;
     --popover-foreground: 40 20% 96%;
-    --primary: 160 45% 60%;
+    --primary: 32 48% 54%;
     --primary-foreground: 195 30% 8%;
     --secondary: 195 20% 16%;
     --secondary-foreground: 40 20% 96%;
@@ -66,22 +66,22 @@
     --destructive-foreground: 0 0% 100%;
     --border: 195 18% 20%;
     --input: 195 18% 20%;
-    --ring: 160 45% 60%;
-    --ok: 160 50% 55%;
+    --ring: 32 48% 54%;
+    --ok: 145 40% 52%;
     --warn: 32 90% 58%;
-    --chart-1: 160 50% 55%;
+    --chart-1: 38 55% 55%;
     --chart-2: 38 90% 58%;
-    --chart-3: 195 30% 70%;
-    --chart-4: 160 35% 40%;
+    --chart-3: 35 14% 62%;
+    --chart-4: 32 40% 45%;
     --chart-5: 12 65% 60%;
-    --sidebar-background: 195 32% 9%;
+    --sidebar-background: 32 48% 9%;
     --sidebar-foreground: 40 20% 96%;
-    --sidebar-primary: 160 45% 60%;
+    --sidebar-primary: 38 85% 55%;
     --sidebar-primary-foreground: 195 30% 8%;
-    --sidebar-accent: 195 22% 16%;
+    --sidebar-accent: 32 48% 35%;
     --sidebar-accent-foreground: 40 20% 96%;
-    --sidebar-border: 195 18% 18%;
-    --sidebar-ring: 160 45% 60%;
+    --sidebar-border: 32 40% 22%;
+    --sidebar-ring: 38 85% 55%;
   }
 }
 
@@ -117,6 +117,23 @@
     background: #fff;
   }
 
+  /* Labels flow on one sheet (owner ruling, Nov 14, 2026): the
+     app shell is built exactly one viewport tall (min-h-screen),
+     and in print that fixed height presses against the paper —
+     on device print pipelines it spilled a near-empty second
+     page after a 3-label run. In print the shell takes only the
+     height its content needs, so a sheet ends when the labels do:
+     no trailing blank page, and a label never splits. */
+  html,
+  body {
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  .min-h-screen {
+    min-height: 0 !important;
+  }
+
   main {
     padding: 0 !important;
   }
@@ -129,6 +146,21 @@
   .print-label {
     break-inside: avoid;
     page-break-inside: avoid;
+  }
+
+  /* Flex containers fragment badly in print — a label at a page
+     break was seen repeated on the next page. On paper the label
+     flow becomes plain inline flow, which paginates honestly:
+     labels fill the sheet, spill only when it is full, and never
+     repeat or split. */
+  .print-label-flow {
+    display: block !important;
+  }
+
+  .print-label-flow > .print-label {
+    display: inline-block;
+    vertical-align: top;
+    margin: 0 12px 12px 0;
   }
 
   .print-page-break {
@@ -149,14 +181,21 @@
 /* Luminous StockHaven — Mobile WebView compatibility */
 /* Part 12 · Step 3 */
 
-/* Prevent unwanted browser overscroll. */
+/* Prevent unwanted browser overscroll at the page level. */
 html,
 body {
   overscroll-behavior-y: none;
 }
 
-[class~="overflow-y-auto"],
-[class~="overflow-auto"],
+/* Scrollable sub-regions keep the platform default (chain to the
+   page when they cannot scroll themselves). A blanket
+   overscroll-behavior-y: none on every overflow-y-auto element
+   trapped vertical drags inside regions whose content did not fill
+   them — the drag could neither scroll the region nor chain to the
+   page, so the page read as FROZEN (owner's isolation test on the
+   Stock counts sheet, Nov 14, 2026: drags starting on the count
+   lines did nothing; drags starting anywhere else scrolled). Only
+   the opt-in list class keeps containment styling. */
 .stockhaven-scroll-list {
   overscroll-behavior-y: none;
   -webkit-overflow-scrolling: touch;
@@ -236,6 +275,11 @@ select,
     --border: 37 25% 79%;
     --input: 37 25% 79%;
     --ring: 37.22 36.07% 57.06%;
+    /* Plain text links only (auth pages, inline policy links): --primary
+       is the pale cream-tan #E3D5BF, which is unreadable as text on
+       white, so links use this deeper bronze of the same warm family.
+       Buttons keep bg-primary exactly as before. */
+    --link: 32 48% 29%;
     --sidebar-background: 36.67 39.13% 81.96%;
     --sidebar-foreground: 30 20% 15.69%;
     --sidebar-primary: 37.22 36.07% 57.06%;
@@ -264,6 +308,9 @@ select,
     --border: 30 13% 32%;
     --input: 30 13% 32%;
     --ring: 37.22 36.07% 57.06%;
+    /* Dark-mode pair of the light theme's --link: a light warm tan that
+       stays readable on the near-black background. */
+    --link: 37 45% 70%;
     --sidebar-background: 30 20% 15.69%;
     --sidebar-foreground: 38.57 46.67% 94.12%;
     --sidebar-primary: 36.67 39.13% 81.96%;

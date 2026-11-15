@@ -15,6 +15,7 @@ import {
   resetRateLimits,
   ownerWithBusiness,
   createLocation,
+  seededLocation,
   createProducts,
   receive,
   setPlan,
@@ -27,7 +28,7 @@ beforeEach(() => resetRateLimits());
 async function setup(email, plan = null) {
   const owner = await ownerWithBusiness(email);
   if (plan) await setPlan(owner.business.id, plan, owner.user.id);
-  const location = await createLocation(owner.cookie, owner.business.id, { name: 'Main store' });
+  const location = await seededLocation(owner.cookie, owner.business.id);
   return { ...owner, location };
 }
 
@@ -115,7 +116,7 @@ test('import enforces the Essentials product cap', async () => {
   });
   assert.equal(res.json.created, 1);
   assert.equal(res.json.skipped, 1);
-  assert.match(res.json.problems[0].problem, /50 active products/);
+  assert.match(res.json.problems[0].problem, /includes 50 products/);
 });
 
 test('export is refused on Essentials (403) and works on Business', async () => {

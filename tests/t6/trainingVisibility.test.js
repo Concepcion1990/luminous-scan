@@ -1,0 +1,102 @@
+/**
+ * T6 — Training obeys the invisibility doctrine (owner ruling,
+ * Nov 14, 2026, from her Essentials Training screenshots).
+ *
+ * A lesson whose subject is a Business-only feature does not
+ * appear on Essentials at all — no card, no teaser, in every
+ * track — and the counters count only the lessons the plan has.
+ * On Business every lesson shows and the counts are whole. The
+ * mixed 'Import, export and stock value' lesson is Business-only
+ * (feature 'exports'); in its place Essentials gets 'owner-import'
+ * (essentialsOnly), which teaches importing alone.
+ */
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+
+const src = (rel) => readFileSync(new URL(`../../${rel}`, import.meta.url), 'utf8');
+
+const BUSINESS_ONLY = {
+  'owner-pricing': 'pricing', 'mgr-pricing': 'pricing',
+  'owner-builds': 'builds',
+  'owner-cross-store': 'crossStore', 'owner-move-stock': 'crossStore', 'mgr-cross-store': 'crossStore',
+  'owner-give-rewards': 'rewards', 'owner-rewards-oversight': 'rewards',
+  'mgr-give-rewards': 'rewards', 'staff-your-rewards': 'rewards',
+  'owner-send-supplier-order': 'purchasing', 'mgr-send-supplier-order': 'purchasing',
+  'mgr-suppliers-orders': 'suppliers',
+  'mgr-reports-alerts': 'reports',
+  'owner-pos-connect-square': 'pos', 'owner-pos-connect-shopify': 'pos',
+  'owner-pos-connect-clover': 'pos', 'owner-pos-connect-toast': 'pos',
+  'owner-pos-connect-lightspeed': 'pos', 'owner-pos-connect-zettle': 'pos',
+  'owner-pos-connect-stripe-terminal': 'pos', 'owner-pos-connect-wix': 'pos',
+  'owner-pos-mapping': 'pos', 'owner-pos-csv': 'pos', 'owner-pos-sales-list': 'pos',
+  'staff-pos-till-sales': 'pos',
+  'owner-import-export': 'exports',
+};
+
+async function catalogs() {
+  const client = await import('../../src/lib/trainingCatalog.js');
+  const server = await import('../../server/trainingCatalog.js');
+  return { client, server };
+}
+
+test('both catalogs tag exactly the Business-only lessons, identically', async () => {
+  const { client, server } = await catalogs();
+  for (const catalog of [client.TRAINING_LESSONS, server.TRAINING_LESSONS]) {
+    const tagged = Object.fromEntries(
+      catalog.filter((l) => l.feature).map((l) => [l.id, l.feature]),
+    );
+    assert.deepEqual(tagged, BUSINESS_ONLY);
+    const essentialsOnly = catalog.filter((l) => l.essentialsOnly).map((l) => l.id);
+    assert.deepEqual(essentialsOnly, ['owner-import']);
+  }
+});
+
+test('plan-visible counts: Business whole, Essentials without the Business subjects', async () => {
+  const { client } = await catalogs();
+  const count = (track, isBusiness) => client.visibleLessonsForTrack(track, isBusiness).length;
+  // Business: every lesson shows (owner-import is Essentials-only).
+  assert.equal(count('owner', true), 36);
+  assert.equal(count('manager', true), 16);
+  assert.equal(count('staff', true), 33);
+  // Essentials: 19 owner subjects hidden, owner-import in their place.
+  assert.equal(count('owner', false), 18);
+  assert.equal(count('manager', false), 10);
+  assert.equal(count('staff', false), 31);
+  // Payroll / workforce / direct-deposit lessons stay on Essentials.
+  const essentialsStaff = client.visibleLessonsForTrack('staff', false).map((l) => l.id);
+  for (const id of ['stub-yours', 'dd-submit', 'clock-basics']) {
+    assert.ok(essentialsStaff.includes(id), `${id} stays on Essentials`);
+  }
+  const essentialsOwner = client.visibleLessonsForTrack('owner', false).map((l) => l.id);
+  assert.ok(essentialsOwner.includes('owner-import'), 'Essentials teaches importing');
+  assert.ok(!essentialsOwner.includes('owner-import-export'), 'the mixed lesson is hidden');
+});
+
+test('the server catalog carries the same visibility helper', async () => {
+  const { server } = await catalogs();
+  const pos = server.TRAINING_LESSONS.find((l) => l.id === 'owner-pos-connect-square');
+  assert.equal(server.lessonVisibleOnPlan(pos, false), false);
+  assert.equal(server.lessonVisibleOnPlan(pos, true), true);
+  const imp = server.TRAINING_LESSONS.find((l) => l.id === 'owner-import');
+  assert.equal(server.lessonVisibleOnPlan(imp, false), true);
+  assert.equal(server.lessonVisibleOnPlan(imp, true), false);
+});
+
+test('the Training page renders tracks, counters and assignments from the visible set', () => {
+  const page = src('src/pages/Training.jsx');
+  assert.match(page, /visibleLessonsForTrack\(track, isBusiness\)/);
+  assert.match(page, /const isBusiness = state\.plan === 'business';/);
+  assert.match(page, /assignments=\{state\.assignments\.map\(visibleAssignment\)\.filter\(Boolean\)\}/);
+  assert.match(page, /lessonVisibleOnPlan\(l, isBusiness\)/);
+});
+
+test('server team counts and assignment doors use the visible set', () => {
+  const routes = src('server/trainingRoutes.js');
+  // Team total and team done both count plan-visible lessons only.
+  const teamUses = routes.match(/tracks\.includes\(l\.track\) && lessonVisibleOnPlan\(l, isBusiness\)/g) || [];
+  assert.equal(teamUses.length, 2, 'team total + team done are both plan-scoped');
+  assert.match(routes, /\.filter\(\(lesson\) => lessonVisibleOnPlan\(lesson, access\.planKey === 'business'\)\)/);
+  const core = src('server/trainingCore.js');
+  assert.match(core, /\.filter\(\(lesson\) => lessonVisibleOnPlan\(lesson, isBusiness\)\)/);
+});

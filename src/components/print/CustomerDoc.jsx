@@ -1,5 +1,5 @@
 import DocHeader from './DocHeader';
-import { channelLabel } from '@/lib/orders';
+import { channelLabel, orderShipAddressLines } from '@/lib/orders';
 import { formatMoney } from '@/lib/inventory';
 import { t } from '@/lib/i18n';
 
@@ -25,7 +25,8 @@ export default function CustomerDoc({ order, business, mode = 'invoice' }) {
   const packing = mode === 'packing';
   const receipt = mode === 'receipt';
   const lines = order.lines || [];
-  const money = (value) => formatMoney(value || 0, business?.currency);
+  // Exact prices on paper (Nov 14, 2026): cents always, never rounded.
+  const money = (value) => formatMoney(value || 0, business?.currency, 2);
   const units = lines.reduce((sum, line) => sum + (Number(line.quantity) || 0), 0);
 
   const fields = packing
@@ -54,6 +55,69 @@ export default function CustomerDoc({ order, business, mode = 'invoice' }) {
     [t('print.tax'), order.tax],
   ].filter(([label, value]) => label !== discountLabel || Number(value) > 0);
 
+  // The sales receipt is a real till receipt (owner ruling,
+  // Nov 14, 2026): a compact 80mm slip — the standard thermal
+  // roll width — that prints at that same narrow width centered
+  // on Letter/A4, never stretched full-width. The invoice keeps
+  // the full-page document look below; only the receipt is a slip.
+  if (receipt) {
+    return (
+      <div className="print-label print-page-break mx-auto w-[80mm] bg-white p-3 text-black">
+        <p className="text-center text-[13pt] font-bold leading-tight">{business?.name || ''}</p>
+        <p className="mt-0.5 text-center font-mono text-[7.5pt] uppercase tracking-[0.18em] text-black/60">
+          {t('print.salesReceiptTitle')}
+        </p>
+        <p className="mt-1 text-center text-[8.5pt]">
+          {[order.number, shortDate(order.order_date)].filter(Boolean).join(' · ')}
+        </p>
+        <p className="mt-1 text-center text-[8.5pt]">
+          <span className="font-mono text-[6.5pt] uppercase tracking-wide text-black/60">
+            {t('print.customer')}{' '}
+          </span>
+          {order.customer_name || '—'}
+        </p>
+
+        <div className="mt-2 border-t border-dashed border-black/50" />
+        <div>
+          {lines.map((line, index) => (
+            <div key={`${line.product_id || line.sku}-${index}`} className="break-inside-avoid py-1.5">
+              <p className="text-[9pt] leading-tight">{line.product_name}</p>
+              <div className="mt-0.5 flex justify-between text-[8.5pt]">
+                <span className="numeric">
+                  {line.quantity ?? 0} × {money(line.unit_price)}
+                </span>
+                <span className="numeric">
+                  {money((Number(line.unit_price) || 0) * (Number(line.quantity) || 0))}
+                </span>
+              </div>
+            </div>
+          ))}
+          {lines.length === 0 && (
+            <p className="py-3 text-center text-[8pt] text-black/60">{t('print.noLines')}</p>
+          )}
+        </div>
+        <div className="border-t border-dashed border-black/50" />
+
+        <div className="mt-1.5 text-[8.5pt]">
+          {totals.map(([label, value]) => (
+            <div key={label} className="flex justify-between py-0.5">
+              <span>{label}</span>
+              <span className="numeric">{money(value)}</span>
+            </div>
+          ))}
+          <div className="mt-1 flex justify-between border-t border-black py-1 text-[11pt] font-bold">
+            <span>{t('print.totalPaid')}</span>
+            <span className="numeric">{money(order.total)}</span>
+          </div>
+        </div>
+
+        <p className="mt-2 border-t border-dashed border-black/50 pt-2 text-center font-mono text-[6.5pt] uppercase tracking-wide text-black/60">
+          {t('print.footerReceipt')}
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="print-label print-page-break w-[180mm] bg-white p-2 text-black">
       <DocHeader
@@ -74,6 +138,8 @@ export default function CustomerDoc({ order, business, mode = 'invoice' }) {
           {order.customer_email ? ` · ${order.customer_email}` : ''}
           {order.customer_phone ? ` · ${order.customer_phone}` : ''}
         </p>
+        {packing &&
+          orderShipAddressLines(order).map((line, index) => <p key={index}>{line}</p>)}
         <p>
           <span className="font-mono text-[6.5pt] uppercase tracking-wide text-black/60">
             {packing ? t('print.shipsFrom') : t('print.fulfilledFrom')}{' '}

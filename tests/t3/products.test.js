@@ -88,7 +88,12 @@ test('Essentials cap: the 51st active product is refused server-side (403 produc
   assert.equal(direct.json.error, 'product_limit');
 });
 
-test('archiving frees a slot: 50 active + 1 archived, then a new product fits', async () => {
+test('archiving never frees a slot; only a true delete does (owner ruling, Nov 14, 2026)', async () => {
+  // This test used to pin the opposite — archiving freed a slot.
+  // The owner archived a product live, watched her count drop, and
+  // ruled it a sieve: "that should have stayed at three out of 50,
+  // because then they could add as many products as they can as
+  // long as they're archived." Archive is a shelf, not a shredder.
   const { cookie, business } = await ownerWithBusiness('cap-free@example.com');
   const created = await createProducts(cookie, business.id, Array.from({ length: 50 }, (_, i) => product(i + 1)));
   await req(`/api/entities/Product/${created[0].id}`, {
@@ -96,14 +101,19 @@ test('archiving frees a slot: 50 active + 1 archived, then a new product fits', 
     body: { status: 'archived' },
     cookie,
   });
-  const oneMore = await createProducts(cookie, business.id, [product(51)]);
-  assert.equal(oneMore.length, 1);
-  const count = await req('/api/entities/Product/count', {
+  const refused = await req(`/api/businesses/${business.id}/products`, {
     method: 'POST',
-    body: { filter: { business_id: business.id, status: { $ne: 'archived' } } },
+    body: { business_id: business.id, products: [product(51)] },
     cookie,
   });
-  assert.equal(count.json.count, 50);
+  assert.equal(refused.status, 403, 'the 51st distinct product is refused with one archived');
+  assert.equal(refused.json.error, 'product_limit');
+  assert.equal(refused.json.used, 50, 'the archived original still counts');
+  // Delete the archived original and exactly one slot opens.
+  const del = await req(`/api/entities/Product/${created[0].id}`, { method: 'DELETE', cookie });
+  assert.equal(del.status, 200);
+  const oneMore = await createProducts(cookie, business.id, [product(51)]);
+  assert.equal(oneMore.length, 1);
 });
 
 test('Business plan has no product cap', async () => {
@@ -159,7 +169,7 @@ test('product create requires a name and a business', async () => {
 });
 
 test('entitlement read: missing row resolves to Essentials, Business row reads back', async () => {
-  const { cookie, business, user } = await ownerWithBusiness('ent-read@example.com');
+  const { cookie, business, user } = await ownerWithBusiness('ent-read@example.com', 'Test Shop', { grant: false });
   const before = await req(`/api/businesses/${business.id}/entitlement`, { method: 'GET', cookie });
   assert.equal(before.json.plan, 'essentials');
   assert.equal(before.json.entitlement, null);

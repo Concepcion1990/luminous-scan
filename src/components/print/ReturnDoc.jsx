@@ -19,7 +19,8 @@ export default function ReturnDoc({ ret, business }) {
   const exchange = ret.kind === 'exchange';
   const lines = ret.lines || [];
   const exchangeLines = ret.exchange_lines || [];
-  const money = (value) => formatMoney(value || 0, business?.currency);
+  // Exact prices on paper (Nov 14, 2026): cents always, never rounded.
+  const money = (value) => formatMoney(value || 0, business?.currency, 2);
 
   return (
     <div className="print-label print-page-break w-[180mm] bg-white p-2 text-black">

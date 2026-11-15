@@ -5,8 +5,10 @@
  * `auth.sameEmailNotice` (shared SameEmailNotice component) so a
  * visitor who already has the phone app subscribes with the SAME
  * email — a different email starts a totally new, empty storefront.
- * The text ships in English in every locale for now (translation
- * debt convention), which these tests pin down.
+ * The text shipped in English in every locale (translation-debt
+ * convention); translation tranches retire the debt locale by
+ * locale — TRANCHE_1_LOCALES below tracks the locales whose pass
+ * has landed, and these tests pin both states.
  *
  * Part 2: the translated Delete Account confirmation word. The
  * confirmation is per-locale via `settings.deleteConfirmWord`:
@@ -36,12 +38,33 @@ const readSrc = (rel) => fs.readFileSync(path.join(here, '..', '..', rel), 'utf8
 
 const NOTICE_TEXT = 'Already have our app from Google Play or the App Store? Use the same email here — the one you sign into the app with — so your shop and your inventory come with you. A different email starts a totally new, empty storefront.';
 
+// Locales whose translation pass has landed (tranche 1, Nov 13,
+// 2026; tranche 2 added the six Spanish variants the same day).
+const TRANCHE_1_LOCALES = [
+  'am', 'ar', 'bn', 'bho',
+  'es-MX', 'es-ES', 'es-US', 'es-CU', 'es-PR', 'es-VE',
+  'fr-FR', 'fr-CA', 'pt-BR', 'pt-PT', 'zh-Hans', 'zh-Hant', 'yue', 'wuu',
+  'de', 'it', 'ja',
+  'ko', 'ru', 'uk',
+  'fa', 'prs', 'ur',
+  'hi', 'tg', 'tr',
+  'gu', 'kn', 'mr',
+  'ta', 'te', 'pa-Guru',
+  'pa-Arab', 'id', 'ms',
+  'th', 'vi', 'tl',
+  'ha', 'sw', 'yo',
+  'jv',
+  'pcm',
+];
+
 test('keyset parity holds across all 52 locale files with the two new keys counted', () => {
   const enKeys = Object.keys(en).sort();
   // 3510 at the small-fixes batch; the recovery kit added 65 keys
   // (50 UI + 15 training) for 3575; send-PO added 15 more (5 UI +
-  // 10 training) — its t14 segment asserts the same total.
-  assert.equal(enKeys.length, 3595);
+  // 10 training) for 3595; the delete warning added 2 more for 3597;
+  // rewards added 67 more (46 UI + 21 training) for 3664;
+  // POS added 85 more (54 UI + 31 training) for 3749; the POS gate added 5 more, for 3754; plans parity added 14 more, for 3768; in-app problem reporting added 36 more (21 UI + 15 training), for 3804; the front-door fixes added 7 more (2 subscribe chooser + 5 reset code entry), for 3811; the cross-store transfer door added 19 more (14 UI + 5 training), for 3830; clearance + rollback pricing added 27 more (17 UI/plans + 10 training), for 3857; shipping labels added 18 more (8 UI/plans + 10 training), for 3875; the POS provider expansion + deletion-request batch added 79 more (44 UI + 35 training), for 3954; the account-security batch (change password + owner-sent staff reset) added 14 more, for 3968; the white-label reset-clarification step added 1 more, for 3981; the locations/orders train added 13 more (2 location keys, 7 ship-to keys, 4 lifecycle/address-book keys), for 3994. The edit-quantity batch (Nov 14, 2026) added 2 more (the Edit form's quantity hint + the products-find-edit step 7 it teaches), for 3996. The photo-chooser batch (Nov 14, 2026) added 2 more (Take a photo / Choose from gallery), for 3998. The in-form scan batch (Nov 14, 2026) added 2 more (Scan code + the code-belongs-to-another-product notice), for 4000. The category-combobox batch (Nov 14, 2026) added 4 more (Add new category/subcategory + the typed-but-unmatched validation messages), for 4004. The product-delete batch (Nov 14, 2026) added 3 more (the menu's Delete label + the two plain-words confirmations), for 4007. The category-edit-door batch (Nov 14, 2026) added 2 more (Set category / Change category for the Inventory-by-category edit door), for 4009. The count-sheet scanner batch (Nov 14, 2026) added 1 more (the scanned product is not on this sheet notice), for 4010. The archived-freeze batch (Nov 14, 2026) added 2 more (the frozen-stock message + the products-find-edit step 8 it teaches), for 4012. The import cap-awareness batch (Nov 14, 2026) added 3 more (dry-run room line, would-not-fit count, not-imported note), for 4015. The receive-step batch (Nov 14, 2026) added 1 more (import-basics step 2, the Stock arrives at step), for 4016. The staged-import draft batch (Nov 14, 2026) added 1 more (the too-large-to-keep notice), for 4017. The training-invisibility batch (Nov 14, 2026) added 3 more (the owner-import lesson: title + 2 steps, its steps reusing the locale's own translated import text), for 4020.
+  assert.equal(enKeys.length, 4020);
   assert.equal(SUPPORTED_LOCALES.length, 52);
   for (const code of SUPPORTED_LOCALES) {
     const keys = Object.keys(LOCALES[code]).sort();
@@ -51,10 +74,19 @@ test('keyset parity holds across all 52 locale files with the two new keys count
   }
 });
 
-test('the same-email notice is the owner\u2019s exact text in English, interim English everywhere', () => {
+test('the same-email notice is the owner\u2019s exact text in English, interim English where no translation pass has landed', () => {
   assert.equal(en['auth.sameEmailNotice'], NOTICE_TEXT);
   for (const code of SUPPORTED_LOCALES) {
+    if (TRANCHE_1_LOCALES.includes(code)) continue;
     assert.equal(LOCALES[code]['auth.sameEmailNotice'], NOTICE_TEXT, `${code} notice differs (English interim until its translation pass)`);
+  }
+  // Tranche 1 locales carry a real translation of the notice — a
+  // non-empty string that is not the English text.
+  for (const code of TRANCHE_1_LOCALES) {
+    const value = LOCALES[code]['auth.sameEmailNotice'];
+    assert.equal(typeof value, 'string', `${code} notice missing`);
+    assert.ok(value.length > 0, `${code} notice empty`);
+    assert.notEqual(value, NOTICE_TEXT, `${code} notice is still English after its translation pass`);
   }
 });
 

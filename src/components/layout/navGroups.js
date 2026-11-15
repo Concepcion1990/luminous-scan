@@ -27,6 +27,7 @@ import {
   Wallet,
   CreditCard,
   Inbox,
+  Receipt,
 } from 'lucide-react';
 
 /**
@@ -65,6 +66,15 @@ export const NAV_GROUPS = [
     label: 'Sales', labelKey: 'nav.group.sales',
     items: [
       { to: '/orders', label: 'Orders', labelKey: 'nav.orders', icon: ShoppingBag, perm: 'orders.manage' },
+      // Till connections are Business only, and INVISIBLE off
+      // Business (the owner's ruling, Nov 14, 2026, superseding
+      // the Nov 13 locked-door treatment): the `feature` tag makes
+      // Layout hide this entry on Essentials everywhere, and the
+      // /pos route itself bounces to the Overview via
+      // PlanRedirect — no gate page. The server still refuses
+      // Essentials on every POS route, and off-Business webhook
+      // sales are still held, never lost.
+      { to: '/pos', label: 'Till connections', labelKey: 'nav.pos', icon: Receipt, feature: 'pos' },
       { to: '/returns', label: 'Returns', labelKey: 'nav.returns', icon: Undo2, perm: 'returns.manage' },
       { to: '/listings', label: 'Listings', labelKey: 'nav.listings', icon: Store, perm: 'listings.manage' },
     ],
@@ -106,8 +116,13 @@ export const NAV_GROUPS = [
       // their role, and role grants assign more. No perm, both plans.
       { to: '/training', label: 'Training', labelKey: 'nav.training', icon: GraduationCap },
       { to: '/payroll', label: 'Payroll', labelKey: 'nav.payroll', icon: Wallet },
-      { to: '/upgrade', label: 'Plan & limits', labelKey: 'nav.upgrade', icon: CreditCard },
+      // Settings sits directly after Payroll (owner ruling,
+      // Nov 14, 2026): it used to be the menu's very last item,
+      // rendered below the All screens menu's scroll fold next to
+      // Plan & limits, so owners could not see it and reported it
+      // missing. Same route as the bottom tab bar's Settings tab.
       { to: '/settings', label: 'Settings', labelKey: 'nav.settings', icon: Settings2, perm: 'settings.manage' },
+      { to: '/upgrade', label: 'Plan & limits', labelKey: 'nav.upgrade', icon: CreditCard },
     ],
   },
 ];

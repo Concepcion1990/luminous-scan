@@ -93,9 +93,20 @@ export default function Locations() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <LimitBadge label={t('locations.limitLabel')} used={siteCount} limit={siteLimit} />
-          <Button onClick={() => openNew()}>
-            <Plus className="mr-1.5 h-4 w-4" /> {t('locations.newLocation')}
-          </Button>
+          {/* At the site cap the New location button goes away
+              entirely (owner ruling, Nov 14, 2026): on Essentials it
+              could only ever produce the plan-limit refusal, since
+              the plan's one site is the auto-seeded store. The pill
+              above stays exactly as-is, Upgrade wording included.
+              The refusal itself still stands in openNew for any
+              other route that reaches the create door at cap, and
+              the nested add-inside door on each location card is
+              untouched — shelves and bins are not sites. */}
+          {!atSiteLimit && (
+            <Button onClick={() => openNew()}>
+              <Plus className="mr-1.5 h-4 w-4" /> {t('locations.newLocation')}
+            </Button>
+          )}
         </div>
       </div>
 
