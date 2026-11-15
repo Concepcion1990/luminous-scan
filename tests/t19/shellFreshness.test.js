@@ -67,8 +67,8 @@ test('sw: navigations are network-first, the cached shell only the offline fallb
   // Inside the navigation handler the network is tried BEFORE any
   // cache read — a cache-first handler would match the cache first.
   const handler = sw.slice(sw.indexOf('async function networkFirstNavigation'), sw.indexOf('self.addEventListener(\'fetch\''));
-  assert.ok(handler.indexOf('await fetch(request)') > -1, 'navigation handler must fetch');
-  assert.ok(handler.indexOf('await fetch(request)') < handler.indexOf("cache.match('/index.html')"), 'fetch must come before the cache fallback');
+  assert.ok(handler.indexOf('await fetch(request') > -1, 'navigation handler must fetch');
+  assert.ok(handler.indexOf('await fetch(request') < handler.indexOf("cache.match('/index.html')"), 'fetch must come before the cache fallback');
 });
 
 test('sw: fingerprinted assets stay cache-first, and activation purges old caches', () => {

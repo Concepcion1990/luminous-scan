@@ -9,8 +9,13 @@ import { buildLocationTree, descendantIds, locationPath } from '@/lib/locations'
 import { scoped } from '@/lib/scoped';
 
 /**
- * What is stored at the place chosen in the scan station: name, price and the
- * exact shelf or bin each unit sits on. A store shows everything inside it.
+ * The whole catalog, seen from the place chosen in the scan station:
+ * name, price and the exact shelf or bin each unit sits on. Products
+ * with no stock at this place still appear — placed elsewhere they
+ * read 'Not counted here'; never placed anywhere they wear the same
+ * 'No stock placed' truth My inventory tells — so the scanner page
+ * recognizes every product as already in the store (owner ruling,
+ * Nov 15, 2026). On-hand-at-location itself is unchanged.
  */
 const ScanProductList = forwardRef(function ScanProductList(
   { locations = [], locationId = '', businessId = '', currency = 'USD', onOpenProduct },
@@ -47,10 +52,9 @@ const ScanProductList = forwardRef(function ScanProductList(
     if (itemsRef.current.length === 0) setLoading(true);
     setLoadError('');
     try {
-      const query = ids.length ? { location_id: { $in: ids } } : {};
       const [products, levelPage] = await Promise.all([
-        listProducts({ search: debounced, locationIds: ids, limit: 100, businessId }),
-        base44.entities.StockLevel.filter(scoped(query, businessId), { limit: 2000 }),
+        listProducts({ search: debounced, limit: 100, businessId }),
+        base44.entities.StockLevel.filter(scoped({}, businessId), { limit: 2000 }),
       ]);
       if (latestRequest.current !== request) return;
       setItems(products);
@@ -77,15 +81,23 @@ const ScanProductList = forwardRef(function ScanProductList(
     const map = new Map();
     levels.forEach((level) => {
       if ((level.quantity || 0) <= 0) return;
+      if (ids.length && !ids.includes(level.location_id)) return;
       const path = locationPath(byId.get(level.location_id), byId);
       if (!path) return;
       map.set(level.product_id, [...(map.get(level.product_id) || []), { path, quantity: level.quantity }]);
     });
     return map;
-  }, [levels, byId]);
+  }, [levels, byId, ids]);
+
+  // Placed SOMEWHERE (any level row at all) vs never placed — the
+  // difference between 'Not counted here' and 'No stock placed'.
+  const placedAnywhere = useMemo(
+    () => new Set(levels.map((level) => level.product_id)),
+    [levels]
+  );
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-card">
+    <div className="overflow-hidden rounded-xl border border-border bg-card" data-tour="scan-shelf">
       <div className="flex flex-wrap items-end justify-between gap-3 border-b border-border px-4 py-3">
         <div>
           <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">{t('scan.onTheShelf')}</p>
@@ -94,6 +106,7 @@ const ScanProductList = forwardRef(function ScanProductList(
         <div className="relative w-full sm:w-64">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
           <Input
+            data-tour="scan-code"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={t('scan.searchProductsPlaceholder')}
@@ -126,7 +139,9 @@ const ScanProductList = forwardRef(function ScanProductList(
                 </button>
                 <p className="numeric text-[11px] text-muted-foreground">{product.sku}</p>
                 <p className="mt-1 flex flex-wrap gap-x-2 gap-y-0.5 text-[11px] text-muted-foreground">
-                  {stock.length === 0 && <span>{t('scan.notCountedHere')}</span>}
+                  {stock.length === 0 && (
+                    <span>{placedAnywhere.has(product.id) ? t('scan.notCountedHere') : t('inventory.noStockPlaced')}</span>
+                  )}
                   {stock.map((entry) => (
                     <span key={entry.path}>
                       {entry.path} · <span className="numeric font-semibold text-foreground">{entry.quantity}</span>
@@ -135,7 +150,7 @@ const ScanProductList = forwardRef(function ScanProductList(
                 </p>
               </div>
               <span className="numeric shrink-0 text-sm">
-                <ProductPrice product={product} currency={currency} digits={0} />
+                <ProductPrice product={product} currency={currency} digits={2} />
               </span>
             </div>
           );

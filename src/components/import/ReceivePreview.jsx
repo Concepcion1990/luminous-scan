@@ -1,11 +1,26 @@
+import { useEffect, useState } from 'react';
 import { t } from '@/lib/i18n';
+import ImportPager, { pageSlice } from '@/components/import/ImportPager';
 
-const PREVIEW_ROWS = 10;
+/**
+ * On hand before, what is arriving, and the quantity this receipt
+ * would leave — every row of the file across the pages, with a
+ * tick box on every row that can be received (owner rulings,
+ * Nov 15, 2026: rows start ALL TICKED, captions count exactly
+ * what is rendered, in pages).
+ */
+export default function ReceivePreview({ report, excluded, onToggleRow, resetKey }) {
+  const [page, setPage] = useState(0);
+  useEffect(() => {
+    setPage(0);
+  }, [resetKey]);
 
-/** On hand before, what is arriving, and the quantity this receipt would leave. */
-export default function ReceivePreview({ report }) {
   if (!report.rows.length) return null;
-  const rows = report.rows.slice(0, PREVIEW_ROWS);
+  const { pageItems, pages, page: safePage, start } = pageSlice(report.rows, page);
+  const readyTotal = report.rows.filter((row) => row.status === 'ready').length;
+  const selected = report.rows.filter(
+    (row) => row.status === 'ready' && !(excluded?.has(row.index))
+  ).length;
 
   return (
     <div className="space-y-1">
@@ -25,35 +40,58 @@ export default function ReceivePreview({ report }) {
             </tr>
           </thead>
           <tbody>
-            {rows.map((row) => (
-              <tr key={row.index} className="border-t border-border align-top">
-                <td className="numeric px-2 py-1.5 text-muted-foreground">{row.index + 2}</td>
-                <td className="max-w-[150px] truncate px-2 py-1.5">
-                  {row.name || '—'}
-                  {row.sku ? <span className="numeric ml-1 text-muted-foreground">{row.sku}</span> : null}
-                </td>
-                <td className="numeric px-2 py-1.5">{row.status === 'ready' ? row.previous : '—'}</td>
-                <td className="numeric px-2 py-1.5">{row.status === 'ready' ? `+${row.incoming}` : '—'}</td>
-                <td className="numeric px-2 py-1.5 font-medium">{row.status === 'ready' ? row.next : '—'}</td>
-                <td className="px-2 py-1.5">
-                  {row.status === 'ready' ? (
-                    <span className="text-ok">{t('import.ready')}</span>
-                  ) : (
-                    <span className="text-warn" title={row.problem}>
-                      {t('import.skip')}
+            {pageItems.map((row) => {
+              const ticked = row.status === 'ready' && !(excluded?.has(row.index));
+              return (
+                <tr
+                  key={row.index}
+                  className={`border-t border-border align-top ${row.status === 'ready' && !ticked ? 'opacity-50' : ''}`}
+                >
+                  <td className="numeric px-2 py-1.5 text-muted-foreground">{row.index + 2}</td>
+                  <td className="max-w-[150px] truncate px-2 py-1.5">
+                    {row.name || '—'}
+                    {row.sku ? <span className="numeric ml-1 text-muted-foreground">{row.sku}</span> : null}
+                  </td>
+                  <td className="numeric px-2 py-1.5">{row.status === 'ready' ? row.previous : '—'}</td>
+                  <td className="numeric px-2 py-1.5">{row.status === 'ready' ? `+${row.incoming}` : '—'}</td>
+                  <td className="numeric px-2 py-1.5 font-medium">{row.status === 'ready' ? row.next : '—'}</td>
+                  <td className="px-2 py-1.5">
+                    <span className="flex items-center gap-2">
+                      {row.status === 'ready' ? (
+                        <input
+                          type="checkbox"
+                          className="h-4 w-4 shrink-0 accent-primary"
+                          checked={ticked}
+                          onChange={(event) => onToggleRow?.(row.index, event.target.checked)}
+                          aria-label={t('import.selectRowAria', { row: row.index + 2 })}
+                        />
+                      ) : null}
+                      {row.status === 'ready' ? (
+                        <span className="text-ok">{t('import.ready')}</span>
+                      ) : (
+                        <span className="text-warn" title={row.problem}>
+                          {t('import.skip')}
+                        </span>
+                      )}
                     </span>
-                  )}
-                </td>
-              </tr>
-            ))}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
-      {report.rows.length > PREVIEW_ROWS && (
-        <p className="text-[11px] text-muted-foreground">
-          {t('import.showingFirst', { first: PREVIEW_ROWS, total: report.rows.length })}
-        </p>
-      )}
+      <p className="text-[11px] text-muted-foreground">
+        {t('import.rowsSelected', { selected, total: readyTotal })}
+      </p>
+      <ImportPager
+        page={safePage}
+        pages={pages}
+        from={start + 2}
+        to={start + pageItems.length + 1}
+        total={report.rows.length + 1}
+        onPage={setPage}
+      />
     </div>
   );
 }

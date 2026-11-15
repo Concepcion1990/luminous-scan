@@ -56,11 +56,13 @@ test('plan-visible counts: Business whole, Essentials without the Business subje
   const { client } = await catalogs();
   const count = (track, isBusiness) => client.visibleLessonsForTrack(track, isBusiness).length;
   // Business: every lesson shows (owner-import is Essentials-only).
-  assert.equal(count('owner', true), 36);
+  // 37 since the set-once tax-rate lesson joined the owner track
+  // (Nov 15, 2026).
+  assert.equal(count('owner', true), 37);
   assert.equal(count('manager', true), 16);
   assert.equal(count('staff', true), 33);
   // Essentials: 19 owner subjects hidden, owner-import in their place.
-  assert.equal(count('owner', false), 18);
+  assert.equal(count('owner', false), 19);
   assert.equal(count('manager', false), 10);
   assert.equal(count('staff', false), 31);
   // Payroll / workforce / direct-deposit lessons stay on Essentials.

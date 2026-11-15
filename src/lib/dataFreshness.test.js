@@ -39,7 +39,7 @@ test('scopes are independent', () => {
 
 test('the entity client bumps inventory freshness on product/stock writes only', () => {
   const client = readFileSync(new URL('../api/client.js', import.meta.url), 'utf8');
-  assert.ok(client.includes("INVENTORY_ENTITIES = new Set(['Product', 'StockLevel', 'StockMovement', 'Category', 'Location'])"));
+  assert.ok(client.includes("INVENTORY_ENTITIES = new Set(['Product', 'StockLevel', 'StockMovement', 'Category', 'Location', 'ImportEvent'])"));
   assert.ok(client.includes("bumpData('inventory')"), 'writes announce through the bus');
   assert.ok(client.includes('create: (values) => announce('), 'create is announced');
   assert.ok(client.includes('updateMany: (filter, patch) =>'), 'bulk paths exist');

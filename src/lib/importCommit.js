@@ -5,7 +5,27 @@
  */
 
 import { base44 } from '@/api/client';
-import { scoped } from '@/lib/scoped';
+import { scoped, withBusiness } from '@/lib/scoped';
+
+/**
+ * The import's own story (owner ruling, Nov 15, 2026): one activity
+ * row per committed Create/Update import, so Recent inventory
+ * activity and the full history can say "Imported N products" even
+ * when the import moved no stock at all. An ImportEvent is NOT a
+ * stock movement — no stock math, count or reconciliation reads it.
+ * Best-effort by design: the import itself has already landed when
+ * this runs, and a feed line must never fail the import's report.
+ */
+export async function recordImportEvent({ businessId, kind, count, fileName = '' }) {
+  if (!businessId || !count) return;
+  try {
+    await base44.entities.ImportEvent.create(
+      withBusiness({ kind, product_count: count, file_name: fileName }, businessId),
+    );
+  } catch {
+    // The import landed; the feed line is a courtesy record.
+  }
+}
 
 function chunk(list, size = 200) {
   const parts = [];
@@ -14,13 +34,14 @@ function chunk(list, size = 200) {
 }
 
 /** Writes the reviewed field changes. Quantities are not part of this payload. */
-export async function applyProductUpdates({ changes = [], businessId }) {
+export async function applyProductUpdates({ changes = [], businessId, fileName = '' }) {
   if (!businessId) throw new Error('Choose a business first.');
   let updated = 0;
   for (const part of chunk(changes)) {
     await base44.entities.Product.bulkUpdate(part);
     updated += part.length;
   }
+  await recordImportEvent({ businessId, kind: 'update', count: updated, fileName });
   return updated;
 }
 

@@ -9,8 +9,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { t } from '@/lib/i18n';
+import { recordMovement } from '@/lib/inventory';
+import { judgeVocabularyValue } from '@/lib/vocabulary';
+import AddVocabularyDialog from './AddVocabularyDialog';
+import VocabularyCombobox from './VocabularyCombobox';
 
 import { Label } from '@/components/ui/label';
 import {
@@ -33,6 +38,7 @@ const empty = {
   price: '',
   cost: '',
   reorder: '',
+  quantity: '',
 };
 
 const parseList = (value) =>
@@ -74,15 +80,37 @@ function ChoiceField({ label, value, options, onChange }) {
 export default function BulkEditDialog({
   open,
   onOpenChange,
+  businessId = '',
   products = [],
   categories = [],
   subcategories = [],
   tags = [],
+  locations = [],
+  levels = [],
+  planKey = '',
   onDone,
 }) {
   const [form, setForm] = useState(empty);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  // Category/subcategory pickers (owner ruling, Nov 15, 2026): the
+  // same app-rendered combobox + Add-new window as the product form.
+  // The native <datalist> these fields used before never surfaces
+  // inside a modal on Android Chrome, so there was no way to add
+  // 'Books' from bulk edit at all. Names born through the Add window
+  // are sanctioned for the save guard immediately.
+  const [addNewField, setAddNewField] = useState(null);
+  // Bulk quantity (owner ruling, Nov 15, 2026): set every selected
+  // product to one on-hand number at one location. The picker is
+  // preselected — the remembered location wins, else the first
+  // location — so it never opens empty where an answer exists.
+  const [quantityLocationId, setQuantityLocationId] = useState('');
+  const [addedNames, setAddedNames] = useState({ category: [], subcategory: [] });
+  const categoryOptions = [...categories, ...addedNames.category.filter((n) => !categories.includes(n))];
+  const subcategoryOptions = [
+    ...subcategories,
+    ...addedNames.subcategory.filter((n) => !subcategories.includes(n)),
+  ];
 
   const STATUS_OPTIONS = [
     { value: 'active', label: t('products.statusActive') },
@@ -103,14 +131,58 @@ export default function BulkEditDialog({
     if (open) {
       setForm(empty);
       setError('');
+      setAddNewField(null);
+      setAddedNames({ category: [], subcategory: [] });
+      let remembered = null;
+      try {
+        remembered = localStorage.getItem('stockroom.location');
+      } catch {
+        remembered = null;
+      }
+      setQuantityLocationId(
+        locations.find((l) => l.id === remembered)?.id || locations[0]?.id || '',
+      );
     }
   }, [open]);
 
   const set = (key) => (event) => setForm((current) => ({ ...current, [key]: event.target.value }));
+  const setValue = (key) => (value) => setForm((current) => ({ ...current, [key]: value }));
+
+  // A category/subcategory born through the picker's "Add new" row:
+  // select it, sanction it for the save guard, close the window.
+  const handleVocabularyCreated = (field, name) => {
+    setValue(field)(name);
+    setAddedNames((prev) => ({ ...prev, [field]: [...prev[field], name] }));
+    setAddNewField(null);
+  };
 
   const adds = parseList(form.add);
   const removes = parseList(form.remove);
+
+  // Quantity target: blank leaves stock alone; anything typed must
+  // be a whole number within the app's quantity cap (200,000 — the
+  // same cap the stock door enforces). SET semantics: every
+  // selected product ends at this number, at the chosen location.
+  const quantityRaw = form.quantity.trim();
+  const quantityTarget = /^\d+$/.test(quantityRaw) ? Number(quantityRaw) : null;
+  const quantityInvalid = quantityRaw !== '' && quantityTarget === null;
+  const quantityTooBig = quantityTarget !== null && quantityTarget > 200000;
+  const quantityLocation = locations.find((l) => l.id === quantityLocationId) || null;
+  const quantityEligible = products.filter((p) => (p.status || 'active') !== 'archived').length;
+  const quantityApplies =
+    quantityTarget !== null && !quantityTooBig && Boolean(quantityLocation) && quantityEligible > 0;
+
   const changes = [];
+  if (quantityApplies) {
+    changes.push(
+      t('products.bulkChangeQuantity', {
+        count: quantityEligible,
+        plural: quantityEligible === 1 ? '' : 's',
+        quantity: quantityTarget,
+        location: quantityLocation.name,
+      }),
+    );
+  }
   if (form.category.trim()) changes.push(t('products.bulkChangeCategory', { value: form.category.trim() }));
   if (form.subcategory.trim()) changes.push(t('products.bulkChangeSubcategory', { value: form.subcategory.trim() }));
   if (form.status) changes.push(t('products.bulkChangeStatus', { value: form.status }));
@@ -120,16 +192,60 @@ export default function BulkEditDialog({
   if (toNumber(form.price) !== null) changes.push(t('products.bulkChangePrice', { value: toNumber(form.price) }));
   if (toNumber(form.cost) !== null) changes.push(t('products.bulkChangeCost', { value: toNumber(form.cost) }));
   if (toNumber(form.reorder) !== null) changes.push(t('products.bulkChangeReorder', { value: toNumber(form.reorder) }));
-  const hasChanges = changes.length > 0;
+  // A typed quantity counts as a change even before it validates,
+  // so Save stays reachable and its refusal can name the problem.
+  const hasChanges = changes.length > 0 || quantityRaw !== '';
 
   const save = async () => {
     if (!hasChanges || !products.length) return;
+    // No silent category births — the same guard as the product
+    // form (owner ruling, Nov 14, 2026, applied here Nov 15): a
+    // typed-but-unlisted category or subcategory stops the save
+    // with the plain message; the Add row/window is the only birth
+    // door. Blank stays "leave unchanged" and is never judged.
+    const categoryVerdict = judgeVocabularyValue({
+      typedRaw: form.category,
+      initial: '',
+      options: categoryOptions,
+      sanctioned: addedNames.category,
+      loaded: true,
+    });
+    if (!categoryVerdict.ok) {
+      setError(t('productForm.categoryNotFound'));
+      return;
+    }
+    const subcategoryVerdict = judgeVocabularyValue({
+      typedRaw: form.subcategory,
+      initial: '',
+      options: subcategoryOptions,
+      sanctioned: addedNames.subcategory,
+      loaded: true,
+    });
+    if (!subcategoryVerdict.ok) {
+      setError(t('productForm.subcategoryNotFound'));
+      return;
+    }
+    // Quantity validation (owner ruling, Nov 15, 2026): a typed
+    // quantity must be a whole number within the cap, and it needs
+    // its location — the refusal names the problem, never a shrug.
+    if (quantityInvalid) {
+      setError(t('productForm.quantityInvalid'));
+      return;
+    }
+    if (quantityTooBig) {
+      setError(t('products.bulkQuantityTooBig'));
+      return;
+    }
+    if (quantityTarget !== null && !quantityLocation) {
+      setError(t('products.bulkQuantityNoLocations'));
+      return;
+    }
     setSaving(true);
     setError('');
     try {
       const patch = {};
-      if (form.category.trim()) patch.category = form.category.trim();
-      if (form.subcategory.trim()) patch.subcategory = form.subcategory.trim();
+      if (categoryVerdict.value) patch.category = categoryVerdict.value;
+      if (subcategoryVerdict.value) patch.subcategory = subcategoryVerdict.value;
       if (form.status) patch.status = form.status;
       if (form.condition) patch.condition = form.condition;
       if (toNumber(form.price) !== null) patch.price = toNumber(form.price);
@@ -152,9 +268,71 @@ export default function BulkEditDialog({
         return next;
       });
 
-      await base44.entities.Product.bulkUpdate(updates);
+      const hasCatalogChanges =
+        Object.keys(patch).length > 0 || adds.length > 0 || removes.length > 0;
+      if (hasCatalogChanges) {
+        await base44.entities.Product.bulkUpdate(updates);
+      }
+
+      // Bulk quantity, with the Edit form's discipline (owner
+      // ruling, Nov 15, 2026): NEVER a silent overwrite. Each
+      // product whose count at the chosen location actually changes
+      // records ONE ledger movement — 'receive' of the difference
+      // up, 'correction' landing exactly on the target down —
+      // noting the bulk edit. Products already at the target record
+      // nothing. Archived products are skipped (their stock is
+      // frozen) and counted for the result banner.
+      let quantitySummary = null;
+      if (quantityTarget !== null && quantityLocation) {
+        let set = 0;
+        let movements = 0;
+        let skipped = 0;
+        for (const product of products) {
+          if ((product.status || 'active') === 'archived') {
+            skipped += 1;
+            continue;
+          }
+          const current =
+            levels.find(
+              (l) => l.product_id === product.id && l.location_id === quantityLocation.id,
+            )?.quantity ?? 0;
+          if (current === quantityTarget) {
+            set += 1;
+            continue;
+          }
+          if (quantityTarget > current) {
+            await recordMovement({
+              product,
+              location: quantityLocation,
+              type: 'receive',
+              quantity: quantityTarget - current,
+              note: t('products.bulkQuantityNote'),
+              businessId,
+            });
+          } else {
+            await recordMovement({
+              product,
+              location: quantityLocation,
+              type: 'correction',
+              quantity: quantityTarget,
+              note: t('products.bulkQuantityNote'),
+              businessId,
+            });
+          }
+          movements += 1;
+          set += 1;
+        }
+        quantitySummary = {
+          set,
+          movements,
+          skipped,
+          quantity: quantityTarget,
+          location: quantityLocation.name,
+        };
+      }
+
       onOpenChange(false);
-      onDone?.(products.length);
+      onDone?.({ count: products.length, quantity: quantitySummary });
     } catch (err) {
       setError(err?.message || t('products.bulkUpdateFailed'));
     } finally {
@@ -176,33 +354,29 @@ export default function BulkEditDialog({
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="grid gap-2">
               <Label htmlFor="bulk-category">{t('products.bulkCategory')}</Label>
-              <Input
+              <VocabularyCombobox
                 id="bulk-category"
-                list="bulk-category-options"
                 value={form.category}
-                onChange={set('category')}
+                onChange={setValue('category')}
+                options={categoryOptions}
                 placeholder={t('products.leaveUnchanged')}
+                label={t('products.bulkCategory')}
+                addNewLabel={t('productForm.addNewCategory')}
+                onAddNewRequest={() => setAddNewField('category')}
               />
-              <datalist id="bulk-category-options">
-                {categories.map((name) => (
-                  <option key={name} value={name} />
-                ))}
-              </datalist>
             </div>
             <div className="grid gap-2">
               <Label htmlFor="bulk-subcategory">{t('products.bulkSubcategory')}</Label>
-              <Input
+              <VocabularyCombobox
                 id="bulk-subcategory"
-                list="bulk-subcategory-options"
                 value={form.subcategory}
-                onChange={set('subcategory')}
+                onChange={setValue('subcategory')}
+                options={subcategoryOptions}
                 placeholder={t('products.leaveUnchanged')}
+                label={t('products.bulkSubcategory')}
+                addNewLabel={t('productForm.addNewSubcategory')}
+                onAddNewRequest={() => setAddNewField('subcategory')}
               />
-              <datalist id="bulk-subcategory-options">
-                {subcategories.map((name) => (
-                  <option key={name} value={name} />
-                ))}
-              </datalist>
             </div>
             <ChoiceField
               label={t('products.bulkStatus')}
@@ -231,7 +405,7 @@ export default function BulkEditDialog({
                 id="bulk-remove"
                 value={form.remove}
                 onChange={set('remove')}
-                placeholder="clearance"
+                placeholder={planKey === 'business' ? 'clearance' : 'seasonal'}
               />
             </div>
           </div>
@@ -281,6 +455,54 @@ export default function BulkEditDialog({
             <p className="text-[11px] leading-snug text-muted-foreground">
               {t('products.bulkNumbersHint')}
             </p>
+            <div className="grid gap-3 border-t border-border pt-3 sm:grid-cols-2">
+              <div className="grid gap-2">
+                <Label htmlFor="bulk-quantity">{t('products.bulkQuantityLabel')}</Label>
+                <Input
+                  id="bulk-quantity"
+                  type="number"
+                  inputMode="numeric"
+                  min="0"
+                  max="200000"
+                  value={form.quantity}
+                  onChange={set('quantity')}
+                  placeholder={t('products.leaveUnchanged')}
+                  className="font-mono"
+                  disabled={locations.length === 0}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="bulk-quantity-location">{t('products.bulkQuantityLocation')}</Label>
+                <Select
+                  value={quantityLocationId}
+                  onValueChange={setQuantityLocationId}
+                  disabled={locations.length === 0}
+                >
+                  <SelectTrigger id="bulk-quantity-location" aria-label={t('products.bulkQuantityLocation')}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {locations.map((location) => (
+                      <SelectItem key={location.id} value={location.id}>
+                        {location.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            {locations.length === 0 ? (
+              <p className="text-[11px] leading-snug text-muted-foreground">
+                {t('products.bulkQuantityNoLocations')}{' '}
+                <Link to="/locations" className="font-medium text-primary underline">
+                  {t('products.bulkQuantityAddLocation')}
+                </Link>
+              </p>
+            ) : (
+              <p className="text-[11px] leading-snug text-muted-foreground">
+                {t('products.bulkQuantityHint')}
+              </p>
+            )}
           </div>
 
           {tags.length > 0 && (
@@ -323,6 +545,25 @@ export default function BulkEditDialog({
           </Button>
         </DialogFooter>
       </DialogContent>
+
+      {/* Add-new vocabulary window — the same fixed overlay as the
+          product form: the bulk dialog behind it does not move, the
+          name field arrives prefilled with the picker's typed text,
+          Save creates the entry and selects it, Cancel creates
+          nothing. */}
+      {addNewField && (
+        <AddVocabularyDialog
+          businessId={businessId}
+          kind={addNewField}
+          initialName={addNewField === 'category' ? form.category : form.subcategory}
+          existingNames={addNewField === 'category' ? categoryOptions : subcategoryOptions}
+          title={t(
+            addNewField === 'category' ? 'productForm.addNewCategory' : 'productForm.addNewSubcategory',
+          )}
+          onCreated={(name) => handleVocabularyCreated(addNewField, name)}
+          onCancel={() => setAddNewField(null)}
+        />
+      )}
     </Dialog>
   );
 }

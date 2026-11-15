@@ -103,7 +103,7 @@ export default function Locations() {
               the nested add-inside door on each location card is
               untouched — shelves and bins are not sites. */}
           {!atSiteLimit && (
-            <Button onClick={() => openNew()}>
+            <Button data-tour="location-add" onClick={() => openNew()}>
               <Plus className="mr-1.5 h-4 w-4" /> {t('locations.newLocation')}
             </Button>
           )}

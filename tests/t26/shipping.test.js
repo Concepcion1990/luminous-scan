@@ -23,7 +23,7 @@ import { PLANS, WELCOME_OPTIONS, COMPARISON_ROWS, isSupplierPrintTemplate } from
 
 after(close);
 
-const LINE = '4×6 shipping labels for customer orders';
+const LINE = "4×6 shipping labels for customer orders — or keep your carrier's label on file";
 const welcomeOf = (key) => WELCOME_OPTIONS.find((o) => o.key === key);
 
 test('shipping: the style is registered as a customer document, 4x6, on both plans', () => {
@@ -39,7 +39,11 @@ test('shipping: Print Center loads customer orders for it and renders the label'
   const page = readFileSync('src/pages/PrintCenter.jsx', 'utf8');
   assert.match(page, /\['invoice', 'receipt', 'custpacking', 'shipping'\]\.includes\(template\)/);
   assert.match(page, /import ShippingLabelDoc from '@\/components\/print\/ShippingLabelDoc';/);
-  assert.match(page, /activeTemplate\.mode === 'shipping' \? \(\s*<ShippingLabelDoc/);
+  // Scope A (Nov 14, 2026): the shipping branch first offers the
+  // uploaded carrier label (PDF embed / true-4x6 image page) and
+  // falls back to the built-in FROM/TO label in App mode.
+  assert.match(page, /activeTemplate\.mode === 'shipping' \? \(\s*uploadedActive \?/);
+  assert.match(page, /<ShippingLabelDoc/);
   // The recipient name pre-fills from the picked order.
   assert.match(page, /if \(template === 'shipping' && customerOrder\) \{\s*setShipName\(customerOrder\.customer_name \|\| ''\);/);
   // No server PDF masquerade: the label prints through the browser

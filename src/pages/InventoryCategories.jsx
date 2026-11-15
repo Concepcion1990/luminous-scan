@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { ChevronDown, Pencil, Search } from 'lucide-react';
 import { formatMoney, loadInventory } from '@/lib/inventory';
@@ -129,6 +129,29 @@ export default function InventoryCategories() {
       });
   }, [inventory, search, locationId]);
 
+  // The bucket sorts LAST, so an opened door group can sit below
+  // the fold with its Set category doors out of sight — the exact
+  // dead end the owner hit (Nov 15, 2026). When a ?group= door
+  // asked for a group, bring that group to the top of the screen
+  // once it has rendered; manual toggling never yanks the scroll.
+  // (Declared after `groups`: the deps array reads it during
+  // render, so it must not sit above the memo.)
+  const groupRefs = useRef(new Map());
+  const doorScrolledFor = useRef('');
+  useEffect(() => {
+    const g = searchParams.get('group');
+    if (!g) {
+      doorScrolledFor.current = '';
+      return;
+    }
+    if (!inventory || doorScrolledFor.current === g) return;
+    if (!groups.some((group) => group.name === g)) return;
+    doorScrolledFor.current = g;
+    requestAnimationFrame(() => {
+      groupRefs.current.get(g)?.scrollIntoView({ block: 'start' });
+    });
+  }, [searchParams, inventory, groups]);
+
   const totalUnits = groups.reduce((sum, group) => sum + group.units, 0);
   const locations = inventory?.locations ?? [];
 
@@ -206,7 +229,14 @@ export default function InventoryCategories() {
           {groups.map((group) => {
             const open = openKey === group.name;
             return (
-              <div key={group.name} className="overflow-hidden rounded-xl border border-border bg-card">
+              <div
+                key={group.name}
+                ref={(el) => {
+                  if (el) groupRefs.current.set(group.name, el);
+                  else groupRefs.current.delete(group.name);
+                }}
+                className="scroll-mt-24 overflow-hidden rounded-xl border border-border bg-card"
+              >
                 <button
                   type="button"
                   onClick={() => setOpenKey(open ? '' : group.name)}

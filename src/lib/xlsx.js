@@ -14,6 +14,7 @@
  * for each cell, so nothing is recalculated and no macro is ever run.
  */
 import ExcelJS from 'exceljs';
+import { decodeHtmlEntities } from './csvImport.js';
 
 const XLSX_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
@@ -90,12 +91,12 @@ function sheetTable(worksheet) {
   const width = Math.max(1, ...grid.map((row) => row.length));
   const headers = Array.from(
     { length: width },
-    (_, index) => grid[headerIndex][index] || `Column ${index + 1}`,
+    (_, index) => decodeHtmlEntities(grid[headerIndex][index] || `Column ${index + 1}`),
   );
   const rows = grid
     .slice(headerIndex + 1)
     .filter((row) => row.some(Boolean))
-    .map((row) => Array.from({ length: width }, (_, index) => row[index] ?? ''));
+    .map((row) => Array.from({ length: width }, (_, index) => decodeHtmlEntities(row[index] ?? '')));
 
   return { name, headers, rows, warnings: ambiguityWarnings(worksheet, name) };
 }

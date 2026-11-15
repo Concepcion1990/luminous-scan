@@ -12,6 +12,13 @@
  * many steps each carries. The server catalog
  * (server/trainingCatalog.js) holds the same shape and the t10
  * suite proves the two agree.
+ *
+ * The `visuals` arrays are CLIENT-only and hand-maintained here
+ * (the generator predates them): one entry per step — a live
+ * picture of the app's own page ({ route, target?, door? }) or
+ * null for a step with no screen action. `door: true` marks a
+ * step whose screen exists only mid-flow: the visual shows the
+ * page and the button that starts the flow.
  */
 export const TRAINING_TRACKS = ['owner', 'manager', 'staff'];
 
@@ -47,24 +54,90 @@ export const TRAINING_MODULES = [
 ];
 
 export const TRAINING_LESSONS = [
-  { id: 'welcome-basics', track: 'staff', module: 'getting-started', steps: 4 },
+  { id: 'welcome-basics', track: 'staff', module: 'getting-started', steps: 4 , visuals: [
+      { route: '/', target: '[data-tour="overview"]' },
+      { route: '/', target: '[data-tour="all-screens"]', door: true },
+      { route: '/', target: '[data-tour="all-screens"]', door: true },
+      null,
+    ] },
   { id: 'your-language', track: 'staff', module: 'language', steps: 4 },
-  { id: 'scanner-lookup', track: 'staff', module: 'scanner', steps: 4 },
-  { id: 'scanner-website-qr', track: 'staff', module: 'scanner', steps: 4 },
-  { id: 'scanner-shelf-counts', track: 'staff', module: 'scanner', steps: 4 },
-  { id: 'scanner-receiving', track: 'staff', module: 'scanner', steps: 4 },
-  { id: 'scanner-move-stock', track: 'staff', module: 'scanner', steps: 4 },
-  { id: 'scanner-name-lookup', track: 'staff', module: 'scanner', steps: 4 },
-  { id: 'scanner-damaged', track: 'staff', module: 'scanner', steps: 4 },
+  { id: 'scanner-lookup', track: 'staff', module: 'scanner', steps: 4 , visuals: [
+      { route: '/scan', target: '[data-tour="scan-start"]' },
+      { route: '/scan', target: '[data-tour="scan-shelf"]' },
+      null,
+      { route: '/scan', target: '[data-tour="scan-start"]' },
+    ] },
+  { id: 'scanner-website-qr', track: 'staff', module: 'scanner', steps: 4 , visuals: [
+      null,
+      { route: '/scan', target: '[data-tour="scan-start"]', door: true },
+      null,
+      { route: '/scan', target: '[data-tour="scan-start"]', door: true },
+    ] },
+  { id: 'scanner-shelf-counts', track: 'staff', module: 'scanner', steps: 4 , visuals: [
+      { route: '/counts', target: '[data-tour="count-start"]', door: true },
+      { route: '/counts', target: '[data-tour="count-start"]', door: true },
+      { route: '/counts', target: '[data-tour="count-start"]', door: true },
+      null,
+    ] },
+  { id: 'scanner-receiving', track: 'staff', module: 'scanner', steps: 4 , visuals: [
+      { route: '/scan', target: '[data-tour="scan-start"]', door: true },
+      { route: '/scan', target: '[data-tour="scan-start"]', door: true },
+      null,
+      { route: '/scan', target: '[data-tour="scan-start"]', door: true },
+    ] },
+  { id: 'scanner-move-stock', track: 'staff', module: 'scanner', steps: 4 , visuals: [
+      { route: '/scan', target: '[data-tour="scan-start"]', door: true },
+      { route: '/scan', target: '[data-tour="scan-start"]', door: true },
+      { route: '/scan', target: '[data-tour="scan-start"]', door: true },
+      null,
+    ] },
+  { id: 'scanner-name-lookup', track: 'staff', module: 'scanner', steps: 4 , visuals: [
+      { route: '/scan', target: '[data-tour="scan-code"]' },
+      { route: '/scan', target: '[data-tour="scan-code"]' },
+      { route: '/scan', target: '[data-tour="scan-shelf"]' },
+      null,
+    ] },
+  { id: 'scanner-damaged', track: 'staff', module: 'scanner', steps: 4 , visuals: [
+      { route: '/scan', target: '[data-tour="scan-start"]', door: true },
+      { route: '/scan', target: '[data-tour="scan-start"]', door: true },
+      null,
+      { route: '/movements', target: '[data-tour="movements-list"]' },
+    ] },
   { id: 'print-shelf-tag', track: 'staff', module: 'printing', steps: 4 },
-  { id: 'products-find-edit', track: 'staff', module: 'products', steps: 8 },
-  { id: 'owner-pricing', track: 'owner', module: 'products', steps: 4, feature: 'pricing' },
+  { id: 'products-find-edit', track: 'staff', module: 'products', steps: 8 , visuals: [
+      { route: '/products', target: '[data-tour="products-search"]' },
+      { route: '/products', target: '[data-tour="products-list"]' },
+      { route: '/products', target: '[data-tour="products-list"]', door: true },
+      { route: '/products', target: '[data-tour="product-add"]', door: true },
+      { route: '/products', target: '[data-tour="product-add"]', door: true },
+      { route: '/products', target: '[data-tour="products-list"]' },
+      { route: '/products', target: '[data-tour="products-list"]', door: true },
+      { route: '/products', target: '[data-tour="products-list"]' },
+    ] },
+  { id: 'owner-pricing', track: 'owner', module: 'products', steps: 4, feature: 'pricing' , visuals: [
+      { route: '/products', target: '[data-tour="product-add"]', door: true },
+      { route: '/products', target: '[data-tour="products-list"]' },
+      { route: '/products', target: '[data-tour="products-list"]' },
+      { route: '/plans' },
+    ] },
   { id: 'mgr-pricing', track: 'manager', module: 'products', steps: 4, feature: 'pricing' },
   { id: 'categories-basics', track: 'staff', module: 'categories', steps: 4 },
   { id: 'locations-basics', track: 'staff', module: 'locations', steps: 4 },
   { id: 'movements-what', track: 'staff', module: 'movements', steps: 4 },
   { id: 'counts-run', track: 'staff', module: 'counts', steps: 4 },
-  { id: 'orders-basics', track: 'staff', module: 'orders', steps: 6 },
+  { id: 'orders-basics', track: 'staff', module: 'orders', steps: 6 , visuals: [
+      { route: '/orders', target: '[data-tour="orders-list"]' },
+      { route: '/orders', target: '[data-tour="orders-list"]' },
+      { route: '/orders', target: '[data-tour="orders-list"]', door: true },
+      null,
+      { route: '/orders', target: '[data-tour="order-new"]', door: true },
+      { route: '/orders', target: '[data-tour="orders-list"]', door: true },
+    ] },
+  { id: 'owner-tax-rate', track: 'owner', module: 'orders', steps: 3 , visuals: [
+      { route: '/settings', target: '#business-tax-rate' },
+      { route: '/orders', target: '[data-tour="order-new"]', door: true },
+      { route: '/orders', target: '[data-tour="order-new"]', door: true },
+    ] },
   { id: 'returns-basics', track: 'staff', module: 'returns', steps: 4 },
   { id: 'listings-basics', track: 'staff', module: 'listings', steps: 4 },
   { id: 'import-basics', track: 'staff', module: 'import', steps: 5 },
@@ -96,7 +169,12 @@ export const TRAINING_LESSONS = [
   { id: 'mgr-suppliers-orders', track: 'manager', module: 'purchasing', steps: 4, feature: 'suppliers' },
   { id: 'mgr-send-supplier-order', track: 'manager', module: 'purchasing', steps: 4, feature: 'purchasing' },
   { id: 'mgr-report-problem', track: 'manager', module: 'settings', steps: 4 },
-  { id: 'owner-setup', track: 'owner', module: 'getting-started', steps: 4 },
+  { id: 'owner-setup', track: 'owner', module: 'getting-started', steps: 4 , visuals: [
+      { route: '/settings', target: '#business-name' },
+      { route: '/settings', target: '#business-name' },
+      { route: '/locations', target: '[data-tour="location-add"]' },
+      { route: '/staff', target: '[data-tour="staff-add"]', door: true },
+    ] },
   { id: 'owner-white-label', track: 'owner', module: 'settings', steps: 5 },
   { id: 'owner-report-problem', track: 'owner', module: 'settings', steps: 4 },
   { id: 'owner-delete-account', track: 'owner', module: 'settings', steps: 4 },
@@ -109,7 +187,7 @@ export const TRAINING_LESSONS = [
   { id: 'owner-dd-setup', track: 'owner', module: 'direct-deposit', steps: 4 },
   { id: 'owner-billing', track: 'owner', module: 'billing', steps: 4 },
   { id: 'owner-trial-reminders', track: 'owner', module: 'billing', steps: 4 },
-  { id: 'owner-printing', track: 'owner', module: 'printing', steps: 4 },
+  { id: 'owner-printing', track: 'owner', module: 'printing', steps: 5 },
   { id: 'owner-import', track: 'owner', module: 'import', steps: 2, essentialsOnly: true },
   { id: 'owner-import-export', track: 'owner', module: 'exports', steps: 4, feature: 'exports' },
   { id: 'owner-builds', track: 'owner', module: 'builds', steps: 4, feature: 'builds' },
@@ -131,8 +209,8 @@ export const TRAINING_LESSONS = [
   { id: 'owner-pos-mapping', track: 'owner', module: 'pos', steps: 4, feature: 'pos' },
   { id: 'owner-pos-csv', track: 'owner', module: 'pos', steps: 4, feature: 'pos' },
   { id: 'owner-pos-sales-list', track: 'owner', module: 'pos', steps: 4, feature: 'pos' },
-  { id: 'print-shipping-label', track: 'staff', module: 'printing', steps: 4 },
-  { id: 'owner-shipping-labels', track: 'owner', module: 'printing', steps: 4 },
+  { id: 'print-shipping-label', track: 'staff', module: 'printing', steps: 5 },
+  { id: 'owner-shipping-labels', track: 'owner', module: 'printing', steps: 5 },
 ];
 
 export const lessonById = (id) => TRAINING_LESSONS.find((lesson) => lesson.id === id) || null;

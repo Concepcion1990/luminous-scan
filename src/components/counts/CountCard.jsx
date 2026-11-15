@@ -16,7 +16,13 @@ export default function CountCard({ session, expanded, onToggle, onCancel, onDel
   const summary = countSummary(session.lines || []);
 
   return (
-    <div className="rounded-xl border border-border bg-card p-3.5">
+    // min-w-0: as a grid item the card otherwise refuses to
+    // shrink below its widest content (~368px), pushing the
+    // whole sheet past a phone's edge — the clipped first
+    // column the owner reported (Nov 15, 2026). Shrinking the
+    // card is what lets the sheet's own row region become the
+    // horizontal scroller instead.
+    <div className="min-w-0 rounded-xl border border-border bg-card p-3.5">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">

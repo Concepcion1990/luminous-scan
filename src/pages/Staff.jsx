@@ -203,7 +203,7 @@ export default function Staff() {
               <Plus className="mr-1.5 h-4 w-4" /> {t('staff.newRole')}
             </Button>
           )}
-          <Button onClick={openAdd} disabled={!activeId}>
+          <Button data-tour="staff-add" onClick={openAdd} disabled={!activeId}>
             <UserPlus className="mr-1.5 h-4 w-4" /> {t('staff.addMember')}
           </Button>
         </div>

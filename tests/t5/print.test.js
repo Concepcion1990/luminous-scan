@@ -173,8 +173,12 @@ test('paper carries the store name, never the app name or logo', async () => {
     assert.ok(!text.includes('ScanHaven'), `${path} must not carry the stale app name`);
     assert.ok(!/addImage|logo/i.test(text), `${path} must not carry an app-logo reference`);
   }
-  // No browser-print template names the app or draws a logo on the
-  // paper either — every one headers with the business/store name.
+  // No browser-print template names the app either — every one
+  // headers with the business/store name. Images on the paper are
+  // the business's OWN only (owner ruling, Nov 14, 2026: its logo
+  // from Settings and its Document Style Studio decoration
+  // pictures): every <img> in these files carries the doc-logo or
+  // doc-deco class, so no app branding can ever reach the paper.
   const { readFileSync } = await import('node:fs');
   for (const file of [
     'src/components/print/CustomerDoc.jsx',
@@ -187,7 +191,9 @@ test('paper carries the store name, never the app name or logo', async () => {
   ]) {
     const source = readFileSync(file, 'utf8');
     assert.doesNotMatch(source, /Luminous|ScanHaven|Stockhaven|StockHaven/, `${file} must not name the app`);
-    assert.doesNotMatch(source, /addImage|<img/, `${file} must not draw a logo`);
+    for (const img of source.match(/<img[\s\S]*?>/g) || []) {
+      assert.match(img, /doc-logo|doc-deco/, `${file} draws only the business's own logo/decorations`);
+    }
   }
   assert.match(
     readFileSync('src/components/print/DocHeader.jsx', 'utf8'),

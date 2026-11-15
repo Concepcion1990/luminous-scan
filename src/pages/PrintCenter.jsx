@@ -23,6 +23,10 @@ import OrderPicker from '@/components/print/OrderPicker';
 import PurchaseOrderDoc from '@/components/print/PurchaseOrderDoc';
 import CustomerDoc from '@/components/print/CustomerDoc';
 import ShippingLabelDoc from '@/components/print/ShippingLabelDoc';
+import CarrierLabelPanel, { useCarrierLabel } from '@/components/print/CarrierLabelPanel';
+import DocStyleStudio from '@/components/print/DocStyleStudio';
+import { resolveDocStyle } from '@/lib/docStyle';
+import { isBoss } from '@/lib/bossAuthority';
 import ReturnDoc from '@/components/print/ReturnDoc';
 import CustomerOrderPicker from '@/components/print/CustomerOrderPicker';
 import ReturnPicker from '@/components/print/ReturnPicker';
@@ -33,7 +37,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 
 export default function PrintCenter() {
-  const { profile, activeId } = useBusiness();
+  const { profile, activeId, user, refresh } = useBusiness();
   const location = useLocation();
   // Supplier print styles are Business-only, and INVISIBLE off
   // Business (the owner's ruling, Nov 14, 2026 — the same
@@ -67,6 +71,25 @@ export default function PrintCenter() {
   const [shipName, setShipName] = useState('');
   const [shipAddress, setShipAddress] = useState('');
   const [shipFromAddress, setShipFromAddress] = useState('');
+  // The carrier's own label file, kept on the picked order as the
+  // business's record (Nov 14, 2026): the preview can show the
+  // app's address label or the uploaded carrier label.
+  const [shipMode, setShipMode] = useState('app');
+  const carrier = useCarrierLabel(activeId, template === 'shipping' ? customerOrderId : '');
+  // Document Style Studio: the draft lives here so the preview
+  // dresses itself as the boss chooses; saving persists it on the
+  // business record. A business switch resets the draft.
+  const [docStyleDraft, setDocStyleDraft] = useState(null);
+  const docStyle = docStyleDraft ?? resolveDocStyle(profile);
+  useEffect(() => {
+    setDocStyleDraft(null);
+  }, [activeId]);
+  useEffect(() => {
+    setShipMode('app');
+  }, [customerOrderId]);
+  useEffect(() => {
+    if (carrier.meta?.exists) setShipMode('uploaded');
+  }, [carrier.meta]);
   // Direct printing (T5): Bluetooth / USB send label bytes straight
   // to the printer — no internet, no server round-trip. Availability
   // is a browser fact, not a plan fact: labels print on both plans.
@@ -229,6 +252,14 @@ export default function PrintCenter() {
 
   const blank = supplierBlocked || nothingPicked;
 
+  // An uploaded carrier label takes over the preview when chosen.
+  // Its PDF prints from the browser's own viewer (the panel's
+  // button), never from this page's Print button — a PDF carries
+  // its own true 4×6 page.
+  const uploadedActive = template === 'shipping' && shipMode === 'uploaded' && Boolean(carrier.meta?.exists);
+  const uploadedPdfActive = uploadedActive && carrier.meta?.content_type === 'application/pdf';
+  const printDisabled = blank || uploadedPdfActive || (uploadedActive && !carrier.objectUrl);
+
   // The server PDF for what is on screen (online path). Labels are
   // both plans; the document PDFs are Business-only and the server
   // refuses them on Essentials whatever the connection. Count
@@ -369,7 +400,7 @@ export default function PrintCenter() {
               <FileDown className="mr-1.5 h-4 w-4" /> {pdfBusy ? t('print.buildingPdf') : 'PDF'}
             </Button>
           )}
-          <Button onClick={() => window.print()} disabled={blank}>
+          <Button onClick={() => window.print()} disabled={printDisabled}>
             <Printer className="mr-1.5 h-4 w-4" /> {t('print.printButton')}
           </Button>
         </div>
@@ -405,6 +436,15 @@ export default function PrintCenter() {
               ))}
             </div>
           </div>
+
+          {isBoss(user, profile) && (
+            <DocStyleStudio
+              business={profile}
+              style={docStyle}
+              onChange={setDocStyleDraft}
+              onSaved={refresh}
+            />
+          )}
 
           {isOrder ? (
             <OrderPicker orders={orders} value={orderId} onChange={setOrderId} />
@@ -450,6 +490,14 @@ export default function PrintCenter() {
                   </div>
                   <p className="mt-2 text-[11px] text-muted-foreground">{t('print.shippingNote')}</p>
                 </div>
+              )}
+              {template === 'shipping' && (
+                <CarrierLabelPanel
+                  orderId={customerOrderId}
+                  carrier={carrier}
+                  mode={shipMode}
+                  onModeChange={setShipMode}
+                />
               )}
             </>
           ) : isReturnDoc ? (
@@ -595,28 +643,61 @@ export default function PrintCenter() {
               <PurchaseOrderDoc order={order} business={profile} mode={activeTemplate.mode} />
             ) : isCustomerDoc ? (
               activeTemplate.mode === 'shipping' ? (
-                <ShippingLabelDoc
-                  order={customerOrder}
-                  business={profile}
-                  recipientName={shipName}
-                  recipientAddress={shipAddress}
-                  senderAddress={shipFromAddress}
-                />
+                uploadedActive ? (
+                  uploadedPdfActive ? (
+                    <div className="no-print px-4 py-6 text-center">
+                      {carrier.objectUrl ? (
+                        <object
+                          data={carrier.objectUrl}
+                          type="application/pdf"
+                          className="mx-auto h-[60vh] w-full max-w-[102mm] border border-border bg-white"
+                          aria-label={t('print.carrier.modeUploaded')}
+                        />
+                      ) : (
+                        <p className="text-sm text-muted-foreground">{t('print.carrier.title')}</p>
+                      )}
+                      <p className="mx-auto mt-3 max-w-[300px] text-xs leading-relaxed text-muted-foreground">
+                        {t('print.carrier.pdfHint')}
+                      </p>
+                    </div>
+                  ) : carrier.objectUrl ? (
+                    <div className="carrier-label-page print-label mx-auto flex h-[152mm] w-[102mm] items-center justify-center bg-white">
+                      <img
+                        src={carrier.objectUrl}
+                        alt=""
+                        className="max-h-full max-w-full object-contain"
+                      />
+                    </div>
+                  ) : (
+                    <div className="no-print px-4 py-16 text-center text-sm text-muted-foreground">
+                      {t('print.carrier.title')}
+                    </div>
+                  )
+                ) : (
+                  <ShippingLabelDoc
+                    order={customerOrder}
+                    business={profile}
+                    recipientName={shipName}
+                    recipientAddress={shipAddress}
+                    senderAddress={shipFromAddress}
+                  />
+                )
               ) : (
-                <CustomerDoc order={customerOrder} business={profile} mode={activeTemplate.mode} />
+                <CustomerDoc order={customerOrder} business={profile} mode={activeTemplate.mode} docStyle={docStyle} />
               )
             ) : isReturnDoc ? (
-              <ReturnDoc ret={returnRecord} business={profile} />
+              <ReturnDoc ret={returnRecord} business={profile} docStyle={docStyle} />
             ) : isDocument ? (
-              <Sheet products={selected} business={profile} />
+              <Sheet products={selected} business={profile} docStyle={docStyle} />
             ) : (
-              <div className="print-label-flow flex flex-wrap gap-3">
+              <div className="print-label-flow flex flex-wrap justify-center gap-3">
                 {labels.map((product, index) => (
                   <LabelCard
                     key={`${product.id}-${index}`}
                     template={template}
                     product={product}
                     business={profile}
+                    docStyle={docStyle}
                   />
                 ))}
               </div>

@@ -30,6 +30,21 @@
  *    fresh — unsaved work in an open form is never thrown away by an
  *    update landing mid-typing.
  *
+ * Lap-3 hardening (Nov 15, 2026 — a phone served the previous build
+ * for ~an hour after a deploy; only a logout/login, a full document
+ * navigation, unstuck it):
+ * 4. Cache writes FAIL OPEN. A cache.put rejection (a full storage
+ *    quota is the classic phone case) must never turn a FRESH
+ *    network answer into a stale cached one, nor sink an asset:
+ *    every put below swallows its own failure.
+ * 5. Navigations revalidate explicitly (cache: 'no-cache' on the
+ *    shell fetch), so no layer of HTTP caching between the server
+ *    and this worker can hand back yesterday's document.
+ * 6. The page asks for an update check whenever it becomes visible
+ *    again and hourly while it lives (src/main.jsx) — an installed
+ *    app session can run for hours with no document navigation at
+ *    all, and discovery is what install/skipWaiting/claim wait on.
+ *
  * Scope note: the icons referenced by the manifest landed with the
  * globe wiring (Nov 13, 2026) — public/icon-192.svg and
  * public/icon-512.svg are rendered from the official app-icon
@@ -65,9 +80,11 @@ self.addEventListener('activate', (event) => {
 async function networkFirstNavigation(request) {
   const cache = await caches.open(CACHE);
   try {
-    const response = await fetch(request);
+    const response = await fetch(request, { cache: 'no-cache' });
     if (response.ok) {
-      await cache.put('/index.html', response.clone());
+      // Fail-open (rule 4): refreshing the offline copy is a
+      // courtesy, never a gate on serving the fresh document.
+      await cache.put('/index.html', response.clone()).catch(() => undefined);
     }
     return response;
   } catch {
@@ -83,7 +100,8 @@ async function cacheFirstAsset(request) {
   if (cached) return cached;
   const response = await fetch(request);
   if (response.ok) {
-    await cache.put(request, response.clone());
+    // Fail-open (rule 4): a refused write must not sink the asset.
+    await cache.put(request, response.clone()).catch(() => undefined);
   }
   return response;
 }
@@ -97,7 +115,8 @@ function staleWhileRevalidate(event) {
       .then((response) => {
         if (response.ok) {
           const copy = response.clone();
-          caches.open(CACHE).then((cache) => cache.put(request, copy));
+          // Fail-open (rule 4): background refresh, best-effort.
+          caches.open(CACHE).then((cache) => cache.put(request, copy)).catch(() => undefined);
         }
         return response;
       })

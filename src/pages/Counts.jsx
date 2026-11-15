@@ -92,7 +92,7 @@ export default function Counts() {
             {t('counts.subtitle')}
           </p>
         </div>
-        <Button onClick={() => setDialogOpen(true)}>
+        <Button data-tour="count-start" onClick={() => setDialogOpen(true)}>
           <Plus className="mr-1.5 h-4 w-4" /> {t('counts.startCount')}
         </Button>
       </div>

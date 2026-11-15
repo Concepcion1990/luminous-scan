@@ -25,6 +25,7 @@ export const DEFAULT_BUSINESS = {
   date_format: 'MMM d, yyyy',
   unit_system: 'imperial',
   language: 'en',
+  tax_rate: '',
 };
 
 export const BRAND_COLORS = [
@@ -138,6 +139,7 @@ export async function saveBusiness(record, values) {
     date_format: values.date_format || 'MMM d, yyyy',
     unit_system: values.unit_system || 'imperial',
     language: values.language || 'en',
+    tax_rate: values.tax_rate?.trim() || '',
   };
   return record?.id
     ? base44.entities.Business.update(record.id, payload)

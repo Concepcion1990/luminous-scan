@@ -78,7 +78,7 @@ function InlineStockStepper({ value, onStep, addLabel, removeLabel }) {
 export default function Products() {
   const { user } = useAuth();
   const { profile, activeId, record } = useBusiness();
-  const { limits, isLoading: entitlementLoading } = useEntitlements();
+  const { limits, planKey, isLoading: entitlementLoading } = useEntitlements();
   const { toast } = useToast();
   const isDesktop = useIsDesktop();
   const { open: dialogOpen, onOpenChange: setDialogOpen } = useModalHistory({
@@ -104,6 +104,16 @@ export default function Products() {
   const [expanded, setExpanded] = useState(null);
   const [selected, setSelected] = useState([]);
   const [bulkOpen, setBulkOpen] = useState(false);
+  // The bulk dialog works on the selection AS IT WAS when the
+  // door was tapped — a snapshot, not the live selection. The
+  // catalog reload clears the selection (setSelected([]) in load),
+  // and the dialog itself can trigger that reload: creating a
+  // category through its Add window announces on the freshness
+  // bus, the page reloads behind the open dialog, and the live
+  // selection emptied the dialog to 'Bulk edit 0 products'
+  // (found by the rendered probe, Nov 15, 2026). The snapshot
+  // makes the opened-for set immune.
+  const [bulkSnapshot, setBulkSnapshot] = useState([]);
   const [editing, setEditing] = useState(null);
   const [seed, setSeed] = useState(null);
   const [reload, setReload] = useState(0);
@@ -507,7 +517,7 @@ export default function Products() {
         <div className="flex flex-wrap gap-2">
           <LimitBadge label={t('products.limitLabel')} used={activeCount} limit={productLimit} />
           <ExportCsvButton businessName={profile.name} businessId={activeId} />
-          <Button onClick={openNew}>
+          <Button data-tour="product-add" onClick={openNew}>
             <Plus className="mr-1.5 h-4 w-4" /> {t('products.newProduct')}
           </Button>
         </div>
@@ -516,6 +526,7 @@ export default function Products() {
       <div className="relative">
         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
+          data-tour="products-search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder={t('products.searchPlaceholder')}
@@ -576,14 +587,17 @@ export default function Products() {
             size="sm"
             variant="outline"
             disabled={!selectedProducts.length}
-            onClick={() => setBulkOpen(true)}
+            onClick={() => {
+              setBulkSnapshot(selectedProducts);
+              setBulkOpen(true);
+            }}
           >
             {t('products.bulkEdit')}
           </Button>
         </div>
       )}
 
-      <div className="overflow-hidden rounded-xl border border-border bg-card">
+      <div data-tour="products-list" className="overflow-hidden rounded-xl border border-border bg-card">
         <div className="hidden grid-cols-[26px_minmax(0,2.2fr)_minmax(0,1.2fr)_110px_110px_88px] gap-3 border-b border-border bg-muted/50 px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground md:grid xl:grid-cols-[26px_48px_minmax(0,2.4fr)_minmax(0,1.3fr)_120px_110px_84px_104px_96px]">
           <span />
           <span className="hidden xl:block">Photo</span>
@@ -849,12 +863,49 @@ export default function Products() {
       <BulkEditDialog
         open={bulkOpen}
         onOpenChange={setBulkOpen}
-        products={selectedProducts}
+        businessId={activeId}
+        products={bulkSnapshot}
         categories={categoryOptions}
         subcategories={vocabulary.subcategories}
         tags={tagOptions}
-        onDone={(count) => {
-          toast({ title: t('products.catalogUpdated'), description: t('products.productsChanged', { count, plural: count === 1 ? '' : 's' }) });
+        locations={locations}
+        levels={levels}
+        planKey={planKey}
+        onDone={(summary) => {
+          const count = summary?.count ?? 0;
+          const parts = [
+            t('products.productsChanged', { count, plural: count === 1 ? '' : 's' }),
+          ];
+          // The bulk quantity report (owner ruling, Nov 15, 2026):
+          // how many products were set, how many real movements
+          // were recorded, and how many archived products were
+          // skipped — in plain words, never silent.
+          if (summary?.quantity) {
+            const q = summary.quantity;
+            parts.push(
+              t('products.bulkQuantityResult', {
+                count: q.set,
+                plural: q.set === 1 ? '' : 's',
+                quantity: q.quantity,
+                location: q.location,
+              })
+            );
+            parts.push(
+              t('products.bulkMovementsRecorded', {
+                count: q.movements,
+                plural: q.movements === 1 ? '' : 's',
+              })
+            );
+            if (q.skipped > 0) {
+              parts.push(
+                t('products.bulkArchivedSkipped', {
+                  count: q.skipped,
+                  plural: q.skipped === 1 ? '' : 's',
+                })
+              );
+            }
+          }
+          toast({ title: t('products.catalogUpdated'), description: parts.join(' ') });
           setReload((r) => r + 1);
         }}
       />

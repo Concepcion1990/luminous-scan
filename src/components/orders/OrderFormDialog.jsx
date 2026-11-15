@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { base44, apiRequest } from '@/api/client';
 import { Plus } from 'lucide-react';
 import OrderLineRow from '@/components/orders/OrderLineRow';
@@ -24,13 +25,20 @@ import {
 import AddLocationInline from '@/components/locations/AddLocationInline';
 import { blankLine, CHANNELS, orderNumber, orderTotals } from '@/lib/orders';
 import { money, todayIso } from '@/lib/purchasing';
+import { computeOrderTax, formatTaxRate, parseTaxRate } from '@/lib/taxRate';
 import { useBusiness } from '@/hooks/useBusiness';
 import { withBusiness } from '@/lib/scoped';
 import { t } from '@/lib/i18n';
 
 export default function OrderFormDialog({ open, onOpenChange, order, products, locations, currency, onSaved, focusShipsFrom = false }) {
-  const { activeId } = useBusiness();
+  const { activeId, record } = useBusiness();
   const [form, setForm] = useState(null);
+  // The set-once tax rate (owner ruling, Nov 15, 2026): on a NEW
+  // order the Tax box pre-fills from the items subtotal until the
+  // moment it is typed in by hand — from then on the typed value
+  // rules this order, and the setting is never written back.
+  const [taxTouched, setTaxTouched] = useState(false);
+  const taxRate = parseTaxRate(record?.tax_rate);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [addressOnFile, setAddressOnFile] = useState(false);
@@ -92,6 +100,7 @@ export default function OrderFormDialog({ open, onOpenChange, order, products, l
     setAddressOnFile(false);
     setSavedAddresses([]);
     setError('');
+    setTaxTouched(false);
     if (order) {
       setForm({
         number: order.number || orderNumber(),
@@ -140,6 +149,18 @@ export default function OrderFormDialog({ open, onOpenChange, order, products, l
       });
     }
   }, [open, order, locations]);
+
+  // Pre-fill (create mode only, rate set, box untouched): Tax =
+  // items subtotal × rate — shipping is NOT in the taxed base.
+  // Recomputes as lines change; stops forever at the first
+  // hand-typed value. Edit mode never auto-fills: a saved order's
+  // tax is its own.
+  useEffect(() => {
+    if (!open || order || !form || taxTouched || taxRate == null) return;
+    const computed = computeOrderTax(orderTotals(form).subtotal, taxRate);
+    const next = computed ? computed.toFixed(2) : '';
+    setForm((f) => (f && String(f.tax ?? '') !== next ? { ...f, tax: next } : f));
+  }, [open, order, form, taxTouched, taxRate]);
 
   if (!form) return null;
 
@@ -440,8 +461,28 @@ export default function OrderFormDialog({ open, onOpenChange, order, products, l
                 inputMode="decimal"
                 step="0.01"
                 value={form.tax}
-                onChange={(e) => setForm({ ...form, tax: e.target.value })}
+                onChange={(e) => {
+                  setTaxTouched(true);
+                  setForm({ ...form, tax: e.target.value });
+                }}
               />
+              <p className="text-[11px] text-muted-foreground">
+                {taxRate != null ? (
+                  <>
+                    {t('orders.taxRateSet', { rate: formatTaxRate(record?.tax_rate) })} —{' '}
+                    <Link to="/settings" className="underline">
+                      {t('orders.taxRateChange')}
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    {t('orders.taxRateUnset')} —{' '}
+                    <Link to="/settings" className="underline">
+                      {t('orders.taxRateSetOne')}
+                    </Link>
+                  </>
+                )}
+              </p>
             </div>
           </div>
 

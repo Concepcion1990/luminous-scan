@@ -8,7 +8,8 @@ import { scoped } from '@/lib/scoped';
 import { useBusiness } from '@/hooks/useBusiness';
 import { useDataFresh } from '@/hooks/useDataFresh';
 import useEntitlements from '@/hooks/useEntitlements';
-import { localTimeZoneName } from '@/lib/dates';
+import { format } from 'date-fns';
+import { localTimeZoneName, toLocalDate } from '@/lib/dates';
 import MovementRow from '@/components/movements/MovementRow';
 import ResponsiveSelect from '@/components/ui/ResponsiveSelect';
 import { t } from '@/lib/i18n';
@@ -24,6 +25,12 @@ export default function Movements() {
   const { isEssentials, isLoading: entitlementLoading } = useEntitlements();
   const showBundleTypes = !isEssentials && !entitlementLoading;
   const [movements, setMovements] = useState([]);
+  // Import activity lines (Nov 15, 2026): committed Create/Update
+  // imports interleaved into the unfiltered history. They are
+  // activity records, not movements — no reverse door, no stock
+  // math — and any type/location filter hides them, since they
+  // carry neither.
+  const [importEvents, setImportEvents] = useState([]);
   const [locations, setLocations] = useState([]);
   const [locReload, setLocReload] = useState(0);
   const [hasMore, setHasMore] = useState(false);
@@ -46,6 +53,14 @@ export default function Movements() {
     base44.entities.Location
       .filter(scoped({}, activeId), { sort: 'name', limit: 100 })
       .then((p) => setLocations(p.items ?? []));
+  }, [activeId, locReload]);
+
+  useEffect(() => {
+    if (!activeId) return;
+    base44.entities.ImportEvent
+      .filter(scoped({}, activeId), { sort: '-created_date', limit: 100 })
+      .then((p) => setImportEvents(p.items ?? []))
+      .catch(() => setImportEvents([]));
   }, [activeId, locReload]);
 
   // The location filter shares the one truth: the seeded store
@@ -126,6 +141,14 @@ export default function Movements() {
 
   const reversedIds = new Set(movements.map((m) => m.reversal_of_id).filter(Boolean));
 
+  const showImportEvents = type === 'all' && locationId === 'all';
+  const timeline = showImportEvents
+    ? [
+        ...movements.map((m) => ({ kind: 'movement', at: m.created_date || '', row: m })),
+        ...importEvents.map((e) => ({ kind: 'import', at: e.created_date || '', row: e })),
+      ].sort((a, b) => String(b.at).localeCompare(String(a.at)))
+    : movements.map((m) => ({ kind: 'movement', at: m.created_date || '', row: m }));
+
   const confirmReverse = async (movement) => {
     setBusyId(movement.id);
     setError('');
@@ -149,7 +172,7 @@ export default function Movements() {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5" data-tour="movements-list">
       <div>
         <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">{t('movements.eyebrow')}</p>
         <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">{t('movements.title')}</h1>
@@ -194,7 +217,7 @@ export default function Movements() {
       <div className="overflow-hidden rounded-xl border border-border bg-card">
         {loading && <p className="px-4 py-10 text-center text-sm text-muted-foreground">{t('movements.loading')}</p>}
 
-        {!loading && movements.length === 0 && (
+        {!loading && timeline.length === 0 && (
           <div className="px-4 py-14 text-center">
             <p className="text-sm font-medium">{t('movements.emptyTitle')}</p>
             <p className="mt-1 text-xs text-muted-foreground">{t('movements.emptyHint')}</p>
@@ -203,23 +226,40 @@ export default function Movements() {
 
         <div className="divide-y divide-border">
           {!loading &&
-            movements.map((m) => (
-              <MovementRow
-                key={m.id}
-                movement={m}
-                reversed={reversedIds.has(m.id)}
-                blocker={pendingId === m.id ? reversalBlocker(m) : ''}
-                confirming={pendingId === m.id}
-                busy={busyId === m.id}
-                onAskReverse={() => {
-                  setError('');
-                  setFlash('');
-                  setPendingId(m.id);
-                }}
-                onConfirmReverse={() => confirmReverse(m)}
-                onCancelReverse={() => setPendingId('')}
-              />
-            ))}
+            timeline.map(({ kind, row }) =>
+              kind === 'import' ? (
+                <div key={`import-${row.id}`} className="flex items-center gap-3 px-4 py-3 sm:px-5">
+                  <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
+                  <span className="text-sm font-medium">
+                    {t(row.kind === 'update' ? 'dashboard.activityUpdated' : 'dashboard.activityImported', {
+                      count: row.product_count || 0,
+                      plural: row.product_count === 1 ? '' : 's',
+                    })}
+                  </span>
+                  <span className="numeric ml-auto shrink-0 font-mono text-[10px] uppercase tracking-wide text-muted-foreground">
+                    {toLocalDate(row.created_date)
+                      ? format(toLocalDate(row.created_date), 'd MMM, HH:mm')
+                      : ''}
+                  </span>
+                </div>
+              ) : (
+                <MovementRow
+                  key={row.id}
+                  movement={row}
+                  reversed={reversedIds.has(row.id)}
+                  blocker={pendingId === row.id ? reversalBlocker(row) : ''}
+                  confirming={pendingId === row.id}
+                  busy={busyId === row.id}
+                  onAskReverse={() => {
+                    setError('');
+                    setFlash('');
+                    setPendingId(row.id);
+                  }}
+                  onConfirmReverse={() => confirmReverse(row)}
+                  onCancelReverse={() => setPendingId('')}
+                />
+              ),
+            )}
         </div>
 
         {!loading && movements.length > 0 && (

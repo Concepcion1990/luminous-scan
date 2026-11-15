@@ -246,14 +246,26 @@ export default function CountSheet({ session, products, levels, user, onChanged 
           {t('counts.emptySheet')}
         </p>
       ) : (
-        <div className="max-h-[320px] overflow-y-auto pr-1">
-          {lines.map((line) => (
-            <CountLineRow
-              key={line.product_id}
-              line={line}
-              onChange={locked ? () => {} : (value) => setCount(line.product_id, value)}
-            />
-          ))}
+        // The row region pans BOTH ways (owner ruling, Nov 15,
+        // 2026): on a narrow phone the rows run slightly wider
+        // than the card and the first column's left edge clipped
+        // with no way to reach it. The inner min-width lets the
+        // rows overflow honestly so a sideways drag pans them
+        // into reach. Vertical behavior is deliberately NOT
+        // touched — no overscroll containment, no touch-action
+        // restriction — so a vertical drag starting on the lines
+        // scrolls exactly as it did before (the Nov 14 freeze
+        // fix stands).
+        <div className="max-h-[320px] overflow-auto pr-1">
+          <div className="min-w-[21rem]">
+            {lines.map((line) => (
+              <CountLineRow
+                key={line.product_id}
+                line={line}
+                onChange={locked ? () => {} : (value) => setCount(line.product_id, value)}
+              />
+            ))}
+          </div>
         </div>
       )}
 

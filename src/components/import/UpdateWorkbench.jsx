@@ -49,6 +49,15 @@ export default function UpdateWorkbench({ businessId }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
+  // Pick-and-choose (owner ruling, Nov 15, 2026): rows start ALL
+  // ticked; only the ticked rows are written.
+  const [excluded, setExcluded] = useState([]);
+  const excludedSet = useMemo(() => new Set(excluded), [excluded]);
+  const toggleRow = (index, ticked) => {
+    setExcluded((current) =>
+      ticked ? current.filter((i) => i !== index) : [...current, index]
+    );
+  };
 
   const loadProducts = async () => {
     if (!businessId) {
@@ -92,6 +101,13 @@ export default function UpdateWorkbench({ businessId }) {
     [sheet.table, sheet.mapping, products, clearBlanks]
   );
 
+  const tickedChangeRows = useMemo(
+    () => report.rows.filter((row) => row.status === 'change' && !excludedSet.has(row.index)),
+    [report, excludedSet]
+  );
+  const effectiveChanged = tickedChangeRows.length;
+  const effectiveFields = tickedChangeRows.reduce((sum, row) => sum + row.changes.length, 0);
+
   // The staged import survives leaving (owner ruling, Nov 14,
   // 2026): sheet, matches, options and the dry-run verdict persist
   // on this device until Start over or a finished update clears
@@ -108,6 +124,7 @@ export default function UpdateWorkbench({ businessId }) {
     clearBlanks,
     confirmed,
     dryRun,
+    excluded,
   };
   const { tooLarge: draftTooLarge } = useImportDraft({
     businessId,
@@ -118,11 +135,12 @@ export default function UpdateWorkbench({ businessId }) {
       setClearBlanks(Boolean(draft.clearBlanks));
       setConfirmed(Boolean(draft.confirmed));
       setDryRun(draft.dryRun || null);
+      setExcluded(Array.isArray(draft.excluded) ? draft.excluded : []);
     },
   });
 
   const matchKey = sheet.mapping.includes('id') ? 'id' : sheet.mapping.includes('sku') ? 'sku' : '';
-  const signature = `${sheet.fileName}|${sheet.mapping.join(',')}|${clearBlanks}`;
+  const signature = `${sheet.fileName}|${sheet.mapping.join(',')}|${clearBlanks}|${[...excluded].sort((a, b) => a - b).join('.')}`;
   const needsCheck = !dryRun || dryRun.signature !== signature;
 
   const dropChecks = () => {
@@ -134,6 +152,7 @@ export default function UpdateWorkbench({ businessId }) {
     sheet.reset();
     setError('');
     dropChecks();
+    setExcluded([]);
   };
 
   // A dry run — first or re-run — always re-reads the CURRENT
@@ -153,12 +172,15 @@ export default function UpdateWorkbench({ businessId }) {
       const fresh = page.items ?? [];
       setProducts(fresh);
       const verdict = evaluateUpdates({ table: sheet.table, mapping: sheet.mapping, products: fresh, clearBlanks });
+      const ticked = verdict.rows.filter(
+        (row) => row.status === 'change' && !excludedSet.has(row.index)
+      );
       setDryRun({
         signature,
-        changed: verdict.changed,
+        changed: ticked.length,
         same: verdict.same,
         skipped: verdict.skipped,
-        fieldCount: verdict.fieldCount,
+        fieldCount: ticked.reduce((sum, row) => sum + row.changes.length, 0),
         problems: verdict.problems,
       });
     } catch (err) {
@@ -169,16 +191,14 @@ export default function UpdateWorkbench({ businessId }) {
   };
 
   const apply = async () => {
-    if (!businessId || !confirmed || needsCheck || !report.changed) return;
+    if (!businessId || !confirmed || needsCheck || !effectiveChanged) return;
     setBusy(true);
     setError('');
     setResult(null);
     try {
-      const changes = report.rows
-        .filter((row) => row.status === 'change')
-        .map((row) => ({ id: row.product.id, ...row.values }));
-      const updated = await applyProductUpdates({ changes, businessId });
-      setResult({ updated, skipped: report.skipped, same: report.same, fields: report.fieldCount });
+      const changes = tickedChangeRows.map((row) => ({ id: row.product.id, ...row.values }));
+      const updated = await applyProductUpdates({ changes, businessId, fileName: sheet.fileName });
+      setResult({ updated, skipped: report.skipped, same: report.same, fields: effectiveFields });
       await loadProducts();
       sheet.reset();
       dropChecks();
@@ -200,6 +220,7 @@ export default function UpdateWorkbench({ businessId }) {
           onChange={(event) => {
             setError('');
             dropChecks();
+            setExcluded([]);
             sheet.onFile(event);
           }}
         />
@@ -301,6 +322,7 @@ export default function UpdateWorkbench({ businessId }) {
                 onValueChange={(name) => {
                   sheet.chooseSheet(name);
                   dropChecks();
+                  setExcluded([]);
                 }}
               >
                 <SelectTrigger>
@@ -336,6 +358,7 @@ export default function UpdateWorkbench({ businessId }) {
             onChange={(column, field) => {
               sheet.changeMapping(column, field);
               dropChecks();
+              setExcluded([]);
             }}
             fields={UPDATE_FIELDS}
             requiredKeys={['sku', 'id']}
@@ -361,6 +384,7 @@ export default function UpdateWorkbench({ businessId }) {
               onChange={(event) => {
                 setClearBlanks(event.target.checked);
                 dropChecks();
+                setExcluded([]);
               }}
               className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
             />
@@ -372,7 +396,12 @@ export default function UpdateWorkbench({ businessId }) {
             </span>
           </label>
 
-          <UpdatePreview report={report} />
+          <UpdatePreview
+            report={report}
+            excluded={excludedSet}
+            onToggleRow={toggleRow}
+            resetKey={`${sheet.fileName}|${sheet.mapping.join(',')}|${clearBlanks}`}
+          />
           <ProblemReport rows={report.problems} fileName="product-update-problems.csv" />
 
           <div
@@ -394,9 +423,9 @@ export default function UpdateWorkbench({ businessId }) {
               )}
             </p>
             <p className="mt-1 text-foreground">
-              <span className="numeric font-semibold">{report.changed}</span>{' '}
-              {t('import.updateDryRunProducts', { s: report.changed === 1 ? '' : 's' })} ·{' '}
-              <span className="numeric font-semibold">{report.fieldCount}</span>{' '}
+              <span className="numeric font-semibold">{effectiveChanged}</span>{' '}
+              {t('import.updateDryRunProducts', { s: effectiveChanged === 1 ? '' : 's' })} ·{' '}
+              <span className="numeric font-semibold">{effectiveFields}</span>{' '}
               {t('import.updateDryRunFields')} ·{' '}
               <span className="numeric font-semibold">{report.same}</span>{' '}
               {t('import.updateDryRunUnchanged')} ·{' '}
@@ -412,7 +441,7 @@ export default function UpdateWorkbench({ businessId }) {
             </p>
           </div>
 
-          {dryRun && !needsCheck && report.changed > 0 && (
+          {dryRun && !needsCheck && effectiveChanged > 0 && (
             <label className="flex items-start gap-2 text-xs">
               <input
                 type="checkbox"
@@ -422,8 +451,8 @@ export default function UpdateWorkbench({ businessId }) {
               />
               <span>
                 {t('import.confirmUpdateStart')}{' '}
-                <span className="font-medium text-foreground">{report.changed}</span>{' '}
-                {t('import.confirmUpdateEnd', { s: report.changed === 1 ? '' : 's' })}
+                <span className="font-medium text-foreground">{effectiveChanged}</span>{' '}
+                {t('import.confirmUpdateEnd', { s: effectiveChanged === 1 ? '' : 's' })}
               </span>
             </label>
           )}
@@ -442,7 +471,7 @@ export default function UpdateWorkbench({ businessId }) {
             </Button>
             <Button
               onClick={apply}
-              disabled={busy || !businessId || needsCheck || !confirmed || !report.changed}
+              disabled={busy || !businessId || needsCheck || !confirmed || !effectiveChanged}
             >
               {busy ? (
                 <>
@@ -450,8 +479,8 @@ export default function UpdateWorkbench({ businessId }) {
                 </>
               ) : (
                 t('import.updateProducts', {
-                  count: report.changed,
-                  s: report.changed === 1 ? '' : 's',
+                  count: effectiveChanged,
+                  s: effectiveChanged === 1 ? '' : 's',
                 })
               )}
             </Button>

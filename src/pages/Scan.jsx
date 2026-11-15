@@ -492,7 +492,7 @@ export default function Scan() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="min-w-0 space-y-4 rounded-xl border border-border bg-card p-4 sm:p-5">
-          <div data-pull-refresh-ignore ref={scannerCardRef}>
+          <div data-pull-refresh-ignore data-tour="scan-start" ref={scannerCardRef}>
             {scanVisible && <BarcodeScanner key={session} onDetect={lookup} />}
           </div>
 
@@ -523,7 +523,9 @@ export default function Scan() {
                 {t('scan.find')}
               </Button>
             </form>
-            <p className="text-[11px] text-muted-foreground">{t('scan.neverChangesStock')}</p>
+            <p className="text-[11px] text-muted-foreground">
+              {t(planKey === 'business' ? 'scan.neverChangesStock' : 'scan.neverChangesStockEssentials')}
+            </p>
 
             <ScannerListener
               armed={armed}

@@ -472,6 +472,26 @@ export function createShopRouter({ getPool: getPoolFn }) {
         units += qty;
       }
     }
+    // The import's own story (owner ruling, Nov 15, 2026): one
+    // activity row per committed Create import, so the Overview
+    // feed and the full history can say "Imported N products" even
+    // when every row arrived at zero and no stock moved. An
+    // activity record only — never a stock movement.
+    if (created > 0) {
+      await pool().query(
+        `INSERT INTO import_events (id, business_id, kind, product_count, batch_ref, file_name, created_by_id, created_by)
+         VALUES ($1, $2, 'create', $3, $4, $5, $6, $7)`,
+        [
+          crypto.randomUUID(),
+          req.params.bid,
+          created,
+          batchRef,
+          String(body.fileName || ''),
+          req.user?.id || null,
+          req.user?.email || '',
+        ],
+      );
+    }
     return res.status(201).json({ created, received, units, skipped: problems.length, problems });
   }));
 

@@ -78,6 +78,17 @@ const DEFS = {
     required: ['name'],
     writePerm: 'categories.manage',
   },
+  // One summary row per committed Create/Update import, surfaced in
+  // the activity feeds (Nov 15, 2026). Deliberately NOT a stock
+  // movement: no stock math, count or reconciliation ever reads it.
+  ImportEvent: {
+    table: 'import_events',
+    json: [],
+    numeric: ['product_count'],
+    bool: [],
+    required: ['kind'],
+    writePerm: 'exports.use',
+  },
   Location: {
     table: 'locations',
     json: [],

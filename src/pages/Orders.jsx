@@ -156,6 +156,7 @@ export default function Orders() {
             <Link to="/returns">{t('orders.returnsLink')}</Link>
           </Button>
           <Button
+            data-tour="order-new"
             onClick={() => {
               setEditing(null);
               setEditOpen(true);
@@ -223,7 +224,7 @@ export default function Orders() {
         </div>
       )}
 
-      <div className="grid gap-3 md:grid-cols-2">
+      <div className="grid gap-3 md:grid-cols-2" data-tour="orders-list">
         {orders.map((order) => (
           <OrderCard
             key={order.id}

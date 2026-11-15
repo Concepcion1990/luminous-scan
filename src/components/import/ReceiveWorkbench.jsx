@@ -9,6 +9,7 @@ import { applyReceipts } from '@/lib/importCommit';
 import { downloadTemplateCsv, downloadTemplateXlsx } from '@/lib/importTemplates';
 import { scoped } from '@/lib/scoped';
 import { useAuth } from '@/lib/AuthContext';
+import useEntitlements from '@/hooks/useEntitlements';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -41,6 +42,10 @@ function newBatchRef() {
  */
 export default function ReceiveWorkbench({ businessId }) {
   const { user } = useAuth();
+  // Plan-scoped example copy (owner ruling, Nov 15, 2026): a
+  // purchase-order number is Business vocabulary; on Essentials the
+  // reference example stays plan-neutral.
+  const { planKey } = useEntitlements();
   const sheet = useImportSheet(guessReceiveField);
   const [products, setProducts] = useState([]);
   const [levels, setLevels] = useState([]);
@@ -53,6 +58,15 @@ export default function ReceiveWorkbench({ businessId }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
+  // Pick-and-choose (owner ruling, Nov 15, 2026): rows start ALL
+  // ticked; only the ticked rows are received.
+  const [excluded, setExcluded] = useState([]);
+  const excludedSet = useMemo(() => new Set(excluded), [excluded]);
+  const toggleRow = (index, ticked) => {
+    setExcluded((current) =>
+      ticked ? current.filter((i) => i !== index) : [...current, index]
+    );
+  };
 
   useEffect(() => {
     let alive = true;
@@ -102,6 +116,13 @@ export default function ReceiveWorkbench({ businessId }) {
     [sheet.table, sheet.mapping, products, levels, locationId]
   );
 
+  const tickedReadyRows = useMemo(
+    () => report.rows.filter((row) => row.status === 'ready' && !excludedSet.has(row.index)),
+    [report, excludedSet]
+  );
+  const effectiveReady = tickedReadyRows.length;
+  const effectiveUnits = tickedReadyRows.reduce((sum, row) => sum + (row.incoming || 0), 0);
+
   // The staged import survives leaving (owner ruling, Nov 14,
   // 2026): sheet, matches, location, reference, note and the
   // dry-run verdict persist on this device until Start over or a
@@ -120,6 +141,7 @@ export default function ReceiveWorkbench({ businessId }) {
     note,
     batchRef,
     dryRun,
+    excluded,
   };
   const { tooLarge: draftTooLarge } = useImportDraft({
     businessId,
@@ -132,11 +154,12 @@ export default function ReceiveWorkbench({ businessId }) {
       setNote(draft.note || '');
       setBatchRef(draft.batchRef || '');
       setDryRun(draft.dryRun || null);
+      setExcluded(Array.isArray(draft.excluded) ? draft.excluded : []);
     },
   });
 
   const matchKey = sheet.mapping.includes('id') ? 'id' : sheet.mapping.includes('sku') ? 'sku' : '';
-  const signature = `${sheet.fileName}|${sheet.mapping.join(',')}|${locationId}|${batchRef}`;
+  const signature = `${sheet.fileName}|${sheet.mapping.join(',')}|${locationId}|${batchRef}|${[...excluded].sort((a, b) => a - b).join('.')}`;
   const needsCheck = !dryRun || dryRun.signature !== signature;
   const place = locations.find((location) => location.id === locationId);
 
@@ -147,6 +170,7 @@ export default function ReceiveWorkbench({ businessId }) {
     setBatchRef('');
     setReference('');
     setNote('');
+    setExcluded([]);
   };
 
   // A dry run — first or re-run — always re-reads the CURRENT
@@ -178,11 +202,14 @@ export default function ReceiveWorkbench({ businessId }) {
         levels: freshLevels,
         locationId,
       });
+      const ticked = verdict.rows.filter(
+        (row) => row.status === 'ready' && !excludedSet.has(row.index)
+      );
       setDryRun({
         signature,
-        ready: verdict.ready,
+        ready: ticked.length,
         skipped: verdict.skipped,
-        units: verdict.units,
+        units: ticked.reduce((sum, row) => sum + (row.incoming || 0), 0),
         problems: verdict.problems,
       });
     } catch (err) {
@@ -193,12 +220,12 @@ export default function ReceiveWorkbench({ businessId }) {
   };
 
   const receive = async () => {
-    if (!businessId || !dryRun || needsCheck || !report.ready) return;
+    if (!businessId || !dryRun || needsCheck || !effectiveReady) return;
     setBusy(true);
     setError('');
     setResult(null);
     try {
-      const rows = report.rows.filter((row) => row.status === 'ready');
+      const rows = tickedReadyRows;
       const outcome = await applyReceipts({
         rows,
         levels,
@@ -236,6 +263,7 @@ export default function ReceiveWorkbench({ businessId }) {
           onChange={async (event) => {
             setBatchRef(newBatchRef());
             setDryRun(null);
+            setExcluded([]);
             await sheet.onFile(event);
           }}
         />
@@ -355,6 +383,7 @@ export default function ReceiveWorkbench({ businessId }) {
                 onValueChange={(name) => {
                   sheet.chooseSheet(name);
                   setDryRun(null);
+                  setExcluded([]);
                 }}
               >
                 <SelectTrigger>
@@ -390,6 +419,7 @@ export default function ReceiveWorkbench({ businessId }) {
             onChange={(column, field) => {
               sheet.changeMapping(column, field);
               setDryRun(null);
+              setExcluded([]);
             }}
             fields={RECEIVE_FIELDS}
             requiredKeys={['sku', 'id']}
@@ -409,7 +439,7 @@ export default function ReceiveWorkbench({ businessId }) {
                   setReference(event.target.value);
                   setDryRun(null);
                 }}
-                placeholder="PO-1043"
+                placeholder={planKey === 'business' ? 'PO-1043' : 'Delivery 1043'}
               />
             </div>
             <div className="grid gap-1">
@@ -427,7 +457,12 @@ export default function ReceiveWorkbench({ businessId }) {
             </div>
           </div>
 
-          <ReceivePreview report={report} />
+          <ReceivePreview
+            report={report}
+            excluded={excludedSet}
+            onToggleRow={toggleRow}
+            resetKey={`${sheet.fileName}|${sheet.mapping.join(',')}`}
+          />
           <ProblemReport rows={report.problems} fileName="stock-receipt-problems.csv" />
 
           <div
@@ -449,9 +484,9 @@ export default function ReceiveWorkbench({ businessId }) {
               )}
             </p>
             <p className="mt-1 text-foreground">
-              <span className="numeric font-semibold">{report.ready}</span>{' '}
-              {t('import.receiveDryRunProducts', { s: report.ready === 1 ? '' : 's' })} ·{' '}
-              <span className="numeric font-semibold">{report.units}</span> {t('import.receiveDryRunUnits')} ·{' '}
+              <span className="numeric font-semibold">{effectiveReady}</span>{' '}
+              {t('import.receiveDryRunProducts', { s: effectiveReady === 1 ? '' : 's' })} ·{' '}
+              <span className="numeric font-semibold">{effectiveUnits}</span> {t('import.receiveDryRunUnits')} ·{' '}
               <span className="numeric font-semibold">{report.skipped}</span>{' '}
               {t('import.receiveDryRunSkipped')}
             </p>
@@ -480,15 +515,15 @@ export default function ReceiveWorkbench({ businessId }) {
                 t('import.rerunDryRun')
               )}
             </Button>
-            <Button onClick={receive} disabled={busy || !businessId || !locationId || needsCheck || !report.ready}>
+            <Button onClick={receive} disabled={busy || !businessId || !locationId || needsCheck || !effectiveReady}>
               {busy ? (
                 <>
                   <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> {t('import.receiving')}
                 </>
               ) : (
                 t('import.receiveUnits', {
-                  units: report.units,
-                  s: report.units === 1 ? '' : 's',
+                  units: effectiveUnits,
+                  s: effectiveUnits === 1 ? '' : 's',
                 })
               )}
             </Button>

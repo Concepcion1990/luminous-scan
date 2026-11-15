@@ -70,6 +70,23 @@ export default function DetailsCard({ values, onChange, onPreferenceChange }) {
               placeholder={t('settings.details.addressPlaceholder')}
             />
           </div>
+          <div className="space-y-2">
+            <Label htmlFor="business-tax-rate">{t('settings.details.taxRate')}</Label>
+            <div className="relative">
+              <Input
+                id="business-tax-rate"
+                inputMode="decimal"
+                value={values.tax_rate ?? ''}
+                onChange={set('tax_rate')}
+                placeholder="8.25"
+                className="pr-8"
+              />
+              <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-muted-foreground">
+                %
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground">{t('settings.details.taxRateHint')}</p>
+          </div>
         </div>
       </SettingsCard>
 

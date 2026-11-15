@@ -160,7 +160,10 @@ test('shared Layout puts the footer at the bottom of every protected page', () =
   const mainEndAt = layout.indexOf('</main>');
   assert.ok(footerAt > mainAt && footerAt < mainEndAt, 'footer sits inside <main>, after the page content');
   // It clears the fixed mobile tab bar instead of hiding behind it.
-  assert.match(layout, /<LegalFooter className="pb-20 lg:pb-4" \/>/);
+  // Embed-aware since the lesson visuals (Nov 15, 2026): inside
+  // a visual frame there is no tab bar to clear, so the footer
+  // sits tight; everywhere else it keeps its tab-bar clearance.
+  assert.match(layout, /<LegalFooter className=\{embedVisual \? "pb-4" : "pb-20 lg:pb-4"\} \/>/);
 });
 
 test('ThankYou and the three policy pages carry the footer at the bottom', () => {

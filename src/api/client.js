@@ -121,7 +121,7 @@ function entityClient(name) {
 // suggestions, the Categories & tags counts, the Movements
 // location filter and every picker without a refresh. Tags also
 // live on products, whose writes already announce.
-const INVENTORY_ENTITIES = new Set(['Product', 'StockLevel', 'StockMovement', 'Category', 'Location']);
+const INVENTORY_ENTITIES = new Set(['Product', 'StockLevel', 'StockMovement', 'Category', 'Location', 'ImportEvent']);
 
 // T2: the Business entity is real — the workspace loader
 // (src/lib/business.js loadWorkspace) lists the caller's businesses,
@@ -161,6 +161,7 @@ const ENTITY_NAMES = [
   'Category',
   'CountSession',
   'Entitlement',
+  'ImportEvent',
   'Listing',
   'Location',
   'Order',

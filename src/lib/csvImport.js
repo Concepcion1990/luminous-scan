@@ -67,6 +67,30 @@ export function guessField(header) {
   return partial ? partial[0] : '';
 }
 
+const NAMED_ENTITIES = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'" };
+
+/**
+ * Source files often arrive web-escaped ('Legends &amp; Lattes').
+ * The catalog must hold the true text, so every cell is decoded
+ * once, at parse time — the preview, the dry run and the write
+ * all see the same decoded value (owner ruling, Nov 15, 2026:
+ * 'customers shouldn't have to go in and edit it'). One pass:
+ * '&amp;lt;' decodes to the literal '&lt;', never to '<'.
+ * Unknown entities pass through untouched.
+ */
+export function decodeHtmlEntities(value) {
+  return String(value ?? '').replace(/&(#x?[0-9a-fA-F]+|[a-zA-Z]+);/g, (whole, body) => {
+    if (body.startsWith('#')) {
+      const hex = body[1] === 'x' || body[1] === 'X';
+      const code = Number.parseInt(body.slice(hex ? 2 : 1), hex ? 16 : 10);
+      return Number.isFinite(code) && code > 0 && code <= 0x10ffff
+        ? String.fromCodePoint(code)
+        : whole;
+    }
+    return NAMED_ENTITIES[body.toLowerCase()] ?? whole;
+  });
+}
+
 function detectDelimiter(line) {
   const commas = (line.match(/,/g) || []).length;
   const semicolons = (line.match(/;/g) || []).length;
@@ -120,8 +144,10 @@ export function parseCsv(text) {
   const nonEmpty = records.filter((cells) => cells.some((cell) => String(cell).trim()));
   const [headerRow = [], ...body] = nonEmpty;
   return {
-    headers: headerRow.map((header) => String(header).trim()),
-    rows: body.map((cells) => headerRow.map((_, index) => String(cells[index] ?? '').trim())),
+    headers: headerRow.map((header) => decodeHtmlEntities(String(header).trim())),
+    rows: body.map((cells) =>
+      headerRow.map((_, index) => decodeHtmlEntities(String(cells[index] ?? '').trim())),
+    ),
   };
 }
 

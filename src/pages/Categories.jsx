@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/client';
-import { ChevronRight, Pencil, Plus, Trash2 } from 'lucide-react';
+import { Pencil, Plus, Trash2 } from 'lucide-react';
 import CategoryDialog from '@/components/categories/CategoryDialog';
 import CategorySyncPanel from '@/components/categories/CategorySyncPanel';
 import { countByField } from '@/lib/categories';
@@ -217,6 +217,7 @@ export default function Categories() {
             {uncategorizedCount > 0 && (
               <Link
                 to="/inventory/categories?group=Uncategorized"
+                aria-label={t('categories.editAria', { name: t('inventory.uncategorized') })}
                 className="flex items-center justify-between gap-2 px-4 py-3 transition-colors hover:bg-secondary/60"
               >
                 <span className="flex min-w-0 items-baseline gap-2">
@@ -230,7 +231,14 @@ export default function Categories() {
                     })}
                   </span>
                 </span>
-                <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+                {/* The bucket is not a real category — no rename,
+                    no delete — but it carries the same pencil as
+                    every real row (owner ruling, Nov 15, 2026): the
+                    pencil is the filing door, landing on the open
+                    Uncategorized group with its Set category doors. */}
+                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-md text-muted-foreground">
+                  <Pencil className="h-3.5 w-3.5" />
+                </span>
               </Link>
             )}
           </div>

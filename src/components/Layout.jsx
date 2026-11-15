@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { isEmbedVisual } from '@/lib/embedMode';
 import { NavLink, Outlet, useLocation, useNavigate, useNavigationType } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ArrowLeft, ChevronDown, Loader2, Menu, Search } from 'lucide-react';
@@ -36,6 +37,7 @@ const MOBILE_TAB_SCREENS = {
 };
 
 export default function Layout() {
+  const embedVisual = isEmbedVisual();
   const { profile, activeId } = useBusiness();
   // T6 white-label + i18n: the store's own branding comes from the
   // business record — its brand color re-skins the chrome, its
@@ -254,8 +256,16 @@ export default function Layout() {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-20 bg-primary text-primary-foreground lg:hidden">
-          <div className="px-4 pb-2 pt-2.5">
+        {/* The header is a flex column capped at the viewport minus
+            the fixed bottom tab bar (64px + safe-area): the All
+            screens menu below is the flexible, scrolling child, so
+            its LAST row can always scroll fully clear of the tab
+            bar. With a plain max-h on the menu alone (the old 65vh),
+            header chrome + menu could exceed the visible area and
+            the menu's tail slid UNDER the tab bar (owner's phone,
+            Nov 15, 2026: Settings barely peeked above the bar). */}
+        <header className="sticky top-0 z-20 flex max-h-[calc(100dvh_-_4rem_-_env(safe-area-inset-bottom))] flex-col bg-primary text-primary-foreground lg:hidden">
+          <div className="shrink-0 px-4 pb-2 pt-2.5">
             <div className="flex items-center gap-2">
               {pathname !== '/' && (
                 <button
@@ -295,11 +305,12 @@ export default function Layout() {
               <BusinessSwitcher compact />
             </div>
           </div>
-          <div className="border-t border-primary-foreground/10 px-4 py-2">
+          <div className="shrink-0 border-t border-primary-foreground/10 px-4 py-2">
             <button
               type="button"
               onClick={() => setMobileMenuOpen((open) => !open)}
               aria-expanded={mobileMenuOpen}
+              data-tour="all-screens"
               aria-controls="stockhaven-mobile-modules"
               className="flex min-h-10 w-full items-center justify-between gap-2 rounded-md px-2 py-1.5 text-left text-sm font-medium text-primary-foreground/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground/60"
             >
@@ -322,7 +333,7 @@ export default function Layout() {
                 setMobileMenuOpen(false);
               }
             }}
-            className="max-h-[65vh] overflow-y-auto border-t border-primary-foreground/10 px-3 pb-3 pt-2"
+            className="min-h-0 flex-1 overflow-y-auto border-t border-primary-foreground/10 px-3 pb-3 pt-2"
           >
             {entitlementLoading ? (
               <div className="space-y-2 px-2 py-2" aria-label={t('layout.loadingScreens')}>
@@ -428,9 +439,10 @@ export default function Layout() {
           {/* Small, centered copyright line at the bottom of every
               protected page. The bottom padding clears the fixed mobile
               tab bar; on desktop it sits tight under the content. */}
-          <LegalFooter className="pb-20 lg:pb-4" />
+          <LegalFooter className={embedVisual ? "pb-4" : "pb-20 lg:pb-4"} />
         </main>
 
+        {!embedVisual && (
         <nav
           aria-label={t('layout.primaryNavAria')}
           className="stockhaven-mobile-tabbar fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card shadow-lg lg:hidden"
@@ -456,6 +468,7 @@ export default function Layout() {
             ))}
           </div>
         </nav>
+        )}
       </div>
     </div>
   );

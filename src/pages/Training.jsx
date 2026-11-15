@@ -15,6 +15,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AlarmClock, BellRing, Check, ChevronDown, Flag, GraduationCap, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import StepVisual from '@/components/training/StepVisual';
 import { useToast } from '@/components/ui/use-toast';
 import { useBusiness } from '@/hooks/useBusiness';
 import { t } from '@/lib/i18n';
@@ -111,7 +112,12 @@ function LessonCard({ lesson, done, completedAt, open, onToggle, onComplete, bus
                 <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
                   {i + 1}
                 </span>
-                <span className="pt-0.5">{step}</span>
+                <span className="min-w-0 flex-1 pt-0.5">
+                  {step}
+                  {lesson.visuals?.[i] ? (
+                    <StepVisual visual={lesson.visuals[i]} title={lessonTitle(lesson)} />
+                  ) : null}
+                </span>
               </li>
             ))}
           </ol>

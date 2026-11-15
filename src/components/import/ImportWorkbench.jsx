@@ -7,6 +7,7 @@ import { evaluateRows, existingKeys } from '@/lib/importProducts';
 import { downloadCsv, toCsv } from '@/lib/csv';
 import { scoped } from '@/lib/scoped';
 import { createProducts } from '@/lib/entitlements';
+import { recordImportEvent } from '@/lib/importCommit';
 import { countDistinctProducts } from '@/lib/productDuplicates';
 import useEntitlements from '@/hooks/useEntitlements';
 import useImportDraft from '@/hooks/useImportDraft';
@@ -47,6 +48,12 @@ export default function ImportWorkbench({ businessId }) {
   const [checking, setChecking] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
+  // Pick-and-choose (owner ruling, Nov 15, 2026): rows start ALL
+  // ticked; unticking records the row index here and the import
+  // takes only the ticked rows. The plan cap governs the TICKED
+  // count — never a silent positional trim.
+  const [excluded, setExcluded] = useState([]);
+  const excludedSet = useMemo(() => new Set(excluded), [excluded]);
 
   const existing = useMemo(() => existingKeys(existingProducts), [existingProducts]);
 
@@ -59,15 +66,33 @@ export default function ImportWorkbench({ businessId }) {
     return { have, cap, room: cap == null ? null : Math.max(0, cap - have) };
   }, [existingProducts, limits]);
 
+  // Verdicts are computed WITHOUT the positional cap pass: with
+  // pick-and-choose, the cap is judged on the ticked count (see
+  // overRoom below), not on file order.
   const report = useMemo(
-    () => evaluateRows({ table, mapping, existing, room: capInfo.room }),
+    () => evaluateRows({ table, mapping, existing, room: null }),
     [table, mapping, existing, capInfo]
   );
+
+  const tickedReadyRows = useMemo(
+    () => report.rows.filter((row) => row.status === 'ready' && !excludedSet.has(row.index)),
+    [report, excludedSet]
+  );
+  const effectiveReady = tickedReadyRows.length;
+  const tickedUnits = tickedReadyRows.reduce((sum, row) => sum + (row.quantity || 0), 0);
+  const overRoom = capInfo.room != null ? Math.max(0, effectiveReady - capInfo.room) : 0;
+  const displayReport = { ...report, ready: effectiveReady, over: overRoom, units: tickedUnits };
+
+  const toggleRow = (index, ticked) => {
+    setExcluded((current) =>
+      ticked ? current.filter((i) => i !== index) : [...current, index]
+    );
+  };
 
   const hasName = mapping.includes('name');
   const stockMapped = mapping.includes('stock_qty');
   const withStock = stockMapped && Boolean(locationId) && locationId !== NO_LOCATION;
-  const signature = `${fileName}|${mapping.join(',')}|${locationId}`;
+  const signature = `${fileName}|${mapping.join(',')}|${locationId}|${[...excluded].sort((a, b) => a - b).join('.')}`;
   const needsCheck = !dryRun || dryRun.signature !== signature;
 
   // The staged import survives leaving (owner ruling, Nov 14,
@@ -79,6 +104,7 @@ export default function ImportWorkbench({ businessId }) {
     sheet: { fileName, sheets, sheetName, table, warnings, mapping },
     locationId,
     dryRun,
+    excluded,
   };
   const { tooLarge: draftTooLarge } = useImportDraft({
     businessId,
@@ -94,6 +120,7 @@ export default function ImportWorkbench({ businessId }) {
       setMapping(snap.mapping || []);
       setLocationId(draft.locationId || '');
       setDryRun(draft.dryRun || null);
+      setExcluded(Array.isArray(draft.excluded) ? draft.excluded : []);
       if (businessId) {
         Promise.all([
           base44.entities.Product.filter(scoped({}, businessId), { limit: 1000 }),
@@ -118,6 +145,7 @@ export default function ImportWorkbench({ businessId }) {
     setDryRun(null);
     setError('');
     setLocationId('');
+    setExcluded([]);
   };
 
   const loadSheet = (sheet) => {
@@ -125,6 +153,7 @@ export default function ImportWorkbench({ businessId }) {
     setTable({ headers: sheet.headers, rows: sheet.rows });
     setMapping(sheet.headers.map(guessField));
     setDryRun(null);
+    setExcluded([]);
   };
 
   const onFile = async (event) => {
@@ -134,6 +163,7 @@ export default function ImportWorkbench({ businessId }) {
     setError('');
     setResult(null);
     setDryRun(null);
+    setExcluded([]);
     setSheets([]);
     setSheetName('');
     setWarnings([]);
@@ -175,6 +205,7 @@ export default function ImportWorkbench({ businessId }) {
   const changeMapping = (column, field) => {
     setMapping((current) => current.map((value, index) => (index === column ? field : value)));
     setDryRun(null);
+    setExcluded([]);
   };
 
   const templateExample = {
@@ -235,13 +266,18 @@ export default function ImportWorkbench({ businessId }) {
       const have = countDistinctProducts(fresh);
       const cap = limits?.products ?? null;
       const room = cap == null ? null : Math.max(0, cap - have);
-      const verdict = evaluateRows({ table, mapping, existing: existingKeys(fresh), room });
+      const verdict = evaluateRows({ table, mapping, existing: existingKeys(fresh), room: null });
+      // The verdict speaks for the TICKED rows: the cap is judged
+      // on what the owner actually picked, never on file order.
+      const ticked = verdict.rows.filter(
+        (row) => row.status === 'ready' && !excludedSet.has(row.index)
+      );
       setDryRun({
         signature,
-        ready: verdict.ready,
+        ready: ticked.length,
         skipped: verdict.skipped,
-        over: verdict.over,
-        units: verdict.units,
+        over: room != null ? Math.max(0, ticked.length - room) : 0,
+        units: ticked.reduce((sum, row) => sum + (row.quantity || 0), 0),
         problems: verdict.problems,
         have,
         cap,
@@ -255,12 +291,12 @@ export default function ImportWorkbench({ businessId }) {
   };
 
   const runImport = async () => {
-    if (!businessId || !dryRun || needsCheck || !report.ready) return;
+    if (!businessId || !dryRun || needsCheck || !effectiveReady || overRoom > 0) return;
     setBusy(true);
     setError('');
     setResult(null);
     try {
-      const valid = report.rows.filter((row) => row.status === 'ready');
+      const valid = tickedReadyRows;
       for (let index = 0; index < valid.length; index += 100) {
         const chunk = valid
           .slice(index, index + 100)
@@ -318,7 +354,11 @@ export default function ImportWorkbench({ businessId }) {
         }
       }
 
-      setResult({ created: valid.length, skipped: report.skipped, over: report.over, stockRows });
+      // One activity line for the whole import (owner ruling,
+      // Nov 15, 2026) — the feed tells the import's story even
+      // when every product arrived at zero and no stock moved.
+      await recordImportEvent({ businessId, kind: 'create', count: valid.length, fileName });
+      setResult({ created: valid.length, skipped: report.skipped, over: 0, stockRows });
       setTable(null);
       setFileName('');
       setMapping([]);
@@ -453,7 +493,12 @@ export default function ImportWorkbench({ businessId }) {
           )}
 
           <ColumnMapper headers={table.headers} mapping={mapping} onChange={changeMapping} />
-          <ImportPreview report={report} />
+          <ImportPreview
+            report={report}
+            excluded={excludedSet}
+            onToggleRow={toggleRow}
+            resetKey={signature.split('|').slice(0, 2).join('|')}
+          />
           <ProblemReport rows={report.problems} fileName="product-import-problems.csv" />
 
           {stockMapped && (
@@ -485,7 +530,7 @@ export default function ImportWorkbench({ businessId }) {
 
           <DryRunPanel
             dryRun={dryRun}
-            report={report}
+            report={displayReport}
             needsCheck={needsCheck}
             withStock={withStock}
             capInfo={capInfo}
@@ -509,7 +554,7 @@ export default function ImportWorkbench({ businessId }) {
             </Button>
             <Button
               onClick={runImport}
-              disabled={busy || !hasName || !report.ready || needsCheck || !businessId}
+              disabled={busy || !hasName || !effectiveReady || needsCheck || !businessId || overRoom > 0}
             >
               {busy ? (
                 <>
@@ -517,13 +562,20 @@ export default function ImportWorkbench({ businessId }) {
                 </>
               ) : (
                 t('import.importProducts', {
-                  count: report.ready,
-                  s: report.ready === 1 ? '' : 's',
+                  count: effectiveReady,
+                  s: effectiveReady === 1 ? '' : 's',
                 })
               )}
             </Button>
             {!businessId && <span className="text-xs text-muted-foreground">{t('import.createBusinessFirstShort')}</span>}
           </div>
+
+          {overRoom > 0 && (
+            <p className="flex items-start gap-2 text-sm text-destructive">
+              <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" />{' '}
+              {t('import.tickedOverRoom', { count: effectiveReady, room: capInfo.room })}
+            </p>
+          )}
 
           {error && (
             <p className="flex items-start gap-2 text-sm text-destructive">

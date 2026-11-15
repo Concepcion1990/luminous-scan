@@ -42,5 +42,5 @@ test('the app links the manifest', () => {
   const html = readFileSync(path.join(root, 'index.html'), 'utf8');
   assert.match(html, /manifest\.webmanifest/);
   const main = readFileSync(path.join(root, 'src', 'main.jsx'), 'utf8');
-  assert.match(main, /serviceWorker.*register\('\/sw\.js'\)/);
+  assert.match(main, /serviceWorker[\s\S]*?register\('\/sw\.js'\)/);
 });

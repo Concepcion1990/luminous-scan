@@ -73,13 +73,16 @@ test('re-run dry run re-reads the catalog and refreshes the verdict', () => {
   // file-load snapshot, and stores the room in the verdict.
   assert.match(wb, /const runCheck = async \(\) => \{/);
   assert.match(wb, /base44\.entities\.Product\.filter\(scoped\(\{\}, businessId\), \{ limit: 1000 \}\)/);
-  assert.match(wb, /evaluateRows\(\{ table, mapping, existing: existingKeys\(fresh\), room \}\)/);
   assert.match(wb, /have,\n        cap,\n        room,/);
   // The button shows it is working while the re-check runs.
   assert.match(wb, /checking \? \(/);
-  // The live report and the import both run through the same room.
-  assert.match(wb, /evaluateRows\(\{ table, mapping, existing, room: capInfo\.room \}\)/);
-  assert.match(wb, /over: report\.over/);
+  // Pick-and-choose (Nov 15, 2026): verdicts are computed WITHOUT
+  // the positional cap pass — the cap is judged on the TICKED
+  // count, and the commit is refused while ticked > room.
+  assert.match(wb, /evaluateRows\(\{ table, mapping, existing: existingKeys\(fresh\), room: null \}\)/);
+  assert.match(wb, /evaluateRows\(\{ table, mapping, existing, room: null \}\)/);
+  assert.match(wb, /over: room != null \? Math\.max\(0, ticked\.length - room\) : 0/);
+  assert.match(wb, /overRoom > 0/);
 });
 
 test('re-run re-tests on Receive and Update too — all three operations', () => {

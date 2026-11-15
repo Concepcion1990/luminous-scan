@@ -548,7 +548,7 @@ export function productTruncationNotice(shown, total) {
 }
 
 export async function loadInventory(businessId = '') {
-  const [products, levels, locations, movements, productTotal] = await Promise.all([
+  const [products, levels, locations, movements, productTotal, importEvents] = await Promise.all([
     base44.entities.Product.filter(scoped({}, businessId), { sort: 'name', limit: INVENTORY_PRODUCT_LIMIT }),
     base44.entities.StockLevel.filter(scoped({}, businessId), { limit: 2000 }),
     base44.entities.Location.filter(scoped({}, businessId), { sort: 'name', limit: 100 }),
@@ -557,6 +557,13 @@ export async function loadInventory(businessId = '') {
       limit: 8,
     }),
     base44.entities.Product.count(scoped({}, businessId)),
+    // Import activity (Nov 15, 2026): the Overview feed interleaves
+    // these with movements. A failed read must never sink the
+    // inventory load — the feed simply tells a shorter story.
+    base44.entities.ImportEvent.filter(scoped({}, businessId), {
+      sort: '-created_date',
+      limit: 8,
+    }).catch(() => ({ items: [] })),
   ]);
 
   const shown = products.items ?? [];
@@ -565,6 +572,7 @@ export async function loadInventory(businessId = '') {
     levels: levels.items ?? [],
     locations: locations.items ?? [],
     movements: movements.items ?? [],
+    importEvents: importEvents.items ?? [],
     // The catalog page is capped at 500: say how many exist so a Business
     // store with 600 products never mistakes the first 500 for all of them.
     productTotal,
@@ -638,7 +646,13 @@ export function summarize({ products, levels, locations }) {
   };
 }
 
-export function formatMoney(value, currency = 'USD', maximumFractionDigits = 0) {
+// Exact prices everywhere (owner's price-honesty law, Nov 15,
+// 2026): a price shown anywhere is the stored price, cents and
+// all. The default is therefore 2 fraction digits — the old
+// whole-dollar default kept surviving in odd corners (the Scan
+// shelf list, the product details dialog, the Overview stock
+// value) and each one misquoted a real price.
+export function formatMoney(value, currency = 'USD', maximumFractionDigits = 2) {
   const options = { style: 'currency', currency, maximumFractionDigits };
   try {
     return new Intl.NumberFormat('en-US', options).format(value || 0);

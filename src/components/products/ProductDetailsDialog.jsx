@@ -71,11 +71,11 @@ export default function ProductDetailsDialog({ product, locations = [], currency
             <div className="mt-2 flex flex-wrap gap-x-5 gap-y-3">
               <div>
                 <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">{t('productDetails.priceLabel')}</p>
-                <p className="numeric text-base font-semibold">{formatMoney(product.price, currency)}</p>
+                <p className="numeric text-base font-semibold">{formatMoney(product.price, currency, 2)}</p>
               </div>
               <div>
                 <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">{t('productDetails.costLabel')}</p>
-                <p className="numeric text-base font-semibold">{formatMoney(product.cost, currency)}</p>
+                <p className="numeric text-base font-semibold">{formatMoney(product.cost, currency, 2)}</p>
               </div>
               <div>
                 <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">{t('productDetails.onHandLabel')}</p>

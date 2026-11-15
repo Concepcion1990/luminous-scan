@@ -130,7 +130,7 @@ export default function Dashboard() {
     productLimit != null && stats != null && stats.distinctSkus >= productLimit;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-tour="overview">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
@@ -235,7 +235,7 @@ export default function Dashboard() {
                 {showValuation && (
                   <StatCard
                     label={t('dashboard.stockValue')}
-                    value={formatMoney(stats.stockValue, profile.currency)}
+                    value={formatMoney(stats.stockValue, profile.currency, 2)}
                     tone="ok"
                     hint={t('dashboard.atCurrentCost')}
                   />
@@ -259,7 +259,10 @@ export default function Dashboard() {
 
           <div className="grid gap-4 lg:grid-cols-3">
             <div className="lg:col-span-2">
-              <ActivityFeed movements={data.movements} />
+              <ActivityFeed
+                movements={data.movements}
+                importEvents={data.importEvents ?? []}
+              />
             </div>
             <div className="space-y-4">
               <OrdersToFulfil orders={ops.orders} currency={profile.currency} />
