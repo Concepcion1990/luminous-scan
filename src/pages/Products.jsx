@@ -15,8 +15,10 @@ import ProductRowMenu from '@/components/products/ProductRowMenu';
 import AdjustStockDialog from '@/components/inventory/AdjustStockDialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useBusiness } from '@/hooks/useBusiness';
+import { isBoss } from '@/lib/bossAuthority';
 import { useCatalogVocabulary } from '@/hooks/useCatalogVocabulary';
 import { formatMoney, listProducts, recordMovement } from '@/lib/inventory';
+import { countDistinctProducts } from '@/lib/productDuplicates';
 import { descendantIds, orderedLocations } from '@/lib/locations';
 import { scoped } from '@/lib/scoped';
 import { useAuth } from '@/lib/AuthContext';
@@ -29,22 +31,25 @@ import useIsDesktop from '@/hooks/useIsDesktop';
 import useModalHistory from '@/hooks/useModalHistory';
 import LimitBadge from '@/components/plan/LimitBadge';
 import { createProducts } from '@/lib/entitlements';
+import { createStepQueue } from '@/lib/stepQueue';
 import { t } from '@/lib/i18n';
 
 /**
  * The little up/down stepper beside an on-hand number (Nov 14,
  * 2026 — the interaction the owner missed from the old app). Each
- * tap is a real ledger movement recorded by the caller; the down
- * arrow is disabled at zero so a count can never be tapped below
- * nothing.
+ * tap is a real ledger movement recorded by the caller, and the
+ * number it shows is the caller's optimistic display value: a tap
+ * repaints instantly while its movement is still on the wire (see
+ * the step queue below), so the buttons never disable mid-burst.
+ * The down arrow is disabled at zero so a count can never be
+ * tapped below nothing.
  */
-function InlineStockStepper({ value, busy, onStep, addLabel, removeLabel }) {
+function InlineStockStepper({ value, onStep, addLabel, removeLabel }) {
   return (
     <span className="inline-flex items-center gap-0.5">
       <button
         type="button"
         aria-label={addLabel}
-        disabled={busy}
         onClick={(e) => {
           e.stopPropagation();
           onStep(1);
@@ -57,7 +62,7 @@ function InlineStockStepper({ value, busy, onStep, addLabel, removeLabel }) {
       <button
         type="button"
         aria-label={removeLabel}
-        disabled={busy || value <= 0}
+        disabled={value <= 0}
         onClick={(e) => {
           e.stopPropagation();
           onStep(-1);
@@ -72,7 +77,7 @@ function InlineStockStepper({ value, busy, onStep, addLabel, removeLabel }) {
 
 export default function Products() {
   const { user } = useAuth();
-  const { profile, activeId } = useBusiness();
+  const { profile, activeId, record } = useBusiness();
   const { limits, isLoading: entitlementLoading } = useEntitlements();
   const { toast } = useToast();
   const isDesktop = useIsDesktop();
@@ -145,7 +150,7 @@ export default function Products() {
         !filters.status &&
         !filters.condition &&
         !filters.locationId;
-      const [products, levelPage, locPage, totalActive] = await Promise.all([
+      const [products, levelPage, locPage, totalDistinct] = await Promise.all([
         listProducts({
           search: debounced,
           category: filters.category,
@@ -160,9 +165,16 @@ export default function Products() {
         }),
         base44.entities.StockLevel.filter(scoped({}, activeId), { limit: 2000 }),
         base44.entities.Location.filter(scoped({}, activeId), { sort: 'name', limit: 100 }),
-        base44.entities.Product.count(scoped({ status: { $ne: 'archived' } }, activeId)),
+        // The pill's count is the one counting rule (owner, Nov 14,
+        // 2026): distinct ORIGINAL products, any status — copies
+        // never count, archived originals always do, only a true
+        // delete lowers it. The generic count endpoint cannot
+        // express that predicate, so the catalog's signature fields
+        // are read (the same 2000-row read the Overview makes) and
+        // the pure counter decides.
+        base44.entities.Product.filter(scoped({}, activeId), { limit: 2000 }),
       ]);
-      setActiveCount(totalActive);
+      setActiveCount(countDistinctProducts(totalDistinct.items ?? []));
       setItems(products);
       setSelected([]);
       if (isUnfiltered) {
@@ -222,8 +234,19 @@ export default function Products() {
   // the location explicit — never a guess. Up = a receive of one;
   // down = a correction setting the count one lower (the model's
   // honest fix-a-quantity type); at zero the down tap is refused.
+  //
+  // Optimistic since the owner's lag report the same evening: a
+  // tap repaints the number IMMEDIATELY and its ledger movement
+  // queues behind the taps before it (src/lib/stepQueue.js) — one
+  // movement per tap, in tap order, ledger honesty unchanged. A
+  // failed send rolls the display back to the last confirmed
+  // quantity and toasts; when a queue drains the page reloads and
+  // the server truth takes over the display seamlessly (the
+  // override cleanup below only drops values the server now
+  // agrees with, so the number never flickers).
   const [adjusting, setAdjusting] = useState(null);
-  const [steppingKey, setSteppingKey] = useState('');
+  const [optimistic, setOptimistic] = useState({});
+  const stepQueuesRef = useRef(new Map());
   const stepperLocation = useMemo(() => {
     const candidates = filterLocationIds
       ? locations.filter((l) => filterLocationIds.has(l.id))
@@ -231,29 +254,70 @@ export default function Products() {
     return candidates.length === 1 ? candidates[0] : null;
   }, [locations, filterLocationIds]);
 
-  const stepStock = async (product, location, delta) => {
-    const key = `${product.id}:${location.id}`;
-    if (steppingKey) return;
-    const current =
-      levels.find((l) => l.product_id === product.id && l.location_id === location.id)?.quantity ?? 0;
-    if (delta < 0 && current <= 0) return;
-    setSteppingKey(key);
-    try {
-      if (delta > 0) {
-        await recordMovement({ product, location, type: 'receive', quantity: 1, businessId: activeId, user });
-      } else {
-        await recordMovement({ product, location, type: 'correction', quantity: current - 1, businessId: activeId, user });
+  useEffect(() => {
+    setOptimistic((prev) => {
+      const keys = Object.keys(prev);
+      if (!keys.length) return prev;
+      let changed = false;
+      const next = { ...prev };
+      for (const key of keys) {
+        const [productId, locationId] = key.split(':');
+        const server =
+          levels.find((l) => l.product_id === productId && l.location_id === locationId)?.quantity ?? 0;
+        if (server === prev[key]) {
+          delete next[key];
+          changed = true;
+        }
       }
-      setReload((r) => r + 1);
-    } catch (err) {
-      toast({
-        title: t('products.stockStepFailed'),
-        description: err?.message || '',
-        variant: 'destructive',
-      });
-    } finally {
-      setSteppingKey('');
+      return changed ? next : prev;
+    });
+  }, [levels]);
+
+  const displayQty = (product, location, serverValue) => {
+    const shown = optimistic[`${product.id}:${location.id}`];
+    return shown === undefined ? serverValue : shown;
+  };
+
+  const stepStock = (product, location, delta) => {
+    // Archived products are frozen — no stepper renders for them,
+    // and a stale queue can never move their stock either.
+    if (product.status === 'archived') return;
+    const key = `${product.id}:${location.id}`;
+    let queue = stepQueuesRef.current.get(key);
+    if (queue?.dead) {
+      // A failed queue is replaced whole: its remaining sends were
+      // chained as no-ops and never write state again, and the new
+      // queue seeds from the server's current truth.
+      stepQueuesRef.current.delete(key);
+      queue = undefined;
     }
+    if (!queue) {
+      queue = createStepQueue({
+        send: (d, confirmed) =>
+          d > 0
+            ? recordMovement({ product, location, type: 'receive', quantity: 1, businessId: activeId, user })
+            : recordMovement({
+                product,
+                location,
+                type: 'correction',
+                quantity: confirmed - 1,
+                businessId: activeId,
+                user,
+              }),
+        onDisplay: (value) => setOptimistic((o) => ({ ...o, [key]: value })),
+        onError: (err) =>
+          toast({
+            title: t('products.stockStepFailed'),
+            description: err?.message || '',
+            variant: 'destructive',
+          }),
+        onDrain: () => setReload((r) => r + 1),
+      });
+      stepQueuesRef.current.set(key, queue);
+    }
+    const start =
+      levels.find((l) => l.product_id === product.id && l.location_id === location.id)?.quantity ?? 0;
+    queue.tap(delta, start);
   };
 
   // Sorting runs on the loaded page so the columns stay instant while you work.
@@ -367,10 +431,9 @@ export default function Products() {
   };
 
   const duplicate = async (product) => {
-    if (atProductLimit) {
-      productLimitToast();
-      return;
-    }
+    // No plan-limit guard here: a copy consumes no cap slot (the
+    // one counting rule — copies never count), and the server's cap
+    // agrees, so duplicating at the limit is legitimate.
     const base = `${(product.sku || 'copy').toUpperCase()}-COPY`;
     let sku = base;
     let attempt = 2;
@@ -388,6 +451,10 @@ export default function Products() {
       upc: '',
       barcode: '',
       qr_code: '',
+      // The durable copy marker (owner's counting rule, Nov 14,
+      // 2026): this row IS the source product for counting, never
+      // another product. A copy of a copy points at the original.
+      duplicate_of: product.duplicate_of || product.id,
       status: product.status === 'archived' ? 'draft' : product.status || 'active',
     };
     delete payload.id;
@@ -561,6 +628,10 @@ export default function Products() {
             const total = totals.get(product.id) || 0;
             const isLow = lowByProduct.has(product.id);
             const isOpen = expanded === product.id;
+            // Archived products are frozen (owner ruling, Nov 14,
+            // 2026): the quantity still displays, but no stepper, no
+            // Add stock, and no Adjust door — restoring unfreezes.
+            const archived = product.status === 'archived';
             const own = levels.filter((l) => l.product_id === product.id);
             return (
               <div key={product.id}>
@@ -614,11 +685,17 @@ export default function Products() {
                     {product.category || '—'}
                   </span>
                   <span className="hidden text-right md:block">
-                    {stepperLocation ? (
+                    {archived ? (
+                      <span className="numeric text-sm font-semibold">
+                        {total}
+                        <span className="ml-1 font-mono text-[10px] font-normal uppercase text-muted-foreground">
+                          {product.unit || t('products.unitEach')}
+                        </span>
+                      </span>
+                    ) : stepperLocation ? (
                       <span className="inline-flex items-center gap-1">
                         <InlineStockStepper
-                          value={total}
-                          busy={steppingKey === `${product.id}:${stepperLocation.id}`}
+                          value={displayQty(product, stepperLocation, total)}
                           onStep={(delta) => stepStock(product, stepperLocation, delta)}
                           addLabel={t('products.addOneAria')}
                           removeLabel={t('products.removeOneAria')}
@@ -650,10 +727,11 @@ export default function Products() {
 
                   <div className="flex items-center justify-end gap-1">
                     <span className="md:hidden">
-                      {stepperLocation ? (
+                      {archived ? (
+                        <span className="numeric text-sm font-semibold">{total}</span>
+                      ) : stepperLocation ? (
                         <InlineStockStepper
-                          value={total}
-                          busy={steppingKey === `${product.id}:${stepperLocation.id}`}
+                          value={displayQty(product, stepperLocation, total)}
                           onStep={(delta) => stepStock(product, stepperLocation, delta)}
                           addLabel={t('products.addOneAria')}
                           removeLabel={t('products.removeOneAria')}
@@ -682,8 +760,8 @@ export default function Products() {
                       product={product}
                       onDuplicate={duplicate}
                       onToggleArchive={toggleArchive}
-                      onAddStock={(p) => setAdjusting(p)}
-                      onDelete={user?.role === 'admin' ? requestRemove : undefined}
+                      onAddStock={archived ? undefined : (p) => setAdjusting(p)}
+                      onDelete={isBoss(user, record) ? requestRemove : undefined}
                     />
                   </div>
                 </div>
@@ -700,13 +778,16 @@ export default function Products() {
                             style={depth ? { marginLeft: `${Math.min(depth, 3) * 12}px` } : undefined}
                           >
                             <span className="truncate">{place.name}</span>
-                            <InlineStockStepper
-                              value={q}
-                              busy={steppingKey === `${product.id}:${place.id}`}
-                              onStep={(delta) => stepStock(product, place, delta)}
-                              addLabel={t('products.addOneAria')}
-                              removeLabel={t('products.removeOneAria')}
-                            />
+                            {archived ? (
+                              <span className="numeric text-xs font-semibold">{q}</span>
+                            ) : (
+                              <InlineStockStepper
+                                value={displayQty(product, place, q)}
+                                onStep={(delta) => stepStock(product, place, delta)}
+                                addLabel={t('products.addOneAria')}
+                                removeLabel={t('products.removeOneAria')}
+                              />
+                            )}
                           </div>
                         );
                       })}

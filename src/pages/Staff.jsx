@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { base44 } from '@/api/client';
 import { Loader2, Plus, ShieldAlert, ShieldCheck, UserPlus } from 'lucide-react';
 import { useBusiness } from '@/hooks/useBusiness';
+import { isBoss } from '@/lib/bossAuthority';
 import { useAuth } from '@/lib/AuthContext';
 import { scoped } from '@/lib/scoped';
 import { PRESET_ROLES } from '@/lib/staff';
@@ -18,11 +19,15 @@ import { displayLimit } from '@/lib/plans';
 import LimitBadge from '@/components/plan/LimitBadge';
 
 export default function Staff() {
-  const { profile, activeId } = useBusiness();
+  const { profile, activeId, record } = useBusiness();
   const { user } = useAuth();
   const { limits, isLoading: entitlementLoading, isEssentials } = useEntitlements();
   const { toast } = useToast();
-  const isAdmin = user?.role === 'admin';
+  // Boss authority (owner's doctrine, Nov 14, 2026 — admin is owner):
+  // the shared definition in lib/bossAuthority. The variable keeps its
+  // historical name; its value is the boss check, so the workspace's
+  // owner gets the send-reset door and the administrator option.
+  const isAdmin = isBoss(user, record);
 
   const [members, setMembers] = useState([]);
   const [roles, setRoles] = useState([]);

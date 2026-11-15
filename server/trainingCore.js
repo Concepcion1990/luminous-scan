@@ -25,6 +25,7 @@ import {
   MODULE_BY_PERMISSION,
   MODULE_LABELS,
   lessonsForModuleAtLevel,
+  lessonVisibleOnPlan,
 } from './trainingCatalog.js';
 import { personLevel } from './workforceRoutes.js';
 
@@ -261,7 +262,7 @@ export async function trainingFlagForMemberChange(pool, { business, planKey, bef
     const afterPerms = effectivePermissions(after, customRoles, planKey);
     const added = afterPerms.filter((perm) => !beforePerms.has(perm));
     if (!added.length) return;
-    await assignForAddedPermissions(pool, business, after, added, actor);
+    await assignForAddedPermissions(pool, business, after, added, actor, planKey);
   } catch (error) {
     console.error('[twin] training flag (member change) failed:', error);
   }
@@ -287,17 +288,18 @@ export async function trainingFlagForRoleChange(pool, { business, planKey, befor
     for (const member of members) {
       // Members with their own stored list do not live under the role.
       if (parseJsonArray(member.permissions).length) continue;
-      await assignForAddedPermissions(pool, business, member, added, actor);
+      await assignForAddedPermissions(pool, business, member, added, actor, planKey);
     }
   } catch (error) {
     console.error('[twin] training flag (role change) failed:', error);
   }
 }
 
-async function assignForAddedPermissions(pool, business, memberRow, addedPerms, actor) {
+async function assignForAddedPermissions(pool, business, memberRow, addedPerms, actor, planKey) {
   const level = personLevel(memberRow);
   const modules = [...new Set(addedPerms.flatMap((perm) => MODULE_BY_PERMISSION[perm] || []))];
   if (!modules.length) return;
+  const isBusiness = planKey === 'business';
   const user = await userForStaffRow(pool, memberRow);
   const assignedBy = {
     userId: actor?.userId ?? null,
@@ -305,7 +307,8 @@ async function assignForAddedPermissions(pool, business, memberRow, addedPerms, 
     name: actor?.name || '',
   };
   for (const module of modules) {
-    const lessons = lessonsForModuleAtLevel(module, level);
+    const lessons = lessonsForModuleAtLevel(module, level)
+      .filter((lesson) => lessonVisibleOnPlan(lesson, isBusiness));
     if (!lessons.length) continue;
     await createOrExtendAssignment(pool, business, {
       assigneeRow: memberRow,

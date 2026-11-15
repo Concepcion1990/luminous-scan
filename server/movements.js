@@ -43,6 +43,32 @@ function err(status, code, message) {
   return Object.assign(new Error(message), { status, code });
 }
 
+/**
+ * Archived products are FROZEN (owner ruling, Nov 14, 2026): while a
+ * product is archived, no stock movement of any kind may touch it —
+ * not from the app, a till, a sync replay, or an import. Restoring
+ * it to active unfreezes it instantly. The check lives in the
+ * movement funnel itself so no caller can route around it; callers
+ * that hand in a partial product row get the status read here.
+ */
+export async function assertProductNotArchived(client, businessId, product) {
+  let status = product?.status;
+  if (status === undefined && product?.id) {
+    const { rows } = await client.query(
+      'SELECT status FROM products WHERE id = $1 AND business_id = $2',
+      [product.id, businessId],
+    );
+    status = rows[0]?.status;
+  }
+  if (status === 'archived') {
+    throw err(
+      400,
+      'product_archived',
+      `${product?.name || 'This product'} is archived, so its stock is frozen. Restore it to active to move its stock again.`,
+    );
+  }
+}
+
 export async function getLevel(client, businessId, productId, locationId) {
   const { rows } = await client.query(
     'SELECT * FROM stock_levels WHERE business_id = $1 AND product_id = $2 AND location_id = $3 LIMIT 1',
@@ -130,6 +156,7 @@ export async function recordMovementTx(client, {
   caller,
 }) {
   if (!MOVEMENT_TYPES[type]) throw err(400, 'invalid_type', `Unknown movement type ${type}.`);
+  await assertProductNotArchived(client, businessId, product);
   if (BUNDLE_MOVEMENT_TYPES.includes(type) && !featureAllowed(planKey, 'builds')) {
     throw err(403, 'bundle_business_only', 'Bundle movements are a Business feature — building bundles and taking them apart need the Business plan.');
   }
@@ -184,6 +211,7 @@ export async function setReservedTx(client, {
   businessId, product, location, type, quantity, note, reference, userName, reversalOf, caller,
 }) {
   if (!['reserved', 'released'].includes(type)) throw err(400, 'invalid_type', 'Expected reserved or released.');
+  await assertProductNotArchived(client, businessId, product);
   const qty = Math.abs(Number(quantity) || 0);
   if (!qty) throw err(400, 'invalid_quantity', 'Enter how many to hold.');
   const level = await getLevel(client, businessId, product.id, location.id);
@@ -232,6 +260,22 @@ export function reversalBlocker(movement) {
 
 /** Undo one ledger entry by writing its mirror image (original stays). */
 export async function reverseMovementTx(client, { businessId, movement, userName, caller }) {
+  // Archived products are frozen (Nov 14, 2026): a reversal is a
+  // stock movement too, so it waits for the product to come back.
+  // The message carries the door, per the owner's no-dead-ends rule.
+  if (movement?.product_id) {
+    const { rows } = await client.query(
+      'SELECT status, name FROM products WHERE id = $1 AND business_id = $2',
+      [movement.product_id, businessId],
+    );
+    if (rows[0]?.status === 'archived') {
+      throw err(
+        400,
+        'product_archived',
+        `${rows[0].name || 'This product'} is archived, so its stock is frozen. Restore it to active first, then reverse this entry.`,
+      );
+    }
+  }
   const blocker = reversalBlocker(movement);
   if (blocker) throw err(400, 'not_reversible', blocker);
   const product = { id: movement.product_id, name: movement.product_name, sku: movement.sku };

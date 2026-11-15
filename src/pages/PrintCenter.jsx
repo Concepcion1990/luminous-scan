@@ -167,6 +167,19 @@ export default function PrintCenter() {
 
   const removeSelected = (id) => setSelected((list) => list.filter((entry) => entry.id !== id));
 
+  // Select-all speaks about the currently listed (search-filtered)
+  // products only; picks outside the list are never touched.
+  const toggleAllListed = (listed, select) => {
+    setSelected((prev) => {
+      if (select) {
+        const have = new Set(prev.map((entry) => entry.id));
+        return [...prev, ...listed.filter((entry) => !have.has(entry.id))];
+      }
+      const drop = new Set(listed.map((entry) => entry.id));
+      return prev.filter((entry) => !drop.has(entry.id));
+    });
+  };
+
   const activeTemplate = TEMPLATES.find((entry) => entry.key === template);
   const isDocument = activeTemplate?.kind === 'document';
   const isOrder = activeTemplate?.kind === 'order';
@@ -471,6 +484,7 @@ export default function PrintCenter() {
                 onSearch={setSearch}
                 selectedIds={selectedIds}
                 onToggle={toggle}
+                onToggleAll={toggleAllListed}
               />
             </div>
           </div>
@@ -596,7 +610,7 @@ export default function PrintCenter() {
             ) : isDocument ? (
               <Sheet products={selected} business={profile} />
             ) : (
-              <div className="flex flex-wrap gap-3">
+              <div className="print-label-flow flex flex-wrap gap-3">
                 {labels.map((product, index) => (
                   <LabelCard
                     key={`${product.id}-${index}`}

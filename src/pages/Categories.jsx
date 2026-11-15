@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { base44 } from '@/api/client';
-import { Pencil, Plus, Trash2 } from 'lucide-react';
+import { ChevronRight, Pencil, Plus, Trash2 } from 'lucide-react';
 import CategoryDialog from '@/components/categories/CategoryDialog';
 import CategorySyncPanel from '@/components/categories/CategorySyncPanel';
 import { countByField } from '@/lib/categories';
+import { isDuplicateProduct } from '@/lib/productDuplicates';
 import { useBusiness } from '@/hooks/useBusiness';
+import { isBoss } from '@/lib/bossAuthority';
 import { useDataFresh } from '@/hooks/useDataFresh';
 import { scoped } from '@/lib/scoped';
 import { useAuth } from '@/lib/AuthContext';
@@ -15,7 +18,7 @@ import { t } from '@/lib/i18n';
 
 export default function Categories() {
   const { user } = useAuth();
-  const { activeId } = useBusiness();
+  const { activeId, record } = useBusiness();
   const { toast } = useToast();
   const [rows, setRows] = useState([]);
   const [products, setProducts] = useState([]);
@@ -53,8 +56,18 @@ export default function Categories() {
   const categories = rows.filter((row) => row.kind === 'category');
   const subcategories = rows.filter((row) => row.kind === 'subcategory');
   const tags = rows.filter((row) => row.kind === 'tag');
-  const categoryCounts = countByField(products, 'category');
+  // The one counting rule (owner ruling, Nov 14, 2026): per-category
+  // product counts are DISTINCT ORIGINALS — a copy filed under a
+  // category adds nothing to its count, here as everywhere.
+  const countableProducts = products.filter((product) => !isDuplicateProduct(product));
+  const categoryCounts = countByField(countableProducts, 'category');
   const productsUsing = (name) => categoryCounts.get(String(name || '').trim().toLowerCase()) || 0;
+  // Products nobody ever filed: they get a bucket row of their own
+  // in the list below (owner ask, Nov 14, 2026) — counted by the
+  // same law, so a copy with no category does not inflate it.
+  const uncategorizedCount = countableProducts.filter(
+    (product) => !String(product.category ?? '').trim(),
+  ).length;
   const orphans = subcategories.filter(
     (row) => !row.parent_id || !categories.some((c) => c.id === row.parent_id)
   );
@@ -141,7 +154,7 @@ export default function Categories() {
         </div>
       )}
 
-      {!loading && categories.length > 0 && (
+      {!loading && (categories.length > 0 || uncategorizedCount > 0) && (
         <div className="overflow-hidden rounded-xl border border-border bg-card">
           <p className="border-b border-border bg-muted/50 px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
             {t('categories.sectionTitle', { count: categories.length })}
@@ -171,7 +184,7 @@ export default function Categories() {
                       >
                         <Pencil className="h-3.5 w-3.5" />
                       </Button>
-                      {user?.role === 'admin' && (
+                      {isBoss(user, record) && (
                         <Button
                           variant="ghost"
                           size="icon"
@@ -201,6 +214,25 @@ export default function Categories() {
                 </div>
               );
             })}
+            {uncategorizedCount > 0 && (
+              <Link
+                to="/inventory/categories?group=Uncategorized"
+                className="flex items-center justify-between gap-2 px-4 py-3 transition-colors hover:bg-secondary/60"
+              >
+                <span className="flex min-w-0 items-baseline gap-2">
+                  <span className="truncate text-sm font-medium text-muted-foreground">
+                    {t('inventory.uncategorized')}
+                  </span>
+                  <span className="numeric shrink-0 text-[10px] uppercase tracking-wide text-muted-foreground">
+                    {t('categories.productCount', {
+                      count: uncategorizedCount,
+                      plural: uncategorizedCount === 1 ? '' : 's',
+                    })}
+                  </span>
+                </span>
+                <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+              </Link>
+            )}
           </div>
         </div>
       )}
@@ -245,7 +277,7 @@ export default function Categories() {
                 >
                   <Pencil className="h-3 w-3" />
                 </button>
-                {user?.role === 'admin' && (
+                {isBoss(user, record) && (
                   <button
                     type="button"
                     onClick={() => remove(tag)}

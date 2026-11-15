@@ -279,12 +279,39 @@ function businessIdsFromFilter(filter) {
   return [];
 }
 
-async function activeProductCount(pool, businessId) {
+/**
+ * Is this product row a copy of another product? The server twin of
+ * src/lib/productDuplicates.js — the two must agree, because this
+ * predicate decides the plan cap while that one decides the counts
+ * the customer sees (owner's counting rule, Nov 14, 2026: a copy
+ * never counts; archiving never frees a slot). A copy carries the
+ * durable duplicate_of marker (migration 024), or — for copies
+ * minted before the marker existed — BOTH legacy birthmarks: a
+ * '-COPY' SKU and every code field cleared.
+ */
+export function isDuplicateProductRow(row) {
+  if (!row) return false;
+  if (row.duplicate_of) return true;
+  const sku = String(row.sku || '').trim();
+  if (!/-COPY(-\d+)?$/i.test(sku)) return false;
+  return !row.upc && !row.barcode && !row.qr_code;
+}
+
+/**
+ * The product count the plan cap enforces: DISTINCT ORIGINAL
+ * products, any status — active or archived. Copies never count;
+ * an archived original still counts (archive is a shelf, not a
+ * shredder — otherwise the cap could be sieved by archiving to
+ * make room); only a true delete lowers the count. Decided in JS
+ * over the signature fields so the rule is identical on every
+ * database engine, exactly as the client's twin computes it.
+ */
+async function distinctProductCount(pool, businessId) {
   const { rows } = await pool.query(
-    "SELECT COUNT(*)::int AS n FROM products WHERE business_id = $1 AND (status IS NULL OR status <> 'archived')",
+    'SELECT sku, upc, barcode, qr_code, duplicate_of FROM products WHERE business_id = $1',
     [businessId],
   );
-  return rows[0]?.n ?? 0;
+  return rows.filter((row) => !isDuplicateProductRow(row)).length;
 }
 
 async function operatingSiteCount(pool, businessId) {
@@ -388,12 +415,12 @@ const PO_EDIT_TRANSITIONS = {
   cancelled: [],
 };
 
-/** Guard a product write against the plan's active-product cap. */
-export async function assertProductCap(pool, businessId, planKey, additionalActive) {
+/** Guard a product write against the plan's distinct-product cap. */
+export async function assertProductCap(pool, businessId, planKey, additionalDistinct) {
   const limits = limitsForPlan(planKey);
-  if (limits.products == null || additionalActive <= 0) return;
-  const used = await activeProductCount(pool, businessId);
-  if (used + additionalActive > limits.products) {
+  if (limits.products == null || additionalDistinct <= 0) return;
+  const used = await distinctProductCount(pool, businessId);
+  if (used + additionalDistinct > limits.products) {
     throw Object.assign(
       err(403, 'product_limit', productLimitMessage(limits.products, used)),
       { limit: limits.products, used },
@@ -564,7 +591,11 @@ async function guardCreate(pool, def, name, access, values) {
     } else {
       await assertSkuAvailable(pool, business.id, String(values.sku).trim());
     }
-    await assertProductCap(pool, business.id, planKey, values.status === 'archived' ? 0 : 1);
+    // The incoming row consumes a cap slot unless it is a copy —
+    // its status is irrelevant: an original born archived counts
+    // exactly like an active one (owner's counting rule, Nov 14,
+    // 2026 — archiving never frees a slot).
+    await assertProductCap(pool, business.id, planKey, isDuplicateProductRow(values) ? 0 : 1);
   }
   if (name === 'Location' && isOperatingSite(values)) {
     const limits = limitsForPlan(planKey);
@@ -577,9 +608,13 @@ async function guardCreate(pool, def, name, access, values) {
     if (Number(values.quantity ?? 0) < 0 || Number(values.reserved ?? 0) < 0) {
       throw err(400, 'invalid_quantity', 'Stock levels can never be negative.');
     }
-    const product = (await pool.query('SELECT id FROM products WHERE id = $1 AND business_id = $2', [values.product_id, business.id])).rows[0];
+    const product = (await pool.query('SELECT id, status, name FROM products WHERE id = $1 AND business_id = $2', [values.product_id, business.id])).rows[0];
     const location = (await pool.query('SELECT id FROM locations WHERE id = $1 AND business_id = $2', [values.location_id, business.id])).rows[0];
     if (!product || !location) throw err(400, 'invalid_reference', 'The product and location must belong to this business.');
+    // Archived products are frozen (Nov 14, 2026): no level write.
+    if (product.status === 'archived') {
+      throw err(400, 'product_archived', `${product.name || 'This product'} is archived, so its stock is frozen. Restore it to active to move its stock again.`);
+    }
   }
   if (name === 'StockMovement') {
     if (BUNDLE_MOVEMENT_TYPES.includes(values.type) && !featureAllowed(planKey, 'builds')) {
@@ -587,8 +622,12 @@ async function guardCreate(pool, def, name, access, values) {
     }
     if (!(Number(values.quantity) >= 0)) throw err(400, 'invalid_quantity', 'A movement quantity must be zero or more.');
     if (values.product_id) {
-      const product = (await pool.query('SELECT id FROM products WHERE id = $1 AND business_id = $2', [values.product_id, business.id])).rows[0];
+      const product = (await pool.query('SELECT id, status, name FROM products WHERE id = $1 AND business_id = $2', [values.product_id, business.id])).rows[0];
       if (!product) throw err(400, 'invalid_reference', 'The product must belong to this business.');
+      // Archived products are frozen (Nov 14, 2026): no ledger write.
+      if (product.status === 'archived') {
+        throw err(400, 'product_archived', `${product.name || 'This product'} is archived, so its stock is frozen. Restore it to active to move its stock again.`);
+      }
     }
   }
   if (name === 'StaffRole' && planKey !== 'business') {
@@ -617,6 +656,14 @@ async function guardUpdate(pool, def, name, access, row, patch) {
     }
     assertPricingShape(patch);
     assertPhotoUrls(patch);
+  }
+  if (name === 'StockLevel') {
+    // Archived products are frozen (Nov 14, 2026): the level row of
+    // an archived product cannot be rewritten until it is restored.
+    const product = (await pool.query('SELECT status, name FROM products WHERE id = $1 AND business_id = $2', [row.product_id, access.business.id])).rows[0];
+    if (product?.status === 'archived') {
+      throw err(400, 'product_archived', `${product.name || 'This product'} is archived, so its stock is frozen. Restore it to active to move its stock again.`);
+    }
   }
   if (name === 'PurchaseOrder') {
     const current = row;
@@ -853,7 +900,11 @@ export async function bulkCreateEntities(pool, user, name, rows) {
   await assertSubscriptionAccess(pool, user, businessId, { write: true });
   if (name === 'StaffMember') throw err(400, 'invalid_value', 'Invite staff members one at a time.');
   if (name === 'Product') {
-    const additional = rows.filter((row) => row.status !== 'archived').length;
+    // Only distinct originals consume cap slots — copies and
+    // archived rows alike follow the one counting rule (see
+    // distinctProductCount): copies never count, archived
+    // originals always do.
+    const additional = rows.filter((row) => !isDuplicateProductRow(row)).length;
     await assertProductCap(pool, businessId, access.planKey, additional);
   }
   const created = [];
@@ -875,10 +926,10 @@ export async function updateEntity(pool, user, name, id, patch) {
   await assertSubscriptionAccess(pool, user, row.business_id, { write: true });
   const publicExisting = publicRow(def, row);
   await guardUpdate(pool, def, name, access, publicExisting, patch);
-  // A product re-activated from archived re-enters the cap.
-  if (name === 'Product' && patch.status && patch.status !== 'archived' && publicExisting.status === 'archived') {
-    await assertProductCap(pool, row.business_id, access.planKey, 1);
-  }
+  // No cap check on a status change: an archived original never
+  // left the count (owner's counting rule, Nov 14, 2026 — archive
+  // is a shelf, not a shredder), so restoring it can never breach
+  // the cap, and archiving one can never free a slot.
   const dbValues = toDbValues(def, patch);
   dbValues.updated_at = new Date().toISOString();
   const columns = Object.keys(dbValues);

@@ -12,7 +12,7 @@ import { findProductsByCode, recordMovement } from '@/lib/inventory';
 import { judgeVocabularyValue } from '@/lib/vocabulary';
 import BarcodeScanner from '@/components/scan/BarcodeScanner';
 import VocabularyCombobox from './VocabularyCombobox';
-import AddVocabularyInline from './AddVocabularyInline';
+import AddVocabularyDialog from './AddVocabularyDialog';
 import { Image } from '@/components/ui/image';
 import { t } from '@/lib/i18n';
 
@@ -130,19 +130,21 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
   // picker only, with no way to photograph the product on the
   // spot). Both choices feed the same addPhotos pipeline.
   const [photoChooserOpen, setPhotoChooserOpen] = useState(false);
-  // In-form code scanner (Nov 14, 2026): the UPC and Barcode fields
-  // each get a Scan button that opens the camera scanner as an overlay
-  // INSIDE this dialog — the form never unmounts, so a half-filled
-  // form keeps every value. scanField names the field the scanner is
-  // filling; codeTaken carries the at-field notice when a captured
-  // code already belongs to another product.
+  // In-form code scanner (Nov 14, 2026): the UPC, Barcode and QR
+  // fields each get a Scan button that opens the camera scanner as an
+  // overlay INSIDE this dialog — the form never unmounts, so a
+  // half-filled form keeps every value. scanField names the field the
+  // scanner is filling; codeTaken carries the at-field notice when a
+  // captured code already belongs to another product. The QR field
+  // joined the other two the same day at the owner's ask: a QR code
+  // can encode a whole URL, the one value nobody can type by hand.
   const [scanField, setScanField] = useState(null);
   const [codeTaken, setCodeTaken] = useState(null);
   const scanHandledRef = useRef(false);
   // Vocabulary pickers (Nov 14, 2026): which field's "Add new …"
-  // inline form is open, and the names created through it during
-  // this session (sanctioned values for the save guard even before
-  // the vocabulary refetch lands).
+  // window is open, and the names created through it during this
+  // session (sanctioned values for the save guard even before the
+  // vocabulary refetch lands).
   const [addNewField, setAddNewField] = useState(null);
   const [addedNames, setAddedNames] = useState({ category: [], subcategory: [] });
   const initialCategoryRef = useRef('');
@@ -321,7 +323,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
 
   // A category/subcategory born through the picker's "Add new" row:
   // select it, sanction it for the save guard (the vocabulary
-  // refetch lands a moment later), and close the inline form.
+  // refetch lands a moment later), and close the add-new window.
   const handleVocabularyCreated = (field, name) => {
     set(field)(name);
     setAddedNames((prev) => ({ ...prev, [field]: [...prev[field], name] }));
@@ -630,17 +632,6 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
                 addNewLabel={t('productForm.addNewCategory')}
                 onAddNewRequest={() => setAddNewField('category')}
               />
-              {addNewField === 'category' && (
-                <AddVocabularyInline
-                  businessId={activeId}
-                  kind="category"
-                  initialName={form.category}
-                  existingNames={vocabulary.categories}
-                  title={t('productForm.addNewCategory')}
-                  onCreated={(name) => handleVocabularyCreated('category', name)}
-                  onCancel={() => setAddNewField(null)}
-                />
-              )}
             </div>
           </div>
 
@@ -709,8 +700,26 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
               )}
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="qr">{t('productForm.qrLabel')}</Label>
-              <Input id="qr" value={form.qr_code} onChange={set('qr_code')} className="font-mono" />
+              <Label htmlFor="qr_code">{t('productForm.qrLabel')}</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="qr_code"
+                  value={form.qr_code}
+                  onChange={(e) => {
+                    set('qr_code')(e);
+                    if (codeTaken?.field === 'qr_code') setCodeTaken(null);
+                  }}
+                  className="min-w-0 flex-1 font-mono"
+                />
+                <Button type="button" variant="outline" className="shrink-0" onClick={() => openCodeScanner('qr_code')} aria-label={t('productForm.scanCode')}>
+                  <ScanBarcode className="h-4 w-4" />
+                </Button>
+              </div>
+              {codeTaken?.field === 'qr_code' && (
+                <p className="text-xs font-medium text-destructive">
+                  {t('productForm.codeTakenNotice', { name: codeTaken.name })}
+                </p>
+              )}
             </div>
           </div>
 
@@ -1057,9 +1066,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
             setForm={setForm}
             vocabulary={vocabulary}
             businessId={activeId}
-            addNewField={addNewField}
             setAddNewField={setAddNewField}
-            onVocabularyCreated={handleVocabularyCreated}
           />
 
           <div className="grid gap-2">
@@ -1078,6 +1085,29 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
             {saving ? t('productForm.saving') : product ? t('productForm.saveChanges') : t('productForm.createProduct')}
           </Button>
         </DialogFooter>
+
+        {/* Add-new vocabulary window: a fixed overlay, so the form
+            behind it does not move AT ALL (owner ruling, Nov 14,
+            2026 — the old inline panel squeezed into the form's
+            right-hand column as a narrow sliver and reflowed the
+            grid around it). One full-width name field, prefilled
+            with the picker's typed text; Save creates the entry and
+            selects it, Cancel creates nothing. */}
+        {addNewField && (
+          <AddVocabularyDialog
+            businessId={activeId}
+            kind={addNewField}
+            initialName={addNewField === 'category' ? form.category : form.subcategory}
+            existingNames={
+              addNewField === 'category' ? vocabulary.categories : vocabulary.subcategories || []
+            }
+            title={t(
+              addNewField === 'category' ? 'productForm.addNewCategory' : 'productForm.addNewSubcategory',
+            )}
+            onCreated={(name) => handleVocabularyCreated(addNewField, name)}
+            onCancel={() => setAddNewField(null)}
+          />
+        )}
 
         {/* In-form scanner overlay: rendered INSIDE the dialog, so
             the form underneath never unmounts and nothing typed is

@@ -7,6 +7,9 @@ import { evaluateRows, existingKeys } from '@/lib/importProducts';
 import { downloadCsv, toCsv } from '@/lib/csv';
 import { scoped } from '@/lib/scoped';
 import { createProducts } from '@/lib/entitlements';
+import { countDistinctProducts } from '@/lib/productDuplicates';
+import useEntitlements from '@/hooks/useEntitlements';
+import useImportDraft from '@/hooks/useImportDraft';
 import { useAuth } from '@/lib/AuthContext';
 import { Button } from '@/components/ui/button';
 import {
@@ -29,23 +32,36 @@ const NO_LOCATION = 'none';
  */
 export default function ImportWorkbench({ businessId }) {
   const { user } = useAuth();
+  const { limits } = useEntitlements();
   const [fileName, setFileName] = useState('');
   const [sheets, setSheets] = useState([]);
   const [sheetName, setSheetName] = useState('');
   const [table, setTable] = useState(null);
   const [warnings, setWarnings] = useState([]);
   const [mapping, setMapping] = useState([]);
-  const [existing, setExisting] = useState({ skus: [], codes: [] });
+  const [existingProducts, setExistingProducts] = useState([]);
   const [locations, setLocations] = useState([]);
   const [locationId, setLocationId] = useState('');
   const [dryRun, setDryRun] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [checking, setChecking] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
 
+  const existing = useMemo(() => existingKeys(existingProducts), [existingProducts]);
+
+  // The dry run is cap-aware (owner ruling, Nov 14, 2026): the room
+  // is the plan cap minus the catalog's distinct-original count —
+  // the same number the pill and the server cap use.
+  const capInfo = useMemo(() => {
+    const have = countDistinctProducts(existingProducts);
+    const cap = limits?.products ?? null;
+    return { have, cap, room: cap == null ? null : Math.max(0, cap - have) };
+  }, [existingProducts, limits]);
+
   const report = useMemo(
-    () => evaluateRows({ table, mapping, existing }),
-    [table, mapping, existing]
+    () => evaluateRows({ table, mapping, existing, room: capInfo.room }),
+    [table, mapping, existing, capInfo]
   );
 
   const hasName = mapping.includes('name');
@@ -53,6 +69,44 @@ export default function ImportWorkbench({ businessId }) {
   const withStock = stockMapped && Boolean(locationId) && locationId !== NO_LOCATION;
   const signature = `${fileName}|${mapping.join(',')}|${locationId}`;
   const needsCheck = !dryRun || dryRun.signature !== signature;
+
+  // The staged import survives leaving (owner ruling, Nov 14,
+  // 2026): file, matches, location and the dry-run verdict persist
+  // on this device until Start over or a finished import clears
+  // them. Restoring also re-reads the catalog so duplicate checks
+  // and the room count are current.
+  const draftSnapshot = {
+    sheet: { fileName, sheets, sheetName, table, warnings, mapping },
+    locationId,
+    dryRun,
+  };
+  const { tooLarge: draftTooLarge } = useImportDraft({
+    businessId,
+    mode: 'create',
+    snapshot: draftSnapshot,
+    restore: (draft) => {
+      const snap = draft.sheet || {};
+      setFileName(snap.fileName || '');
+      setSheets(snap.sheets || []);
+      setSheetName(snap.sheetName || '');
+      setTable(snap.table || null);
+      setWarnings(snap.warnings || []);
+      setMapping(snap.mapping || []);
+      setLocationId(draft.locationId || '');
+      setDryRun(draft.dryRun || null);
+      if (businessId) {
+        Promise.all([
+          base44.entities.Product.filter(scoped({}, businessId), { limit: 1000 }),
+          base44.entities.Location.filter(scoped({}, businessId), { sort: 'name', limit: 100 }),
+        ])
+          .then(([productPage, locationPage]) => {
+            setExistingProducts(productPage.items ?? []);
+            setLocations(locationPage.items ?? []);
+          })
+          .catch(() => {});
+      }
+    },
+  });
 
   const reset = () => {
     setFileName('');
@@ -105,7 +159,7 @@ export default function ImportWorkbench({ businessId }) {
       setFileName(file.name);
       setSheets(parsedSheets);
       setWarnings(parsedSheets.flatMap((sheet) => sheet.warnings));
-      setExisting(existingKeys(productPage.items ?? []));
+      setExistingProducts(productPage.items ?? []);
       setLocations(locationPage.items ?? []);
       loadSheet(parsedSheets[0]);
     } catch (err) {
@@ -165,15 +219,39 @@ export default function ImportWorkbench({ businessId }) {
     );
   };
 
-  const runCheck = () => {
+  // A dry run — first or re-run — always re-reads the CURRENT
+  // catalog and re-tests every row against it (owner catch,
+  // Nov 14, 2026: 'Re-run dry run' was dead because it re-read the
+  // verdict computed at file-load and changed nothing on screen).
+  const runCheck = async () => {
+    if (!businessId || checking) return;
+    setChecking(true);
+    setError('');
     setResult(null);
-    setDryRun({
-      signature,
-      ready: report.ready,
-      skipped: report.skipped,
-      units: report.units,
-      problems: report.problems,
-    });
+    try {
+      const productPage = await base44.entities.Product.filter(scoped({}, businessId), { limit: 1000 });
+      const fresh = productPage.items ?? [];
+      setExistingProducts(fresh);
+      const have = countDistinctProducts(fresh);
+      const cap = limits?.products ?? null;
+      const room = cap == null ? null : Math.max(0, cap - have);
+      const verdict = evaluateRows({ table, mapping, existing: existingKeys(fresh), room });
+      setDryRun({
+        signature,
+        ready: verdict.ready,
+        skipped: verdict.skipped,
+        over: verdict.over,
+        units: verdict.units,
+        problems: verdict.problems,
+        have,
+        cap,
+        room,
+      });
+    } catch (err) {
+      setError(err?.message || t('import.fileUnreadable'));
+    } finally {
+      setChecking(false);
+    }
   };
 
   const runImport = async () => {
@@ -240,7 +318,7 @@ export default function ImportWorkbench({ businessId }) {
         }
       }
 
-      setResult({ created: valid.length, skipped: report.skipped, stockRows });
+      setResult({ created: valid.length, skipped: report.skipped, over: report.over, stockRows });
       setTable(null);
       setFileName('');
       setMapping([]);
@@ -305,6 +383,11 @@ export default function ImportWorkbench({ businessId }) {
                 })}
               </p>
             )}
+            {result.over > 0 && (
+              <p className="mt-1 text-xs text-muted-foreground">
+                {t('import.notImportedPlanFull', { count: result.over })}
+              </p>
+            )}
           </div>
         )}
       </div>
@@ -328,6 +411,12 @@ export default function ImportWorkbench({ businessId }) {
             <RotateCcw className="mr-1.5 h-3.5 w-3.5" /> {t('import.startOver')}
           </Button>
         </div>
+
+        {draftTooLarge && (
+          <p className="mt-3 flex items-start gap-2 text-sm text-destructive">
+            <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" /> {t('import.draftTooLarge')}
+          </p>
+        )}
 
         <div className="mt-4 space-y-4">
           {sheets.length > 1 && (
@@ -399,15 +488,24 @@ export default function ImportWorkbench({ businessId }) {
             report={report}
             needsCheck={needsCheck}
             withStock={withStock}
+            capInfo={capInfo}
           />
 
           <div className="flex flex-wrap items-center gap-2">
             <Button
               variant="outline"
               onClick={runCheck}
-              disabled={!hasName || !table.rows.length || busy}
+              disabled={!hasName || !table.rows.length || busy || checking}
             >
-              {needsCheck ? t('import.runDryRun') : t('import.rerunDryRun')}
+              {checking ? (
+                <>
+                  <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> {t('import.runDryRun')}
+                </>
+              ) : needsCheck ? (
+                t('import.runDryRun')
+              ) : (
+                t('import.rerunDryRun')
+              )}
             </Button>
             <Button
               onClick={runImport}

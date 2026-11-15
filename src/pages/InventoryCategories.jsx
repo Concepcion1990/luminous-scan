@@ -1,10 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { ChevronDown, Search } from 'lucide-react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { ChevronDown, Pencil, Search } from 'lucide-react';
 import { formatMoney, loadInventory } from '@/lib/inventory';
+import { isDuplicateProduct } from '@/lib/productDuplicates';
 import { useBusiness } from '@/hooks/useBusiness';
 import useEntitlements from '@/hooks/useEntitlements';
+import useDataFresh from '@/hooks/useDataFresh';
+import { useCatalogVocabulary } from '@/hooks/useCatalogVocabulary';
 import ProductThumb from '@/components/products/ProductThumb';
+import CategoryEditDialog from '@/components/inventory/CategoryEditDialog';
 import { Input } from '@/components/ui/input';
 import { t } from '@/lib/i18n';
 
@@ -36,16 +40,37 @@ export default function InventoryCategories() {
   const [inventory, setInventory] = useState(null);
   const [search, setSearch] = useState('');
   const [locationId, setLocationId] = useState('');
-  const [openKey, setOpenKey] = useState('');
+  const [searchParams] = useSearchParams();
+  // A door from elsewhere (the Categories & tags page's Uncategorized
+  // bucket) can ask for one group to start open.
+  const [openKey, setOpenKey] = useState(() => searchParams.get('group') || '');
+
+  // The bucket door (Categories & tags -> ?group=Uncategorized) must
+  // land even when this page is already mounted from an earlier
+  // visit — the initializer alone only reads the param once.
+  useEffect(() => {
+    const g = searchParams.get('group');
+    if (g) setOpenKey(g);
+  }, [searchParams]);
+  // The category edit door (owner ask, Nov 14, 2026): fix a
+  // product's filing HERE instead of leaving for Products.
+  const [editing, setEditing] = useState(null);
+  const vocabulary = useCatalogVocabulary(activeId);
 
   const load = useCallback(() => {
     if (!activeId) return;
     return loadInventory(activeId).then(setInventory);
   }, [activeId]);
 
+  useDataFresh('inventory', '/inventory/categories', load);
+
   useEffect(() => {
     setInventory(null);
-    setOpenKey('');
+    // The reset must honor the same ?group= door the initializer
+    // and the sync effect read — clearing openKey here stomped
+    // the bucket's request shut again on every mount (found by
+    // the rendered driver, Nov 14, 2026).
+    setOpenKey(searchParams.get('group') || '');
     setLocationId('');
     load();
   }, [load]);
@@ -73,7 +98,14 @@ export default function InventoryCategories() {
         byCategory.get(key).push({
           product,
           onHand,
-          low: (product.reorder_point || 0) > 0 && onHand <= product.reorder_point,
+          // The one counting rule (owner ruling, Nov 14, 2026): a
+          // copy is not a product — it never cries low-stock here
+          // either (it inherits its original's reorder point and
+          // sits at 0 units, so the bare rule flags it forever).
+          low:
+            !isDuplicateProduct(product) &&
+            (product.reorder_point || 0) > 0 &&
+            onHand <= product.reorder_point,
         });
       });
 
@@ -81,6 +113,11 @@ export default function InventoryCategories() {
       .map(([name, items]) => ({
         name,
         items: items.sort((a, b) => a.product.name.localeCompare(b.product.name)),
+        // Product counts follow the same law: distinct originals
+        // only — the rows still list every record, copies included,
+        // but a copy adds nothing to the count or the low total.
+        // Units stay a pure levels sum.
+        count: items.filter((item) => !isDuplicateProduct(item.product)).length,
         units: items.reduce((sum, item) => sum + item.onHand, 0),
         value: items.reduce((sum, item) => sum + item.onHand * (item.product.cost || 0), 0),
         low: items.filter((item) => item.low).length,
@@ -182,8 +219,8 @@ export default function InventoryCategories() {
                     <p className="truncate text-sm font-medium">{group.name === UNCATEGORIZED ? t('inventory.uncategorized') : group.name}</p>
                     <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
                       {t('inventory.groupProductCount', {
-                        count: group.items.length,
-                        word: group.items.length === 1 ? t('inventory.productSingular') : t('inventory.productPlural'),
+                        count: group.count,
+                        word: group.count === 1 ? t('inventory.productSingular') : t('inventory.productPlural'),
                       })}
                       {group.low ? t('inventory.groupLowSuffix', { low: group.low }) : ''}
                     </p>
@@ -212,6 +249,14 @@ export default function InventoryCategories() {
                             {product.sku || t('inventory.noSku')}
                             {product.subcategory ? ` · ${product.subcategory}` : ''}
                           </p>
+                          <button
+                            type="button"
+                            onClick={() => setEditing(product)}
+                            className="mt-0.5 inline-flex items-center gap-1 text-[11px] font-medium text-primary underline-offset-2 hover:underline"
+                          >
+                            <Pencil className="h-3 w-3" />
+                            {product.category ? t('inventory.changeCategory') : t('inventory.setCategory')}
+                          </button>
                         </div>
                         <div className="shrink-0 text-right">
                           <p className={`numeric text-sm font-semibold ${low ? 'text-warn' : ''}`}>{onHand}</p>
@@ -235,6 +280,19 @@ export default function InventoryCategories() {
             );
           })}
         </div>
+      )}
+
+      {editing && (
+        <CategoryEditDialog
+          product={editing}
+          businessId={activeId}
+          vocabulary={vocabulary}
+          onSaved={() => {
+            setEditing(null);
+            load();
+          }}
+          onCancel={() => setEditing(null)}
+        />
       )}
     </div>
   );

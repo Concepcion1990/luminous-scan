@@ -4,6 +4,7 @@ import { loadEntitlement, resolveEntitlement } from '@/lib/entitlements';
 import { BUNDLE_MOVEMENT_TYPES, featureAllowed } from '@/lib/plans';
 import { t } from './i18n.js';
 import { SEARCHABLE_FIELDS, searchWords } from './searchMatch.js';
+import { countDistinctProducts } from './productDuplicates.js';
 
 export { productMatchesSearch, searchWords } from './searchMatch.js';
 
@@ -284,6 +285,13 @@ export async function recordMovement({
   unitCost,
   businessId = '',
 }) {
+  // Archived products are frozen (owner ruling, Nov 14, 2026): no
+  // movement of any kind until the product is restored to active.
+  // The server refuses too — this is the early, plain-words door.
+  if ((product.status || 'active') === 'archived') {
+    throw new Error(t('inventoryLib.archivedFrozen', { name: product.name }));
+  }
+
   // Bundle movements are a Business feature, and this is the one funnel
   // every movement write passes through — Scan, counts, orders, purchasing,
   // returns, stock adjustments and builds/teardowns — so the check lives
@@ -612,7 +620,15 @@ export function summarize({ products, levels, locations }) {
   return {
     totalUnits: levels.reduce((sum, l) => sum + (l.quantity || 0), 0),
     reservedUnits: levels.reduce((sum, l) => sum + (l.reserved || 0), 0),
+    // The raw catalog-row count, kept for any rows-based display.
     activeSkus: products.length,
+    // THE product count (owner's counting rule, Nov 14, 2026):
+    // distinct ORIGINAL products, any status — a copy is the same
+    // product and never counts, an archived original still does,
+    // only a true delete lowers it. The Active SKUs card, the
+    // Dashboard limit hint, the Products pill and the server cap
+    // all read this one definition.
+    distinctSkus: countDistinctProducts(products),
     stockValue,
     retailValue,
     margin: retailValue - stockValue,

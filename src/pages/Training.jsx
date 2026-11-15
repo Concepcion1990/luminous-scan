@@ -19,7 +19,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { useBusiness } from '@/hooks/useBusiness';
 import { t } from '@/lib/i18n';
 import { toLocalDate } from '@/lib/dates';
-import { TRAINING_LESSONS, lessonsForTrack } from '@/lib/trainingCatalog';
+import { TRAINING_LESSONS, lessonVisibleOnPlan, visibleLessonsForTrack } from '@/lib/trainingCatalog';
 import {
   assignTraining,
   completeLesson,
@@ -251,7 +251,7 @@ function AssignmentRow({ businessId, assignment, reload }) {
   );
 }
 
-function TeamSection({ businessId, level }) {
+function TeamSection({ businessId, level, isBusiness }) {
   const { toast } = useToast();
   const [team, setTeam] = useState(null);
   const [personId, setPersonId] = useState('');
@@ -275,7 +275,15 @@ function TeamSection({ businessId, level }) {
     return level === 'owner' ? team : team.filter((p) => p.level === 'staff');
   }, [team, level]);
 
-  const modules = useMemo(() => [...new Set(TRAINING_LESSONS.map((l) => l.module))].sort(), []);
+  // Only modules with at least one plan-visible lesson are
+  // assignable here — a Business-only topic does not dangle on
+  // Essentials (owner ruling, Nov 14, 2026).
+  const modules = useMemo(
+    () => [...new Set(
+      TRAINING_LESSONS.filter((l) => lessonVisibleOnPlan(l, isBusiness)).map((l) => l.module),
+    )].sort(),
+    [isBusiness],
+  );
 
   const submitAssign = async () => {
     if (!personId || !module) return;
@@ -363,13 +371,24 @@ function TeamSection({ businessId, level }) {
                 style={{ width: `${person.lessons_total ? Math.round((person.lessons_done / person.lessons_total) * 100) : 0}%` }}
               />
             </div>
-            {person.assignments.filter((a) => a.status !== 'completed').length > 0 && (
-              <>
-                <p className={`${labelCls} mt-4`}>{t('training.team.openAssignments')}</p>
-                <div className="mt-2 space-y-2.5">
-                  {person.assignments
-                    .filter((a) => a.status !== 'completed')
-                    .map((assignment) => (
+            {(() => {
+              // Assignments list only plan-visible lessons; an
+              // assignment with none left on this plan does not
+              // render (owner ruling, Nov 14, 2026).
+              const openAssignments = person.assignments
+                .map((assignment) => {
+                  const ids = (assignment.lesson_ids || []).filter((id) =>
+                    lessonVisibleOnPlan(lessonById(id), isBusiness));
+                  return ids.length ? { ...assignment, lesson_ids: ids } : null;
+                })
+                .filter(Boolean)
+                .filter((a) => a.status !== 'completed');
+              if (!openAssignments.length) return null;
+              return (
+                <>
+                  <p className={`${labelCls} mt-4`}>{t('training.team.openAssignments')}</p>
+                  <div className="mt-2 space-y-2.5">
+                    {openAssignments.map((assignment) => (
                       <AssignmentRow
                         key={assignment.id}
                         businessId={businessId}
@@ -377,9 +396,10 @@ function TeamSection({ businessId, level }) {
                         reload={load}
                       />
                     ))}
-                </div>
-              </>
-            )}
+                  </div>
+                </>
+              );
+            })()}
           </div>
         ))}
       </div>
@@ -440,6 +460,18 @@ export default function Training() {
     );
   }
 
+  // Plan visibility (owner ruling, Nov 14, 2026): lessons about
+  // Business-only features do not exist on Essentials — no cards,
+  // and the counters count only the lessons this plan has. The
+  // plan arrives with the training state itself, so there is no
+  // window where the wrong set shows.
+  const isBusiness = state.plan === 'business';
+  const visibleAssignment = (assignment) => {
+    const ids = (assignment.lesson_ids || []).filter((id) =>
+      lessonVisibleOnPlan(lessonById(id), isBusiness));
+    return ids.length ? { ...assignment, lesson_ids: ids } : null;
+  };
+
   return (
     <div className="mx-auto w-full max-w-4xl space-y-6 px-4 py-8 sm:px-6">
       <header>
@@ -447,10 +479,13 @@ export default function Training() {
         <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-muted-foreground">{t('training.subtitle')}</p>
       </header>
 
-      <MyAssignments assignments={state.assignments} completedSet={completedSet} />
+      <MyAssignments
+        assignments={state.assignments.map(visibleAssignment).filter(Boolean)}
+        completedSet={completedSet}
+      />
 
       {state.tracks.map((track) => {
-        const lessons = lessonsForTrack(track);
+        const lessons = visibleLessonsForTrack(track, isBusiness);
         const doneCount = lessons.filter((l) => completedSet.has(l.id)).length;
         return (
           <Section
@@ -478,7 +513,7 @@ export default function Training() {
       })}
 
       {(state.level === 'owner' || state.level === 'manager') && (
-        <TeamSection businessId={activeId} level={state.level} />
+        <TeamSection businessId={activeId} level={state.level} isBusiness={isBusiness} />
       )}
     </div>
   );

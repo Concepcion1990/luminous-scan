@@ -122,8 +122,12 @@ export default function Dashboard() {
   }, [activeId, showPurchasing, reload]);
 
   const stats = data ? summarize(data) : null;
+  // The limit hint speaks the one counting rule (owner, Nov 14,
+  // 2026): distinct originals — the same number the server cap
+  // enforces and the Active SKUs card shows. A hint counting rows
+  // while the gate counts products would be a lie at the boundary.
   const atProductLimit =
-    productLimit != null && stats != null && stats.activeSkus >= productLimit;
+    productLimit != null && stats != null && stats.distinctSkus >= productLimit;
 
   return (
     <div className="space-y-6">
@@ -166,7 +170,7 @@ export default function Dashboard() {
           </div>
           {atProductLimit && (
             <p className="text-xs text-muted-foreground">
-              {t('dashboard.productLimit', { count: stats.activeSkus, limit: productLimit })}{' '}
+              {t('dashboard.productLimit', { count: stats.distinctSkus, limit: productLimit })}{' '}
               <Link to="/upgrade" className="font-medium text-link underline underline-offset-2">
                 {t('dashboard.upgradeUnlimited')}
               </Link>
@@ -211,7 +215,7 @@ export default function Dashboard() {
         <>
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             <StatCard label={t('dashboard.unitsOnHand')} value={stats.totalUnits.toLocaleString()} hint={t('dashboard.acrossAllLocations')} />
-            <StatCard label={t('dashboard.activeSkus')} value={stats.activeSkus.toLocaleString()} hint={t('dashboard.trackedProducts')} />
+            <StatCard label={t('dashboard.activeSkus')} value={stats.distinctSkus.toLocaleString()} hint={t('dashboard.trackedProducts')} />
             {entitlementLoading ? (
               <>
                 <div className="h-[104px] animate-pulse rounded-xl border border-border bg-card" />

@@ -20,7 +20,11 @@
  * passed with lessons still unfinished (the strict rule — a warning
  * is about an unmet deadline, never a nudge).
  *
- * Training is on BOTH plans — no plan gate anywhere here.
+ * Training is on BOTH plans — the page itself is never gated. But
+ * lesson VISIBILITY obeys the invisibility doctrine (owner ruling,
+ * Nov 14, 2026): lessons about Business-only features do not
+ * exist on Essentials — team totals/done counts and assignment
+ * lesson lists are computed over the plan-visible lessons only.
  */
 import crypto from 'node:crypto';
 import { Router } from 'express';
@@ -34,6 +38,7 @@ import {
   TRAINING_MODULES,
   lessonById,
   lessonsForModuleAtLevel,
+  lessonVisibleOnPlan,
   visibleTracksForLevel,
 } from './trainingCatalog.js';
 import {
@@ -224,7 +229,14 @@ export function createTrainingRouter({ getPool: getPoolFn }) {
       // A manager sees staff only — never other managers, never the owner.
       if (level === 'manager' && personLvl !== 'staff') continue;
       const tracks = visibleTracksForLevel(personLvl);
-      const total = TRAINING_LESSONS.filter((l) => tracks.includes(l.track)).length;
+      // Plan visibility (owner ruling, Nov 14, 2026): totals and
+      // done counts cover only the lessons this plan actually has —
+      // progress recorded against a now-hidden lesson stays stored
+      // and simply never enters either number here.
+      const isBusiness = access.planKey === 'business';
+      const total = TRAINING_LESSONS.filter(
+        (l) => tracks.includes(l.track) && lessonVisibleOnPlan(l, isBusiness),
+      ).length;
       const completedSet = await completedLessonIds(pool(), access.business.id, row.id);
       const assignments = (await assignmentsForPerson(pool(), access.business.id, row.id)).map((row2) =>
         withOverdue(row2, today),
@@ -238,7 +250,7 @@ export function createTrainingRouter({ getPool: getPoolFn }) {
         lessons_total: total,
         lessons_done: [...completedSet].filter((id) => {
           const l = lessonById(id);
-          return l && tracks.includes(l.track);
+          return l && tracks.includes(l.track) && lessonVisibleOnPlan(l, isBusiness);
         }).length,
         assignments,
       });
@@ -266,7 +278,8 @@ export function createTrainingRouter({ getPool: getPoolFn }) {
     if (!target) throw err(404, 'not_found', 'That team member is not in this business.');
     const targetLevel = personLevel(target);
     requireAssignRights(level, { assignee_level: targetLevel });
-    const lessons = lessonsForModuleAtLevel(module, targetLevel);
+    const lessons = lessonsForModuleAtLevel(module, targetLevel)
+      .filter((lesson) => lessonVisibleOnPlan(lesson, access.planKey === 'business'));
     if (!lessons.length) {
       throw err(400, 'no_lessons', 'That topic has no lessons for this person\u2019s role.');
     }

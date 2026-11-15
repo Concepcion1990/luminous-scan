@@ -3,6 +3,7 @@ import { base44 } from '@/api/client';
 import { CheckCircle2, Loader2, RotateCcw, TriangleAlert, Upload } from 'lucide-react';
 import { t } from '@/lib/i18n';
 import useImportSheet from '@/hooks/useImportSheet';
+import useImportDraft from '@/hooks/useImportDraft';
 import { evaluateReceipts, guessReceiveField, RECEIVE_FIELDS } from '@/lib/importModes';
 import { applyReceipts } from '@/lib/importCommit';
 import { downloadTemplateCsv, downloadTemplateXlsx } from '@/lib/importTemplates';
@@ -101,6 +102,39 @@ export default function ReceiveWorkbench({ businessId }) {
     [sheet.table, sheet.mapping, products, levels, locationId]
   );
 
+  // The staged import survives leaving (owner ruling, Nov 14,
+  // 2026): sheet, matches, location, reference, note and the
+  // dry-run verdict persist on this device until Start over or a
+  // finished receive clears them.
+  const draftSnapshot = {
+    sheet: {
+      fileName: sheet.fileName,
+      sheets: sheet.sheets,
+      sheetName: sheet.sheetName,
+      table: sheet.table,
+      warnings: sheet.warnings,
+      mapping: sheet.mapping,
+    },
+    locationId,
+    reference,
+    note,
+    batchRef,
+    dryRun,
+  };
+  const { tooLarge: draftTooLarge } = useImportDraft({
+    businessId,
+    mode: 'receive',
+    snapshot: draftSnapshot,
+    restore: (draft) => {
+      sheet.hydrate(draft.sheet);
+      setLocationId(draft.locationId || '');
+      setReference(draft.reference || '');
+      setNote(draft.note || '');
+      setBatchRef(draft.batchRef || '');
+      setDryRun(draft.dryRun || null);
+    },
+  });
+
   const matchKey = sheet.mapping.includes('id') ? 'id' : sheet.mapping.includes('sku') ? 'sku' : '';
   const signature = `${sheet.fileName}|${sheet.mapping.join(',')}|${locationId}|${batchRef}`;
   const needsCheck = !dryRun || dryRun.signature !== signature;
@@ -115,14 +149,47 @@ export default function ReceiveWorkbench({ businessId }) {
     setNote('');
   };
 
-  const runCheck = () => {
-    setDryRun({
-      signature,
-      ready: report.ready,
-      skipped: report.skipped,
-      units: report.units,
-      problems: report.problems,
-    });
+  // A dry run — first or re-run — always re-reads the CURRENT
+  // catalog and stock levels and re-tests every row against them
+  // (owner catch, Nov 14, 2026: 'Re-run dry run' was dead on all
+  // three import operations because it re-read the verdict
+  // computed from the page-load snapshot).
+  const [checking, setChecking] = useState(false);
+  const runCheck = async () => {
+    if (!businessId || checking) return;
+    setChecking(true);
+    setError('');
+    setResult(null);
+    try {
+      const [productPage, levelPage] = await Promise.all([
+        base44.entities.Product.filter(scoped({}, businessId), { limit: 1000 }),
+        locationId
+          ? base44.entities.StockLevel.filter(scoped({ location_id: locationId }, businessId), { limit: 2000 })
+          : Promise.resolve({ items: [] }),
+      ]);
+      const freshProducts = productPage.items ?? [];
+      const freshLevels = levelPage.items ?? [];
+      setProducts(freshProducts);
+      setLevels(freshLevels);
+      const verdict = evaluateReceipts({
+        table: sheet.table,
+        mapping: sheet.mapping,
+        products: freshProducts,
+        levels: freshLevels,
+        locationId,
+      });
+      setDryRun({
+        signature,
+        ready: verdict.ready,
+        skipped: verdict.skipped,
+        units: verdict.units,
+        problems: verdict.problems,
+      });
+    } catch (err) {
+      setError(err?.message || t('import.fileUnreadable'));
+    } finally {
+      setChecking(false);
+    }
   };
 
   const receive = async () => {
@@ -271,6 +338,12 @@ export default function ReceiveWorkbench({ businessId }) {
           </Button>
         </div>
 
+        {draftTooLarge && (
+          <p className="mt-3 flex items-start gap-2 text-sm text-destructive">
+            <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" /> {t('import.draftTooLarge')}
+          </p>
+        )}
+
         <div className="mt-4 space-y-4">
           {sheet.sheets.length > 1 && (
             <div className="grid gap-2">
@@ -395,9 +468,17 @@ export default function ReceiveWorkbench({ businessId }) {
             <Button
               variant="outline"
               onClick={runCheck}
-              disabled={!matchKey || !locationId || !sheet.table.rows.length || busy}
+              disabled={!matchKey || !locationId || !sheet.table.rows.length || busy || checking}
             >
-              {needsCheck ? t('import.runDryRun') : t('import.rerunDryRun')}
+              {checking ? (
+                <>
+                  <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> {t('import.runDryRun')}
+                </>
+              ) : needsCheck ? (
+                t('import.runDryRun')
+              ) : (
+                t('import.rerunDryRun')
+              )}
             </Button>
             <Button onClick={receive} disabled={busy || !businessId || !locationId || needsCheck || !report.ready}>
               {busy ? (
