@@ -10,6 +10,9 @@
  *  - Access: the caller owns the business or is a trusted active
  *    staff member on it (server/authz.js). Reads are open to any
  *    trusted staff; writes need the matching permission (or owner).
+ *  - Subscription: on top of ownership, the workspace must be
+ *    entitled (server/subscriptionAccess.js) — unpaid workspaces
+ *    serve nothing here, and grace is products/stock-levels read-only.
  *  - Plan: Business-only entities (suppliers, alert rules) refuse
  *    on Essentials; the product/staff/site caps refuse over-limit
  *    writes with the same messages Base44 used.
@@ -47,13 +50,22 @@ import {
   BUNDLE_MOVEMENT_TYPES,
 } from './plans.js';
 import { createStaffMember, staffSeatCount } from './staff.js';
-import { assertNotInGrace, withTx } from './billing.js';
+import { ensureDefaultLocation } from './defaultLocation.js';
+import { rememberOrderAddress } from './customerAddresses.js';
+import { withTx } from './billing.js';
+import {
+  assertSubscriptionAccess,
+  subscriptionAccessFor,
+  subscriptionDeniedError,
+  graceReadOnlyError,
+  GRACE_READABLE_ENTITIES,
+} from './subscriptionAccess.js';
 
 const DEFS = {
   Product: {
     table: 'products',
     json: ['variant_options', 'photo_urls', 'tags', 'custom_fields'],
-    numeric: ['cost', 'price', 'reorder_point'],
+    numeric: ['cost', 'price', 'reorder_point', 'clearance_price', 'sale_price'],
     bool: ['active'],
     required: ['name'],
     writePerm: 'products.edit',
@@ -267,12 +279,39 @@ function businessIdsFromFilter(filter) {
   return [];
 }
 
-async function activeProductCount(pool, businessId) {
+/**
+ * Is this product row a copy of another product? The server twin of
+ * src/lib/productDuplicates.js — the two must agree, because this
+ * predicate decides the plan cap while that one decides the counts
+ * the customer sees (owner's counting rule, Nov 14, 2026: a copy
+ * never counts; archiving never frees a slot). A copy carries the
+ * durable duplicate_of marker (migration 024), or — for copies
+ * minted before the marker existed — BOTH legacy birthmarks: a
+ * '-COPY' SKU and every code field cleared.
+ */
+export function isDuplicateProductRow(row) {
+  if (!row) return false;
+  if (row.duplicate_of) return true;
+  const sku = String(row.sku || '').trim();
+  if (!/-COPY(-\d+)?$/i.test(sku)) return false;
+  return !row.upc && !row.barcode && !row.qr_code;
+}
+
+/**
+ * The product count the plan cap enforces: DISTINCT ORIGINAL
+ * products, any status — active or archived. Copies never count;
+ * an archived original still counts (archive is a shelf, not a
+ * shredder — otherwise the cap could be sieved by archiving to
+ * make room); only a true delete lowers the count. Decided in JS
+ * over the signature fields so the rule is identical on every
+ * database engine, exactly as the client's twin computes it.
+ */
+async function distinctProductCount(pool, businessId) {
   const { rows } = await pool.query(
-    "SELECT COUNT(*)::int AS n FROM products WHERE business_id = $1 AND (status IS NULL OR status <> 'archived')",
+    'SELECT sku, upc, barcode, qr_code, duplicate_of FROM products WHERE business_id = $1',
     [businessId],
   );
-  return rows[0]?.n ?? 0;
+  return rows.filter((row) => !isDuplicateProductRow(row)).length;
 }
 
 async function operatingSiteCount(pool, businessId) {
@@ -376,17 +415,120 @@ const PO_EDIT_TRANSITIONS = {
   cancelled: [],
 };
 
-/** Guard a product write against the plan's active-product cap. */
-export async function assertProductCap(pool, businessId, planKey, additionalActive) {
+/** Guard a product write against the plan's distinct-product cap. */
+export async function assertProductCap(pool, businessId, planKey, additionalDistinct) {
   const limits = limitsForPlan(planKey);
-  if (limits.products == null || additionalActive <= 0) return;
-  const used = await activeProductCount(pool, businessId);
-  if (used + additionalActive > limits.products) {
+  if (limits.products == null || additionalDistinct <= 0) return;
+  const used = await distinctProductCount(pool, businessId);
+  if (used + additionalDistinct > limits.products) {
     throw Object.assign(
       err(403, 'product_limit', productLimitMessage(limits.products, used)),
       { limit: limits.products, used },
     );
   }
+}
+
+// ---- Clearance + rollback pricing (migration 018, Nov 13, 2026) ----
+// Business-only, like the POS till gate: the pricing fields may only
+// be SET on Business (403 pricing_business_only), and reads on any
+// other plan see them stripped back to defaults — held, never lost,
+// applying again if the business returns to Business. The regular
+// `price` is never part of this: it is retained untouched in every
+// mode, and the effective price is derived client-side from the
+// window (src/lib/pricing.js).
+const PRICING_DEFAULTS = Object.freeze({
+  pricing_mode: 'regular',
+  clearance_price: null,
+  sale_price: null,
+  sale_start: null,
+  sale_end: null,
+});
+const PRICING_MODES = ['regular', 'clearance', 'rollback'];
+
+function pricingPayloadActive(values) {
+  if (!values) return false;
+  if (values.pricing_mode && values.pricing_mode !== 'regular') return true;
+  if (values.clearance_price != null && values.clearance_price !== '') return true;
+  if (values.sale_price != null && values.sale_price !== '') return true;
+  if (values.sale_start || values.sale_end) return true;
+  return false;
+}
+
+/** SKU generation (Nov 14, 2026): a SKU is NOT required to create
+ *  a product — the owner hit the old refusal creating a product
+ *  from a barcode scan, where the scan fills name + UPC and there
+ *  is no SKU yet. A blank SKU is generated with the SAME scheme
+ *  the spreadsheet import already uses (src/lib/csvImport.js
+ *  uniqueSku): the name slug, ITEM-<n> when the name slugs to
+ *  nothing, -2/-3… until unique within the business. The generated
+ *  SKU is stored on the product like any typed one — visible and
+ *  editable afterward. A TYPED sku keeps the catalog's uniqueness
+ *  rule (the import layer's wording): duplicates are refused. */
+function slugSku(name) {
+  return String(name || '')
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 24);
+}
+
+async function generateProductSku(pool, businessId, name) {
+  const { rows } = await pool.query(
+    'SELECT sku FROM products WHERE business_id = $1',
+    [businessId],
+  );
+  const taken = new Set(
+    rows.map((r) => String(r.sku || '').toLowerCase()).filter(Boolean),
+  );
+  const base = slugSku(name) || `ITEM-${rows.length + 1}`;
+  let candidate = base;
+  let attempt = 2;
+  while (taken.has(candidate.toLowerCase())) {
+    candidate = `${base}-${attempt}`;
+    attempt += 1;
+  }
+  return candidate;
+}
+
+async function assertSkuAvailable(pool, businessId, sku) {
+  const { rows } = await pool.query(
+    'SELECT 1 FROM products WHERE business_id = $1 AND LOWER(sku) = LOWER($2) LIMIT 1',
+    [businessId, sku],
+  );
+  if (rows.length) {
+    throw err(400, 'sku_already_exists', `SKU ${sku} is already in the catalog.`);
+  }
+}
+
+/** Product photos: at most 6 per product (the form's own promise),
+ *  each a string URL. Enforced here — the one door every product
+ *  write passes through — so the cap holds for imports and bulk
+ *  edits too, not just the form. */
+export const MAX_PRODUCT_PHOTOS = 6;
+function assertPhotoUrls(values) {
+  if (values.photo_urls === undefined) return;
+  const urls = values.photo_urls;
+  if (!Array.isArray(urls) || urls.some((u) => typeof u !== 'string')) {
+    throw err(400, 'invalid_photo_urls', 'Photos must be a list of image links.');
+  }
+  if (urls.length > MAX_PRODUCT_PHOTOS) {
+    throw err(400, 'too_many_photos', `A product can carry at most ${MAX_PRODUCT_PHOTOS} photos.`);
+  }
+}
+
+function assertPricingShape(values) {
+  if (values.pricing_mode !== undefined && values.pricing_mode !== null && !PRICING_MODES.includes(values.pricing_mode)) {
+    throw err(400, 'invalid_value', 'Pricing mode must be regular, clearance or rollback.');
+  }
+  for (const field of ['clearance_price', 'sale_price']) {
+    if (values[field] != null && values[field] !== '' && !(Number(values[field]) >= 0)) {
+      throw err(400, 'invalid_value', 'A sale price cannot be negative.');
+    }
+  }
+}
+
+function stripPricing(row) {
+  return { ...row, ...PRICING_DEFAULTS };
 }
 
 async function guardCreate(pool, def, name, access, values) {
@@ -439,7 +581,21 @@ async function guardCreate(pool, def, name, access, values) {
     await validateBom(pool, business, values.product_id, values.kind, values.lines);
   }
   if (name === 'Product') {
-    await assertProductCap(pool, business.id, planKey, values.status === 'archived' ? 0 : 1);
+    if (pricingPayloadActive(values) && !featureAllowed(planKey, 'pricing')) {
+      throw err(403, 'pricing_business_only', 'Clearance and rollback pricing is part of the Business plan.');
+    }
+    assertPricingShape(values);
+    assertPhotoUrls(values);
+    if (!String(values.sku || '').trim()) {
+      values.sku = await generateProductSku(pool, business.id, values.name);
+    } else {
+      await assertSkuAvailable(pool, business.id, String(values.sku).trim());
+    }
+    // The incoming row consumes a cap slot unless it is a copy —
+    // its status is irrelevant: an original born archived counts
+    // exactly like an active one (owner's counting rule, Nov 14,
+    // 2026 — archiving never frees a slot).
+    await assertProductCap(pool, business.id, planKey, isDuplicateProductRow(values) ? 0 : 1);
   }
   if (name === 'Location' && isOperatingSite(values)) {
     const limits = limitsForPlan(planKey);
@@ -452,9 +608,13 @@ async function guardCreate(pool, def, name, access, values) {
     if (Number(values.quantity ?? 0) < 0 || Number(values.reserved ?? 0) < 0) {
       throw err(400, 'invalid_quantity', 'Stock levels can never be negative.');
     }
-    const product = (await pool.query('SELECT id FROM products WHERE id = $1 AND business_id = $2', [values.product_id, business.id])).rows[0];
+    const product = (await pool.query('SELECT id, status, name FROM products WHERE id = $1 AND business_id = $2', [values.product_id, business.id])).rows[0];
     const location = (await pool.query('SELECT id FROM locations WHERE id = $1 AND business_id = $2', [values.location_id, business.id])).rows[0];
     if (!product || !location) throw err(400, 'invalid_reference', 'The product and location must belong to this business.');
+    // Archived products are frozen (Nov 14, 2026): no level write.
+    if (product.status === 'archived') {
+      throw err(400, 'product_archived', `${product.name || 'This product'} is archived, so its stock is frozen. Restore it to active to move its stock again.`);
+    }
   }
   if (name === 'StockMovement') {
     if (BUNDLE_MOVEMENT_TYPES.includes(values.type) && !featureAllowed(planKey, 'builds')) {
@@ -462,8 +622,12 @@ async function guardCreate(pool, def, name, access, values) {
     }
     if (!(Number(values.quantity) >= 0)) throw err(400, 'invalid_quantity', 'A movement quantity must be zero or more.');
     if (values.product_id) {
-      const product = (await pool.query('SELECT id FROM products WHERE id = $1 AND business_id = $2', [values.product_id, business.id])).rows[0];
+      const product = (await pool.query('SELECT id, status, name FROM products WHERE id = $1 AND business_id = $2', [values.product_id, business.id])).rows[0];
       if (!product) throw err(400, 'invalid_reference', 'The product must belong to this business.');
+      // Archived products are frozen (Nov 14, 2026): no ledger write.
+      if (product.status === 'archived') {
+        throw err(400, 'product_archived', `${product.name || 'This product'} is archived, so its stock is frozen. Restore it to active to move its stock again.`);
+      }
     }
   }
   if (name === 'StaffRole' && planKey !== 'business') {
@@ -485,6 +649,21 @@ async function guardUpdate(pool, def, name, access, row, patch) {
   // the create guard. Custom roles are Business-only, full stop.
   if (name === 'StaffRole' && planKey !== 'business') {
     throw err(403, 'custom_roles_business_only', customRolesBusinessOnlyMessage());
+  }
+  if (name === 'Product') {
+    if (pricingPayloadActive(patch) && !featureAllowed(planKey, 'pricing')) {
+      throw err(403, 'pricing_business_only', 'Clearance and rollback pricing is part of the Business plan.');
+    }
+    assertPricingShape(patch);
+    assertPhotoUrls(patch);
+  }
+  if (name === 'StockLevel') {
+    // Archived products are frozen (Nov 14, 2026): the level row of
+    // an archived product cannot be rewritten until it is restored.
+    const product = (await pool.query('SELECT status, name FROM products WHERE id = $1 AND business_id = $2', [row.product_id, access.business.id])).rows[0];
+    if (product?.status === 'archived') {
+      throw err(400, 'product_archived', `${product.name || 'This product'} is archived, so its stock is frozen. Restore it to active to move its stock again.`);
+    }
   }
   if (name === 'PurchaseOrder') {
     const current = row;
@@ -590,8 +769,38 @@ export async function listEntities(pool, user, name, filter = {}, options = {}) 
   for (const businessId of accessible) {
     const access = await resolveAccess(pool, user, businessId);
     if (!access) continue;
+    // Default-location heal (Nov 14, 2026): a business found with
+    // zero locations gains its one store location before the list
+    // is read, so no stock surface ever shows an empty picker.
+    // Businesses that have locations are never touched.
+    if (name === 'Location') {
+      await ensureDefaultLocation(pool, businessId, user.id);
+    }
+    // Subscription access gate (2026-11-13): an unpaid workspace
+    // contributes NO rows; in grace only the grace view's entities
+    // (products + stock levels) are readable. The Entitlement entity
+    // itself stays readable — it is how the client learns the state.
+    // A list that explicitly targets this business gets the hard 403;
+    // an unscoped portfolio list simply skips it, like a business
+    // the caller cannot access at all.
+    if (name !== 'Entitlement') {
+      const gate = await subscriptionAccessFor(pool, user, businessId);
+      if (gate.state === 'denied') {
+        if (wantedIds.length) throw subscriptionDeniedError(gate);
+        continue;
+      }
+      if (gate.state === 'grace' && !GRACE_READABLE_ENTITIES.has(name)) {
+        if (wantedIds.length) throw graceReadOnlyError(gate);
+        continue;
+      }
+    }
     if (def.planGate && !featureAllowed(access.planKey, def.planGate)) continue;
     let businessRows = await fetchBusinessRows(pool, def, businessId);
+    if (name === 'Product' && !featureAllowed(access.planKey, 'pricing')) {
+      // Pricing is Business-only: off-Business reads see the fields
+      // held at defaults (kept in the row, inert — migration 018).
+      businessRows = businessRows.map(stripPricing);
+    }
     if (name === 'StaffMember' && !access.isOwner) {
       // Staff read-by-email: a non-owner sees only their own row, and
       // only when that row is trusted (owner-created or chained).
@@ -622,8 +831,18 @@ export async function getEntity(pool, user, name, id) {
   if (!row) throw err(404, 'not_found', 'Not found.');
   const access = await resolveAccess(pool, user, row.business_id);
   if (!access) throw err(403, 'forbidden', 'You do not have access to this workspace.');
+  // Subscription access gate (2026-11-13): single-row reads obey the
+  // same rule as lists. Entitlement reads are exempt (state discovery).
+  if (name !== 'Entitlement') {
+    await assertSubscriptionAccess(pool, user, row.business_id, {
+      graceRead: GRACE_READABLE_ENTITIES.has(name),
+    });
+  }
   if (def.planGate && !featureAllowed(access.planKey, def.planGate)) {
     throw err(403, 'plan_gated', 'This feature is part of the Business plan.');
+  }
+  if (name === 'Product' && !featureAllowed(access.planKey, 'pricing')) {
+    return publicRow(def, stripPricing(row));
   }
   if (name === 'StaffMember' && !access.isOwner) {
     if (String(row.email || '').toLowerCase() !== String(user.email || '').toLowerCase()) {
@@ -643,7 +862,7 @@ export async function createEntity(pool, user, name, values) {
   if (!businessId) throw err(400, 'invalid_value', 'business_id is required.');
   const access = await resolveAccess(pool, user, businessId);
   if (!access) throw err(403, 'forbidden', 'You do not have access to this workspace.');
-  await assertNotInGrace(pool, businessId);
+  await assertSubscriptionAccess(pool, user, businessId, { write: true });
   if (name === 'StaffMember') {
     if (!access.isOwner && !access.can('staff.manage')) {
       throw err(403, 'forbidden', 'You are not allowed to manage staff here.');
@@ -652,7 +871,18 @@ export async function createEntity(pool, user, name, values) {
     return publicRow(def, row);
   }
   await guardCreate(pool, def, name, access, values);
-  return insertRow(pool, def, businessId, user, values);
+  const createdRow = await insertRow(pool, def, businessId, user, values);
+  // The 90-day customer address book: an order save remembers /
+  // refreshes the customer's reusable ship-to address. Never
+  // allowed to fail the order itself.
+  if (name === 'Order') {
+    try {
+      await rememberOrderAddress(pool, createdRow);
+    } catch {
+      /* the address book is a convenience, never a blocker */
+    }
+  }
+  return createdRow;
 }
 
 export async function bulkCreateEntities(pool, user, name, rows) {
@@ -667,10 +897,14 @@ export async function bulkCreateEntities(pool, user, name, rows) {
   }
   const access = await resolveAccess(pool, user, businessId);
   if (!access) throw err(403, 'forbidden', 'You do not have access to this workspace.');
-  await assertNotInGrace(pool, businessId);
+  await assertSubscriptionAccess(pool, user, businessId, { write: true });
   if (name === 'StaffMember') throw err(400, 'invalid_value', 'Invite staff members one at a time.');
   if (name === 'Product') {
-    const additional = rows.filter((row) => row.status !== 'archived').length;
+    // Only distinct originals consume cap slots — copies and
+    // archived rows alike follow the one counting rule (see
+    // distinctProductCount): copies never count, archived
+    // originals always do.
+    const additional = rows.filter((row) => !isDuplicateProductRow(row)).length;
     await assertProductCap(pool, businessId, access.planKey, additional);
   }
   const created = [];
@@ -689,13 +923,13 @@ export async function updateEntity(pool, user, name, id, patch) {
   if (!row) throw err(404, 'not_found', 'Not found.');
   const access = await resolveAccess(pool, user, row.business_id);
   if (!access) throw err(403, 'forbidden', 'You do not have access to this workspace.');
-  await assertNotInGrace(pool, row.business_id);
+  await assertSubscriptionAccess(pool, user, row.business_id, { write: true });
   const publicExisting = publicRow(def, row);
   await guardUpdate(pool, def, name, access, publicExisting, patch);
-  // A product re-activated from archived re-enters the cap.
-  if (name === 'Product' && patch.status && patch.status !== 'archived' && publicExisting.status === 'archived') {
-    await assertProductCap(pool, row.business_id, access.planKey, 1);
-  }
+  // No cap check on a status change: an archived original never
+  // left the count (owner's counting rule, Nov 14, 2026 — archive
+  // is a shelf, not a shredder), so restoring it can never breach
+  // the cap, and archiving one can never free a slot.
   const dbValues = toDbValues(def, patch);
   dbValues.updated_at = new Date().toISOString();
   const columns = Object.keys(dbValues);
@@ -720,6 +954,13 @@ export async function updateEntity(pool, user, name, id, patch) {
     if (name === 'StaffMember') await trainingFlagForMemberChange(pool, hookArgs);
     else await trainingFlagForRoleChange(pool, hookArgs);
   }
+  if (name === 'Order') {
+    try {
+      await rememberOrderAddress(pool, result);
+    } catch {
+      /* the address book is a convenience, never a blocker */
+    }
+  }
   return result;
 }
 
@@ -731,7 +972,7 @@ export async function deleteEntity(pool, user, name, id) {
   if (!row) throw err(404, 'not_found', 'Not found.');
   const access = await resolveAccess(pool, user, row.business_id);
   if (!access) throw err(403, 'forbidden', 'You do not have access to this workspace.');
-  await assertNotInGrace(pool, row.business_id);
+  await assertSubscriptionAccess(pool, user, row.business_id, { write: true });
   if (name === 'StaffMember') {
     // PR #63 follow-up (b): the owner may delete ANY StaffMember row
     // on their own business — including attacker-created ones.

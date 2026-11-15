@@ -3,6 +3,7 @@ import { base44 } from '@/api/client';
 import { CheckCircle2, Loader2, RotateCcw, TriangleAlert, Upload } from 'lucide-react';
 import { t } from '@/lib/i18n';
 import useImportSheet from '@/hooks/useImportSheet';
+import useImportDraft from '@/hooks/useImportDraft';
 import { evaluateUpdates, guessUpdateField, UPDATE_FIELDS } from '@/lib/importModes';
 import { applyProductUpdates } from '@/lib/importCommit';
 import { downloadTemplateCsv, downloadTemplateXlsx } from '@/lib/importTemplates';
@@ -91,6 +92,35 @@ export default function UpdateWorkbench({ businessId }) {
     [sheet.table, sheet.mapping, products, clearBlanks]
   );
 
+  // The staged import survives leaving (owner ruling, Nov 14,
+  // 2026): sheet, matches, options and the dry-run verdict persist
+  // on this device until Start over or a finished update clears
+  // them.
+  const draftSnapshot = {
+    sheet: {
+      fileName: sheet.fileName,
+      sheets: sheet.sheets,
+      sheetName: sheet.sheetName,
+      table: sheet.table,
+      warnings: sheet.warnings,
+      mapping: sheet.mapping,
+    },
+    clearBlanks,
+    confirmed,
+    dryRun,
+  };
+  const { tooLarge: draftTooLarge } = useImportDraft({
+    businessId,
+    mode: 'update',
+    snapshot: draftSnapshot,
+    restore: (draft) => {
+      sheet.hydrate(draft.sheet);
+      setClearBlanks(Boolean(draft.clearBlanks));
+      setConfirmed(Boolean(draft.confirmed));
+      setDryRun(draft.dryRun || null);
+    },
+  });
+
   const matchKey = sheet.mapping.includes('id') ? 'id' : sheet.mapping.includes('sku') ? 'sku' : '';
   const signature = `${sheet.fileName}|${sheet.mapping.join(',')}|${clearBlanks}`;
   const needsCheck = !dryRun || dryRun.signature !== signature;
@@ -106,16 +136,36 @@ export default function UpdateWorkbench({ businessId }) {
     dropChecks();
   };
 
-  const runCheck = () => {
+  // A dry run — first or re-run — always re-reads the CURRENT
+  // catalog and re-tests every row against it (owner catch,
+  // Nov 14, 2026: 'Re-run dry run' was dead on all three import
+  // operations because it re-read the verdict computed from the
+  // page-load snapshot).
+  const [checking, setChecking] = useState(false);
+  const runCheck = async () => {
+    if (!businessId || checking) return;
+    setChecking(true);
+    setError('');
+    setResult(null);
     setConfirmed(false);
-    setDryRun({
-      signature,
-      changed: report.changed,
-      same: report.same,
-      skipped: report.skipped,
-      fieldCount: report.fieldCount,
-      problems: report.problems,
-    });
+    try {
+      const page = await base44.entities.Product.filter(scoped({}, businessId), { limit: 1000 });
+      const fresh = page.items ?? [];
+      setProducts(fresh);
+      const verdict = evaluateUpdates({ table: sheet.table, mapping: sheet.mapping, products: fresh, clearBlanks });
+      setDryRun({
+        signature,
+        changed: verdict.changed,
+        same: verdict.same,
+        skipped: verdict.skipped,
+        fieldCount: verdict.fieldCount,
+        problems: verdict.problems,
+      });
+    } catch (err) {
+      setError(err?.message || t('import.fileUnreadable'));
+    } finally {
+      setChecking(false);
+    }
   };
 
   const apply = async () => {
@@ -233,6 +283,12 @@ export default function UpdateWorkbench({ businessId }) {
             <RotateCcw className="mr-1.5 h-3.5 w-3.5" /> {t('import.startOver')}
           </Button>
         </div>
+
+        {draftTooLarge && (
+          <p className="mt-3 flex items-start gap-2 text-sm text-destructive">
+            <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" /> {t('import.draftTooLarge')}
+          </p>
+        )}
 
         <div className="mt-4 space-y-4">
           {sheet.sheets.length > 1 && (
@@ -373,8 +429,16 @@ export default function UpdateWorkbench({ businessId }) {
           )}
 
           <div className="flex flex-wrap items-center gap-2">
-            <Button variant="outline" onClick={runCheck} disabled={!matchKey || !sheet.table.rows.length || busy}>
-              {needsCheck ? t('import.runDryRun') : t('import.rerunDryRun')}
+            <Button variant="outline" onClick={runCheck} disabled={!matchKey || !sheet.table.rows.length || busy || checking}>
+              {checking ? (
+                <>
+                  <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> {t('import.runDryRun')}
+                </>
+              ) : needsCheck ? (
+                t('import.runDryRun')
+              ) : (
+                t('import.rerunDryRun')
+              )}
             </Button>
             <Button
               onClick={apply}

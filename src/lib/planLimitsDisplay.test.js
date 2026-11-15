@@ -74,7 +74,7 @@ test('useBusiness derives the allowance from the loaded plan rows, never before'
   const hook = readFileSync('src/hooks/useBusiness.js', 'utf8');
   // The allowance comes from the pure helper, fed by the oldest plan row.
   assert.match(hook, /businessLimitForPlan\(/);
-  assert.match(hook, /effectivePlanKey\(oldestPlan, user\)/);
+  assert.match(hook, /effectivePlanKey\(oldestPlan, user, businesses\[0\] \?\? null\)/);
   // Known only once the plan-row query has settled (or there are no
   // businesses to read rows for); a failed read is unknown too.
   assert.match(hook, /plansKnown = ids\.length === 0 \|\| plansQuery\.isFetched/);
@@ -160,6 +160,28 @@ test('Products and Locations gate their caps on the loaded entitlement', () => {
   assert.match(locations, /const \{ limits, isLoading: entitlementLoading \} = useEntitlements\(\);/);
   assert.match(locations, /const siteLimit = displayLimit\(limits\.sites, entitlementLoading\);/);
   assert.match(locations, /const atSiteLimit = siteLimit != null && siteCount >= siteLimit;/);
+});
+
+test('Locations: at the site cap the New location button is absent; the pill stays (owner ruling, Nov 14, 2026)', () => {
+  const locations = readFileSync('src/pages/Locations.jsx', 'utf8');
+  // The button renders only when a site can actually be added.
+  assert.match(locations, /\{!atSiteLimit && \(\s*<Button onClick=\{\(\) => openNew\(\)\}>/);
+  // The pill is NOT inside that condition — it renders at cap too,
+  // Upgrade wording and all.
+  const pillAt = locations.indexOf('<LimitBadge');
+  const gateAt = locations.indexOf('{!atSiteLimit && (');
+  assert.ok(pillAt !== -1 && gateAt !== -1 && pillAt < gateAt, 'the LimitBadge renders before and outside the button gate');
+  // The refusal still guards the create door for any other route
+  // that reaches it at cap, and the nested add-inside door (a
+  // parent is passed) still bypasses the cap — shelves are not
+  // sites.
+  assert.match(locations, /if \(!parent && atSiteLimit\) \{/);
+  // The cap math itself, on the cases the owner named:
+  const atCap = (siteCount, siteLimit) => siteLimit != null && siteCount >= siteLimit;
+  assert.equal(atCap(1, 1), true, 'Essentials 1 of 1: at cap — pill, no button');
+  assert.equal(atCap(4, 5), false, 'Business 4 of 5: the button renders');
+  assert.equal(atCap(5, 5), true, 'Business 5 of 5: at cap — no button');
+  assert.equal(atCap(2, null), false, 'cap unknown while the plan loads: never the Essentials 1');
 });
 
 test('PlanSummaryCard does not print the Essentials name while the plan loads', () => {
@@ -284,7 +306,7 @@ test('Copy product shares the at-limit guard and the one at-limit message', () =
   // T6.3: the wording moved into en.js (products.limitDescription) and the
   // toast renders it through t(); assert the key is referenced once and
   // the English value is the shared wording.
-  const description = 'Archive one you no longer sell to free a slot, or move to Business for unlimited products.';
+  const description = 'Delete one you no longer need to free a slot, or move to Business for unlimited products.';
   assert.equal(en['products.limitDescription'], description);
   assert.equal((products.match(/t\('products\.limitDescription'\)/g) || []).length, 1);
   // The shorter Duplicate wording is gone.
@@ -299,7 +321,7 @@ test('Copy product shares the at-limit guard and the one at-limit message', () =
   assert.match(limits, /export function productLimitMessage\(limit, used\) \{/);
   assert.match(
     limits,
-    /`This plan includes \$\{limit\} active products and \$\{used\} are already in the catalog\. Archive a product you no longer sell to free a slot, or move to Business for unlimited products\.`/
+    /`This plan includes \$\{limit\} products and \$\{used\} are already in the catalog\. Delete a product you no longer need to free a slot, or move to Business for unlimited products\.`/
   );
 });
 

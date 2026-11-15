@@ -1,19 +1,24 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { base44 } from '@/api/client';
-import { ArrowDown, ArrowUp, ChevronDown, Pencil, Plus, Search, Trash2 } from 'lucide-react';
+import useDataFresh from '@/hooks/useDataFresh';
+import { ArrowDown, ArrowUp, ChevronDown, ChevronUp, Pencil, Plus, Search } from 'lucide-react';
 import SortHeader from '@/components/products/SortHeader';
 import ProductThumb from '@/components/products/ProductThumb';
 import ResponsiveSelect from '@/components/ui/ResponsiveSelect';
 import ProductFormDialog from '@/components/products/ProductFormDialog';
+import ProductPrice from '@/components/products/ProductPrice';
 import ExportCsvButton from '@/components/products/ExportCsvButton';
 import CopyGroupPanel from '@/components/products/CopyGroupPanel';
 import ProductFilterBar, { EMPTY_FILTERS } from '@/components/products/ProductFilterBar';
 import BulkEditDialog from '@/components/products/BulkEditDialog';
 import ProductRowMenu from '@/components/products/ProductRowMenu';
+import AdjustStockDialog from '@/components/inventory/AdjustStockDialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useBusiness } from '@/hooks/useBusiness';
+import { isBoss } from '@/lib/bossAuthority';
 import { useCatalogVocabulary } from '@/hooks/useCatalogVocabulary';
-import { formatMoney, listProducts } from '@/lib/inventory';
+import { formatMoney, listProducts, recordMovement } from '@/lib/inventory';
+import { countDistinctProducts } from '@/lib/productDuplicates';
 import { descendantIds, orderedLocations } from '@/lib/locations';
 import { scoped } from '@/lib/scoped';
 import { useAuth } from '@/lib/AuthContext';
@@ -26,12 +31,53 @@ import useIsDesktop from '@/hooks/useIsDesktop';
 import useModalHistory from '@/hooks/useModalHistory';
 import LimitBadge from '@/components/plan/LimitBadge';
 import { createProducts } from '@/lib/entitlements';
+import { createStepQueue } from '@/lib/stepQueue';
 import { t } from '@/lib/i18n';
 
+/**
+ * The little up/down stepper beside an on-hand number (Nov 14,
+ * 2026 — the interaction the owner missed from the old app). Each
+ * tap is a real ledger movement recorded by the caller, and the
+ * number it shows is the caller's optimistic display value: a tap
+ * repaints instantly while its movement is still on the wire (see
+ * the step queue below), so the buttons never disable mid-burst.
+ * The down arrow is disabled at zero so a count can never be
+ * tapped below nothing.
+ */
+function InlineStockStepper({ value, onStep, addLabel, removeLabel }) {
+  return (
+    <span className="inline-flex items-center gap-0.5">
+      <button
+        type="button"
+        aria-label={addLabel}
+        onClick={(e) => {
+          e.stopPropagation();
+          onStep(1);
+        }}
+        className="flex h-6 w-6 items-center justify-center rounded-md border border-border bg-card text-foreground transition-colors hover:bg-secondary disabled:opacity-40"
+      >
+        <ChevronUp className="h-3.5 w-3.5" />
+      </button>
+      <span className="numeric min-w-6 text-center text-sm font-semibold">{value}</span>
+      <button
+        type="button"
+        aria-label={removeLabel}
+        disabled={value <= 0}
+        onClick={(e) => {
+          e.stopPropagation();
+          onStep(-1);
+        }}
+        className="flex h-6 w-6 items-center justify-center rounded-md border border-border bg-card text-foreground transition-colors hover:bg-secondary disabled:opacity-40"
+      >
+        <ChevronDown className="h-3.5 w-3.5" />
+      </button>
+    </span>
+  );
+}
 
 export default function Products() {
   const { user } = useAuth();
-  const { profile, activeId } = useBusiness();
+  const { profile, activeId, record } = useBusiness();
   const { limits, isLoading: entitlementLoading } = useEntitlements();
   const { toast } = useToast();
   const isDesktop = useIsDesktop();
@@ -49,12 +95,23 @@ export default function Products() {
   const [facets, setFacets] = useState({ categories: [], tags: [] });
   const vocabulary = useCatalogVocabulary(activeId);
   const [loading, setLoading] = useState(true);
+  // Which business has completed a load here. A background refetch
+  // (freshness bus, filter change) must never blank a list that
+  // already has content — the loading state is only for the first
+  // load of a business, when there is nothing to show yet (owner
+  // ruling, Nov 14, 2026: a stepper tap flashed "Loading catalog…").
+  const loadedForRef = useRef('');
   const [expanded, setExpanded] = useState(null);
   const [selected, setSelected] = useState([]);
   const [bulkOpen, setBulkOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [seed, setSeed] = useState(null);
   const [reload, setReload] = useState(0);
+  // Kept alive in a hidden tab layer: if inventory changed on
+  // another screen (a product created from Scan, a stock movement),
+  // refetch through the same reload knob when this page is shown —
+  // the customer never has to pull-to-refresh to see their change.
+  useDataFresh('inventory', '/products', () => setReload((r) => r + 1));
   const [sort, setSort] = useState({ key: 'name', dir: 'asc' });
   const [activeCount, setActiveCount] = useState(0);
 
@@ -85,7 +142,7 @@ export default function Products() {
 
   useEffect(() => {
     (async () => {
-      setLoading(true);
+      if (loadedForRef.current !== activeId) setLoading(true);
       const isUnfiltered =
         !debounced.trim() &&
         !filters.category &&
@@ -93,7 +150,7 @@ export default function Products() {
         !filters.status &&
         !filters.condition &&
         !filters.locationId;
-      const [products, levelPage, locPage, totalActive] = await Promise.all([
+      const [products, levelPage, locPage, totalDistinct] = await Promise.all([
         listProducts({
           search: debounced,
           category: filters.category,
@@ -108,9 +165,16 @@ export default function Products() {
         }),
         base44.entities.StockLevel.filter(scoped({}, activeId), { limit: 2000 }),
         base44.entities.Location.filter(scoped({}, activeId), { sort: 'name', limit: 100 }),
-        base44.entities.Product.count(scoped({ status: { $ne: 'archived' } }, activeId)),
+        // The pill's count is the one counting rule (owner, Nov 14,
+        // 2026): distinct ORIGINAL products, any status — copies
+        // never count, archived originals always do, only a true
+        // delete lowers it. The generic count endpoint cannot
+        // express that predicate, so the catalog's signature fields
+        // are read (the same 2000-row read the Overview makes) and
+        // the pure counter decides.
+        base44.entities.Product.filter(scoped({}, activeId), { limit: 2000 }),
       ]);
-      setActiveCount(totalActive);
+      setActiveCount(countDistinctProducts(totalDistinct.items ?? []));
       setItems(products);
       setSelected([]);
       if (isUnfiltered) {
@@ -121,6 +185,7 @@ export default function Products() {
       }
       setLevels(levelPage.items ?? []);
       setLocations(locPage.items ?? []);
+      loadedForRef.current = activeId;
       setLoading(false);
     })();
   }, [
@@ -160,6 +225,100 @@ export default function Products() {
     shownLevels.forEach((l) => map.set(l.product_id, (map.get(l.product_id) || 0) + (l.quantity || 0)));
     return map;
   }, [shownLevels]);
+
+  // ---- Row stock stepper + Add stock sheet (Nov 14, 2026) --------
+  // The stepper acts only where ONE location is unambiguous: the
+  // business has a single location, or the list is filtered down to
+  // a single location. Anywhere else the number opens the stock
+  // sheet (AdjustStockDialog, the same one My inventory uses) with
+  // the location explicit — never a guess. Up = a receive of one;
+  // down = a correction setting the count one lower (the model's
+  // honest fix-a-quantity type); at zero the down tap is refused.
+  //
+  // Optimistic since the owner's lag report the same evening: a
+  // tap repaints the number IMMEDIATELY and its ledger movement
+  // queues behind the taps before it (src/lib/stepQueue.js) — one
+  // movement per tap, in tap order, ledger honesty unchanged. A
+  // failed send rolls the display back to the last confirmed
+  // quantity and toasts; when a queue drains the page reloads and
+  // the server truth takes over the display seamlessly (the
+  // override cleanup below only drops values the server now
+  // agrees with, so the number never flickers).
+  const [adjusting, setAdjusting] = useState(null);
+  const [optimistic, setOptimistic] = useState({});
+  const stepQueuesRef = useRef(new Map());
+  const stepperLocation = useMemo(() => {
+    const candidates = filterLocationIds
+      ? locations.filter((l) => filterLocationIds.has(l.id))
+      : locations;
+    return candidates.length === 1 ? candidates[0] : null;
+  }, [locations, filterLocationIds]);
+
+  useEffect(() => {
+    setOptimistic((prev) => {
+      const keys = Object.keys(prev);
+      if (!keys.length) return prev;
+      let changed = false;
+      const next = { ...prev };
+      for (const key of keys) {
+        const [productId, locationId] = key.split(':');
+        const server =
+          levels.find((l) => l.product_id === productId && l.location_id === locationId)?.quantity ?? 0;
+        if (server === prev[key]) {
+          delete next[key];
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [levels]);
+
+  const displayQty = (product, location, serverValue) => {
+    const shown = optimistic[`${product.id}:${location.id}`];
+    return shown === undefined ? serverValue : shown;
+  };
+
+  const stepStock = (product, location, delta) => {
+    // Archived products are frozen — no stepper renders for them,
+    // and a stale queue can never move their stock either.
+    if (product.status === 'archived') return;
+    const key = `${product.id}:${location.id}`;
+    let queue = stepQueuesRef.current.get(key);
+    if (queue?.dead) {
+      // A failed queue is replaced whole: its remaining sends were
+      // chained as no-ops and never write state again, and the new
+      // queue seeds from the server's current truth.
+      stepQueuesRef.current.delete(key);
+      queue = undefined;
+    }
+    if (!queue) {
+      queue = createStepQueue({
+        send: (d, confirmed) =>
+          d > 0
+            ? recordMovement({ product, location, type: 'receive', quantity: 1, businessId: activeId, user })
+            : recordMovement({
+                product,
+                location,
+                type: 'correction',
+                quantity: confirmed - 1,
+                businessId: activeId,
+                user,
+              }),
+        onDisplay: (value) => setOptimistic((o) => ({ ...o, [key]: value })),
+        onError: (err) =>
+          toast({
+            title: t('products.stockStepFailed'),
+            description: err?.message || '',
+            variant: 'destructive',
+          }),
+        onDrain: () => setReload((r) => r + 1),
+      });
+      stepQueuesRef.current.set(key, queue);
+    }
+    const start =
+      levels.find((l) => l.product_id === product.id && l.location_id === location.id)?.quantity ?? 0;
+    queue.tap(delta, start);
+  };
 
   // Sorting runs on the loaded page so the columns stay instant while you work.
   const sortedItems = useMemo(() => {
@@ -272,10 +431,9 @@ export default function Products() {
   };
 
   const duplicate = async (product) => {
-    if (atProductLimit) {
-      productLimitToast();
-      return;
-    }
+    // No plan-limit guard here: a copy consumes no cap slot (the
+    // one counting rule — copies never count), and the server's cap
+    // agrees, so duplicating at the limit is legitimate.
     const base = `${(product.sku || 'copy').toUpperCase()}-COPY`;
     let sku = base;
     let attempt = 2;
@@ -293,6 +451,10 @@ export default function Products() {
       upc: '',
       barcode: '',
       qr_code: '',
+      // The durable copy marker (owner's counting rule, Nov 14,
+      // 2026): this row IS the source product for counting, never
+      // another product. A copy of a copy points at the original.
+      duplicate_of: product.duplicate_of || product.id,
       status: product.status === 'archived' ? 'draft' : product.status || 'active',
     };
     delete payload.id;
@@ -313,6 +475,23 @@ export default function Products() {
     if (own.length) await base44.entities.StockLevel.deleteMany({ product_id: product.id });
     toast({ title: t('products.deletedTitle'), description: product.name });
     setReload((r) => r + 1);
+  };
+
+  // Delete goes through a plain-words confirmation first (owner ruling,
+  // Nov 14 2026): it names the product and, when it holds stock, how
+  // many units on hand go with it. Nothing deletes from the menu tap
+  // alone. Past movements keep the product name recorded at the time,
+  // so the business's books stay readable after the product is gone.
+  const requestRemove = (product) => {
+    const units = levels
+      .filter((l) => l.product_id === product.id)
+      .reduce((sum, l) => sum + (l.quantity || 0), 0);
+    const message =
+      units > 0
+        ? t('products.deleteConfirmStock', { name: product.name, count: units })
+        : t('products.deleteConfirm', { name: product.name });
+    if (!window.confirm(message)) return;
+    remove(product);
   };
 
   return (
@@ -449,6 +628,10 @@ export default function Products() {
             const total = totals.get(product.id) || 0;
             const isLow = lowByProduct.has(product.id);
             const isOpen = expanded === product.id;
+            // Archived products are frozen (owner ruling, Nov 14,
+            // 2026): the quantity still displays, but no stepper, no
+            // Add stock, and no Adjust door — restoring unfreezes.
+            const archived = product.status === 'archived';
             const own = levels.filter((l) => l.product_id === product.id);
             return (
               <div key={product.id}>
@@ -468,6 +651,14 @@ export default function Products() {
                     onClick={() => setExpanded(isOpen ? null : product.id)}
                     className="flex min-w-0 items-center gap-2 text-left"
                   >
+                    {/* The cover photo beside the name at the sizes
+                        the grid-cell thumb is hidden (below xl) —
+                        an owner recognises items at a glance. No
+                        photo → nothing renders, exactly as before:
+                        no placeholder box on the row. */}
+                    {product.photo_urls?.[0] ? (
+                      <ProductThumb product={product} className="h-11 w-11 xl:hidden" />
+                    ) : null}
                     <ChevronDown
                       className={`h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform ${
                         isOpen ? 'rotate-180' : ''
@@ -493,21 +684,69 @@ export default function Products() {
                   <span className="hidden truncate text-xs text-muted-foreground md:block">
                     {product.category || '—'}
                   </span>
-                  <span className="numeric hidden text-right text-sm font-semibold md:block">
-                    {total}
-                    <span className="ml-1 font-mono text-[10px] font-normal uppercase text-muted-foreground">
-                      {product.unit || t('products.unitEach')}
-                    </span>
+                  <span className="hidden text-right md:block">
+                    {archived ? (
+                      <span className="numeric text-sm font-semibold">
+                        {total}
+                        <span className="ml-1 font-mono text-[10px] font-normal uppercase text-muted-foreground">
+                          {product.unit || t('products.unitEach')}
+                        </span>
+                      </span>
+                    ) : stepperLocation ? (
+                      <span className="inline-flex items-center gap-1">
+                        <InlineStockStepper
+                          value={displayQty(product, stepperLocation, total)}
+                          onStep={(delta) => stepStock(product, stepperLocation, delta)}
+                          addLabel={t('products.addOneAria')}
+                          removeLabel={t('products.removeOneAria')}
+                        />
+                        <span className="font-mono text-[10px] font-normal uppercase text-muted-foreground">
+                          {product.unit || t('products.unitEach')}
+                        </span>
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        aria-label={t('products.adjustStockAria', { name: product.name })}
+                        onClick={() => setAdjusting(product)}
+                        className="numeric text-sm font-semibold underline decoration-dotted underline-offset-4"
+                      >
+                        {total}
+                        <span className="ml-1 font-mono text-[10px] font-normal uppercase text-muted-foreground">
+                          {product.unit || t('products.unitEach')}
+                        </span>
+                      </button>
+                    )}
                   </span>
                   <span className="numeric hidden text-right text-xs text-muted-foreground xl:block">
                     {product.reorder_point || 0}
                   </span>
                   <span className="numeric hidden text-right text-sm xl:block">
-                    {product.price ? formatMoney(product.price, profile.currency, 2) : '—'}
+                    <ProductPrice product={product} currency={profile.currency} digits={2} />
                   </span>
 
                   <div className="flex items-center justify-end gap-1">
-                    <span className="numeric text-sm font-semibold md:hidden">{total}</span>
+                    <span className="md:hidden">
+                      {archived ? (
+                        <span className="numeric text-sm font-semibold">{total}</span>
+                      ) : stepperLocation ? (
+                        <InlineStockStepper
+                          value={displayQty(product, stepperLocation, total)}
+                          onStep={(delta) => stepStock(product, stepperLocation, delta)}
+                          addLabel={t('products.addOneAria')}
+                          removeLabel={t('products.removeOneAria')}
+                        />
+                      ) : (
+                        <button
+                          type="button"
+                          aria-label={t('products.adjustStockAria', { name: product.name })}
+                          onClick={() => setAdjusting(product)}
+                          className="numeric text-sm font-semibold underline decoration-dotted underline-offset-4"
+                        >
+                          {total}
+                        </button>
+                      )}
+                    </span>
                     <Button
                       variant="ghost"
                       size="icon"
@@ -521,18 +760,9 @@ export default function Products() {
                       product={product}
                       onDuplicate={duplicate}
                       onToggleArchive={toggleArchive}
+                      onAddStock={archived ? undefined : (p) => setAdjusting(p)}
+                      onDelete={isBoss(user, record) ? requestRemove : undefined}
                     />
-                    {user?.role === 'admin' && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-11 w-11 text-muted-foreground hover:text-destructive lg:h-8 lg:w-8"
-                        aria-label={t('products.deleteAria', { name: product.name })}
-                        onClick={() => remove(product)}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    )}
                   </div>
                 </div>
 
@@ -548,9 +778,16 @@ export default function Products() {
                             style={depth ? { marginLeft: `${Math.min(depth, 3) * 12}px` } : undefined}
                           >
                             <span className="truncate">{place.name}</span>
-                            <span className={`numeric font-semibold ${q === 0 ? 'text-muted-foreground' : ''}`}>
-                              {q}
-                            </span>
+                            {archived ? (
+                              <span className="numeric text-xs font-semibold">{q}</span>
+                            ) : (
+                              <InlineStockStepper
+                                value={displayQty(product, place, q)}
+                                onStep={(delta) => stepStock(product, place, delta)}
+                                addLabel={t('products.addOneAria')}
+                                removeLabel={t('products.removeOneAria')}
+                              />
+                            )}
                           </div>
                         );
                       })}
@@ -628,6 +865,17 @@ export default function Products() {
         product={editing}
         seed={seed}
         onSaved={() => setReload((r) => r + 1)}
+      />
+
+      <AdjustStockDialog
+        open={Boolean(adjusting)}
+        onOpenChange={(next) => {
+          if (!next) setAdjusting(null);
+        }}
+        product={adjusting}
+        locations={locations}
+        businessId={activeId}
+        onDone={() => setReload((r) => r + 1)}
       />
     </div>
   );

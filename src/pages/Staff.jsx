@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { base44 } from '@/api/client';
 import { Loader2, Plus, ShieldAlert, ShieldCheck, UserPlus } from 'lucide-react';
 import { useBusiness } from '@/hooks/useBusiness';
+import { isBoss } from '@/lib/bossAuthority';
 import { useAuth } from '@/lib/AuthContext';
 import { scoped } from '@/lib/scoped';
 import { PRESET_ROLES } from '@/lib/staff';
@@ -9,6 +10,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import StaffMemberCard from '@/components/staff/StaffMemberCard';
+import { sendStaffPasswordReset } from '@/lib/recovery';
 import StaffMemberDialog from '@/components/staff/StaffMemberDialog';
 import StaffRoleCard from '@/components/staff/StaffRoleCard';
 import RoleDialog from '@/components/staff/RoleDialog';
@@ -17,11 +19,15 @@ import { displayLimit } from '@/lib/plans';
 import LimitBadge from '@/components/plan/LimitBadge';
 
 export default function Staff() {
-  const { profile, activeId } = useBusiness();
+  const { profile, activeId, record } = useBusiness();
   const { user } = useAuth();
   const { limits, isLoading: entitlementLoading, isEssentials } = useEntitlements();
   const { toast } = useToast();
-  const isAdmin = user?.role === 'admin';
+  // Boss authority (owner's doctrine, Nov 14, 2026 — admin is owner):
+  // the shared definition in lib/bossAuthority. The variable keeps its
+  // historical name; its value is the boss check, so the workspace's
+  // owner gets the send-reset door and the administrator option.
+  const isAdmin = isBoss(user, record);
 
   const [members, setMembers] = useState([]);
   const [roles, setRoles] = useState([]);
@@ -92,6 +98,28 @@ export default function Staff() {
     await base44.entities.StaffMember.delete(member.id);
     toast({ title: t('staff.member.removed') });
     load();
+  };
+
+  // Owner-only (the server enforces it too, on every plan): email the
+  // member the standard password reset at their account email. The
+  // owner never sees the link or code — only where it went.
+  const sendReset = async (member) => {
+    if (!window.confirm(t('staff.member.resetConfirm', { name: member.full_name, email: member.email }))) return;
+    try {
+      const result = await sendStaffPasswordReset(activeId, member.id);
+      toast({
+        title: t('staff.member.resetSent', { email: result?.sent_to || member.email }),
+      });
+    } catch (error) {
+      toast({
+        title: t('staff.member.resetFailed'),
+        description:
+          error?.data?.error === 'staff_no_account'
+            ? t('staff.member.resetNoAccount')
+            : error?.message || t('staff.member.resetFailed'),
+        variant: 'destructive',
+      });
+    }
   };
 
   // Custom roles are a Business-only feature: Essentials uses the five
@@ -238,8 +266,10 @@ export default function Staff() {
                     member={member}
                     locations={locations}
                     planKey={cardPlanKey}
+                    isOwner={isAdmin}
                     onEdit={openEdit}
                     onRemove={removeMember}
+                    onSendReset={sendReset}
                   />
                 ))}
               </div>

@@ -6,6 +6,7 @@ import { t } from '@/lib/i18n';
 import { useBusiness } from '@/hooks/useBusiness';
 import useEntitlements from '@/hooks/useEntitlements';
 import { listProducts } from '@/lib/inventory';
+import { orderShipAddressText } from '@/lib/orders';
 import { isSupplierPrintTemplate } from '@/lib/plans';
 import { scoped } from '@/lib/scoped';
 import {
@@ -21,32 +22,32 @@ import PickList from '@/components/print/PickList';
 import OrderPicker from '@/components/print/OrderPicker';
 import PurchaseOrderDoc from '@/components/print/PurchaseOrderDoc';
 import CustomerDoc from '@/components/print/CustomerDoc';
+import ShippingLabelDoc from '@/components/print/ShippingLabelDoc';
 import ReturnDoc from '@/components/print/ReturnDoc';
 import CustomerOrderPicker from '@/components/print/CustomerOrderPicker';
 import ReturnPicker from '@/components/print/ReturnPicker';
 import ProductPicker from '@/components/print/ProductPicker';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 
 export default function PrintCenter() {
   const { profile, activeId } = useBusiness();
   const location = useLocation();
-  // Supplier print styles are Business-only: the two options stay hidden
-  // while the plan is still loading, so a Business account never briefly
-  // loses them the way the limits did. Once Essentials is confirmed, they
-  // show as visibly locked entries linking to /upgrade instead of staying
-  // hidden — hiding them entirely gave Essentials no upsell path and left
-  // the locked preview panel near-unreachable.
+  // Supplier print styles are Business-only, and INVISIBLE off
+  // Business (the owner's ruling, Nov 14, 2026 — the same
+  // principle as Till connections: a locked door with a padlock
+  // is still a tease). The two options stay hidden while the plan
+  // is still loading, so a Business account never briefly loses
+  // them; once Essentials is confirmed they are simply not in the
+  // list at all — no lock row, no badge. Server-side plan
+  // enforcement for these documents is unchanged.
   const { isEssentials, isLoading: entitlementLoading } = useEntitlements();
   const showSupplierDocs = !isEssentials && !entitlementLoading;
   const visibleTemplates = TEMPLATES.filter(
     (entry) => showSupplierDocs || !isSupplierPrintTemplate(entry.key)
   );
-  const lockedSupplierTemplates =
-    isEssentials && !entitlementLoading
-      ? TEMPLATES.filter((entry) => isSupplierPrintTemplate(entry.key))
-      : [];
   const [template, setTemplate] = useState('price');
   const [copies, setCopies] = useState('1');
   const [search, setSearch] = useState('');
@@ -60,6 +61,12 @@ export default function PrintCenter() {
   const [customerOrderId, setCustomerOrderId] = useState('');
   const [returnRecords, setReturnRecords] = useState([]);
   const [returnId, setReturnId] = useState('');
+  // Shipping label (both plans): orders carry no postal address, so
+  // the address is typed here at print time and never saved. The
+  // recipient name pre-fills from the picked order.
+  const [shipName, setShipName] = useState('');
+  const [shipAddress, setShipAddress] = useState('');
+  const [shipFromAddress, setShipFromAddress] = useState('');
   // Direct printing (T5): Bluetooth / USB send label bytes straight
   // to the printer — no internet, no server round-trip. Availability
   // is a browser fact, not a plan fact: labels print on both plans.
@@ -102,7 +109,7 @@ export default function PrintCenter() {
   }, [debounced, activeId]);
 
   const needsOrder = template === 'po' || template === 'packing';
-  const needsCustomerOrder = ['invoice', 'receipt', 'custpacking'].includes(template);
+  const needsCustomerOrder = ['invoice', 'receipt', 'custpacking', 'shipping'].includes(template);
   const needsReturn = template === 'returndoc';
 
   // A supplier style picked on Business must not linger once the plan is
@@ -160,6 +167,19 @@ export default function PrintCenter() {
 
   const removeSelected = (id) => setSelected((list) => list.filter((entry) => entry.id !== id));
 
+  // Select-all speaks about the currently listed (search-filtered)
+  // products only; picks outside the list are never touched.
+  const toggleAllListed = (listed, select) => {
+    setSelected((prev) => {
+      if (select) {
+        const have = new Set(prev.map((entry) => entry.id));
+        return [...prev, ...listed.filter((entry) => !have.has(entry.id))];
+      }
+      const drop = new Set(listed.map((entry) => entry.id));
+      return prev.filter((entry) => !drop.has(entry.id));
+    });
+  };
+
   const activeTemplate = TEMPLATES.find((entry) => entry.key === template);
   const isDocument = activeTemplate?.kind === 'document';
   const isOrder = activeTemplate?.kind === 'order';
@@ -169,6 +189,20 @@ export default function PrintCenter() {
   const Sheet = template === 'count' ? CountSheet : PickList;
   const order = orders.find((entry) => entry.id === orderId) || null;
   const customerOrder = customerOrders.find((entry) => entry.id === customerOrderId) || null;
+
+  // Picking an order for the shipping label pre-fills the recipient
+  // name from the order — and, since Nov 14, 2026, the address too
+  // WHEN the order carries a stored ship-to address. When it
+  // doesn't, the address starts blank and is typed fresh each
+  // time. Either way, what is typed here is used for this print
+  // only and is never saved back — the Nov 13 rule stands; the
+  // stored address lives on the order, not in the print tool.
+  useEffect(() => {
+    if (template === 'shipping' && customerOrder) {
+      setShipName(customerOrder.customer_name || '');
+      setShipAddress(orderShipAddressText(customerOrder));
+    }
+  }, [template, customerOrder]);
   const returnRecord = returnRecords.find((entry) => entry.id === returnId) || null;
 
   const labels = useMemo(() => {
@@ -208,7 +242,7 @@ export default function PrintCenter() {
     }
     if (template === 'po' && order) return `/api/businesses/${activeId}/print/po?po_id=${order.id}&mode=po`;
     if (template === 'packing' && order) return `/api/businesses/${activeId}/print/po?po_id=${order.id}&mode=packing`;
-    if (isCustomerDoc && customerOrder) {
+    if (isCustomerDoc && customerOrder && activeTemplate.mode !== 'shipping') {
       return `/api/businesses/${activeId}/print/packing-slip?order_id=${customerOrder.id}`;
     }
     return null;
@@ -341,7 +375,7 @@ export default function PrintCenter() {
         </div>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[340px_minmax(0,1fr)]">
+      <div className="grid gap-4 grid-cols-[minmax(0,1fr)] lg:grid-cols-[340px_minmax(0,1fr)]">
         <div className="space-y-4 no-print">
           <div className="rounded-xl border border-border bg-card p-4">
             <Label className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
@@ -369,33 +403,55 @@ export default function PrintCenter() {
                   </span>
                 </button>
               ))}
-              {lockedSupplierTemplates.map((entry) => (
-                <Link
-                  key={entry.key}
-                  to="/upgrade"
-                  className="rounded-lg border border-border px-3 py-2 text-left transition-colors hover:bg-muted"
-                >
-                  <span className="flex items-center gap-1.5 text-sm font-medium">
-                    <Lock className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                    {t(entry.labelKey)}
-                    <span className="ml-auto rounded-full bg-muted px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
-                      {t('print.businessBadge')}
-                    </span>
-                  </span>
-                  <span className="block text-[11px] text-muted-foreground">{t(entry.hintKey)}</span>
-                </Link>
-              ))}
             </div>
           </div>
 
           {isOrder ? (
             <OrderPicker orders={orders} value={orderId} onChange={setOrderId} />
           ) : isCustomerDoc ? (
-            <CustomerOrderPicker
-              orders={customerOrders}
-              value={customerOrderId}
-              onChange={setCustomerOrderId}
-            />
+            <>
+              <CustomerOrderPicker
+                orders={customerOrders}
+                value={customerOrderId}
+                onChange={setCustomerOrderId}
+              />
+              {template === 'shipping' && (
+                <div className="rounded-xl border border-border bg-card p-4">
+                  <Label className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                    {t('print.templateShipping')}
+                  </Label>
+                  <div className="mt-3 space-y-3">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="ship-name">{t('print.recipientNameLabel')}</Label>
+                      <Input
+                        id="ship-name"
+                        value={shipName}
+                        onChange={(event) => setShipName(event.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="ship-address">{t('print.recipientAddressLabel')}</Label>
+                      <Textarea
+                        id="ship-address"
+                        rows={3}
+                        value={shipAddress}
+                        onChange={(event) => setShipAddress(event.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="ship-from">{t('print.senderAddressLabel')}</Label>
+                      <Textarea
+                        id="ship-from"
+                        rows={2}
+                        value={shipFromAddress}
+                        onChange={(event) => setShipFromAddress(event.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <p className="mt-2 text-[11px] text-muted-foreground">{t('print.shippingNote')}</p>
+                </div>
+              )}
+            </>
           ) : isReturnDoc ? (
             <ReturnPicker returns={returnRecords} value={returnId} onChange={setReturnId} />
           ) : (
@@ -428,6 +484,7 @@ export default function PrintCenter() {
                 onSearch={setSearch}
                 selectedIds={selectedIds}
                 onToggle={toggle}
+                onToggleAll={toggleAllListed}
               />
             </div>
           </div>
@@ -537,13 +594,23 @@ export default function PrintCenter() {
             ) : isOrder ? (
               <PurchaseOrderDoc order={order} business={profile} mode={activeTemplate.mode} />
             ) : isCustomerDoc ? (
-              <CustomerDoc order={customerOrder} business={profile} mode={activeTemplate.mode} />
+              activeTemplate.mode === 'shipping' ? (
+                <ShippingLabelDoc
+                  order={customerOrder}
+                  business={profile}
+                  recipientName={shipName}
+                  recipientAddress={shipAddress}
+                  senderAddress={shipFromAddress}
+                />
+              ) : (
+                <CustomerDoc order={customerOrder} business={profile} mode={activeTemplate.mode} />
+              )
             ) : isReturnDoc ? (
               <ReturnDoc ret={returnRecord} business={profile} />
             ) : isDocument ? (
               <Sheet products={selected} business={profile} />
             ) : (
-              <div className="flex flex-wrap gap-3">
+              <div className="print-label-flow flex flex-wrap gap-3">
                 {labels.map((product, index) => (
                   <LabelCard
                     key={`${product.id}-${index}`}
