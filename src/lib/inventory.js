@@ -3,6 +3,9 @@ import { scoped, withBusiness } from '@/lib/scoped';
 import { loadEntitlement, resolveEntitlement } from '@/lib/entitlements';
 import { BUNDLE_MOVEMENT_TYPES, featureAllowed } from '@/lib/plans';
 import { t } from './i18n.js';
+import { SEARCHABLE_FIELDS, searchWords } from './searchMatch.js';
+
+export { productMatchesSearch, searchWords } from './searchMatch.js';
 
 export const MOVEMENT_TYPES = {
   receive: {
@@ -120,24 +123,13 @@ export async function listProducts({
   limit = 200,
   businessId = '',
 } = {}) {
-  const q = search.trim();
   const clauses = [];
-  if (q) {
+  // One $or clause per word, ANDed together: the same word-by-word rule
+  // productMatchesSearch applies client-side.
+  for (const word of searchWords(search)) {
+    const pattern = escapeRegex(word);
     clauses.push({
-      $or: [
-        { name: { $regex: q, $options: 'i' } },
-        { sku: { $regex: q, $options: 'i' } },
-        { upc: { $regex: q, $options: 'i' } },
-        { barcode: { $regex: q, $options: 'i' } },
-        { isbn: { $regex: q, $options: 'i' } },
-        { author: { $regex: q, $options: 'i' } },
-        { brand: { $regex: q, $options: 'i' } },
-        { publisher: { $regex: q, $options: 'i' } },
-        { manufacturer: { $regex: q, $options: 'i' } },
-        { category: { $regex: q, $options: 'i' } },
-        { subcategory: { $regex: q, $options: 'i' } },
-        { tags: { $regex: q, $options: 'i' } },
-      ],
+      $or: SEARCHABLE_FIELDS.map((field) => ({ [field]: { $regex: pattern, $options: 'i' } })),
     });
   }
   if (category) {

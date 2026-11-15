@@ -23,6 +23,10 @@ const ScanProductList = forwardRef(function ScanProductList(
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
   const latestRequest = useRef(0);
+  // A background refetch (freshness bus, a new search term) must
+  // never blank a list that already has rows — the loading state is
+  // only for when there is nothing to show yet (Nov 14, 2026).
+  const itemsRef = useRef([]);
 
   const ids = useMemo(
     () => (locationId ? descendantIds(locations, locationId) : []),
@@ -40,7 +44,7 @@ const ScanProductList = forwardRef(function ScanProductList(
   // stays busy until the current search and stock quantities have reloaded.
   const refresh = useCallback(async () => {
     const request = ++latestRequest.current;
-    setLoading(true);
+    if (itemsRef.current.length === 0) setLoading(true);
     setLoadError('');
     try {
       const query = ids.length ? { location_id: { $in: ids } } : {};
@@ -50,6 +54,7 @@ const ScanProductList = forwardRef(function ScanProductList(
       ]);
       if (latestRequest.current !== request) return;
       setItems(products);
+      itemsRef.current = products;
       setLevels(levelPage.items ?? []);
     } catch (error) {
       if (latestRequest.current === request) {

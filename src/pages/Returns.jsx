@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { base44 } from '@/api/client';
 import { Check, Plus, Undo2 } from 'lucide-react';
 import ReturnCard from '@/components/returns/ReturnCard';
@@ -26,6 +26,12 @@ export default function Returns() {
   const [locations, setLocations] = useState([]);
   const [filter, setFilter] = useState('open');
   const [loading, setLoading] = useState(true);
+  // Which business has completed a load here. A background refetch
+  // (freshness bus, filter change) must never blank a list that
+  // already has content — the loading state is only for the first
+  // load of a business, when there is nothing to show yet (owner
+  // ruling, Nov 14, 2026: a stepper tap flashed "Loading catalog…").
+  const loadedForRef = useRef('');
   const [reload, setReload] = useState(0);
   const [editOpen, setEditOpen] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -50,7 +56,7 @@ export default function Returns() {
 
   useEffect(() => {
     (async () => {
-      setLoading(true);
+      if (loadedForRef.current !== activeId) setLoading(true);
       const status = statusQuery(filter);
       const query = status === 'all' ? {} : { status };
       const page = await base44.entities.Return.filter(scoped(query, activeId), {
@@ -58,6 +64,7 @@ export default function Returns() {
         limit: 200,
       });
       setRecords(page.items ?? []);
+      loadedForRef.current = activeId;
       setLoading(false);
     })();
   }, [filter, reload, activeId]);

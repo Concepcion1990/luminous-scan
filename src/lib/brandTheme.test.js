@@ -18,6 +18,7 @@ import {
   resolveBrandColor,
   DEFAULT_BRAND_COLOR,
   LEGACY_DEFAULT_BRAND_COLOR,
+  LEGACY_BRONZE_BRAND_COLOR,
 } from './brandTheme.js';
 
 function fakeDocument() {
@@ -127,6 +128,8 @@ test('applying the resolved default clears any override — the cream theme rule
   assert.equal(doc.tags.length, 0);
   assert.equal(applyBrandColor(resolveBrandColor('#145042'), doc), false);
   assert.equal(doc.tags.length, 0);
+  assert.equal(applyBrandColor(resolveBrandColor('#6d4c26'), doc), false);
+  assert.equal(doc.tags.length, 0);
 });
 
 test('resolveBrandColor: unset and the legacy teal default land on the cream-tan default', () => {
@@ -136,6 +139,19 @@ test('resolveBrandColor: unset and the legacy teal default land on the cream-tan
   assert.equal(resolveBrandColor(undefined), DEFAULT_BRAND_COLOR);
   assert.equal(resolveBrandColor('#145042'), DEFAULT_BRAND_COLOR);
   assert.equal(resolveBrandColor('#145042'.toUpperCase()), DEFAULT_BRAND_COLOR);
+});
+
+test('resolveBrandColor: the interim bronze default heals the same way', () => {
+  // #6d4c26 shipped as THE default for a few hours on Nov 14, 2026
+  // and silently stamped workspaces saved in that window — the
+  // owner's own interior kept rendering brown after the cream
+  // correction until the bronze joined the legacy set.
+  assert.equal(LEGACY_BRONZE_BRAND_COLOR, '#6d4c26');
+  assert.equal(resolveBrandColor('#6d4c26'), DEFAULT_BRAND_COLOR);
+  assert.equal(resolveBrandColor('#6D4C26'), DEFAULT_BRAND_COLOR);
+  // Only the exact stamp heals: a neighbouring bronze a business
+  // genuinely picks is a choice and passes through untouched.
+  assert.equal(resolveBrandColor('#6d4c27'), '#6d4c27');
 });
 
 test('resolveBrandColor: a color the business chose passes through untouched', () => {

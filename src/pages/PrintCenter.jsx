@@ -362,7 +362,7 @@ export default function PrintCenter() {
         </div>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[340px_minmax(0,1fr)]">
+      <div className="grid gap-4 grid-cols-[minmax(0,1fr)] lg:grid-cols-[340px_minmax(0,1fr)]">
         <div className="space-y-4 no-print">
           <div className="rounded-xl border border-border bg-card p-4">
             <Label className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">

@@ -34,14 +34,29 @@ import { t } from '../lib/i18n.js';
 const notImplemented = (area) =>
   new Error(`${area} is not yet implemented (T2/T3) — the twin skeleton serves public pages only.`);
 
-async function request(path, { method = 'GET', body } = {}) {
+async function request(path, { method = 'GET', body, timeoutMs } = {}) {
   const csrfHeaders = await csrfHeadersFor(path, method);
-  const response = await fetch(path, {
-    method,
-    credentials: 'same-origin',
-    headers: { 'Content-Type': 'application/json', ...csrfHeaders },
-    body: body === undefined ? undefined : JSON.stringify(body),
-  });
+  // Reads may carry a timeout (entity queries pass one): a single
+  // stalled request on a phone network must fail — so the caller's
+  // retry can proceed — instead of hanging the whole screen
+  // (Nov 14, 2026: an Overview load sat ~15s on one stuck request,
+  // then painted the previous snapshot as if it were current).
+  // Writes pass no timeout: a confirmed user action on a slow
+  // uplink must never be cut off mid-send by the client.
+  const controller = timeoutMs ? new AbortController() : null;
+  const timer = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
+  let response;
+  try {
+    response = await fetch(path, {
+      method,
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json', ...csrfHeaders },
+      body: body === undefined ? undefined : JSON.stringify(body),
+      signal: controller?.signal,
+    });
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
     const error = new Error(
@@ -53,6 +68,9 @@ async function request(path, { method = 'GET', body } = {}) {
   }
   return data;
 }
+
+/** Entity reads fail fast (see request's timeout note above). */
+const READ_TIMEOUT_MS = 15_000;
 
 function entityClient(name) {
   // Real in T3: the twin's generic entity API (server/entities.js)
@@ -77,15 +95,15 @@ function entityClient(name) {
       : promise;
   return {
     filter: (query = {}, options = {}) =>
-      request(`${base}/query`, { method: 'POST', body: { filter: query, ...options } }),
+      request(`${base}/query`, { method: 'POST', body: { filter: query, ...options }, timeoutMs: READ_TIMEOUT_MS }),
     list: (options = {}) =>
-      request(`${base}/query`, { method: 'POST', body: { filter: {}, ...options } }),
-    get: (id) => request(`${base}/${encode(id)}`),
+      request(`${base}/query`, { method: 'POST', body: { filter: {}, ...options }, timeoutMs: READ_TIMEOUT_MS }),
+    get: (id) => request(`${base}/${encode(id)}`, { timeoutMs: READ_TIMEOUT_MS }),
     create: (values) => announce(request(base, { method: 'POST', body: values })),
     update: (id, patch) => announce(request(`${base}/${encode(id)}`, { method: 'PATCH', body: patch })),
     delete: (id) => announce(request(`${base}/${encode(id)}`, { method: 'DELETE' })),
     count: async (query = {}) => {
-      const data = await request(`${base}/count`, { method: 'POST', body: { filter: query } });
+      const data = await request(`${base}/count`, { method: 'POST', body: { filter: query }, timeoutMs: READ_TIMEOUT_MS });
       return data.count;
     },
     bulkCreate: (rows) => announce(request(`${base}/bulk`, { method: 'POST', body: rows })),
@@ -251,6 +269,13 @@ export const base44 = {  entities: Object.fromEntries(
           method: 'POST',
           body: payload,
         });
+        // A creation is an inventory change like any other, but
+        // this function path bypasses the entity factory's central
+        // announcement — so announce here, for every caller
+        // (Nov 14, 2026: a product created from the Scan flow with
+        // no opening movement was invisible to the Overview,
+        // Products and My inventory until a manual refresh).
+        bumpData('inventory');
         return { data };
       }
       if (name === 'create-staff-member') {
@@ -272,6 +297,9 @@ export const base44 = {  entities: Object.fromEntries(
           method: 'POST',
           body: payload,
         });
+        // Same announcement as create-products: locations are
+        // inventory truth on the same bus.
+        bumpData('inventory');
         return { data };
       }
       if (name === 'create-checkout') {

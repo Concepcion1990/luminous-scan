@@ -45,3 +45,18 @@ test('the expanded per-location lines carry their own steppers, and the row menu
   assert.ok(menu.includes("t('products.addStock')"), 'the row menu offers Add stock');
   assert.ok(menu.includes('onAddStock'), 'the menu door is wired by the page');
 });
+
+test('the row shows the cover photo beside the name at every size', () => {
+  assert.ok(
+    page.includes('product.photo_urls?.[0] ? ('),
+    'the beside-the-name thumbnail renders only when a cover photo exists — no photo, no placeholder box',
+  );
+  assert.ok(
+    page.includes('className="h-11 w-11 xl:hidden"'),
+    'the in-name thumbnail covers the sizes where the grid-cell thumb is hidden (the phone case the owner hit)',
+  );
+  assert.ok(
+    page.includes('<ProductThumb product={product} className="hidden h-10 w-10 xl:block" />'),
+    'the xl grid-cell thumbnail is unchanged',
+  );
+});

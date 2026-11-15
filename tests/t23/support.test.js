@@ -341,7 +341,7 @@ const NEW_KEYS = [
 test('locale parity: all 52 locales carry the 36 new keys; tranche-1 locales are translated', async () => {
   assert.equal(NEW_KEYS.length, 36);
   const enKeys = Object.keys(en).sort();
-  assert.equal(enKeys.length, 3994); // 3954 at the POS + deletion batch; +14 account-security (change password + staff reset); +1 white-label reset step; +13 locations/orders train
+  assert.equal(enKeys.length, 4007); // 3954 at the POS + deletion batch; +14 account-security (change password + staff reset); +1 white-label reset step; +13 locations/orders train; +2 edit-quantity; +2 photo chooser; +2 in-form scan; +4 category combobox; +3 product delete
   for (const key of NEW_KEYS) assert.ok(key in en, `en missing ${key}`);
   assert.equal(Object.keys(LOCALES).length, 52);
   for (const code of Object.keys(LOCALES)) {

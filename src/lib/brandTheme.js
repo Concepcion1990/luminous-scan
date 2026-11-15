@@ -34,20 +34,30 @@
  * band and brown buttons, and the owner rejected that too: the
  * default should look like the original app in her Base44
  * screenshots — cream, not a saturated band of anything.
- * resolveBrandColor treats the teal hex as "unset" wherever a
- * default is applied, so workspaces that never chose a color land on
- * the cream default. Any color a business actually chose — the
- * picker presets, a custom hex, any hue at all — passes through
- * untouched and renders exactly as chosen: the white-label freedom
- * is the feature, and this default only fills the silence.
+ * resolveBrandColor treats BOTH retired hexes as "unset" wherever a
+ * default is applied — the teal, and the bronze #6d4c26 that shipped
+ * as the default for a few hours on Nov 14, 2026 and silently
+ * stamped the workspaces created or saved in that window (the
+ * owner's interior still rendered brown after the cream correction
+ * landed, because her workspace carried the bronze stamp, not a
+ * choice) — so workspaces that never chose a color land on the
+ * cream default. The known wrinkle applies to both hexes equally:
+ * deliberately saving exactly one of them reads back as unset. Any
+ * other color a business actually chose — the picker presets, a
+ * custom hex, any hue at all — passes through untouched and renders
+ * exactly as chosen: the white-label freedom is the feature, and
+ * this default only fills the silence.
  */
 export const DEFAULT_BRAND_COLOR = '#e3d5bf';
 export const LEGACY_DEFAULT_BRAND_COLOR = '#145042';
+export const LEGACY_BRONZE_BRAND_COLOR = '#6d4c26';
 
 /** The brand color to render: the business's own choice, or the default. */
 export function resolveBrandColor(hex) {
   const value = String(hex || '').trim().toLowerCase();
-  if (!value || value === LEGACY_DEFAULT_BRAND_COLOR) return DEFAULT_BRAND_COLOR;
+  if (!value || value === LEGACY_DEFAULT_BRAND_COLOR || value === LEGACY_BRONZE_BRAND_COLOR) {
+    return DEFAULT_BRAND_COLOR;
+  }
   return value;
 }
 

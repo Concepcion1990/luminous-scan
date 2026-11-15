@@ -42,7 +42,9 @@ export default function BarcodeScanner({ onDetect }) {
             <>
               <Camera className="h-5 w-5 text-accent" />
               <p className="text-sm font-medium">{t('scan.codeCaptured')}</p>
-              <p className="text-xs text-primary-foreground/60">{t('scan.scanNextHint')}</p>
+              {/* No "Scan next" hint here anymore (Nov 14, 2026):
+                  the scanner re-arms itself — this card is only a
+                  brief confirmation before live capture resumes. */}
             </>
           )}
         </div>

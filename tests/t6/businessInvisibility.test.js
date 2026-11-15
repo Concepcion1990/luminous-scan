@@ -95,6 +95,31 @@ test('Import stays both-plans: its route is wrapped in neither gate nor redirect
   assert.doesNotMatch(importLine, /PlanGate|PlanRedirect/);
 });
 
+test('Overview: no Business teaser cards or upsell panel on Essentials; Business unchanged', () => {
+  const dashboard = src('src/pages/Dashboard.jsx');
+  // The real cards are entitlement-gated exactly as the purchasing
+  // cards are — and off Business the slots render nothing at all.
+  assert.match(dashboard, /const showAlerts = !entitlementLoading && can\('alerts'\);/);
+  assert.match(dashboard, /const showValuation = !entitlementLoading && can\('valuation'\);/);
+  assert.match(dashboard, /\{showAlerts && \(\s*<StatCard\s+label=\{t\('dashboard\.lowStock'\)\}/);
+  assert.match(dashboard, /\{showValuation && \(\s*<StatCard\s+label=\{t\('dashboard\.stockValue'\)\}/);
+  // No teaser components, no padlock cards, no upsell links anywhere
+  // on the Overview.
+  assert.doesNotMatch(dashboard, /LockedStatCard/);
+  assert.doesNotMatch(dashboard, /LockedAttentionPanel/);
+  assert.doesNotMatch(dashboard, /dashboard\.seeBusiness/);
+  assert.doesNotMatch(dashboard, /dashboard\.attentionLocked/);
+  assert.doesNotMatch(dashboard, /dashboard\.seeWhatBusinessIncludes/);
+  // Needs attention: real rows only on Business; on Essentials the
+  // panel follows its normal empty behavior (AttentionPanel, no rows).
+  assert.match(dashboard, /: showAlerts \? \(\s*<AttentionPanel low=\{stats\.low\} \/>/);
+  assert.match(dashboard, /: \(\s*<AttentionPanel low=\{\[\]\} \/>/);
+  assert.equal((dashboard.match(/<AttentionPanel low=\{stats\.low\} \/>/g) || []).length, 1);
+  // The ungated cards stay on both plans.
+  assert.match(dashboard, /<StatCard label=\{t\('dashboard\.unitsOnHand'\)\}/);
+  assert.match(dashboard, /<StatCard label=\{t\('dashboard\.activeSkus'\)\}/);
+});
+
 test('Rewards tab: absent on Essentials, present on Business, Workforce itself untouched', () => {
   const workforce = src('src/pages/Workforce.jsx');
   // The tab is still declared (Business sees it exactly as before)…
@@ -125,4 +150,13 @@ test('Rewards tab: absent on Essentials, present on Business, Workforce itself u
       `the ${other} tab renders unconditionally`,
     );
   }
+});
+
+test('PlanRedirect itself: allowed plans render the page untouched, others bounce', () => {
+  const redirect = readFileSync(new URL('../../src/components/plan/PlanRedirect.jsx', import.meta.url), 'utf8');
+  assert.ok(
+    redirect.includes('if (!can(feature)) return <Navigate to="/" replace />;'),
+    'only a plan lacking the feature is bounced, quietly, to Overview',
+  );
+  assert.ok(redirect.includes('return children;'), 'a plan with the feature renders the real page exactly as before');
 });

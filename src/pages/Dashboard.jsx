@@ -1,13 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import useDataFresh from '@/hooks/useDataFresh';
+import { dataVersion } from '@/lib/dataFreshness';
 import { format } from 'date-fns';
-import { Clock3, Lock, Plus, ScanLine } from 'lucide-react';
+import { Clock3, Plus, ScanLine } from 'lucide-react';
 import StatCard from '@/components/StatCard';
 import ReorderPanel from '@/components/dashboard/ReorderPanel';
 import LocationStockPanel from '@/components/dashboard/LocationStockPanel';
 import AttentionPanel from '@/components/dashboard/AttentionPanel';
-import PanelHeading from '@/components/dashboard/PanelHeading';
 import ActivityFeed from '@/components/dashboard/ActivityFeed';
 import OrdersToFulfil from '@/components/dashboard/OrdersToFulfil';
 import IncomingStock from '@/components/dashboard/IncomingStock';
@@ -20,54 +20,6 @@ import { trialInAppNotice } from '@/lib/trialNotices';
 import { displayLimit } from '@/lib/plans';
 import { t } from '@/lib/i18n';
 
-/**
- * A stat card for a Business-only figure on Essentials: the number is never
- * shown, but the card stays in the grid so the page keeps its shape and the
- * customer can see what Business adds. Same locked-teaser shape as the
- * PlanGate lock screen, shrunk to a card.
- */
-function LockedStatCard({ label, hint }) {
-  return (
-    <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
-      <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-        {label}
-      </p>
-      <div className="mt-2 flex items-center gap-2">
-        <Lock className="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
-        <span className="text-sm font-medium text-muted-foreground">{t('dashboard.businessPlan')}</span>
-      </div>
-      <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
-        {hint}{' '}
-        <Link to="/upgrade" className="font-medium text-link underline underline-offset-2">
-          {t('dashboard.seeBusiness')}
-        </Link>
-      </p>
-    </div>
-  );
-}
-
-/** "Needs attention" for Essentials: same panel shape, no low-stock rows. */
-function LockedAttentionPanel() {
-  return (
-    <section className="flex flex-col overflow-hidden rounded-xl border border-border bg-card">
-      <PanelHeading>{t('dashboard.needsAttention')}</PanelHeading>
-      <div className="flex flex-1 flex-col items-start justify-center gap-2 px-4 py-6 sm:px-5">
-        <Lock className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-        <p className="text-sm font-medium">{t('dashboard.attentionLockedTitle')}</p>
-        <p className="text-xs leading-relaxed text-muted-foreground">
-          {t('dashboard.attentionLockedBody')}
-        </p>
-        <Link
-          to="/upgrade"
-          className="text-xs font-medium text-link underline underline-offset-2"
-        >
-          {t('dashboard.seeWhatBusinessIncludes')}
-        </Link>
-      </div>
-    </section>
-  );
-}
-
 export default function Dashboard() {
   const { profile, activeId } = useBusiness();
   const { record: entitlementRecord, can, limits, isLoading: entitlementLoading } = useEntitlements();
@@ -79,13 +31,17 @@ export default function Dashboard() {
   // "Incoming stock" and "Reorder suggestions" cards, both purchasing.
   const showPurchasing = !entitlementLoading && can('purchasing');
   // AUDIT FINDING 4: the Low-stock card and the Needs-attention panel are
-  // the low-stock ALERTS surface (/low-stock and /alerts are PlanGate-
-  // locked), and the Stock-value card is the valuation surface — so they
-  // follow the same pattern. On Essentials they render as locked teasers
-  // linking to /upgrade (the choice: a teaser, not a silent gap — the
-  // customer sees what Business adds instead of a missing card). Passive
-  // low-stock counts stay visible on the Products, Inventory and Category
-  // pages by design; only the alerts surface is gated here.
+  // the low-stock ALERTS surface (/low-stock and /alerts are Business-
+  // only), and the Stock-value card is the valuation surface — so they
+  // follow the same pattern. They once rendered on Essentials as locked
+  // teaser cards linking to /upgrade; the owner's invisibility ruling
+  // (Nov 14, 2026 — "anything pertaining to business shouldn't be
+  // popping up on essentials") superseded that: on Essentials the two
+  // cards do not render at all, and the Needs-attention panel shows
+  // only its normal empty state (its rows are the Business alerts
+  // surface; the upsell block is gone, nothing invented in its place).
+  // Passive low-stock counts stay visible on the Products, Inventory
+  // and Category pages by design; only the alerts surface is gated here.
   const showAlerts = !entitlementLoading && can('alerts');
   const showValuation = !entitlementLoading && can('valuation');
   // FINDING 36: a persistent quiet trial chip — the trial banner only
@@ -105,6 +61,12 @@ export default function Dashboard() {
   const [data, setData] = useState(null);
   const [ops, setOps] = useState({ orders: [], purchaseOrders: [] });
   const [loading, setLoading] = useState(true);
+  // Which business has completed a load here. A background refetch
+  // (freshness bus, filter change) must never blank a list that
+  // already has content — the loading state is only for the first
+  // load of a business, when there is nothing to show yet (owner
+  // ruling, Nov 14, 2026: a stepper tap flashed "Loading catalog…").
+  const loadedForRef = useRef('');
   const [reload, setReload] = useState(0);
   // Kept alive in a hidden tab layer like Products: when inventory
   // changes on another screen, refetch on becoming visible so the
@@ -113,21 +75,49 @@ export default function Dashboard() {
 
   useEffect(() => {
     let alive = true;
-    setLoading(true);
-    Promise.all([
-      loadInventory(activeId || ''),
-      loadOperations(activeId || '', { includePurchaseOrders: showPurchasing }),
-    ])
-      .then(([inventory, operations]) => {
-        if (!alive) return;
-        setData(inventory);
-        setOps(operations);
-      })
-      .finally(() => {
-        if (alive) setLoading(false);
-      });
+    let retryTimer = null;
+    if (loadedForRef.current !== activeId) setLoading(true);
+    // The freshness version this load answers for. If a change
+    // lands while the load is in flight, the load's snapshot may
+    // predate it — and such a paint must NEVER land (Nov 14, 2026:
+    // the Overview sat empty ~15s, then painted the numbers from
+    // before a product was created). The bump that moved the
+    // version already raised `reload`, so a newer run of this
+    // effect owns the next paint; this run drops its snapshot.
+    const startVersion = dataVersion('inventory');
+    let attempt = 0;
+    const load = () => {
+      attempt += 1;
+      Promise.all([
+        loadInventory(activeId || ''),
+        loadOperations(activeId || '', { includePurchaseOrders: showPurchasing }),
+      ])
+        .then(([inventory, operations]) => {
+          if (!alive) return;
+          if (dataVersion('inventory') !== startVersion) return;
+          setData(inventory);
+          setOps(operations);
+          loadedForRef.current = activeId;
+          setLoading(false);
+        })
+        .catch(() => {
+          if (!alive) return;
+          // A failed load must not clear the loading state over
+          // the previous snapshot — that is exactly how stale
+          // numbers once painted as if current. Retry with
+          // backoff instead; the paint only ever lands on a load
+          // that succeeded and is still current.
+          if (attempt <= 6) {
+            retryTimer = setTimeout(load, Math.min(800 * attempt, 5000));
+          } else {
+            setLoading(false);
+          }
+        });
+    };
+    load();
     return () => {
       alive = false;
+      if (retryTimer) clearTimeout(retryTimer);
     };
   }, [activeId, showPurchasing, reload]);
 
@@ -229,7 +219,7 @@ export default function Dashboard() {
               </>
             ) : (
               <>
-                {showAlerts ? (
+                {showAlerts && (
                   <StatCard
                     label={t('dashboard.lowStock')}
                     value={stats.low.length}
@@ -237,18 +227,14 @@ export default function Dashboard() {
                     tone={stats.low.length > 0 ? 'warn' : 'default'}
                     hint={t('dashboard.atOrBelowReorder')}
                   />
-                ) : (
-                  <LockedStatCard label={t('dashboard.lowStock')} hint={t('dashboard.lowStockLockedHint')} />
                 )}
-                {showValuation ? (
+                {showValuation && (
                   <StatCard
                     label={t('dashboard.stockValue')}
                     value={formatMoney(stats.stockValue, profile.currency)}
                     tone="ok"
                     hint={t('dashboard.atCurrentCost')}
                   />
-                ) : (
-                  <LockedStatCard label={t('dashboard.stockValue')} hint={t('dashboard.stockValueLockedHint')} />
                 )}
               </>
             )}
@@ -263,7 +249,7 @@ export default function Dashboard() {
             ) : showAlerts ? (
               <AttentionPanel low={stats.low} />
             ) : (
-              <LockedAttentionPanel />
+              <AttentionPanel low={[]} />
             )}
           </div>
 

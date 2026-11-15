@@ -1,4 +1,4 @@
-import { Archive, ArchiveRestore, CopyPlus, MoreHorizontal, PackagePlus } from 'lucide-react';
+import { Archive, ArchiveRestore, CopyPlus, MoreHorizontal, PackagePlus, Trash2 } from 'lucide-react';
 import { t } from '@/lib/i18n';
 
 import { Button } from '@/components/ui/button';
@@ -9,8 +9,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-/** Secondary catalog actions for one product: add stock, duplicate, archive or restore. */
-export default function ProductRowMenu({ product, onDuplicate, onToggleArchive, onAddStock }) {
+/** Secondary catalog actions for one product: add stock, duplicate, archive or restore, delete. */
+export default function ProductRowMenu({ product, onDuplicate, onToggleArchive, onAddStock, onDelete }) {
   const archived = product.status === 'archived';
 
   return (
@@ -40,6 +40,14 @@ export default function ProductRowMenu({ product, onDuplicate, onToggleArchive, 
             </>
           )}
         </DropdownMenuItem>
+        {onDelete && (
+          <DropdownMenuItem
+            onSelect={() => onDelete(product)}
+            className="text-destructive focus:bg-destructive/10 focus:text-destructive"
+          >
+            <Trash2 className="mr-2 h-3.5 w-3.5" /> {t('products.delete')}
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

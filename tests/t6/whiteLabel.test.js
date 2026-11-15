@@ -62,6 +62,34 @@ test('Settings save lands: name, brand color, language, contact details', async 
   assert.equal(saved.tagline, 'Books and quiet');
 });
 
+test('a row holding a retired silent default heals to the cream-tan on read', async () => {
+  const owner = await ownerWithBusiness('whitelabel-heal@example.com');
+  const patch = (body) =>
+    req(`/api/businesses/${owner.business.id}`, { method: 'PATCH', body, cookie: owner.cookie });
+
+  // The bronze #6d4c26 was the shipped default for a few hours on
+  // Nov 14, 2026 and silently stamped rows saved in that window (the
+  // owner's live workspace among them). The stamp still lands in the
+  // row on save, but the serializer resolves it — and the retired
+  // teal — to the cream-tan default on every read: the heal is a
+  // read-time resolution, no production data write.
+  const bronze = await patch({ brand_color: '#6D4C26' });
+  assert.equal(bronze.status, 200);
+  assert.equal(bronze.json.brand_color, '#e3d5bf');
+  const teal = await patch({ brand_color: '#145042' });
+  assert.equal(teal.status, 200);
+  assert.equal(teal.json.brand_color, '#e3d5bf');
+  const list = await req('/api/businesses', { cookie: owner.cookie });
+  const saved = list.json.items.find((b) => b.id === owner.business.id);
+  assert.equal(saved.brand_color, '#e3d5bf');
+
+  // A genuinely chosen color — even a bronze one step off the old
+  // stamp — still wins, untouched.
+  const custom = await patch({ brand_color: '#6d4c27' });
+  assert.equal(custom.status, 200);
+  assert.equal(custom.json.brand_color, '#6d4c27');
+});
+
 test('Settings save refuses bad values and strangers — and ignores app_name', async () => {
   const owner = await ownerWithBusiness('whitelabel-guards@example.com');
   const patch = (body, cookie = owner.cookie) =>
@@ -124,4 +152,19 @@ test('store-logo upload stores the image on the business record', async () => {
   const stranger = await registerVerifiedUser('whitelabel-logo-stranger@example.com');
   const forbidden = await upload(TINY_PNG, stranger.cookie);
   assert.equal(forbidden.status, 403);
+});
+
+test('the bronze heal holds on a Business-plan workspace too', async () => {
+  // The heal lives in the serializer every plan reads through —
+  // pinned here under Business as well as Essentials (owner
+  // requirement, Nov 14, 2026: fixes land on both plans).
+  const owner = await ownerWithBusiness('whitelabel-heal-biz@example.com', 'Biz Heal Shop', { plan: 'business' });
+  const patch = (body) =>
+    req(`/api/businesses/${owner.business.id}`, { method: 'PATCH', body, cookie: owner.cookie });
+  const bronze = await patch({ brand_color: '#6D4C26' });
+  assert.equal(bronze.status, 200);
+  assert.equal(bronze.json.brand_color, '#e3d5bf');
+  const custom = await patch({ brand_color: '#6d4c27' });
+  assert.equal(custom.status, 200);
+  assert.equal(custom.json.brand_color, '#6d4c27');
 });

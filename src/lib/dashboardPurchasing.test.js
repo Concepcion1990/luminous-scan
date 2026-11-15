@@ -27,8 +27,9 @@ import { featureAllowed } from './plans.js';
  * directly). Nothing here is served by a backend function, so there is no
  * server read to refuse — the render guard and the skipped fetch are the
  * enforcement, and the panel can only create a purchase order when it is
- * rendered, i.e. on Business. (The same panel on /low-stock is already
- * behind PlanGate feature="alerts", so it is unreachable on Essentials.)
+ * rendered, i.e. on Business. (The same panel on /low-stock sits
+ * behind the alerts route, which bounces Essentials to the Overview
+ * via PlanRedirect, so it is unreachable there.)
  */
 
 test('purchasing is a Business-only feature', () => {
@@ -84,47 +85,47 @@ test('no backend function serves the purchasing cards', () => {
 /**
  * AUDIT FINDING 4: the same leak, one layer down. The Low-stock card, the
  * Stock-value card and the Needs-attention panel all rendered for
- * Essentials while /low-stock, /alerts and /valuation sat behind PlanGate
- * — an Essentials click on the panel even landed on the lock screen.
- * The fix gates them on the loaded entitlement with the same
- * `!entitlementLoading && can(…)` pattern, and shows locked teasers
- * linking to /upgrade instead of a silent gap, so the customer sees what
- * Business adds. Units on hand and Active SKUs stay ungated on both plans.
+ * Essentials while /low-stock, /alerts and /valuation sat behind the
+ * plan gate — an Essentials click on the panel even landed on the lock
+ * screen. The first fix gated them on the loaded entitlement with the
+ * `!entitlementLoading && can(…)` pattern and showed locked teasers
+ * linking to /upgrade. The owner's invisibility ruling (Nov 14, 2026)
+ * superseded the teasers: on Essentials the two cards do not render
+ * at all and the Needs-attention panel shows only its normal empty
+ * state — no Business content of any kind pops up on Essentials.
+ * Business renders all three exactly as before. Units on hand and
+ * Active SKUs stay ungated on both plans.
  */
 test('the Overview gates the Low-stock and Stock-value cards on the loaded entitlement', () => {
   const page = readFileSync('src/pages/Dashboard.jsx', 'utf8');
   assert.match(page, /const showAlerts = !entitlementLoading && can\('alerts'\);/);
   assert.match(page, /const showValuation = !entitlementLoading && can\('valuation'\);/);
-  // The real cards only render when the plan is known to allow them.
-  assert.match(page, /\{showAlerts \? \(\s*<StatCard\s*\n?\s*label="Low stock"/);
-  assert.match(page, /\{showValuation \? \(\s*<StatCard\s*\n?\s*label="Stock value"/);
-  // Otherwise a locked teaser in the same grid slot, linking to /upgrade.
-  assert.match(
-    page,
-    /<LockedStatCard label="Low stock" hint="Low-stock alerts are a Business feature\." \/>/
-  );
-  assert.match(
-    page,
-    /<LockedStatCard label="Stock value" hint="Stock valuation is a Business feature\." \/>/
-  );
-  assert.match(page, /function LockedStatCard\(\{ label, hint \}\) \{/);
+  // The real cards render only when the plan is known to allow them —
+  // and on any other plan the slots render nothing at all (no teaser).
+  assert.match(page, /\{showAlerts && \(\s*<StatCard\s+label=\{t\('dashboard\.lowStock'\)\}/);
+  assert.match(page, /\{showValuation && \(\s*<StatCard\s+label=\{t\('dashboard\.stockValue'\)\}/);
+  assert.doesNotMatch(page, /LockedStatCard/);
+  assert.doesNotMatch(page, /dashboard\.seeBusiness/);
   // While the plan is still loading the gated slots hold their shape
   // (skeleton), never a Business figure and never a lock.
   assert.match(page, /\{entitlementLoading \? \(\s*<>\s*\n?\s*<div className="h-\[104px\] animate-pulse/);
   // The two ungated cards are untouched.
-  assert.match(page, /<StatCard label="Units on hand"/);
-  assert.match(page, /<StatCard label="Active SKUs"/);
+  assert.match(page, /<StatCard label=\{t\('dashboard\.unitsOnHand'\)\}/);
+  assert.match(page, /<StatCard label=\{t\('dashboard\.activeSkus'\)\}/);
 });
 
 test('the Overview gates the Needs-attention panel behind alerts', () => {
   const page = readFileSync('src/pages/Dashboard.jsx', 'utf8');
   assert.match(page, /: showAlerts \? \(\s*<AttentionPanel low=\{stats\.low\} \/>/);
-  assert.match(page, /: \(\s*<LockedAttentionPanel \/>/);
-  assert.match(page, /function LockedAttentionPanel\(\) \{/);
-  assert.match(page, /Low-stock alerts are a Business feature/);
-  assert.match(page, /<Link\s*\n?\s*to="\/upgrade"/);
-  // Exactly one AttentionPanel render, and it sits inside the showAlerts
-  // ternary — never rendered unconditionally the way it was before.
+  // Off Business the panel keeps its normal empty state — the upsell
+  // block (LockedAttentionPanel) is gone entirely.
+  assert.match(page, /: \(\s*<AttentionPanel low=\{\[\]\} \/>/);
+  assert.doesNotMatch(page, /LockedAttentionPanel/);
+  assert.doesNotMatch(page, /dashboard\.attentionLocked/);
+  assert.doesNotMatch(page, /dashboard\.seeWhatBusinessIncludes/);
+  // Exactly one AttentionPanel render carries real rows, and it sits
+  // inside the showAlerts ternary — never rendered unconditionally
+  // the way it was before.
   assert.equal((page.match(/<AttentionPanel low=\{stats\.low\} \/>/g) || []).length, 1);
 });
 

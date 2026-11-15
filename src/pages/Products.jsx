@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { base44 } from '@/api/client';
 import useDataFresh from '@/hooks/useDataFresh';
-import { ArrowDown, ArrowUp, ChevronDown, ChevronUp, Pencil, Plus, Search, Trash2 } from 'lucide-react';
+import { ArrowDown, ArrowUp, ChevronDown, ChevronUp, Pencil, Plus, Search } from 'lucide-react';
 import SortHeader from '@/components/products/SortHeader';
 import ProductThumb from '@/components/products/ProductThumb';
 import ResponsiveSelect from '@/components/ui/ResponsiveSelect';
@@ -90,6 +90,12 @@ export default function Products() {
   const [facets, setFacets] = useState({ categories: [], tags: [] });
   const vocabulary = useCatalogVocabulary(activeId);
   const [loading, setLoading] = useState(true);
+  // Which business has completed a load here. A background refetch
+  // (freshness bus, filter change) must never blank a list that
+  // already has content — the loading state is only for the first
+  // load of a business, when there is nothing to show yet (owner
+  // ruling, Nov 14, 2026: a stepper tap flashed "Loading catalog…").
+  const loadedForRef = useRef('');
   const [expanded, setExpanded] = useState(null);
   const [selected, setSelected] = useState([]);
   const [bulkOpen, setBulkOpen] = useState(false);
@@ -131,7 +137,7 @@ export default function Products() {
 
   useEffect(() => {
     (async () => {
-      setLoading(true);
+      if (loadedForRef.current !== activeId) setLoading(true);
       const isUnfiltered =
         !debounced.trim() &&
         !filters.category &&
@@ -167,6 +173,7 @@ export default function Products() {
       }
       setLevels(levelPage.items ?? []);
       setLocations(locPage.items ?? []);
+      loadedForRef.current = activeId;
       setLoading(false);
     })();
   }, [
@@ -403,6 +410,23 @@ export default function Products() {
     setReload((r) => r + 1);
   };
 
+  // Delete goes through a plain-words confirmation first (owner ruling,
+  // Nov 14 2026): it names the product and, when it holds stock, how
+  // many units on hand go with it. Nothing deletes from the menu tap
+  // alone. Past movements keep the product name recorded at the time,
+  // so the business's books stay readable after the product is gone.
+  const requestRemove = (product) => {
+    const units = levels
+      .filter((l) => l.product_id === product.id)
+      .reduce((sum, l) => sum + (l.quantity || 0), 0);
+    const message =
+      units > 0
+        ? t('products.deleteConfirmStock', { name: product.name, count: units })
+        : t('products.deleteConfirm', { name: product.name });
+    if (!window.confirm(message)) return;
+    remove(product);
+  };
+
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-4">
@@ -556,6 +580,14 @@ export default function Products() {
                     onClick={() => setExpanded(isOpen ? null : product.id)}
                     className="flex min-w-0 items-center gap-2 text-left"
                   >
+                    {/* The cover photo beside the name at the sizes
+                        the grid-cell thumb is hidden (below xl) —
+                        an owner recognises items at a glance. No
+                        photo → nothing renders, exactly as before:
+                        no placeholder box on the row. */}
+                    {product.photo_urls?.[0] ? (
+                      <ProductThumb product={product} className="h-11 w-11 xl:hidden" />
+                    ) : null}
                     <ChevronDown
                       className={`h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform ${
                         isOpen ? 'rotate-180' : ''
@@ -651,18 +683,8 @@ export default function Products() {
                       onDuplicate={duplicate}
                       onToggleArchive={toggleArchive}
                       onAddStock={(p) => setAdjusting(p)}
+                      onDelete={user?.role === 'admin' ? requestRemove : undefined}
                     />
-                    {user?.role === 'admin' && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-11 w-11 text-muted-foreground hover:text-destructive lg:h-8 lg:w-8"
-                        aria-label={t('products.deleteAria', { name: product.name })}
-                        onClick={() => remove(product)}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    )}
                   </div>
                 </div>
 

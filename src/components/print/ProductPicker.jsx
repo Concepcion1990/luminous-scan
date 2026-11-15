@@ -40,7 +40,7 @@ export default function ProductPicker({ products, loading, search, onSearch, sel
                 >
                   {active && <Check className="h-3 w-3" />}
                 </span>
-                <span className="min-w-0">
+                <span className="min-w-0 flex-1 overflow-hidden">
                   <span className="block truncate text-sm">{product.name}</span>
                   <span className="numeric block truncate text-[11px] text-muted-foreground">
                     {[product.sku, product.isbn, product.upc].filter(Boolean).join(' · ')}

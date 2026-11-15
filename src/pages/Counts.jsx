@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { base44 } from '@/api/client';
 import { Check, ClipboardCheck, Plus } from 'lucide-react';
 import CountCard from '@/components/counts/CountCard';
@@ -27,6 +27,12 @@ export default function Counts() {
   const [levels, setLevels] = useState([]);
   const [filter, setFilter] = useState('open');
   const [loading, setLoading] = useState(true);
+  // Which business has completed a load here. A background refetch
+  // (freshness bus, filter change) must never blank a list that
+  // already has content — the loading state is only for the first
+  // load of a business, when there is nothing to show yet (owner
+  // ruling, Nov 14, 2026: a stepper tap flashed "Loading catalog…").
+  const loadedForRef = useRef('');
   const [reload, setReload] = useState(0);
   const [expanded, setExpanded] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -53,7 +59,7 @@ export default function Counts() {
 
   useEffect(() => {
     (async () => {
-      setLoading(true);
+      if (loadedForRef.current !== activeId) setLoading(true);
       const status = statusQuery(filter);
       const query = status === 'all' ? {} : { status };
       const page = await base44.entities.CountSession.filter(scoped(query, activeId), {
@@ -61,6 +67,7 @@ export default function Counts() {
         limit: 100,
       });
       setSessions(page.items ?? []);
+      loadedForRef.current = activeId;
       setLoading(false);
     })();
   }, [filter, reload, activeId]);

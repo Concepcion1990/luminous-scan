@@ -106,12 +106,14 @@ function publicBusiness(row) {
     logo_url: row.logo_url || '',
     // The default brand color is the approved Luminous cream-tan
     // (#e3d5bf) — the app's own theme color, not an override. The
-    // retired teal #145042 was a silent default, never a choice —
-    // a row still holding it (or no color) is "unset" and resolves to
-    // the cream-tan here, mirroring resolveBrandColor in
-    // src/lib/brandTheme.js. A color the business actually saved is
-    // returned untouched: white-label choices always win.
-    brand_color: !row.brand_color || row.brand_color.toLowerCase() === '#145042'
+    // retired teal #145042 was a silent default, never a choice, and
+    // the bronze #6d4c26 was the shipped default for a few hours on
+    // Nov 14, 2026, silently stamping rows saved in that window —
+    // a row still holding either hex (or no color) is "unset" and
+    // resolves to the cream-tan here, mirroring resolveBrandColor
+    // in src/lib/brandTheme.js. A color the business actually saved
+    // is returned untouched: white-label choices always win.
+    brand_color: !row.brand_color || ['#145042', '#6d4c26'].includes(row.brand_color.toLowerCase())
       ? '#e3d5bf'
       : row.brand_color,
     contact_email: row.contact_email || '',

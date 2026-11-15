@@ -256,6 +256,18 @@ export default function Scan() {
     if (isDesktop) manualRef.current?.focus();
   };
 
+  // "Scan next" (owner ruling, Nov 14, 2026): the same reset as
+  // always, PLUS the return trip — the view scrolls back up to the
+  // scanner card, so scanning a run of items never means scrolling
+  // by hand in either direction. The jump happens only on this tap:
+  // a capture itself never moves the page, so the result card stays
+  // put while the owner acts on it (Receive / Sold / Count).
+  const scannerCardRef = useRef(null);
+  const scanNext = () => {
+    reset();
+    scannerCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   const apply = async () => {
     // Guards against a double tap or a repeated Enter saving the movement twice.
     if (savingRef.current) return;
@@ -479,8 +491,8 @@ export default function Scan() {
       <SyncIndicator sync={sync} />
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <div className="space-y-4 rounded-xl border border-border bg-card p-4 sm:p-5">
-          <div data-pull-refresh-ignore>
+        <div className="min-w-0 space-y-4 rounded-xl border border-border bg-card p-4 sm:p-5">
+          <div data-pull-refresh-ignore ref={scannerCardRef}>
             {scanVisible && <BarcodeScanner key={session} onDetect={lookup} />}
           </div>
 
@@ -555,11 +567,11 @@ export default function Scan() {
           )}
         </div>
 
-        <div className="rounded-xl border border-border bg-card">
-          {external && <ExternalCodePanel scanned={external} onDismiss={reset} onSearch={lookup} />}
+        <div className="min-w-0 rounded-xl border border-border bg-card">
+          {external && <ExternalCodePanel scanned={external} onDismiss={scanNext} onSearch={lookup} />}
 
           {matches.length > 0 && (
-            <MatchPicker matches={matches} onSelect={selectProduct} onDismiss={reset} />
+            <MatchPicker matches={matches} onSelect={selectProduct} onDismiss={scanNext} />
           )}
 
           {idle && (
@@ -581,7 +593,7 @@ export default function Scan() {
                 <Button onClick={() => setCreateOpen(true)}>
                   <Plus className="mr-1.5 h-4 w-4" /> {t('scan.createProduct')}
                 </Button>
-                <Button variant="ghost" onClick={reset}>
+                <Button variant="ghost" onClick={scanNext}>
                   <RotateCcw className="mr-1.5 h-3.5 w-3.5" /> {t('scan.scanNext')}
                 </Button>
               </div>
@@ -591,10 +603,10 @@ export default function Scan() {
           {product && (
             <div className="divide-y divide-border">
               <div className="p-4 sm:p-5">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1 overflow-hidden">
                     <h2 className="truncate text-lg font-semibold">{product.name}</h2>
-                    <p className="numeric mt-1 text-xs text-muted-foreground">
+                    <p className="numeric mt-1 truncate text-xs text-muted-foreground">
                       {[product.sku, product.upc, product.isbn].filter(Boolean).join(' · ')}
                     </p>
                     {/* Walmart item 1: scan → price + on-hand on the spot. */}
@@ -607,7 +619,7 @@ export default function Scan() {
                   <Button variant="outline" size="sm" onClick={printShelfTag} className="shrink-0">
                     <Printer className="mr-1.5 h-3.5 w-3.5" /> {t('scan.printShelfTag')}
                   </Button>
-                  <Button variant="ghost" size="sm" onClick={reset} className="shrink-0">
+                  <Button variant="ghost" size="sm" onClick={scanNext} className="shrink-0">
                     <RotateCcw className="mr-1.5 h-3.5 w-3.5" /> {t('scan.scanNext')}
                   </Button>
                 </div>

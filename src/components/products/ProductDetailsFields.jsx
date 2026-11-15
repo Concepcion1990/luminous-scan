@@ -12,11 +12,22 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import VariationFields from './VariationFields';
+import VocabularyCombobox from './VocabularyCombobox';
+import AddVocabularyInline from './AddVocabularyInline';
 import { t } from '@/lib/i18n';
 
 
 /** The optional half of the product form: kept folded away so entry stays quick. */
-export default function ProductDetailsFields({ form, set, setForm, vocabulary = {} }) {
+export default function ProductDetailsFields({
+  form,
+  set,
+  setForm,
+  vocabulary = {},
+  businessId,
+  addNewField,
+  setAddNewField,
+  onVocabularyCreated,
+}) {
   const [open, setOpen] = useState(false);
 
   const STATUSES = [
@@ -99,17 +110,26 @@ export default function ProductDetailsFields({ form, set, setForm, vocabulary = 
           <div className="grid grid-cols-2 gap-3">
             <div className="grid gap-2">
               <Label htmlFor="subcategory">{t('productForm.subcategoryLabel')}</Label>
-              <Input
+              <VocabularyCombobox
                 id="subcategory"
-                list="subcategory-options"
                 value={form.subcategory}
                 onChange={set('subcategory')}
+                options={vocabulary.subcategories || []}
+                label={t('productForm.subcategoryLabel')}
+                addNewLabel={t('productForm.addNewSubcategory')}
+                onAddNewRequest={() => setAddNewField('subcategory')}
               />
-              <datalist id="subcategory-options">
-                {(vocabulary.subcategories || []).map((name) => (
-                  <option key={name} value={name} />
-                ))}
-              </datalist>
+              {addNewField === 'subcategory' && (
+                <AddVocabularyInline
+                  businessId={businessId}
+                  kind="subcategory"
+                  initialName={form.subcategory}
+                  existingNames={vocabulary.subcategories || []}
+                  title={t('productForm.addNewSubcategory')}
+                  onCreated={(name) => onVocabularyCreated('subcategory', name)}
+                  onCancel={() => setAddNewField(null)}
+                />
+              )}
             </div>
             <div className="grid gap-2">
               <Label htmlFor="tags">{t('productForm.tagsLabel')}</Label>

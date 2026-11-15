@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Search } from 'lucide-react';
-import { loadInventory, productTruncationNotice } from '@/lib/inventory';
+import { loadInventory, productMatchesSearch, productTruncationNotice, searchWords } from '@/lib/inventory';
 import { useBusiness } from '@/hooks/useBusiness';
 import useDataFresh from '@/hooks/useDataFresh';
 import { useOfflineSync } from '@/hooks/useOfflineSync';
@@ -58,18 +58,13 @@ export default function Inventory() {
   );
 
   const rows = useMemo(() => {
-    const term = search.trim().toLowerCase();
+    const words = searchWords(search);
     return products
       .map((product) => ({
         product,
         own: scopedLevels.filter((level) => level.product_id === product.id),
       }))
-      .filter(({ product }) => {
-        if (!term) return true;
-        return [product.name, product.sku, product.category]
-          .filter(Boolean)
-          .some((value) => String(value).toLowerCase().includes(term));
-      });
+      .filter(({ product }) => productMatchesSearch(product, words));
   }, [products, scopedLevels, search]);
 
   const units = scopedLevels.reduce((sum, level) => sum + (level.quantity || 0), 0);

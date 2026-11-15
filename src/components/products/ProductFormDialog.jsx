@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { base44 } from '@/api/client';
-import { ImagePlus, Loader2, X } from 'lucide-react';
+import { Camera, ImagePlus, Loader2, ScanBarcode, X } from 'lucide-react';
 import { useBusiness } from '@/hooks/useBusiness';
 import useEntitlements from '@/hooks/useEntitlements';
 import ProductDetailsFields from './ProductDetailsFields';
@@ -8,7 +8,11 @@ import { useCatalogVocabulary } from '@/hooks/useCatalogVocabulary';
 import { copyGroupKey } from '@/lib/copies';
 import { scoped, withBusiness } from '@/lib/scoped';
 import { createProducts } from '@/lib/entitlements';
-import { recordMovement } from '@/lib/inventory';
+import { findProductsByCode, recordMovement } from '@/lib/inventory';
+import { judgeVocabularyValue } from '@/lib/vocabulary';
+import BarcodeScanner from '@/components/scan/BarcodeScanner';
+import VocabularyCombobox from './VocabularyCombobox';
+import AddVocabularyInline from './AddVocabularyInline';
 import { Image } from '@/components/ui/image';
 import { t } from '@/lib/i18n';
 
@@ -99,18 +103,50 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
   const [uploading, setUploading] = useState(false);
   const [photoError, setPhotoError] = useState('');
   const [suppliers, setSuppliers] = useState([]);
-  // Starting quantity (create mode only, Nov 14, 2026): how many
-  // the owner has right now, stocked as a 'receive' movement the
-  // moment the product is created — one act instead of create-
-  // then-go-Receive. Edit mode never shows it: stock in edit is
-  // changed through movements, not a silent form field.
+  // Quantity on hand (Nov 14, 2026): on CREATE it is the starting
+  // quantity — how many the owner has right now, stocked as a
+  // 'receive' movement the moment the product is created, one act
+  // instead of create-then-go-Receive. On EDIT (owner ruling, later
+  // the same day) the same box shows the CURRENT count at the
+  // chosen location, and saving a changed count writes the
+  // difference as ONE real movement ('receive' up, 'correction'
+  // down) through the same funnel — the typed number never
+  // silently overwrites stock; the movement is the record.
   const [quantity, setQuantity] = useState('');
   const [locations, setLocations] = useState([]);
   const [quantityLocationId, setQuantityLocationId] = useState('');
+  // Edit mode: the product's stock levels, loaded on open so the
+  // quantity box can prefill the current count per location.
+  const [editLevels, setEditLevels] = useState([]);
+  const [editLevelsLoaded, setEditLevelsLoaded] = useState(false);
+  const prefillKeyRef = useRef('');
   const [createdProduct, setCreatedProduct] = useState(null);
   const [openingStockDone, setOpeningStockDone] = useState(false);
   const [error, setError] = useState('');
   const fileRef = useRef(null);
+  const cameraFileRef = useRef(null);
+  // Photos: tapping the add tile offers camera OR gallery (owner
+  // ruling, Nov 14, 2026 — the tile used to open the gallery
+  // picker only, with no way to photograph the product on the
+  // spot). Both choices feed the same addPhotos pipeline.
+  const [photoChooserOpen, setPhotoChooserOpen] = useState(false);
+  // In-form code scanner (Nov 14, 2026): the UPC and Barcode fields
+  // each get a Scan button that opens the camera scanner as an overlay
+  // INSIDE this dialog — the form never unmounts, so a half-filled
+  // form keeps every value. scanField names the field the scanner is
+  // filling; codeTaken carries the at-field notice when a captured
+  // code already belongs to another product.
+  const [scanField, setScanField] = useState(null);
+  const [codeTaken, setCodeTaken] = useState(null);
+  const scanHandledRef = useRef(false);
+  // Vocabulary pickers (Nov 14, 2026): which field's "Add new …"
+  // inline form is open, and the names created through it during
+  // this session (sanctioned values for the save guard even before
+  // the vocabulary refetch lands).
+  const [addNewField, setAddNewField] = useState(null);
+  const [addedNames, setAddedNames] = useState({ category: [], subcategory: [] });
+  const initialCategoryRef = useRef('');
+  const initialSubcategoryRef = useRef('');
 
   const CONDITION_LABELS = {
     New: t('products.conditionNew'),
@@ -131,6 +167,11 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
   useEffect(() => {
     if (!open) return;
     setError('');
+    // The category/subcategory the form opened with. The save guard
+    // grandfathers these: they are not new births, even if the
+    // managed list no longer carries them.
+    initialCategoryRef.current = (product?.category || seed?.category || '').trim();
+    initialSubcategoryRef.current = (product?.subcategory || seed?.subcategory || '').trim();
     if (product) {
       setForm({
         name: product.name || '',
@@ -239,10 +280,87 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
       setQuantity('');
       setCreatedProduct(null);
       setOpeningStockDone(false);
+      setPhotoChooserOpen(false);
+      setScanField(null);
+      setCodeTaken(null);
+      setAddNewField(null);
+      setAddedNames({ category: [], subcategory: [] });
+      setEditLevels([]);
+      setEditLevelsLoaded(false);
+      prefillKeyRef.current = '';
     }
   }, [open, product, seed, defaultCode]);
 
+  // Edit mode: load the product's levels so the quantity box can
+  // prefill the current on-hand at the chosen location.
+  useEffect(() => {
+    if (!open || !product) return;
+    base44.entities.StockLevel
+      .filter(scoped({ product_id: product.id }, activeId), { limit: 500 })
+      .then((page) => {
+        setEditLevels(page.items ?? []);
+        setEditLevelsLoaded(true);
+      });
+  }, [open, product, activeId]);
+
+  // Prefill the edit quantity box with the current count at the
+  // chosen location — once per (product, location) pair, so
+  // switching the location re-reads that location's count without
+  // ever stomping a number the owner is mid-typing at one place.
+  useEffect(() => {
+    if (!open || !product || !editLevelsLoaded) return;
+    const key = `${product.id}|${quantityLocationId}`;
+    if (prefillKeyRef.current === key) return;
+    prefillKeyRef.current = key;
+    const current =
+      editLevels.find((l) => l.location_id === quantityLocationId)?.quantity ?? 0;
+    setQuantity(String(current));
+  }, [open, product, editLevelsLoaded, editLevels, quantityLocationId]);
+
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e?.target ? e.target.value : e }));
+
+  // A category/subcategory born through the picker's "Add new" row:
+  // select it, sanction it for the save guard (the vocabulary
+  // refetch lands a moment later), and close the inline form.
+  const handleVocabularyCreated = (field, name) => {
+    set(field)(name);
+    setAddedNames((prev) => ({ ...prev, [field]: [...prev[field], name] }));
+    setAddNewField(null);
+  };
+
+  // Open the in-form scanner for one code field. The camera overlay
+  // lives inside this dialog, so opening or closing it never touches
+  // the form state — everything already typed stays typed.
+  const openCodeScanner = (field) => {
+    scanHandledRef.current = false;
+    setScanField(field);
+  };
+
+  // A capture lands in the field the scanner was opened from, the
+  // overlay closes, and focus returns to that field. The scanner
+  // re-arms itself after a capture, so the first capture is latched
+  // and any repeat detect while the overlay closes is ignored. If
+  // the code already belongs to ANOTHER product in this business,
+  // the field says so plainly (one code points to one product)
+  // instead of the save quietly making a second record for it.
+  const handleScanDetect = async (raw) => {
+    if (scanHandledRef.current || !scanField) return;
+    scanHandledRef.current = true;
+    const field = scanField;
+    const value = String(raw || '').trim();
+    setScanField(null);
+    if (!value) return;
+    set(field)(value);
+    requestAnimationFrame(() => document.getElementById(field)?.focus());
+    try {
+      const matches = await findProductsByCode(value, activeId || '');
+      const other = matches.find((m) => m.id !== product?.id);
+      setCodeTaken(other ? { field, name: other.name } : null);
+    } catch {
+      // The lookup failing must never eat the scanned code — the
+      // field already has it; only the courtesy notice is skipped.
+    }
+  };
 
   const addPhotos = async (files) => {
     if (!files?.length) return;
@@ -285,6 +403,31 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
       setError(t('productForm.nameRequired'));
       return;
     }
+    // No silent category births (owner ruling, Nov 14, 2026) — the
+    // decision lives in judgeVocabularyValue (src/lib/vocabulary.js);
+    // here the form only shows the plain message and stops.
+    const categoryVerdict = judgeVocabularyValue({
+      typedRaw: form.category,
+      initial: initialCategoryRef.current,
+      options: vocabulary.categories,
+      sanctioned: addedNames.category,
+      loaded: vocabulary.loaded,
+    });
+    if (!categoryVerdict.ok) {
+      setError(t('productForm.categoryNotFound'));
+      return;
+    }
+    const subcategoryVerdict = judgeVocabularyValue({
+      typedRaw: form.subcategory,
+      initial: initialSubcategoryRef.current,
+      options: vocabulary.subcategories,
+      sanctioned: addedNames.subcategory,
+      loaded: vocabulary.loaded,
+    });
+    if (!subcategoryVerdict.ok) {
+      setError(t('productForm.subcategoryNotFound'));
+      return;
+    }
     // Starting quantity validation (create mode only): blank means
     // zero; anything else must be a whole number of zero or more.
     const effectiveProduct = product || createdProduct;
@@ -306,6 +449,21 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
         return;
       }
     }
+    // Edit-mode quantity validation: the box is prefilled with the
+    // current count, so blank means "leave it as it is" (never a
+    // silent zero); anything typed must be a whole number of zero
+    // or more, with the same plain message as create.
+    let editQty = null;
+    if (product) {
+      const raw = quantity.trim();
+      if (raw !== '') {
+        if (!/^\d+$/.test(raw)) {
+          setError(t('productForm.quantityInvalid'));
+          return;
+        }
+        editQty = Number(raw);
+      }
+    }
     setSaving(true);
     setError('');
     const payload = {
@@ -315,7 +473,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
       isbn: form.isbn.trim(),
       author: form.author.trim(),
       condition: form.condition,
-      category: form.category.trim(),
+      category: categoryVerdict.value,
       unit: form.unit,
       cost: Number(form.cost) || 0,
       price: Number(form.price) || 0,
@@ -345,7 +503,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
       barcode: form.barcode.trim(),
       qr_code: form.qr_code.trim(),
       description: form.description.trim(),
-      subcategory: form.subcategory.trim(),
+      subcategory: subcategoryVerdict.value,
       tags: form.tags_text
         .split(',')
         .map((tag) => tag.trim())
@@ -397,6 +555,39 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
           setOpeningStockDone(true);
         }
       }
+      if (product && editQty !== null) {
+        // The typed count differs from the count the box was
+        // prefilled with → ONE movement carries the difference:
+        // 'receive' of the difference up, 'correction' landing
+        // exactly on the typed count down. Unchanged → no movement
+        // at all. recordMovement re-reads the live level and can
+        // never take stock below zero.
+        const location = locations.find((l) => l.id === quantityLocationId) || locations[0];
+        const currentAtLocation = location
+          ? editLevels.find((l) => l.location_id === location.id)?.quantity ?? 0
+          : 0;
+        if (location && editQty !== currentAtLocation) {
+          if (editQty > currentAtLocation) {
+            await recordMovement({
+              product: saved,
+              location,
+              type: 'receive',
+              quantity: editQty - currentAtLocation,
+              businessId: activeId,
+              user,
+            });
+          } else {
+            await recordMovement({
+              product: saved,
+              location,
+              type: 'correction',
+              quantity: editQty,
+              businessId: activeId,
+              user,
+            });
+          }
+        }
+      }
       onSaved?.(saved);
       onOpenChange(false);
     } catch (err) {
@@ -429,18 +620,27 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
             </div>
             <div className="grid gap-2">
               <Label htmlFor="category">{t('productForm.categoryLabel')}</Label>
-              <Input
+              <VocabularyCombobox
                 id="category"
-                list="category-options"
                 value={form.category}
                 onChange={set('category')}
+                options={vocabulary.categories}
                 placeholder="Fiction"
+                label={t('productForm.categoryLabel')}
+                addNewLabel={t('productForm.addNewCategory')}
+                onAddNewRequest={() => setAddNewField('category')}
               />
-              <datalist id="category-options">
-                {vocabulary.categories.map((name) => (
-                  <option key={name} value={name} />
-                ))}
-              </datalist>
+              {addNewField === 'category' && (
+                <AddVocabularyInline
+                  businessId={activeId}
+                  kind="category"
+                  initialName={form.category}
+                  existingNames={vocabulary.categories}
+                  title={t('productForm.addNewCategory')}
+                  onCreated={(name) => handleVocabularyCreated('category', name)}
+                  onCancel={() => setAddNewField(null)}
+                />
+              )}
             </div>
           </div>
 
@@ -463,13 +663,50 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
 
           <div className="grid gap-2">
             <Label htmlFor="upc">{t('productForm.upcLabel')}</Label>
-            <Input id="upc" value={form.upc} onChange={set('upc')} placeholder="081234567890" className="font-mono" />
+            <div className="flex gap-2">
+              <Input
+                id="upc"
+                value={form.upc}
+                onChange={(e) => {
+                  set('upc')(e);
+                  if (codeTaken?.field === 'upc') setCodeTaken(null);
+                }}
+                placeholder="081234567890"
+                className="min-w-0 flex-1 font-mono"
+              />
+              <Button type="button" variant="outline" className="shrink-0" onClick={() => openCodeScanner('upc')}>
+                <ScanBarcode className="mr-1.5 h-4 w-4" /> {t('productForm.scanCode')}
+              </Button>
+            </div>
+            {codeTaken?.field === 'upc' && (
+              <p className="text-xs font-medium text-destructive">
+                {t('productForm.codeTakenNotice', { name: codeTaken.name })}
+              </p>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="grid gap-2">
               <Label htmlFor="barcode">{t('productForm.barcodeLabel')}</Label>
-              <Input id="barcode" value={form.barcode} onChange={set('barcode')} className="font-mono" />
+              <div className="flex gap-2">
+                <Input
+                  id="barcode"
+                  value={form.barcode}
+                  onChange={(e) => {
+                    set('barcode')(e);
+                    if (codeTaken?.field === 'barcode') setCodeTaken(null);
+                  }}
+                  className="min-w-0 flex-1 font-mono"
+                />
+                <Button type="button" variant="outline" className="shrink-0" onClick={() => openCodeScanner('barcode')} aria-label={t('productForm.scanCode')}>
+                  <ScanBarcode className="h-4 w-4" />
+                </Button>
+              </div>
+              {codeTaken?.field === 'barcode' && (
+                <p className="text-xs font-medium text-destructive">
+                  {t('productForm.codeTakenNotice', { name: codeTaken.name })}
+                </p>
+              )}
             </div>
             <div className="grid gap-2">
               <Label htmlFor="qr">{t('productForm.qrLabel')}</Label>
@@ -527,7 +764,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
               {form.photo_urls.length < 6 && (
                 <button
                   type="button"
-                  onClick={() => fileRef.current?.click()}
+                  onClick={() => setPhotoChooserOpen(true)}
                   disabled={uploading}
                   className="grid h-16 w-16 place-items-center rounded-lg border border-dashed border-input text-muted-foreground hover:bg-muted sm:h-24 sm:w-24"
                 >
@@ -539,11 +776,48 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
                 </button>
               )}
             </div>
+            {photoChooserOpen && form.photo_urls.length < 6 && (
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setPhotoChooserOpen(false);
+                    cameraFileRef.current?.click();
+                  }}
+                >
+                  <Camera className="mr-1.5 h-3.5 w-3.5" /> {t('productForm.takePhoto')}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setPhotoChooserOpen(false);
+                    fileRef.current?.click();
+                  }}
+                >
+                  <ImagePlus className="mr-1.5 h-3.5 w-3.5" /> {t('productForm.chooseFromGallery')}
+                </Button>
+              </div>
+            )}
             <input
               ref={fileRef}
               type="file"
               accept="image/*"
               multiple
+              className="hidden"
+              onChange={(event) => {
+                addPhotos(Array.from(event.target.files || []));
+                event.target.value = '';
+              }}
+            />
+            <input
+              ref={cameraFileRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
               className="hidden"
               onChange={(event) => {
                 addPhotos(Array.from(event.target.files || []));
@@ -620,6 +894,41 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
                     setQuantityLocationId(place.id);
                   }}
                 />
+              )}
+            </div>
+          )}
+
+          {product && locations.length > 0 && (
+            <div className="grid gap-3 rounded-lg border border-border p-3">
+              <div className="grid gap-2">
+                <Label htmlFor="edit_quantity">{t('productForm.quantityLabel')}</Label>
+                <Input
+                  id="edit_quantity"
+                  type="number"
+                  inputMode="numeric"
+                  min="0"
+                  step="1"
+                  value={quantity}
+                  onChange={(e) => setQuantity(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">{t('productForm.quantityEditHint')}</p>
+              </div>
+              {locations.length > 1 && (
+                <div className="grid gap-2">
+                  <Label>{t('inventory.locationLabel')}</Label>
+                  <Select value={quantityLocationId} onValueChange={setQuantityLocationId}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {locations.map((l) => (
+                        <SelectItem key={l.id} value={l.id}>
+                          {l.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               )}
             </div>
           )}
@@ -742,7 +1051,16 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
             )}
           </div>
 
-          <ProductDetailsFields form={form} set={set} setForm={setForm} vocabulary={vocabulary} />
+          <ProductDetailsFields
+            form={form}
+            set={set}
+            setForm={setForm}
+            vocabulary={vocabulary}
+            businessId={activeId}
+            addNewField={addNewField}
+            setAddNewField={setAddNewField}
+            onVocabularyCreated={handleVocabularyCreated}
+          />
 
           <div className="grid gap-2">
             <Label htmlFor="notes">{t('productForm.notesLabel')}</Label>
@@ -760,6 +1078,21 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
             {saving ? t('productForm.saving') : product ? t('productForm.saveChanges') : t('productForm.createProduct')}
           </Button>
         </DialogFooter>
+
+        {/* In-form scanner overlay: rendered INSIDE the dialog, so
+            the form underneath never unmounts and nothing typed is
+            lost. Closing it (capture or Cancel) returns to the exact
+            same half-filled form. */}
+        {scanField && (
+          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 p-4">
+            <div className="w-full max-w-sm space-y-3 rounded-xl bg-card p-4 shadow-lg">
+              <BarcodeScanner onDetect={handleScanDetect} />
+              <Button type="button" variant="outline" className="w-full" onClick={() => setScanField(null)}>
+                {t('productForm.cancel')}
+              </Button>
+            </div>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
