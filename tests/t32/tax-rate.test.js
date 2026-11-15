@@ -8,10 +8,15 @@
 //    form's untouched-until-typed pre-fill and its Settings
 //    door, Plans/Welcome parity, the owner training lesson in
 //    BOTH catalogs.
-import { test, before } from 'node:test';
+import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { ownerWithBusiness, req } from './helpers.js';
+import { ownerWithBusiness, req, close } from './helpers.js';
+
+// Teardown (added Nov 15, 2026, code-generator run): every sibling
+// suite registers after(close); without it this file's tests all
+// pass but the process never exits (the booted server pends).
+after(close);
 import { parseTaxRate, formatTaxRate, computeOrderTax } from '../../src/lib/taxRate.js';
 
 let owner;

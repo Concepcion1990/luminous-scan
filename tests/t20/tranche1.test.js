@@ -168,7 +168,7 @@ const DE_COGNATE_KEYS = new Set([
   'locations.skusLabel', 'nav.import', 'orders.customerNamePlaceholder',
   'payroll.bonus', 'payroll.config.customName', 'print.barcodeLabel',
   'print.status', 'print.templateBarcode', 'productDetails.codeBarcode',
-  'productDetails.rowStatus', 'productForm.barcodeLabel', 'productForm.fulfillDigital',
+  'productDetails.rowStatus', 'productForm.barcodeLabel', 'productForm.generateTypeBarcode', 'productForm.fulfillDigital',
   'productForm.statusLabel', 'productForm.unitKg', 'products.colCodes',
   'products.exportColBarcode', 'products.exportColName', 'products.sortCodes',
   'purchasing.status', 'rewards.code', 'rewards.slip.code',
@@ -285,7 +285,7 @@ const TL_COGNATE_KEYS = new Set([
   'productDetails.codeBarcode', 'productDetails.rowBatch', 'productDetails.rowBrand',
   'productDetails.rowFulfillment', 'productDetails.rowManufacturer', 'productDetails.rowPublisher',
   'productDetails.rowSerial', 'productDetails.rowStatus', 'productDetails.rowSupplier',
-  'productForm.barcodeLabel', 'productForm.batchLabel', 'productForm.brandLabel',
+  'productForm.barcodeLabel', 'productForm.generateTypeBarcode', 'productForm.batchLabel', 'productForm.brandLabel',
   'productForm.coverBadge', 'productForm.customLabelPlaceholder', 'productForm.fulfillDigital',
   'productForm.fulfillmentLabel', 'productForm.manufacturerLabel', 'productForm.publisherLabel',
   'productForm.serialLabel', 'productForm.statusDraft', 'productForm.statusLabel',
@@ -310,7 +310,7 @@ const HA_COGNATE_KEYS = new Set([
   'importLib.field.barcode', 'layout.scanCodes', 'payroll.bonus',
   'payroll.dd.checking', 'payroll.dd.savings', 'print.barcodeLabel',
   'print.qrLabel', 'print.templateBarcode', 'productDetails.codeBarcode',
-  'productDetails.rowSerial', 'productForm.barcodeLabel', 'productForm.unitKg',
+  'productDetails.rowSerial', 'productForm.barcodeLabel', 'productForm.generateTypeBarcode', 'productForm.unitKg',
   'products.exportColBarcode', 'products.exportColQr', 'products.sortCodes',
 ]);
 const SW_COGNATE_KEYS = new Set([
@@ -318,7 +318,7 @@ const SW_COGNATE_KEYS = new Set([
 ]);
 const YO_COGNATE_KEYS = new Set([
   'importLib.field.barcode', 'layout.scanCodes', 'payroll.dd.checking',
-  'payroll.dd.savings', 'productDetails.codeBarcode', 'productForm.barcodeLabel',
+  'payroll.dd.savings', 'productDetails.codeBarcode', 'productForm.barcodeLabel', 'productForm.generateTypeBarcode',
   'productForm.unitKg', 'products.exportColBarcode', 'products.sortCodes',
 ]);
 const JV_COGNATE_KEYS = new Set([
@@ -330,7 +330,7 @@ const JV_COGNATE_KEYS = new Set([
   'print.factUnit', 'print.invoiceTitle', 'print.refSuffix',
   'print.status', 'print.templateBarcode', 'productDetails.codeBarcode',
   'productDetails.rowBatch', 'productDetails.rowSerial', 'productDetails.rowStatus',
-  'productDetails.rowUnit', 'productForm.barcodeLabel', 'productForm.batchLabel',
+  'productDetails.rowUnit', 'productForm.barcodeLabel', 'productForm.generateTypeBarcode', 'productForm.batchLabel',
   'productForm.customLabelPlaceholder', 'productForm.fulfillDigital', 'productForm.statusLabel',
   'productForm.unitKg', 'products.bulkChangeStatus', 'products.exportColBarcode',
   'products.exportColUnit', 'products.sortCodes', 'purchasing.status',
@@ -411,6 +411,12 @@ const TOKENS = [
   'TikTok Shop', 'eBay', 'Amazon', 'Walmart', 'Etsy', 'Facebook',
   'Google', 'Business', 'Essentials', 'Stripe Terminal', 'Stripe', 'USPS', 'UPS',
   'Square', 'POS',
+  // Code generator (Nov 15, 2026): 'Code 128' is the ISO
+  // symbology's own name, identical in every locale by the same
+  // rule that keeps SKU and UPC above — it is the
+  // productForm.generateTypeCode128 label and nothing else
+  // (every sentence around it is genuinely translated).
+  'Code 128',
   // POS provider expansion (Nov 14, 2026): the six new providers'
   // brand names are proper nouns, identical in every locale by
   // the same rule that keeps Square and Shopify above — they are
