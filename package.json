@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Luminous StockHaven — Fly.io twin of the Base44 app (T2: auth + businesses). Vite React app served by Express; Postgres + Stripe land in later phases.",
+  "description": "Luminous StockHaven \u2014 Fly.io twin of the Base44 app (T2: auth + businesses). Vite React app served by Express; Postgres + Stripe land in later phases.",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -11,7 +11,7 @@
     "lint:fix": "eslint . --fix",
     "preview": "vite preview",
     "start": "node server.js",
-    "test": "npm run test:t1 && npm run test:t2 && npm run test:t3 && npm run test:t4 && npm run test:t5 && npm run test:t6 && npm run test:t7 && npm run test:t8 && npm run test:t9 && npm run test:t10 && npm run test:t11 && npm run test:t12 && npm run test:t13 && npm run test:t14 && npm run test:t15 && npm run test:t16 && npm run test:t17 && npm run test:t18 && npm run test:t19 && npm run test:t20 && npm run test:t21 && npm run test:t22 && npm run test:t23 && npm run test:t24 && npm run test:t25 && npm run test:t26 && npm run test:t27",
+    "test": "npm run test:t1 && npm run test:t2 && npm run test:t3 && npm run test:t4 && npm run test:t5 && npm run test:t6 && npm run test:t7 && npm run test:t8 && npm run test:t9 && npm run test:t10 && npm run test:t11 && npm run test:t12 && npm run test:t13 && npm run test:t14 && npm run test:t15 && npm run test:t16 && npm run test:t17 && npm run test:t18 && npm run test:t19 && npm run test:t20 && npm run test:t21 && npm run test:t22 && npm run test:t23 && npm run test:t24 && npm run test:t25 && npm run test:t26 && npm run test:t27 && npm run test:t28 && npm run test:t29 && npm run test:t30 && npm run test:t31 && npm run test:t32 && npm run test:t33",
     "test:t1": "node --test src/lib/stockhavenSubscriptionPolicy.test.js src/lib/stockhavenTermsOfService.test.js src/lib/stockhavenPrivacyPolicy.test.js src/lib/trademarkNotice.test.js src/lib/aboutFounder.test.js",
     "test:t2": "node --test tests/t2/*.test.js",
     "test:t3": "node --test tests/t3/*.test.js src/lib/xlsx.test.js",
@@ -38,7 +38,13 @@
     "test:t24": "node --test tests/t24/*.test.js",
     "test:t25": "node --test tests/t25/*.test.js",
     "test:t26": "node --test tests/t26/*.test.js",
-    "test:t27": "node --test tests/t27/*.test.js"
+    "test:t27": "node --test tests/t27/*.test.js",
+    "test:t28": "node --test tests/t28/*.test.js",
+    "test:t29": "node --test tests/t29/*.test.js",
+    "test:t30": "node --test tests/t30/*.test.js",
+    "test:t31": "node --test tests/t31/*.test.js",
+    "test:t32": "node --test tests/t32/*.test.js",
+    "test:t33": "node --test tests/t33/*.test.js"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^17.0.0",

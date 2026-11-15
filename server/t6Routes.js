@@ -12,6 +12,11 @@
  *        asking and target store names so the page can name them)
  *   PATCH /api/businesses/:bid/cross-store/requests/:id
  *   POST /api/businesses/:bid/logo           store-logo upload (data URL)
+ *   POST /api/businesses/:bid/product-photos  product photo upload (public by link)
+ *   POST|GET|DELETE /api/businesses/:bid/orders/:oid/shipping-label
+ *        the carrier-bought label file kept on the order (PRIVATE:
+ *        session + membership only, never the public photo route)
+ *   GET  /api/businesses/:bid/orders/:oid/shipping-label/file
  *
  * Cross-store is Business by nature: Essentials has one store, so
  * there is nowhere else to look — the server refuses it with
@@ -409,6 +414,134 @@ export function createT6Router({ getPool: getPoolFn }) {
     const protocol = req.protocol || 'https';
     const url = `${protocol}://${req.get('host')}/api/photos/${id}`;
     return res.status(201).json({ url, photo_id: id });
+  }));
+
+  // ---- Carrier shipping-label records (Nov 14, 2026) ------------------
+  // The owner buys postage from the carrier — the app never sells
+  // postage and never names a postage price, so the carrier's price
+  // is always the true one. What the app DOES keep is the carrier's
+  // label file itself, saved on the order for good: the business's
+  // record, on hand just in case something happens. One label per
+  // order; uploading again replaces it.
+  //
+  // PRIVATE, deliberately unlike product photos: a label carries a
+  // customer's name and address, so the bytes are served only here,
+  // behind the session and the business-membership check — never
+  // through the public /api/photos/:id route. The file is stored
+  // byte-exact (no re-encode): it is a record, not a picture.
+  const LABEL_TYPES = ['application/pdf', 'image/png', 'image/jpeg'];
+
+  function parseLabelDataUrl(value) {
+    const text = String(value || '');
+    const match = text.match(/^data:(application\/pdf|image\/(?:png|jpeg));base64,([A-Za-z0-9+/=]+)$/);
+    if (!match) return null;
+    const mime = match[1];
+    if (!LABEL_TYPES.includes(mime)) return null;
+    let bytes;
+    try {
+      bytes = Buffer.from(match[2], 'base64');
+    } catch {
+      return null;
+    }
+    if (!bytes.length || bytes.length > PHOTO_MAX_BYTES) return null;
+    return { mime, bytes, base64: match[2] };
+  }
+
+  const cleanLabelFilename = (value) =>
+    String(value || '')
+      .split(/[\\/]/)
+      .pop()
+      .replace(/["\r\n]/g, '')
+      .trim()
+      .slice(0, 120);
+
+  const labelMeta = (row) =>
+    row
+      ? {
+          exists: true,
+          content_type: row.content_type,
+          filename: row.filename || '',
+          size_bytes: row.size_bytes,
+          updated_at: row.updated_at,
+        }
+      : { exists: false };
+
+  const loadLabelOrder = async (bid, oid) => {
+    const { rows } = await pool().query(
+      'SELECT id FROM orders WHERE id = $1 AND business_id = $2 LIMIT 1',
+      [oid, bid],
+    );
+    return rows[0] || null;
+  };
+
+  router.post('/businesses/:bid/orders/:oid/shipping-label', asyncHandler(async (req, res) => {
+    await accessOr403(pool(), req.user, req.params.bid);
+    const order = await loadLabelOrder(req.params.bid, req.params.oid);
+    if (!order) throw err(404, 'order_not_found', 'That order is not in this business.');
+    const parsed = parseLabelDataUrl(req.body?.dataUrl);
+    if (!parsed) {
+      throw err(400, 'invalid_label', 'Send a PDF, PNG or JPG label file under 2 MB.');
+    }
+    await pool().query(
+      `INSERT INTO order_shipping_labels (order_id, business_id, content_type, filename, size_bytes, data_base64)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       ON CONFLICT (order_id) DO UPDATE SET
+         content_type = EXCLUDED.content_type,
+         filename = EXCLUDED.filename,
+         size_bytes = EXCLUDED.size_bytes,
+         data_base64 = EXCLUDED.data_base64,
+         updated_at = NOW()`,
+      [
+        req.params.oid,
+        req.params.bid,
+        parsed.mime,
+        cleanLabelFilename(req.body?.filename),
+        parsed.bytes.length,
+        parsed.base64,
+      ],
+    );
+    const { rows } = await pool().query(
+      'SELECT content_type, filename, size_bytes, updated_at FROM order_shipping_labels WHERE order_id = $1',
+      [req.params.oid],
+    );
+    return res.status(201).json(labelMeta(rows[0]));
+  }));
+
+  router.get('/businesses/:bid/orders/:oid/shipping-label', asyncHandler(async (req, res) => {
+    await accessOr403(pool(), req.user, req.params.bid);
+    const order = await loadLabelOrder(req.params.bid, req.params.oid);
+    if (!order) throw err(404, 'order_not_found', 'That order is not in this business.');
+    const { rows } = await pool().query(
+      'SELECT content_type, filename, size_bytes, updated_at FROM order_shipping_labels WHERE order_id = $1',
+      [req.params.oid],
+    );
+    return res.json(labelMeta(rows[0]));
+  }));
+
+  router.get('/businesses/:bid/orders/:oid/shipping-label/file', asyncHandler(async (req, res) => {
+    await accessOr403(pool(), req.user, req.params.bid);
+    const { rows } = await pool().query(
+      'SELECT content_type, filename, data_base64 FROM order_shipping_labels WHERE order_id = $1 AND business_id = $2',
+      [req.params.oid, req.params.bid],
+    );
+    const label = rows[0];
+    if (!label) throw err(404, 'label_not_found', 'No carrier label is saved for this order.');
+    res.setHeader('Content-Type', label.content_type);
+    res.setHeader('Cache-Control', 'private, no-store');
+    res.setHeader(
+      'Content-Disposition',
+      `inline; filename="${cleanLabelFilename(label.filename) || 'shipping-label'}"`,
+    );
+    return res.send(Buffer.from(label.data_base64, 'base64'));
+  }));
+
+  router.delete('/businesses/:bid/orders/:oid/shipping-label', asyncHandler(async (req, res) => {
+    await accessOr403(pool(), req.user, req.params.bid);
+    await pool().query(
+      'DELETE FROM order_shipping_labels WHERE order_id = $1 AND business_id = $2',
+      [req.params.oid, req.params.bid],
+    );
+    return res.json({ ok: true });
   }));
 
   return router;

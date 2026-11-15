@@ -1,11 +1,19 @@
 import DocHeader from './DocHeader';
+import { docRootClass, docRootStyle } from '@/lib/docStyle';
 import { t } from '@/lib/i18n';
 
-export default function CountSheet({ products, business }) {
+export default function CountSheet({ products, business, docStyle }) {
   return (
-    <div className="print-label print-page-break w-[180mm] bg-white p-2 text-black">
+    <div
+      className={`print-label print-page-break w-[180mm] bg-white p-2 text-black ${docRootClass(docStyle)}`}
+      style={docRootStyle(docStyle, business?.brand_color)}
+    >
+      {docStyle?.headerImage && (
+        <img src={docStyle.headerImage} alt="" className="doc-deco mb-2 max-h-[24mm] w-full object-contain" />
+      )}
       <DocHeader
         business={business}
+        logoUrl={business?.logo_url || ''}
         title={t('print.countSheetTitle')}
         subtitle={t('print.countSheetSubtitle')}
         fields={[
@@ -63,6 +71,9 @@ export default function CountSheet({ products, business }) {
           <span className="inline-block w-[34mm] border-b border-dotted border-black/60">&nbsp;</span>
         </p>
       </footer>
+      {docStyle?.footerImage && (
+        <img src={docStyle.footerImage} alt="" className="doc-deco mt-3 max-h-[24mm] w-full object-contain" />
+      )}
     </div>
   );
 }

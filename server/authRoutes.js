@@ -91,6 +91,60 @@ function publicUser(row) {
   };
 }
 
+// Document Style Studio (Nov 14, 2026): the per-business choices
+// that dress printed documents — color, font, page frame, and the
+// business's own pictures at the top and bottom. Stored as one
+// JSON object in businesses.doc_style (migration 025); the
+// whitelists mirror src/lib/docStyle.js exactly. Decoration
+// pictures come only from the app's own photo pipeline (an
+// /api/photos/<uuid> URL), never an outside address: a document
+// must print offline, from the app's own store.
+export const DOC_STYLE_FONTS = ['default', 'serif', 'sans', 'typewriter'];
+export const DOC_STYLE_BORDERS = ['none', 'single', 'double', 'dashed', 'dotted'];
+export const DEFAULT_DOC_STYLE = {
+  color: false,
+  font: 'default',
+  border: 'none',
+  headerImage: '',
+  footerImage: '',
+};
+
+export function sanitizeDocStyle(value) {
+  let parsed = value;
+  if (typeof parsed === 'string') {
+    if (!parsed.trim()) return { ...DEFAULT_DOC_STYLE };
+    try {
+      parsed = JSON.parse(parsed);
+    } catch {
+      return null;
+    }
+  }
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null;
+  if (parsed.color !== undefined && typeof parsed.color !== 'boolean') return null;
+  if (parsed.font !== undefined && !DOC_STYLE_FONTS.includes(parsed.font)) return null;
+  if (parsed.border !== undefined && !DOC_STYLE_BORDERS.includes(parsed.border)) return null;
+  const image = (entry) => {
+    const text = typeof entry === 'string' ? entry.trim() : '';
+    if (!text) return '';
+    return /\/api\/photos\/[0-9a-fA-F-]{36}$/.test(text) && text.length <= 2000 ? text : null;
+  };
+  const headerImage = image(parsed.headerImage);
+  const footerImage = image(parsed.footerImage);
+  if (headerImage === null || footerImage === null) return null;
+  return {
+    color: parsed.color === true,
+    font: parsed.font ?? 'default',
+    border: parsed.border ?? 'none',
+    headerImage,
+    footerImage,
+  };
+}
+
+function publicDocStyle(raw) {
+  if (!raw) return { ...DEFAULT_DOC_STYLE };
+  return sanitizeDocStyle(raw) ?? { ...DEFAULT_DOC_STYLE };
+}
+
 function publicBusiness(row) {
   return {
     id: row.id,
@@ -124,6 +178,12 @@ function publicBusiness(row) {
     date_format: row.date_format || 'MMM d, yyyy',
     unit_system: row.unit_system || 'imperial',
     language: row.language || 'en',
+    // Document Style Studio choices (migration 025), always the
+    // full resolved object — the Print Center never parses JSON.
+    doc_style: publicDocStyle(row.doc_style),
+    // The set-once sales tax rate (migration 027): the typed
+    // decimal percent text, '' when unset.
+    tax_rate: row.tax_rate || '',
   };
 }
 
@@ -133,7 +193,7 @@ function publicBusiness(row) {
 const BUSINESS_UPDATE_FIELDS = [
   'name', 'tagline', 'logo_url', 'brand_color', 'contact_email',
   'contact_phone', 'website', 'address', 'currency', 'timezone',
-  'date_format', 'unit_system', 'language',
+  'date_format', 'unit_system', 'language', 'doc_style', 'tax_rate',
 ];
 const SUPPORTED_LANGUAGES = ['am', 'ar', 'bho', 'bn', 'de', 'en', 'en-AU', 'en-CA', 'en-GB', 'en-IN', 'es-CU', 'es-ES', 'es-MX', 'es-PR', 'es-US', 'es-VE', 'fa', 'fr-CA', 'fr-FR', 'gu', 'ha', 'hi', 'id', 'it', 'ja', 'jv', 'kn', 'ko', 'mr', 'ms', 'pa-Arab', 'pa-Guru', 'pcm', 'prs', 'pt-BR', 'pt-PT', 'ru', 'sw', 'ta', 'te', 'tg', 'th', 'tl', 'tr', 'uk', 'ur', 'vi', 'wuu', 'yo', 'yue', 'zh-Hans', 'zh-Hant'];
 // Mirrors CURRENCIES in src/lib/business.js EXACTLY (tests/t6 pins the
@@ -163,6 +223,14 @@ function validateBusinessPatch(patch) {
   const clean = {};
   for (const [key, value] of Object.entries(patch || {})) {
     if (!BUSINESS_UPDATE_FIELDS.includes(key)) continue;
+    if (key === 'doc_style') {
+      // The studio's choices arrive as an object (or its JSON
+      // string); only the whitelisted shape is ever stored.
+      const cleanStyle = sanitizeDocStyle(value);
+      if (!cleanStyle) return { error: 'That document style is not one of the choices.' };
+      clean.doc_style = JSON.stringify(cleanStyle);
+      continue;
+    }
     const text = typeof value === 'string' ? value.trim() : '';
     if (key === 'name') {
       if (!text || text.length > 120) return { error: 'Enter a business name (up to 120 characters).' };
@@ -196,6 +264,15 @@ function validateBusinessPatch(patch) {
         return { error: 'Enter a valid contact email, or leave it blank.' };
       }
       clean.contact_email = text;
+    } else if (key === 'tax_rate') {
+      // Set-once sales tax rate: blank unsets it; otherwise a
+      // plain decimal percent, 0–100, at most 4 decimal places
+      // (combined rates like New Mexico GRT). Anything else is
+      // refused whole — a rate is never invented or rounded.
+      if (text && (!/^\d{1,3}(\.\d{1,4})?$/.test(text) || Number(text) > 100)) {
+        return { error: 'Enter a tax rate between 0 and 100, with up to 4 decimal places — or leave it blank.' };
+      }
+      clean.tax_rate = text;
     } else {
       if (text.length > 500) return { error: `That ${key.replace('_', ' ')} is too long.` };
       clean[key] = text;

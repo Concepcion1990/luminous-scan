@@ -178,6 +178,52 @@
   margin: 10mm;
 }
 
+/* Centered label sheets (owner ruling, Nov 15, 2026): on full-size
+   paper the label block sits in the middle of the sheet — every
+   row centered, a partial last row centered too, never hugging
+   the left edge. Inline flow + text-align: center centers each
+   line independently, and symmetric side margins keep the center
+   true. Sized media (4×6 labels, thermal rolls) are narrower than
+   150mm and keep their exact current layout. */
+@media print and (min-width: 150mm) {
+  .print-label-flow {
+    text-align: center;
+  }
+
+  .print-label-flow > .print-label {
+    margin: 0 6px 12px;
+  }
+}
+
+/* Carrier label records (Nov 14, 2026): an uploaded carrier label
+   prints at its TRUE 4×6 — the page box carries the named page,
+   the image keeps its own proportions inside it, one page. */
+@page carrierLabel {
+  size: 102mm 152mm;
+  margin: 0;
+}
+
+.carrier-label-page {
+  page: carrierLabel;
+}
+
+/* Document Style Studio (Nov 14, 2026): with color printing off,
+   the business's logo and decoration pictures print in clean
+   black and white (the preview shows the same, honestly); with it
+   on, the print stylesheet tells the printer to keep the colors
+   exactly as authored. */
+.doc-bw img.doc-logo,
+.doc-bw img.doc-deco {
+  filter: grayscale(1);
+}
+
+@media print {
+  .doc-color-on {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
 /* Luminous StockHaven — Mobile WebView compatibility */
 /* Part 12 · Step 3 */
 

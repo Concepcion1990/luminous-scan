@@ -1,5 +1,6 @@
 import { Image } from '@/components/ui/image';
 import { formatMoney } from '@/lib/inventory';
+import { docRootClass, docRootStyle } from '@/lib/docStyle';
 import { effectivePrice } from '@/lib/pricing';
 import { toLabel } from '@/lib/labelPayload';
 import { t } from '@/lib/i18n';
@@ -121,7 +122,7 @@ function Name({ product, className = '' }) {
  * the same payload, so a location label and a product label share
  * one path end to end.
  */
-export default function LabelCard({ template, product: productProp, label, business }) {
+export default function LabelCard({ template, product: productProp, label, business, docStyle }) {
   const generic = label ? toLabel(label) : null;
   const product = generic
     ? {
@@ -245,12 +246,27 @@ export default function LabelCard({ template, product: productProp, label, busin
   ].filter(([, value]) => value);
 
   return (
-    <div className={`${shell} print-page-break w-[180mm] gap-3 p-4`}>
+    <div
+      className={`${shell} print-page-break w-[180mm] gap-3 p-4 ${docRootClass(docStyle)}`}
+      style={docRootStyle(docStyle, business?.brand_color)}
+    >
+      {docStyle?.headerImage && (
+        <img src={docStyle.headerImage} alt="" className="doc-deco max-h-[24mm] w-full object-contain" />
+      )}
       <div className="flex items-start justify-between gap-4 border-b border-black/20 pb-2">
-        <div>
-          <p className="font-mono text-[6pt] uppercase tracking-[0.18em]">{business.name}</p>
-          <p className="text-[16pt] font-semibold leading-tight">{product.name}</p>
-          {product.author && <p className="text-[9pt]">{t('print.byAuthor', { author: product.author })}</p>}
+        <div className="flex items-center gap-3">
+          {business?.logo_url && (
+            <img
+              src={business.logo_url}
+              alt=""
+              className="doc-logo max-h-[13mm] max-w-[42mm] shrink-0 object-contain"
+            />
+          )}
+          <div>
+            <p className="font-mono text-[6pt] uppercase tracking-[0.18em]">{business.name}</p>
+            <p className="text-[16pt] font-semibold leading-tight">{product.name}</p>
+            {product.author && <p className="text-[9pt]">{t('print.byAuthor', { author: product.author })}</p>}
+          </div>
         </div>
         {product.photo_urls?.[0] && (
           <Image
@@ -282,6 +298,9 @@ export default function LabelCard({ template, product: productProp, label, busin
         </div>
         <QrSvg value={qr} className="h-[22mm] w-[22mm] shrink-0" />
       </div>
+      {docStyle?.footerImage && (
+        <img src={docStyle.footerImage} alt="" className="doc-deco max-h-[24mm] w-full object-contain" />
+      )}
     </div>
   );
 }

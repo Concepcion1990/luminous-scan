@@ -329,6 +329,10 @@ export async function runWipeSweep(pool, { now = new Date(), logger = console } 
         await client.query('DELETE FROM subscription_events WHERE business_id = $1', [businessId]);
         await client.query('DELETE FROM purchases WHERE business_id = $1', [businessId]);
         await client.query('DELETE FROM subscriptions WHERE business_id = $1', [businessId]);
+        // Carrier label records carry customer addresses and have
+        // no FK cascade (migration 025) — they die with the business.
+        await client.query('DELETE FROM order_shipping_labels WHERE business_id = $1', [businessId]);
+        await client.query('DELETE FROM import_events WHERE business_id = $1', [businessId]);
       }
       await client.query('DELETE FROM users WHERE id = $1', [ownerId]);
     });

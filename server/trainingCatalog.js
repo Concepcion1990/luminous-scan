@@ -95,6 +95,7 @@ export const TRAINING_LESSONS = [
   { id: 'movements-what', track: 'staff', module: 'movements', steps: 4 },
   { id: 'counts-run', track: 'staff', module: 'counts', steps: 4 },
   { id: 'orders-basics', track: 'staff', module: 'orders', steps: 6 },
+  { id: 'owner-tax-rate', track: 'owner', module: 'orders', steps: 3 },
   { id: 'returns-basics', track: 'staff', module: 'returns', steps: 4 },
   { id: 'listings-basics', track: 'staff', module: 'listings', steps: 4 },
   { id: 'import-basics', track: 'staff', module: 'import', steps: 5 },
@@ -139,7 +140,7 @@ export const TRAINING_LESSONS = [
   { id: 'owner-dd-setup', track: 'owner', module: 'direct-deposit', steps: 4 },
   { id: 'owner-billing', track: 'owner', module: 'billing', steps: 4 },
   { id: 'owner-trial-reminders', track: 'owner', module: 'billing', steps: 4 },
-  { id: 'owner-printing', track: 'owner', module: 'printing', steps: 4 },
+  { id: 'owner-printing', track: 'owner', module: 'printing', steps: 5 },
   { id: 'owner-import', track: 'owner', module: 'import', steps: 2, essentialsOnly: true },
   { id: 'owner-import-export', track: 'owner', module: 'exports', steps: 4, feature: 'exports' },
   { id: 'owner-builds', track: 'owner', module: 'builds', steps: 4, feature: 'builds' },
@@ -161,8 +162,8 @@ export const TRAINING_LESSONS = [
   { id: 'owner-pos-mapping', track: 'owner', module: 'pos', steps: 4, feature: 'pos' },
   { id: 'owner-pos-csv', track: 'owner', module: 'pos', steps: 4, feature: 'pos' },
   { id: 'owner-pos-sales-list', track: 'owner', module: 'pos', steps: 4, feature: 'pos' },
-  { id: 'print-shipping-label', track: 'staff', module: 'printing', steps: 4 },
-  { id: 'owner-shipping-labels', track: 'owner', module: 'printing', steps: 4 },
+  { id: 'print-shipping-label', track: 'staff', module: 'printing', steps: 5 },
+  { id: 'owner-shipping-labels', track: 'owner', module: 'printing', steps: 5 },
 ];
 
 /** permission -> the training modules gaining it should teach. */

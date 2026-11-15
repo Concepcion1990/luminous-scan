@@ -1,6 +1,7 @@
 import DocHeader from './DocHeader';
 import { conditionLabel, reasonLabel } from '@/lib/returns';
 import { formatMoney } from '@/lib/inventory';
+import { docRootClass, docRootStyle } from '@/lib/docStyle';
 import { t } from '@/lib/i18n';
 
 function shortDate(value) {
@@ -15,7 +16,7 @@ function shortDate(value) {
  * Return / exchange paperwork: what came back, its condition, and whether it was
  * put back on the shelf. Refunds are the amount recorded by hand, nothing more.
  */
-export default function ReturnDoc({ ret, business }) {
+export default function ReturnDoc({ ret, business, docStyle }) {
   const exchange = ret.kind === 'exchange';
   const lines = ret.lines || [];
   const exchangeLines = ret.exchange_lines || [];
@@ -23,9 +24,16 @@ export default function ReturnDoc({ ret, business }) {
   const money = (value) => formatMoney(value || 0, business?.currency, 2);
 
   return (
-    <div className="print-label print-page-break w-[180mm] bg-white p-2 text-black">
+    <div
+      className={`print-label print-page-break w-[180mm] bg-white p-2 text-black ${docRootClass(docStyle)}`}
+      style={docRootStyle(docStyle, business?.brand_color)}
+    >
+      {docStyle?.headerImage && (
+        <img src={docStyle.headerImage} alt="" className="doc-deco mb-2 max-h-[24mm] w-full object-contain" />
+      )}
       <DocHeader
         business={business}
+        logoUrl={business?.logo_url || ''}
         title={exchange ? t('print.returnExchangeTitle') : t('print.returnTitle')}
         subtitle={[ret.number, ret.status, reasonLabel(ret.reason)].filter(Boolean).join(' · ')}
         fields={[
@@ -146,6 +154,9 @@ export default function ReturnDoc({ ret, business }) {
       <p className="mt-3 border-t border-black/25 pt-2 font-mono text-[6.5pt] uppercase tracking-wide text-black/60">
         {t('print.returnFooter')}
       </p>
+      {docStyle?.footerImage && (
+        <img src={docStyle.footerImage} alt="" className="doc-deco mt-3 max-h-[24mm] w-full object-contain" />
+      )}
     </div>
   );
 }

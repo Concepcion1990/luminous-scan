@@ -1,6 +1,7 @@
 import DocHeader from './DocHeader';
 import { channelLabel, orderShipAddressLines } from '@/lib/orders';
 import { formatMoney } from '@/lib/inventory';
+import { docRootClass, docRootStyle } from '@/lib/docStyle';
 import { t } from '@/lib/i18n';
 
 const TITLES = {
@@ -21,7 +22,7 @@ function shortDate(value) {
  * Customer-facing paperwork built from a customer order: a priced invoice, a
  * compact receipt, or a packing slip that travels in the box with no prices on it.
  */
-export default function CustomerDoc({ order, business, mode = 'invoice' }) {
+export default function CustomerDoc({ order, business, mode = 'invoice', docStyle }) {
   const packing = mode === 'packing';
   const receipt = mode === 'receipt';
   const lines = order.lines || [];
@@ -62,7 +63,20 @@ export default function CustomerDoc({ order, business, mode = 'invoice' }) {
   // the full-page document look below; only the receipt is a slip.
   if (receipt) {
     return (
-      <div className="print-label print-page-break mx-auto w-[80mm] bg-white p-3 text-black">
+      <div
+        className={`print-label print-page-break mx-auto w-[80mm] bg-white p-3 text-black ${docRootClass(docStyle)}`}
+        style={docRootStyle(docStyle, business?.brand_color)}
+      >
+        {docStyle?.headerImage && (
+          <img src={docStyle.headerImage} alt="" className="doc-deco mb-2 max-h-[18mm] w-full object-contain" />
+        )}
+        {business?.logo_url && (
+          <img
+            src={business.logo_url}
+            alt=""
+            className="doc-logo mx-auto mb-1 max-h-[14mm] max-w-[50mm] object-contain"
+          />
+        )}
         <p className="text-center text-[13pt] font-bold leading-tight">{business?.name || ''}</p>
         <p className="mt-0.5 text-center font-mono text-[7.5pt] uppercase tracking-[0.18em] text-black/60">
           {t('print.salesReceiptTitle')}
@@ -114,14 +128,24 @@ export default function CustomerDoc({ order, business, mode = 'invoice' }) {
         <p className="mt-2 border-t border-dashed border-black/50 pt-2 text-center font-mono text-[6.5pt] uppercase tracking-wide text-black/60">
           {t('print.footerReceipt')}
         </p>
+        {docStyle?.footerImage && (
+          <img src={docStyle.footerImage} alt="" className="doc-deco mt-2 max-h-[18mm] w-full object-contain" />
+        )}
       </div>
     );
   }
 
   return (
-    <div className="print-label print-page-break w-[180mm] bg-white p-2 text-black">
+    <div
+      className={`print-label print-page-break w-[180mm] bg-white p-2 text-black ${docRootClass(docStyle)}`}
+      style={docRootStyle(docStyle, business?.brand_color)}
+    >
+      {docStyle?.headerImage && (
+        <img src={docStyle.headerImage} alt="" className="doc-deco mb-2 max-h-[24mm] w-full object-contain" />
+      )}
       <DocHeader
         business={business}
+        logoUrl={business?.logo_url || ''}
         title={t(TITLES[mode] || TITLES.invoice)}
         subtitle={[order.number, shortDate(order.order_date), channelLabel(order.channel)]
           .filter(Boolean)
@@ -237,6 +261,9 @@ export default function CustomerDoc({ order, business, mode = 'invoice' }) {
             ? t('print.footerReceipt')
             : t('print.footerInvoice')}
       </p>
+      {docStyle?.footerImage && (
+        <img src={docStyle.footerImage} alt="" className="doc-deco mt-3 max-h-[24mm] w-full object-contain" />
+      )}
     </div>
   );
 }
