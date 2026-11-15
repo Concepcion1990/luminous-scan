@@ -87,6 +87,18 @@ export default function DetailsCard({ values, onChange, onPreferenceChange }) {
             </div>
             <p className="text-xs text-muted-foreground">{t('settings.details.taxRateHint')}</p>
           </div>
+          <div className="space-y-2">
+            <Label htmlFor="business-gs1-prefix">{t('settings.details.gs1Prefix')}</Label>
+            <Input
+              id="business-gs1-prefix"
+              inputMode="numeric"
+              value={values.gs1_prefix ?? ''}
+              onChange={set('gs1_prefix')}
+              placeholder="123456"
+              className="font-mono"
+            />
+            <p className="text-xs text-muted-foreground">{t('settings.details.gs1PrefixHint')}</p>
+          </div>
         </div>
       </SettingsCard>
 

@@ -5,6 +5,8 @@
  *   POST /api/businesses/:bid/sync/apply     queued changes, idempotent
  *   GET  /api/businesses/:bid/sync/state     convergence version
  *   GET  /api/businesses/:bid/products/search?q=   lookup by name
+ *   POST /api/businesses/:bid/products/generate-code   mint a unique product code
+ *   GET  /api/businesses/:bid/products/generate-code   the generator's GS1 state
  *   GET  /api/businesses/:bid/cross-store/availability?product_id=
  *   POST /api/businesses/:bid/cross-store/requests
  *   GET  /api/businesses/:bid/cross-store/requests   inbox + outgoing
@@ -42,6 +44,9 @@ import { hasFullSubscriptionAccess } from './subscriptionAccess.js';
 import { applySyncBatch, syncState } from './sync.js';
 import { entityDef, publicRow } from './entities.js';
 import { findCustomerAddressesByName } from './customerAddresses.js';
+import {
+  CODE_FIELDS, CODE_TYPES, GS1_KINDS, gs1State, mintGs1Code, mintUniqueCode,
+} from './codeGenerator.js';
 
 function err(status, code, message) {
   return Object.assign(new Error(message), { status, code });
@@ -181,6 +186,45 @@ export function createT6Router({ getPool: getPoolFn }) {
       [req.params.bid, `%${q.replace(/[%_\\]/g, (c) => `\\${c}`)}%`],
     );
     return res.json({ products: rows.map((row) => publicRow(entityDef('Product'), row)), plan: access.planKey });
+  }));
+
+  // ---- Generate a product code (both plans, Nov 15, 2026) -----------
+  // The product form's "Generate a code" box: handmade and own-brand
+  // products have no code on the box, so the app invents one. The
+  // uniqueness guarantee is the server's (see server/codeGenerator.js):
+  // the minted code is free across the business's whole code identity
+  // space before it is handed out. Nothing is written here — the code
+  // becomes real when the product saves, like a typed code. A core
+  // product tool, never plan-gated: it rides only the products.edit
+  // permission and the grace rule every product write obeys.
+  router.post('/businesses/:bid/products/generate-code', asyncHandler(async (req, res) => {
+    const access = await accessOr403(pool(), req.user, req.params.bid, 'products.edit');
+    await assertNotInGrace(pool(), req.params.bid);
+    const type = String(req.body?.type || '');
+    // GS1 mode: with the owner's own licensed prefix on file, the
+    // generator also mints true retail GTINs (see codeGenerator.js).
+    if (GS1_KINDS[type]) {
+      const minted = await mintGs1Code(pool(), req.params.bid, type, req.user.id);
+      return res.json({
+        code: minted.code, type, field: 'upc', kind: minted.kind, plan: access.planKey,
+      });
+    }
+    if (!CODE_TYPES.includes(type)) {
+      throw err(400, 'invalid_code_type', 'Choose a code kind: UPC, SKU, Code 128, Barcode, EAN, QR, GS1 UPC or GS1 EAN.');
+    }
+    const name = typeof req.body?.name === 'string' ? req.body.name.slice(0, 200) : '';
+    const code = await mintUniqueCode(pool(), req.params.bid, type, { name });
+    return res.json({ code, type, field: CODE_FIELDS[type], plan: access.planKey });
+  }));
+
+  // The generator's GS1 state: whether a prefix is on file and how
+  // many codes of each kind remain under it — the form shows the
+  // count and, with no prefix, the door to Settings instead of a
+  // dead end.
+  router.get('/businesses/:bid/products/generate-code', asyncHandler(async (req, res) => {
+    const access = await accessOr403(pool(), req.user, req.params.bid, 'products.edit');
+    const state = await gs1State(pool(), req.params.bid);
+    return res.json({ gs1: state, plan: access.planKey });
   }));
 
   // ---- Cross-store availability + notify/request (Business only) -----

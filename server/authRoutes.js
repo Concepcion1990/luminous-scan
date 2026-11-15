@@ -184,6 +184,10 @@ function publicBusiness(row) {
     // The set-once sales tax rate (migration 027): the typed
     // decimal percent text, '' when unset.
     tax_rate: row.tax_rate || '',
+    // The owner's own GS1 company prefix (migration 028): the
+    // typed digits, '' when unset. Hers from her GS1 license —
+    // the app never invents one.
+    gs1_prefix: row.gs1_prefix || '',
   };
 }
 
@@ -193,7 +197,7 @@ function publicBusiness(row) {
 const BUSINESS_UPDATE_FIELDS = [
   'name', 'tagline', 'logo_url', 'brand_color', 'contact_email',
   'contact_phone', 'website', 'address', 'currency', 'timezone',
-  'date_format', 'unit_system', 'language', 'doc_style', 'tax_rate',
+  'date_format', 'unit_system', 'language', 'doc_style', 'tax_rate', 'gs1_prefix',
 ];
 const SUPPORTED_LANGUAGES = ['am', 'ar', 'bho', 'bn', 'de', 'en', 'en-AU', 'en-CA', 'en-GB', 'en-IN', 'es-CU', 'es-ES', 'es-MX', 'es-PR', 'es-US', 'es-VE', 'fa', 'fr-CA', 'fr-FR', 'gu', 'ha', 'hi', 'id', 'it', 'ja', 'jv', 'kn', 'ko', 'mr', 'ms', 'pa-Arab', 'pa-Guru', 'pcm', 'prs', 'pt-BR', 'pt-PT', 'ru', 'sw', 'ta', 'te', 'tg', 'th', 'tl', 'tr', 'uk', 'ur', 'vi', 'wuu', 'yo', 'yue', 'zh-Hans', 'zh-Hant'];
 // Mirrors CURRENCIES in src/lib/business.js EXACTLY (tests/t6 pins the
@@ -273,6 +277,16 @@ function validateBusinessPatch(patch) {
         return { error: 'Enter a tax rate between 0 and 100, with up to 4 decimal places — or leave it blank.' };
       }
       clean.tax_rate = text;
+    } else if (key === 'gs1_prefix') {
+      // GS1 company prefix: blank unsets it; otherwise digits
+      // only, 6–10 of them — the company-prefix range that
+      // supports GTIN-12 minting — exactly as GS1 issued it.
+      // Anything else is refused whole: a prefix is never
+      // trimmed into validity or invented.
+      if (text && !/^\d{6,10}$/.test(text)) {
+        return { error: 'Enter your GS1 company prefix — 6 to 10 digits, exactly as GS1 issued it — or leave it blank.' };
+      }
+      clean.gs1_prefix = text;
     } else {
       if (text.length > 500) return { error: `That ${key.replace('_', ' ')} is too long.` };
       clean[key] = text;
