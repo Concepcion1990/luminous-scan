@@ -1037,6 +1037,11 @@ export function createShopRouter({ getPool: getPoolFn }) {
       planKey: access.planKey,
       caller: req.user,
       member: req.body?.member || req.body || {},
+      actor: {
+        userId: req.user.id,
+        staffId: access.staffRow?.id ?? null,
+        name: access.isOwner ? 'Owner' : access.staffRow?.full_name || req.user.email,
+      },
     });
     return res.status(201).json({ member: publicRow(entityDef('StaffMember'), row) });
   }));

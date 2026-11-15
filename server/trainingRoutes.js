@@ -25,6 +25,28 @@
  * Nov 14, 2026): lessons about Business-only features do not
  * exist on Essentials — team totals/done counts and assignment
  * lesson lists are computed over the plan-visible lessons only.
+ *
+ * ASSIGN EVERYTHING (owner ruling, Nov 15, 2026): a MANUAL
+ * assignment carries the module's FULL plan catalog — every
+ * plan-visible lesson in the module, across all three tracks —
+ * whatever the assignee's current role. The owner may be
+ * preparing a staff member for a manager's chair, or widening a
+ * manager's remit; the person's current role never trims the
+ * list, on Essentials or on Business alike. An assigned lesson
+ * is also the assignee's to COMPLETE, even when its track sits
+ * above their role — the assignment is the permission. (The
+ * role-grant hooks in trainingCore.js are a different door —
+ * automatic, permission-driven — and still arrive at the
+ * person's level.)
+ *
+ * JOIN SEED (owner ruling, Nov 15, 2026): nobody waits for a
+ * role change to meet their training. Creating a StaffMember
+ * row — and accepting the invite at sign-in — sets the member's
+ * own-track training in place: every module with lessons at
+ * their level, plan-filtered, already assigned when they first
+ * open this page. A promotion that lifts their level re-seeds
+ * at the new one. Extra training beyond the role remains the
+ * owner's hand through the Assign box above.
  */
 import crypto from 'node:crypto';
 import { Router } from 'express';
@@ -37,7 +59,6 @@ import {
   TRAINING_LESSONS,
   TRAINING_MODULES,
   lessonById,
-  lessonsForModuleAtLevel,
   lessonVisibleOnPlan,
   visibleTracksForLevel,
 } from './trainingCatalog.js';
@@ -187,7 +208,14 @@ export function createTrainingRouter({ getPool: getPoolFn }) {
     const lesson = lessonById(req.params.lessonId);
     if (!lesson) throw err(404, 'not_found', 'That lesson does not exist.');
     if (!visibleTracksForLevel(level).includes(lesson.track)) {
-      throw err(403, 'forbidden', 'That lesson is not part of your training.');
+      // Outside the caller's own tracks, a lesson is finishable
+      // only when it was ASSIGNED to them (owner ruling,
+      // Nov 15, 2026: assign everything — the assignment is the
+      // permission). Unassigned cross-track lessons stay refused.
+      const mine = await assignmentsForPerson(pool(), access.business.id, myKey(access));
+      if (!mine.some((a) => (a.lesson_ids || []).includes(lesson.id))) {
+        throw err(403, 'forbidden', 'That lesson is not part of your training.');
+      }
     }
     const key = myKey(access);
     const existing = await pool().query(
@@ -278,10 +306,14 @@ export function createTrainingRouter({ getPool: getPoolFn }) {
     if (!target) throw err(404, 'not_found', 'That team member is not in this business.');
     const targetLevel = personLevel(target);
     requireAssignRights(level, { assignee_level: targetLevel });
-    const lessons = lessonsForModuleAtLevel(module, targetLevel)
-      .filter((lesson) => lessonVisibleOnPlan(lesson, access.planKey === 'business'));
+    // The module's full plan catalog (owner ruling, Nov 15,
+    // 2026) — every plan-visible lesson in the module, all
+    // tracks, never trimmed by the assignee's current role.
+    const lessons = TRAINING_LESSONS.filter(
+      (lesson) => lesson.module === module && lessonVisibleOnPlan(lesson, access.planKey === 'business'),
+    );
     if (!lessons.length) {
-      throw err(400, 'no_lessons', 'That topic has no lessons for this person\u2019s role.');
+      throw err(400, 'no_lessons', 'That topic has no lessons on this plan.');
     }
     const dueDate = dueDateFromBody(body, access.business);
     const targetUser = await userForStaffRow(pool(), target);

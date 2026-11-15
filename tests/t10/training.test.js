@@ -15,6 +15,7 @@ import {
   close,
   resetRateLimits,
   registerVerifiedUser,
+  login,
   ownerWithBusiness,
   setPlan,
 } from './helpers.js';
@@ -430,4 +431,290 @@ test('role grant flag: expanding a custom ROLE assigns its role-only members (Bu
   );
   const ownState = await state(ownList.cookie, business.id);
   assert.equal(ownState.assignments.length, 0, 'a member with their own stored list is not flagged by role growth');
+});
+
+// ---- Assign everything (owner ruling, Nov 15, 2026) -------------------------
+//
+// A manual assignment carries the module's FULL plan catalog —
+// every plan-visible lesson across all three tracks — whatever
+// the assignee's current role, on Essentials and Business
+// alike. Before the fix the server trimmed the list to the
+// assignee's level (lessonsForModuleAtLevel): on Essentials a
+// staff assignee silently got 1 of 7 payroll lessons, and the
+// billing / staff / training modules refused outright with
+// 'no lessons for this person's role' even though the picker
+// offered them.
+
+test('assign everything (Essentials): the full plan catalog lands for staff and manager assignees alike', async () => {
+  const server = await import('../../server/trainingCatalog.js');
+  const { cookie: ownerCookie, business, user: owner } = await ownerWithBusiness('train-all@example.com');
+  const manager = await addTeamMember(business, owner.id, 'train-all-mgr@example.com', { manager: true });
+  const staff = await addTeamMember(business, owner.id, 'train-all-staff@example.com');
+
+  const fullOnPlan = (module, isBusiness) => server.TRAINING_LESSONS
+    .filter((l) => l.module === module && server.lessonVisibleOnPlan(l, isBusiness))
+    .map((l) => l.id)
+    .sort();
+  const assign = (staffId, module) => req(`${TR(business.id)}/assignments`, {
+    method: 'POST', body: { staff_member_id: staffId, module }, cookie: ownerCookie,
+  });
+
+  // 'billing' has Essentials lessons but NONE at staff level —
+  // the old code refused it outright for a staff assignee.
+  const billing = await assign(staff.staffId, 'billing');
+  assert.equal(billing.status, 201);
+  assert.deepEqual([...billing.json.assignment.lesson_ids].sort(), fullOnPlan('billing', false));
+
+  // 'payroll' spans all three tracks (3 owner + 3 manager + 1
+  // staff on Essentials): a staff assignee now receives all 7,
+  // not the single staff-track lesson.
+  const payroll = await assign(staff.staffId, 'payroll');
+  assert.equal(payroll.status, 201);
+  assert.deepEqual([...payroll.json.assignment.lesson_ids].sort(), fullOnPlan('payroll', false));
+  assert.equal(payroll.json.assignment.lesson_ids.length, 7);
+
+  // A manager assignee gets the same full catalog (billing
+  // refused for managers too, before the fix).
+  const mgrBilling = await assign(manager.staffId, 'billing');
+  assert.equal(mgrBilling.status, 201);
+  assert.deepEqual([...mgrBilling.json.assignment.lesson_ids].sort(), fullOnPlan('billing', false));
+
+  // Plan invisibility still rules: a Business-only module is
+  // not assignable on Essentials at all.
+  const pos = await assign(staff.staffId, 'pos');
+  assert.equal(pos.status, 400);
+  assert.equal(pos.json.error, 'no_lessons');
+});
+
+test('assign everything (Essentials): an assigned lesson above the assignee\u2019s role opens and finishes for them', async () => {
+  const { cookie: ownerCookie, business, user: owner } = await ownerWithBusiness('train-all-open@example.com');
+  const staff = await addTeamMember(business, owner.id, 'train-all-open-staff@example.com');
+
+  const created = await req(`${TR(business.id)}/assignments`, {
+    method: 'POST', body: { staff_member_id: staff.staffId, module: 'settings' }, cookie: ownerCookie,
+  });
+  assert.equal(created.status, 201);
+  const ids = created.json.assignment.lesson_ids;
+  assert.ok(ids.includes('owner-white-label'), 'the assignment carries owner-track lessons');
+
+  // The assignment lands whole on the staff member's own state.
+  const before = await state(staff.cookie, business.id);
+  const mine = before.assignments.find((a) => a.id === created.json.assignment.id);
+  assert.ok(mine, 'the assignment is on the assignee\u2019s state');
+  assert.deepEqual([...mine.lesson_ids].sort(), [...ids].sort());
+
+  // The owner-track lesson completes for its assignee...
+  const done = await req(`${TR(business.id)}/lessons/owner-white-label/complete`, {
+    method: 'POST', body: {}, cookie: staff.cookie,
+  });
+  assert.equal(done.status, 200);
+  assert.ok(done.json.completed_lesson_ids.includes('owner-white-label'));
+
+  // ...while an UNASSIGNED lesson above their role still refuses.
+  const refused = await req(`${TR(business.id)}/lessons/mgr-schedules/complete`, {
+    method: 'POST', body: {}, cookie: staff.cookie,
+  });
+  assert.equal(refused.status, 403);
+});
+
+test('assign everything (Business): the complete Business catalog, cross-role, end to end', async () => {
+  const server = await import('../../server/trainingCatalog.js');
+  const { cookie: ownerCookie, business, user: owner } = await ownerWithBusiness('train-all-biz@example.com', 'Biz', { plan: 'business' });
+  const staff = await addTeamMember(business, owner.id, 'train-all-biz-staff@example.com');
+
+  const fullOnPlan = (module) => server.TRAINING_LESSONS
+    .filter((l) => l.module === module && server.lessonVisibleOnPlan(l, true))
+    .map((l) => l.id)
+    .sort();
+
+  // 'pos' exists only on Business and spans the tracks: a staff
+  // assignee receives all 12 lessons, owner track included.
+  const pos = await req(`${TR(business.id)}/assignments`, {
+    method: 'POST', body: { staff_member_id: staff.staffId, module: 'pos' }, cookie: ownerCookie,
+  });
+  assert.equal(pos.status, 201);
+  assert.deepEqual([...pos.json.assignment.lesson_ids].sort(), fullOnPlan('pos'));
+  assert.equal(pos.json.assignment.lesson_ids.length, 12);
+
+  // A Business-only owner lesson from that assignment completes
+  // for the staff assignee.
+  const done = await req(`${TR(business.id)}/lessons/owner-pos-connect-square/complete`, {
+    method: 'POST', body: {}, cookie: staff.cookie,
+  });
+  assert.equal(done.status, 200);
+  assert.ok(done.json.completed_lesson_ids.includes('owner-pos-connect-square'));
+});
+
+// ---- Join seed (owner ruling, Nov 15, 2026) -------------------------------
+//
+// A new member does not wait for a role change to meet their
+// training: creating their StaffMember row sets their OWN track
+// in place — every module with lessons at their level, plan-
+// filtered — and accepting the invite at sign-in runs the same
+// seed, so a row written before the seed existed is set on
+// arrival too. Automatic doors stay at the person's own level;
+// anything beyond it is the owner's manual Assign box.
+
+/** Create a member through the real invite door (the entity API). */
+async function inviteMember(ownerCookie, business, { email, name, roleId, roleName, status }) {
+  const res = await req('/api/entities/StaffMember', {
+    method: 'POST',
+    cookie: ownerCookie,
+    body: {
+      business_id: business.id,
+      full_name: name,
+      email,
+      role_id: roleId,
+      role_name: roleName,
+      ...(status ? { status } : {}),
+    },
+  });
+  assert.equal(res.status, 201, res.text);
+  return res.json;
+}
+
+/** The exact set the seed owes a level on a plan: module -> sorted lesson ids. */
+async function expectedSeedSet(level, isBusiness) {
+  const server = await import('../../server/trainingCatalog.js');
+  const expected = {};
+  for (const mod of server.TRAINING_MODULES) {
+    const ids = server
+      .lessonsForModuleAtLevel(mod, level)
+      .filter((lesson) => server.lessonVisibleOnPlan(lesson, isBusiness))
+      .map((lesson) => lesson.id)
+      .sort();
+    if (ids.length) expected[mod] = ids;
+  }
+  return expected;
+}
+
+function assertSeeded(state, expected, label) {
+  const actual = {};
+  for (const a of state.assignments) {
+    assert.equal(a.source, 'role_grant', `${label}: ${a.module} arrived through the automatic door`);
+    assert.ok(!(a.module in actual), `${label}: no stacked duplicate for ${a.module}`);
+    actual[a.module] = [...a.lesson_ids].sort();
+  }
+  assert.deepEqual(actual, expected, `${label}: the full own-track set — nothing missing, nothing extra`);
+}
+
+test('join seed: a new staff member finds their whole role training already assigned (Essentials)', async () => {
+  const server = await import('../../server/trainingCatalog.js');
+  const { cookie: ownerCookie, business } = await ownerWithBusiness('train-seed-staff@example.com');
+  const member = await inviteMember(ownerCookie, business, {
+    email: 'train-seed-staff-m@example.com', name: 'Nina New', roleId: 'preset-sales', roleName: 'Sales clerk',
+  });
+  const account = await registerVerifiedUser('train-seed-staff-m@example.com');
+
+  const expected = await expectedSeedSet('staff', false);
+  assert.ok(Object.keys(expected).length >= 15, 'the Essentials staff set is a real curriculum');
+  let staffState = await state(account.cookie, business.id);
+  assertSeeded(staffState, expected, 'new staff member');
+
+  // Nothing from the other plan leaks in: no assigned lesson is
+  // a Business-feature lesson.
+  const featureIds = new Set(server.TRAINING_LESSONS.filter((l) => l.feature).map((l) => l.id));
+  assert.ok(
+    staffState.assignments.every((a) => a.lesson_ids.every((id) => !featureIds.has(id))),
+    'no Business-only lesson rides along on Essentials',
+  );
+  // One arrival bell, rung at sign-in.
+  assert.ok(hasEvent(await inbox(account.cookie, business.id), 'training_assigned', /training is ready/i));
+
+  // Idempotency: signing in again, a no-change edit, a growth the
+  // seed already covers, and two direct re-seeds change nothing.
+  const relogin = await login('train-seed-staff-m@example.com', 'CorrectHorse123');
+  assert.equal(relogin.status, 200);
+  const renamed = await req(`/api/entities/StaffMember/${member.id}`, {
+    method: 'PATCH', body: { full_name: 'Nina New-Hire' }, cookie: ownerCookie,
+  });
+  assert.equal(renamed.status, 200);
+  const grown = await req(`/api/entities/StaffMember/${member.id}`, {
+    method: 'PATCH', body: { permissions: [...SALES_PERMS, 'counts.run'] }, cookie: ownerCookie,
+  });
+  assert.equal(grown.status, 200);
+  const { seedRoleTrainingForMember } = await import('../../server/trainingCore.js');
+  const { rows } = await pool.query('SELECT * FROM staff_members WHERE id = $1', [member.id]);
+  await seedRoleTrainingForMember(pool, business, rows[0], { planKey: 'essentials', actor: null });
+  await seedRoleTrainingForMember(pool, business, rows[0], { planKey: 'essentials', actor: null });
+  staffState = await state(account.cookie, business.id);
+  assertSeeded(staffState, expected, 'after every re-fire');
+});
+
+test('join seed: a new manager is set with the manager track on top of staff (Essentials)', async () => {
+  const server = await import('../../server/trainingCatalog.js');
+  const { cookie: ownerCookie, business } = await ownerWithBusiness('train-seed-mgr@example.com');
+  await inviteMember(ownerCookie, business, {
+    email: 'train-seed-mgr-m@example.com', name: 'Mara Manager', roleId: 'preset-manager', roleName: 'Manager',
+  });
+  const account = await registerVerifiedUser('train-seed-mgr-m@example.com');
+
+  const staffState = await state(account.cookie, business.id);
+  assertSeeded(staffState, await expectedSeedSet('manager', false), 'new manager');
+  // Manager-only modules are present, and no owner-track lesson
+  // slipped in above their level.
+  const modules = staffState.assignments.map((a) => a.module);
+  assert.ok(modules.includes('training') && modules.includes('staff'), 'manager modules are set');
+  const ownerIds = new Set(server.TRAINING_LESSONS.filter((l) => l.track === 'owner').map((l) => l.id));
+  assert.ok(
+    staffState.assignments.every((a) => a.lesson_ids.every((id) => !ownerIds.has(id))),
+    'automatic doors stay at the person\u2019s own level',
+  );
+});
+
+test('join seed: on Business the same door opens wider — feature modules join the set', async () => {
+  const { cookie: ownerCookie, business } = await ownerWithBusiness('train-seed-biz@example.com', 'Biz', { plan: 'business' });
+  await inviteMember(ownerCookie, business, {
+    email: 'train-seed-biz-m@example.com', name: 'Ben Business', roleId: 'preset-sales', roleName: 'Sales clerk',
+  });
+  const account = await registerVerifiedUser('train-seed-biz-m@example.com');
+  const staffState = await state(account.cookie, business.id);
+  assertSeeded(staffState, await expectedSeedSet('staff', true), 'new Business staff member');
+  const modules = staffState.assignments.map((a) => a.module);
+  assert.ok(modules.includes('rewards') && modules.includes('pos'), 'Business-only modules are set on Business');
+});
+
+test('join seed: an invited row written before the seed existed is set at sign-in', async () => {
+  const { cookie: ownerCookie, business, user: owner } = await ownerWithBusiness('train-seed-heal@example.com');
+  // A pre-seed invite: a raw row, still Invited, no assignments.
+  const id = crypto.randomUUID();
+  await pool.query(
+    `INSERT INTO staff_members (id, business_id, full_name, email, app_role, role_id, role_name, permissions, status, created_by_id)
+     VALUES ($1, $2, 'Old Invite', 'train-seed-heal-m@example.com', 'user', 'preset-sales', 'Sales clerk', '[]', 'invited', $3)`,
+    [id, business.id, owner.id],
+  );
+  const before = await pool.query('SELECT COUNT(*)::int AS n FROM training_assignments WHERE assignee_key = $1', [id]);
+  assert.equal(before.rows[0].n, 0, 'the old row starts with nothing');
+
+  const account = await registerVerifiedUser('train-seed-heal-m@example.com');
+  const { rows } = await pool.query('SELECT status FROM staff_members WHERE id = $1', [id]);
+  assert.equal(rows[0].status, 'active', 'sign-in accepted the invite');
+  assertSeeded(await state(account.cookie, business.id), await expectedSeedSet('staff', false), 'healed invite');
+});
+
+test('join seed: promotion to manager re-seeds at the new level — one assignment per module', async () => {
+  const { cookie: ownerCookie, business } = await ownerWithBusiness('train-seed-promo@example.com');
+  const member = await inviteMember(ownerCookie, business, {
+    email: 'train-seed-promo-m@example.com', name: 'Pat Promoted', roleId: 'preset-sales', roleName: 'Sales clerk',
+  });
+  const account = await registerVerifiedUser('train-seed-promo-m@example.com');
+  assertSeeded(await state(account.cookie, business.id), await expectedSeedSet('staff', false), 'before promotion');
+
+  const promoted = await req(`/api/entities/StaffMember/${member.id}`, {
+    method: 'PATCH', body: { role_id: 'preset-manager', role_name: 'Manager' }, cookie: ownerCookie,
+  });
+  assert.equal(promoted.status, 200);
+  assertSeeded(await state(account.cookie, business.id), await expectedSeedSet('manager', false), 'after promotion');
+});
+
+test('join seed: a suspended member is not seeded until they are really on the team', async () => {
+  const { cookie: ownerCookie, business } = await ownerWithBusiness('train-seed-susp@example.com');
+  const member = await inviteMember(ownerCookie, business, {
+    email: 'train-seed-susp-m@example.com', name: 'Sue Suspended', roleId: 'preset-sales', roleName: 'Sales clerk', status: 'suspended',
+  });
+  const { rows } = await pool.query(
+    'SELECT COUNT(*)::int AS n FROM training_assignments WHERE business_id = $1 AND assignee_key = $2',
+    [business.id, member.id],
+  );
+  assert.equal(rows[0].n, 0, 'no training is set for a suspended record');
 });
