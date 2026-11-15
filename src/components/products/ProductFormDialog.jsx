@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { base44 } from '@/api/client';
-import { Camera, ImagePlus, Loader2, ScanBarcode, X } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { apiRequest, base44 } from '@/api/client';
+import { Camera, ImagePlus, Loader2, ScanBarcode, Sparkles, X } from 'lucide-react';
 import { useBusiness } from '@/hooks/useBusiness';
 import useEntitlements from '@/hooks/useEntitlements';
 import ProductDetailsFields from './ProductDetailsFields';
@@ -141,6 +142,22 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
   const [scanField, setScanField] = useState(null);
   const [codeTaken, setCodeTaken] = useState(null);
   const scanHandledRef = useRef(false);
+  // Code generator (Nov 15, 2026): handmade and own-brand products
+  // have no code on the box, so the form can invent one — the owner
+  // picks the kind (UPC, SKU, Code 128, Barcode, EAN, QR — or, with
+  // her own GS1 prefix on file in Settings, a true retail GS1 UPC
+  // or GS1 EAN) and the server mints a code that is unique across
+  // the business's whole code space. genType is the picked kind;
+  // the minted code lands in the matching field exactly like a
+  // typed or scanned one.
+  const [genType, setGenType] = useState('upc');
+  const [genBusy, setGenBusy] = useState(false);
+  const [genError, setGenError] = useState('');
+  // GS1 state for the generator (Nov 15, 2026): whether the
+  // business's own GS1 company prefix is on file in Settings, and
+  // how many codes of each kind remain under it. null = not loaded
+  // yet (or the read failed — the mint's own answers still speak).
+  const [gs1, setGs1] = useState(null);
   // Vocabulary pickers (Nov 14, 2026): which field's "Add new …"
   // window is open, and the names created through it during this
   // session (sanctioned values for the save guard even before the
@@ -169,6 +186,8 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
   useEffect(() => {
     if (!open) return;
     setError('');
+    setGenError('');
+    setGs1(null);
     // The category/subcategory the form opened with. The save guard
     // grandfathers these: they are not new births, even if the
     // managed list no longer carries them.
@@ -250,6 +269,23 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
       setForm({ ...empty, barcode: defaultCode || '', upc: defaultCode || '' });
     }
   }, [open, product, seed, defaultCode]);
+
+  useEffect(() => {
+    if (!open || !activeId) return;
+    let cancelled = false;
+    apiRequest(`/api/businesses/${activeId}/products/generate-code`)
+      .then((data) => {
+        if (!cancelled) setGs1(data?.gs1 ?? null);
+      })
+      .catch(() => {
+        // The state read failing never blocks the house codes;
+        // a GS1 mint attempt still gets the server's plain answer.
+        if (!cancelled) setGs1(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, activeId]);
 
   useEffect(() => {
     if (!open) return;
@@ -361,6 +397,87 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
     } catch {
       // The lookup failing must never eat the scanned code — the
       // field already has it; only the courtesy notice is skipped.
+    }
+  };
+
+  // The generator's kinds and the field each one fills: UPC and
+  // EAN share the UPC/EAN field; Code 128 and Barcode share the
+  // Barcode field with different flavors (server/codeGenerator.js).
+  const GENERATE_FIELDS = {
+    upc: 'upc', ean: 'upc', sku: 'sku',
+    code128: 'barcode', barcode: 'barcode', qr: 'qr_code',
+    'gs1-upc': 'upc', 'gs1-ean': 'upc',
+  };
+  const GS1_KIND_BY_TYPE = { 'gs1-upc': 'gtin12', 'gs1-ean': 'gtin13' };
+  const isGs1Type = Boolean(GS1_KIND_BY_TYPE[genType]);
+  const gs1PrefixMissing = isGs1Type && gs1 !== null && !gs1.prefixSet;
+
+  // Mint a code into its field. A value already sitting in the
+  // field is NEVER quietly replaced (the owner's no-silent-
+  // overwrite rule): the form asks first, in plain words. After
+  // the fill, the same courtesy check a scan runs names any other
+  // product already holding the code.
+  const generateCode = async () => {
+    if (genBusy || !activeId) return;
+    const field = GENERATE_FIELDS[genType];
+    if (!field) return;
+    if (String(form[field] || '').trim()) {
+      const labels = {
+        sku: t('productForm.skuLabel'),
+        upc: t('productForm.upcLabel'),
+        barcode: t('productForm.barcodeLabel'),
+        qr_code: t('productForm.qrLabel'),
+      };
+      if (!window.confirm(t('productForm.generateOverwrite', { field: labels[field] }))) return;
+    }
+    setGenBusy(true);
+    setGenError('');
+    try {
+      const data = await apiRequest(`/api/businesses/${activeId}/products/generate-code`, {
+        method: 'POST',
+        body: { type: genType, name: form.name || '' },
+      });
+      const code = String(data?.code || '').trim();
+      if (!code) throw new Error('empty code');
+      if (isGs1Type) {
+        // One of the business's sequential retail numbers is now
+        // spent: the remaining count steps down with the mint.
+        setGs1((current) => (current?.prefixSet
+          ? {
+            ...current,
+            remaining: {
+              ...current.remaining,
+              [GS1_KIND_BY_TYPE[genType]]: Math.max(
+                0, (current.remaining?.[GS1_KIND_BY_TYPE[genType]] ?? 0) - 1,
+              ),
+            },
+          }
+          : current));
+      }
+      set(field)(code);
+      if (codeTaken?.field === field) setCodeTaken(null);
+      requestAnimationFrame(() => document.getElementById(field)?.focus());
+      try {
+        const matches = await findProductsByCode(code, activeId || '');
+        const other = matches.find((m) => m.id !== product?.id);
+        setCodeTaken(other ? { field, name: other.name } : null);
+      } catch {
+        // Courtesy notice only — the minted code is already in.
+      }
+    } catch (error) {
+      // The server's named answers get their plain-words lines;
+      // anything else is the generic failure.
+      const reason = error?.data?.error;
+      if (reason === 'gs1_exhausted') {
+        setGenError(t('productForm.generateGs1Exhausted'));
+      } else if (reason === 'gs1_prefix_missing') {
+        setGs1({ prefixSet: false, remaining: { gtin12: 0, gtin13: 0 } });
+        setGenError('');
+      } else {
+        setGenError(t('productForm.generateFailed'));
+      }
+    } finally {
+      setGenBusy(false);
     }
   };
 
@@ -721,6 +838,60 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
                 </p>
               )}
             </div>
+          </div>
+
+          <div className="grid gap-2 rounded-lg border p-3" data-tour="product-generate">
+            <Label htmlFor="generate-type">{t('productForm.generateTitle')}</Label>
+            <div className="flex gap-2">
+              <Select value={genType} onValueChange={setGenType}>
+                <SelectTrigger id="generate-type" className="min-w-0 flex-1">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="upc">{t('productForm.generateTypeUpc')}</SelectItem>
+                  <SelectItem value="sku">{t('productForm.generateTypeSku')}</SelectItem>
+                  <SelectItem value="code128">{t('productForm.generateTypeCode128')}</SelectItem>
+                  <SelectItem value="barcode">{t('productForm.generateTypeBarcode')}</SelectItem>
+                  <SelectItem value="ean">{t('productForm.generateTypeEan')}</SelectItem>
+                  <SelectItem value="qr">{t('productForm.generateTypeQr')}</SelectItem>
+                  <SelectItem value="gs1-upc">{t('productForm.generateTypeGs1Upc')}</SelectItem>
+                  <SelectItem value="gs1-ean">{t('productForm.generateTypeGs1Ean')}</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button
+                type="button"
+                variant="outline"
+                className="shrink-0"
+                onClick={generateCode}
+                disabled={genBusy || !activeId || gs1PrefixMissing}
+              >
+                {genBusy
+                  ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+                  : <Sparkles className="mr-1.5 h-4 w-4" />}
+                {t('productForm.generateButton')}
+              </Button>
+            </div>
+            {(genType === 'upc' || genType === 'ean') && (
+              <p className="text-xs text-muted-foreground">{t('productForm.generateUpcNote')}</p>
+            )}
+            {isGs1Type && gs1?.prefixSet && (
+              <>
+                <p className="text-xs text-muted-foreground">{t('productForm.generateGs1Note')}</p>
+                <p className="text-xs text-muted-foreground">
+                  {t('productForm.generateGs1Remaining', { count: gs1.remaining?.[GS1_KIND_BY_TYPE[genType]] ?? 0 })}
+                </p>
+              </>
+            )}
+            {gs1PrefixMissing && (
+              <p className="text-xs">
+                <Link to="/settings" className="font-medium text-primary underline underline-offset-2">
+                  {t('productForm.generateGs1Door')}
+                </Link>
+              </p>
+            )}
+            {genError && (
+              <p className="text-xs font-medium text-destructive">{genError}</p>
+            )}
           </div>
 
           <div className="grid gap-2">
