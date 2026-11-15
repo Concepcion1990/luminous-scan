@@ -17,6 +17,17 @@
  *
  * The hooks NEVER throw into the write that triggered them: a
  * training hiccup must not fail a role edit. Failures are logged.
+ *
+ * THE JOIN SEED (owner ruling, Nov 15, 2026): a person does not
+ * wait for a role change to meet their training. The moment a
+ * StaffMember row is created — and again when an invited row is
+ * accepted at sign-in, healing rows written before the seed
+ * existed — seedRoleTrainingForMember assigns the member's OWN
+ * track: every module with lessons at their level, plan-filtered.
+ * A promotion that lifts their LEVEL (staff -> manager) re-seeds
+ * at the new level. Automatic doors stay at the person's own
+ * level, always; widening beyond it is the owner's hand through
+ * the manual Assign box, never an automatic door's business.
  */
 import crypto from 'node:crypto';
 import { parseJsonArray, presetRoleById } from './authz.js';
@@ -24,6 +35,7 @@ import { permissionsForPlan } from './plans.js';
 import {
   MODULE_BY_PERMISSION,
   MODULE_LABELS,
+  TRAINING_MODULES,
   lessonsForModuleAtLevel,
   lessonVisibleOnPlan,
 } from './trainingCatalog.js';
@@ -253,10 +265,21 @@ export function effectivePermissions(row, customRoles, planKey) {
  * `before` / `after` are public-shaped rows (permissions already
  * parsed) or raw rows — parseJsonArray handles both.
  */
+const LEVEL_RANK = { staff: 0, manager: 1, owner: 2 };
+
 export async function trainingFlagForMemberChange(pool, { business, planKey, before, after, actor }) {
   try {
     if (!before || !after) return;
     if (!['active', 'invited'].includes(after.status || 'active')) return;
+    // A promotion that lifts the person's LEVEL hands them the new
+    // role whole: seed the full own-track set at the new level (it
+    // covers every module a permission top-up would reach, plus
+    // the modules no permission maps to). Same-level growth keeps
+    // the narrower difference-only door below.
+    if ((LEVEL_RANK[personLevel(after)] ?? 0) > (LEVEL_RANK[personLevel(before)] ?? 0)) {
+      await seedRoleTrainingForMember(pool, business, after, { actor, planKey });
+      return;
+    }
     const customRoles = await customRolesFor(pool, business.id);
     const beforePerms = new Set(effectivePermissions(before, customRoles, planKey));
     const afterPerms = effectivePermissions(after, customRoles, planKey);
@@ -323,4 +346,57 @@ async function assignForAddedPermissions(pool, business, memberRow, addedPerms, 
       bellDetail: `New training for you: ${MODULE_LABELS[module] || module} — added because your role grew.`,
     });
   }
+}
+
+// ---- The join seed --------------------------------------------------------
+
+/**
+ * Set a member's own-role training in place: one assignment per
+ * module that has lessons at the member's level, plan-filtered —
+ * the complete set their track holds on this business's plan,
+ * nothing above their level and nothing from the other plan.
+ * Fired when a StaffMember row is created, again when an invited
+ * row is accepted at sign-in, and when a promotion lifts the
+ * member's level. Idempotent by construction: assignments merge
+ * through createOrExtendAssignment under the shared 'role_grant'
+ * source, so a re-fire adds no rows, stacks no duplicates, and
+ * never resurrects a module the member already finished. Like
+ * the hooks above, it NEVER throws into its caller.
+ */
+export async function seedRoleTrainingForMember(pool, business, memberRow, { actor = null, planKey } = {}) {
+  const summary = { created: 0, extended: 0 };
+  try {
+    if (!memberRow) return summary;
+    if (!['active', 'invited'].includes(memberRow.status || 'active')) return summary;
+    const level = personLevel(memberRow);
+    const isBusiness = planKey === 'business';
+    const user = await userForStaffRow(pool, memberRow);
+    const assignedBy = {
+      userId: actor?.userId ?? null,
+      staffId: actor?.staffId ?? null,
+      name: actor?.name || '',
+    };
+    for (const module of TRAINING_MODULES) {
+      const lessons = lessonsForModuleAtLevel(module, level)
+        .filter((lesson) => lessonVisibleOnPlan(lesson, isBusiness));
+      if (!lessons.length) continue;
+      const result = await createOrExtendAssignment(pool, business, {
+        assigneeRow: memberRow,
+        assigneeKey: memberRow.id,
+        assigneeUserId: user?.id ?? null,
+        assigneeName: memberRow.full_name || '',
+        assigneeLevel: level,
+        module,
+        lessonIds: lessons.map((lesson) => lesson.id),
+        source: 'role_grant',
+        assignedBy,
+        bellDetail: `New training for you: ${MODULE_LABELS[module] || module} — part of your role's training, ready when you are.`,
+      });
+      if (result.created) summary.created += 1;
+      if (result.extended) summary.extended += 1;
+    }
+  } catch (error) {
+    console.error('[twin] training seed (join) failed:', error);
+  }
+  return summary;
 }

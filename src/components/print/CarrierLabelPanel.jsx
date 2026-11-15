@@ -140,6 +140,14 @@ export default function CarrierLabelPanel({ orderId, carrier, mode, onModeChange
   const { meta, objectUrl, busy, error, upload, remove } = carrier;
   const inputRef = useRef(null);
   const isPdf = meta?.content_type === 'application/pdf';
+  // The Upload door is on screen from the start (owner's phone,
+  // Nov 15, 2026): before an order is picked it answers a tap
+  // with the plain guidance instead of not existing — a door
+  // that appears only after another step reads as missing.
+  const [needOrder, setNeedOrder] = useState(false);
+  useEffect(() => {
+    if (orderId) setNeedOrder(false);
+  }, [orderId]);
 
   const pickFile = () => inputRef.current?.click();
 
@@ -176,7 +184,15 @@ export default function CarrierLabelPanel({ orderId, carrier, mode, onModeChange
       </p>
 
       {!orderId ? (
-        <p className="mt-3 text-xs text-muted-foreground">{t('print.carrier.pickOrderFirst')}</p>
+        <>
+          <p className="mt-3 text-xs text-muted-foreground">{t('print.carrier.pickOrderFirst')}</p>
+          <Button size="sm" className="mt-2" onClick={() => setNeedOrder(true)}>
+            <Upload className="mr-1.5 h-4 w-4" /> {t('print.carrier.upload')}
+          </Button>
+          {needOrder && (
+            <p className="mt-2 text-xs font-medium text-foreground">{t('print.carrier.pickFirstTap')}</p>
+          )}
+        </>
       ) : meta === null ? (
         <p className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
           <Loader2 className="h-3.5 w-3.5 animate-spin" /> {t('print.carrier.title')}

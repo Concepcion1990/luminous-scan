@@ -137,7 +137,7 @@ function LessonCard({ lesson, done, completedAt, open, onToggle, onComplete, bus
   );
 }
 
-function MyAssignments({ assignments, completedSet }) {
+function MyAssignments({ assignments, completedSet, completedAtById, openLesson, onToggleLesson, onComplete, busy }) {
   const open = assignments.filter((a) => a.status !== 'completed');
   if (!open.length) return null;
   return (
@@ -160,23 +160,31 @@ function MyAssignments({ assignments, completedSet }) {
                 ? t('training.sourceRole')
                 : t('training.assignedBy', { name: assignment.assigned_by_name || '' })}
             </p>
-            <ul className="mt-3 space-y-1.5">
+            {/* Assigned lessons OPEN here, in full — steps, visuals
+                and the finish button — even when the lesson's track
+                sits above the assignee's current role (owner ruling,
+                Nov 15, 2026: assign everything, and what is assigned
+                must be learnable). A title-only checklist left a
+                staff member holding manager lessons they could
+                never read. */}
+            <div className="mt-3 space-y-3">
               {assignment.lesson_ids.map((id) => {
                 const lesson = lessonById(id);
                 if (!lesson) return null;
-                const done = completedSet.has(id);
                 return (
-                  <li key={id} className="flex items-center gap-2 text-sm">
-                    {done ? (
-                      <Check className="h-4 w-4 shrink-0 text-ok" />
-                    ) : (
-                      <span className="h-4 w-4 shrink-0 rounded-full border border-border" />
-                    )}
-                    <span className={done ? 'text-muted-foreground line-through' : ''}>{lessonTitle(lesson)}</span>
-                  </li>
+                  <LessonCard
+                    key={id}
+                    lesson={lesson}
+                    done={completedSet.has(id)}
+                    completedAt={completedAtById.get(id)}
+                    open={openLesson === id}
+                    onToggle={() => onToggleLesson(id)}
+                    onComplete={onComplete}
+                    busy={busy}
+                  />
                 );
               })}
-            </ul>
+            </div>
           </div>
         ))}
       </div>
@@ -283,7 +291,10 @@ function TeamSection({ businessId, level, isBusiness }) {
 
   // Only modules with at least one plan-visible lesson are
   // assignable here — a Business-only topic does not dangle on
-  // Essentials (owner ruling, Nov 14, 2026).
+  // Essentials (owner ruling, Nov 14, 2026). Assigning a module
+  // hands over its FULL plan catalog — every lesson, all tracks;
+  // the server expands it the same way, and the assignee's
+  // current role never trims it (owner ruling, Nov 15, 2026).
   const modules = useMemo(
     () => [...new Set(
       TRAINING_LESSONS.filter((l) => lessonVisibleOnPlan(l, isBusiness)).map((l) => l.module),
@@ -488,6 +499,11 @@ export default function Training() {
       <MyAssignments
         assignments={state.assignments.map(visibleAssignment).filter(Boolean)}
         completedSet={completedSet}
+        completedAtById={completedAtById}
+        openLesson={openLesson}
+        onToggleLesson={(id) => setOpenLesson(openLesson === id ? null : id)}
+        onComplete={onComplete}
+        busy={busy}
       />
 
       {state.tracks.map((track) => {

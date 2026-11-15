@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ArrowRight, Bluetooth, Download, FileDown, Lock, Printer, Usb, X } from 'lucide-react';
 import { base44, apiDownload } from '@/api/client';
@@ -53,6 +53,18 @@ export default function PrintCenter() {
     (entry) => showSupplierDocs || !isSupplierPrintTemplate(entry.key)
   );
   const [template, setTemplate] = useState('price');
+  // The tapped document's editor is what she sees next (owner's
+  // phone, Nov 15, 2026): the editor renders directly beneath
+  // the document list — it used to sit below the whole Style
+  // Studio, so choosing a document looked like nothing had
+  // happened — and picking a document steps the page to it.
+  const editorRef = useRef(null);
+  const pickTemplate = (key) => {
+    setTemplate(key);
+    requestAnimationFrame(() => {
+      editorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  };
   const [copies, setCopies] = useState('1');
   const [search, setSearch] = useState('');
   const [debounced, setDebounced] = useState('');
@@ -417,7 +429,7 @@ export default function PrintCenter() {
                 <button
                   key={entry.key}
                   type="button"
-                  onClick={() => setTemplate(entry.key)}
+                  onClick={() => pickTemplate(entry.key)}
                   className={`rounded-lg border px-3 py-2 text-left transition-colors ${
                     template === entry.key
                       ? 'border-primary bg-primary text-primary-foreground'
@@ -437,15 +449,7 @@ export default function PrintCenter() {
             </div>
           </div>
 
-          {isBoss(user, profile) && (
-            <DocStyleStudio
-              business={profile}
-              style={docStyle}
-              onChange={setDocStyleDraft}
-              onSaved={refresh}
-            />
-          )}
-
+          <div ref={editorRef} data-print-editor="true" className="scroll-mt-24 space-y-4">
           {isOrder ? (
             <OrderPicker orders={orders} value={orderId} onChange={setOrderId} />
           ) : isCustomerDoc ? (
@@ -455,6 +459,20 @@ export default function PrintCenter() {
                 value={customerOrderId}
                 onChange={setCustomerOrderId}
               />
+              {/* The carrier-label panel LEADS the shipping
+                  section (owner's phone, Nov 15, 2026): its
+                  Upload door is the first thing under the order
+                  picker, not the last thing under the address
+                  form — a door she has to hunt for is a door
+                  that looks missing. */}
+              {template === 'shipping' && (
+                <CarrierLabelPanel
+                  orderId={customerOrderId}
+                  carrier={carrier}
+                  mode={shipMode}
+                  onModeChange={setShipMode}
+                />
+              )}
               {template === 'shipping' && (
                 <div className="rounded-xl border border-border bg-card p-4">
                   <Label className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
@@ -490,14 +508,6 @@ export default function PrintCenter() {
                   </div>
                   <p className="mt-2 text-[11px] text-muted-foreground">{t('print.shippingNote')}</p>
                 </div>
-              )}
-              {template === 'shipping' && (
-                <CarrierLabelPanel
-                  orderId={customerOrderId}
-                  carrier={carrier}
-                  mode={shipMode}
-                  onModeChange={setShipMode}
-                />
               )}
             </>
           ) : isReturnDoc ? (
@@ -577,6 +587,16 @@ export default function PrintCenter() {
               </div>
               {directStatus && <p className="mt-2 text-[11px] text-muted-foreground">{directStatus}</p>}
             </div>
+          )}
+          </div>
+
+          {isBoss(user, profile) && (
+            <DocStyleStudio
+              business={profile}
+              style={docStyle}
+              onChange={setDocStyleDraft}
+              onSaved={refresh}
+            />
           )}
         </div>
 

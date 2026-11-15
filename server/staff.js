@@ -6,6 +6,10 @@
  * enforced server-side, Business-only permissions are stripped on
  * Essentials (never refused — the seat itself is legitimate), and
  * created_by_id/created_by are set from the session, never the body.
+ * Creation also sets the new member's own-role training (the join
+ * seed in trainingCore.js), and accepting the invite at sign-in
+ * re-runs that seed — a new member's training is waiting for them
+ * from day one, at their own level, on either plan.
  *
  * Follow-up (a): an invited staff member reads their own row by
  * email (see the staff list handler in entities.js).
@@ -13,8 +17,10 @@
  * on their own business, including attacker-created ones.
  */
 import crypto from 'node:crypto';
-import { limitsForPlan, permissionsForPlan, staffLimitMessage } from './plans.js';
+import { limitsForPlan, permissionsForPlan, planFor, staffLimitMessage } from './plans.js';
 import { parseJsonArray } from './authz.js';
+import { ringBell, seedRoleTrainingForMember, userForStaffRow } from './trainingCore.js';
+import { personLevel } from './workforceRoutes.js';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -27,7 +33,7 @@ export async function staffSeatCount(pool, businessId) {
 }
 
 /** A seat is held by an active member or a pending invitation, never by the owner. */
-export async function createStaffMember(pool, { business, planKey, caller, member }) {
+export async function createStaffMember(pool, { business, planKey, caller, member, actor = null }) {
   const fullName = String(member.full_name || '').trim();
   const email = String(member.email || '').trim().toLowerCase();
   if (!fullName || !email || !EMAIL_RE.test(email)) {
@@ -86,6 +92,15 @@ export async function createStaffMember(pool, { business, planKey, caller, membe
       caller.email,
     ],
   );
+  // The join seed (owner ruling, Nov 15, 2026): the new member's
+  // own-role training is set from the start — assigned and waiting
+  // when they first sign in. Every creation door funnels through
+  // here, so every door seeds. The seed never throws, so it can
+  // never fail the invite that triggered it.
+  await seedRoleTrainingForMember(pool, business, rows[0], {
+    planKey,
+    actor: actor ?? { userId: caller.id, staffId: null, name: caller.email || '' },
+  });
   return rows[0];
 }
 
@@ -97,11 +112,44 @@ export async function createStaffMember(pool, { business, planKey, caller, membe
  */
 export async function activateStaffRowsForEmail(pool, email) {
   if (!email) return 0;
-  const { rowCount } = await pool.query(
-    "UPDATE staff_members SET status = 'active', joined_at = NOW(), updated_at = NOW() WHERE LOWER(email) = LOWER($1) AND status = 'invited'",
+  const { rows } = await pool.query(
+    "UPDATE staff_members SET status = 'active', joined_at = NOW(), updated_at = NOW() WHERE LOWER(email) = LOWER($1) AND status = 'invited' RETURNING *",
     [email],
   );
-  return rowCount ?? 0;
+  // The join seed rides the flip: rows created before the seed
+  // existed are set at this, their first sign-in, and rows the
+  // create door already seeded merge without duplicating. A seed
+  // hiccup must never fail a sign-in, so each row is guarded.
+  for (const row of rows) {
+    try {
+      const planKey = await planFor(pool, row.business_id);
+      const seeded = await seedRoleTrainingForMember(pool, { id: row.business_id }, row, { planKey, actor: null });
+      // When the set was already waiting from the invite, the seed
+      // itself rang nothing (no account existed to ring) — so the
+      // arrival gets one bell of its own. When the seed just built
+      // the set here, its per-module bells already rang.
+      if (!seeded.created && !seeded.extended) {
+        const user = await userForStaffRow(pool, row);
+        const { rows: open } = await pool.query(
+          "SELECT COUNT(*)::int AS n FROM training_assignments WHERE business_id = $1 AND assignee_key = $2 AND status = 'assigned'",
+          [row.business_id, row.id],
+        );
+        if (user && (open[0]?.n ?? 0) > 0) {
+          await ringBell(pool, { id: row.business_id }, {
+            recipientUserId: user.id,
+            recipientStaffId: row.id,
+            recipientRole: personLevel(row),
+            actorName: '',
+            event: 'training_assigned',
+            detail: 'Your training is ready — your role\u2019s lessons are waiting for you in Training.',
+          });
+        }
+      }
+    } catch (error) {
+      console.error('[twin] training seed (sign-in) failed:', error);
+    }
+  }
+  return rows.length;
 }
 
 export function staffMemberPublic(row) {

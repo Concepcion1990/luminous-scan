@@ -98,7 +98,11 @@ test('server team counts and assignment doors use the visible set', () => {
   // Team total and team done both count plan-visible lessons only.
   const teamUses = routes.match(/tracks\.includes\(l\.track\) && lessonVisibleOnPlan\(l, isBusiness\)/g) || [];
   assert.equal(teamUses.length, 2, 'team total + team done are both plan-scoped');
-  assert.match(routes, /\.filter\(\(lesson\) => lessonVisibleOnPlan\(lesson, access\.planKey === 'business'\)\)/);
+  // Manual assignments expand to the module's FULL plan catalog
+  // (owner ruling, Nov 15, 2026: assign everything) — plan-scoped
+  // still, but never trimmed to the assignee's level.
+  assert.match(routes, /TRAINING_LESSONS\.filter\(\s*\(lesson\) => lesson\.module === module && lessonVisibleOnPlan\(lesson, access\.planKey === 'business'\),\s*\)/);
+  assert.doesNotMatch(routes, /lessonsForModuleAtLevel/);
   const core = src('server/trainingCore.js');
   assert.match(core, /\.filter\(\(lesson\) => lessonVisibleOnPlan\(lesson, isBusiness\)\)/);
 });

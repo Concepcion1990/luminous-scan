@@ -18,6 +18,7 @@ import NoAccess from '@/components/staff/NoAccess';
 import AccessPaused from '@/components/staff/AccessPaused';
 import { NAV_GROUPS } from '@/components/layout/navGroups';
 import useIsDesktop from '@/hooks/useIsDesktop';
+import useDismissOnOutside from '@/hooks/useDismissOnOutside';
 import { dismissActiveModal } from '@/hooks/useModalHistory';
 import Dashboard from '@/pages/Dashboard';
 import Scan from '@/pages/Scan';
@@ -114,6 +115,24 @@ export default function Layout() {
   };
   const [query, setQuery] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const mobileNavRef = useRef(null);
+  const mobileToggleRef = useRef(null);
+  // Outside-tap dismissal for the All screens menu (owner's
+  // phone, Nov 15, 2026): the menu is an expanding panel inside
+  // the sticky header, not a popover, so nothing closed it when
+  // she tapped away from it. "Outside" is the menu panel and
+  // its toggle — the panel fills the header on a phone, so a
+  // tap on the header's own chrome (her business card, the
+  // empty stretches) is a tap outside the menu too. A backdrop
+  // under the header (rendered below) takes taps that land on
+  // the page itself; the hook covers the rest, plus Escape
+  // wherever focus sits. Either way she stays on her page.
+  useDismissOnOutside({
+    open: mobileMenuOpen,
+    onDismiss: () => setMobileMenuOpen(false),
+    rootRef: mobileNavRef,
+    extraRefs: [mobileToggleRef],
+  });
   // Two doors, both must open: the person's role and the plan's entitlements.
   const allowedItems = translatedItems.filter(
     (item) => (!item.perm || can(item.perm)) && (!item.feature || planAllows(item.feature))
@@ -256,6 +275,14 @@ export default function Layout() {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
+        {mobileMenuOpen && (
+          <div
+            data-menu-backdrop="true"
+            aria-hidden="true"
+            className="fixed inset-0 z-10 lg:hidden"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+        )}
         {/* The header is a flex column capped at the viewport minus
             the fixed bottom tab bar (64px + safe-area): the All
             screens menu below is the flexible, scrolling child, so
@@ -307,6 +334,7 @@ export default function Layout() {
           </div>
           <div className="shrink-0 border-t border-primary-foreground/10 px-4 py-2">
             <button
+              ref={mobileToggleRef}
               type="button"
               onClick={() => setMobileMenuOpen((open) => !open)}
               aria-expanded={mobileMenuOpen}
@@ -325,6 +353,7 @@ export default function Layout() {
             </button>
           </div>
           <nav
+            ref={mobileNavRef}
             id="stockhaven-mobile-modules"
             aria-label={t('layout.allScreensAria')}
             hidden={!mobileMenuOpen}
