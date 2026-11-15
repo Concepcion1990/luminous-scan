@@ -14,10 +14,15 @@
  *  item 10 — imports decode HTML entities at parse time, so the
  *           preview and the write carry the true text.
  */
-import test from 'node:test';
+import test, { after } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { ownerWithBusiness, req } from './helpers.js';
+import { ownerWithBusiness, req, close } from './helpers.js';
+
+// Teardown (added Nov 15, 2026, code-generator run): every sibling
+// suite registers after(close); without it this file's tests all
+// pass but the process never exits (the booted server pends).
+after(close);
 import { parseCsv, decodeHtmlEntities, draftFromRow } from '../../src/lib/csvImport.js';
 
 test('import events: the entity round-trips and stays out of the ledger', async () => {

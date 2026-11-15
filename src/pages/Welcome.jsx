@@ -4,6 +4,7 @@ import AppMark from '@/components/brand/AppMark';
 import LanguagePicker from '@/components/LanguagePicker';
 import PlanOptionCard from '@/components/plans/PlanOptionCard';
 import TrialCountdown from '@/components/plans/TrialCountdown';
+import TrademarkNotice from '@/components/TrademarkNotice';
 import { Button } from '@/components/ui/button';
 import { WELCOME_OPTIONS } from '@/lib/plans';
 import { markWelcomeSeen } from '@/lib/welcome';
@@ -98,6 +99,11 @@ export default function Welcome() {
           </Link>{' '}
           {t('welcome.inventoryWaiting')}
         </p>
+
+        {/* The owner's not-for-sale statement (restored to the front
+            door Nov 15, 2026 — her ruling: it should have already
+            been here). Same component, same words as on Plans. */}
+        <TrademarkNotice />
       </main>
     </div>
   );

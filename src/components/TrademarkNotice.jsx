@@ -8,7 +8,10 @@ import { TRADEMARK_NOTICE as notice } from '@/lib/trademarkNotice';
  *
  * Shown on Plans (the page people see before subscribing) and on
  * Subscribe (right as the subscription process starts), so anyone about
- * to pay sees it first. Styled as a calm statement card in the app's own
+ * to pay sees it first. Nov 15, 2026 — her ruling ("it should have
+ * already been in there"): restored to the Welcome front door and
+ * the About page as well, and it rides Register's create-account
+ * branch. Styled as a calm statement card in the app's own
  * look: the shield heading, the quote in italic, the two sub-headings
  * bold.
  */

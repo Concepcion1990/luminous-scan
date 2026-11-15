@@ -87,7 +87,7 @@ export const TRAINING_LESSONS = [
   { id: 'scanner-name-lookup', track: 'staff', module: 'scanner', steps: 4 },
   { id: 'scanner-damaged', track: 'staff', module: 'scanner', steps: 4 },
   { id: 'print-shelf-tag', track: 'staff', module: 'printing', steps: 4 },
-  { id: 'products-find-edit', track: 'staff', module: 'products', steps: 8 },
+  { id: 'products-find-edit', track: 'staff', module: 'products', steps: 10 },
   { id: 'owner-pricing', track: 'owner', module: 'products', steps: 4, feature: 'pricing' },
   { id: 'mgr-pricing', track: 'manager', module: 'products', steps: 4, feature: 'pricing' },
   { id: 'categories-basics', track: 'staff', module: 'categories', steps: 4 },

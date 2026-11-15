@@ -104,7 +104,7 @@ export const TRAINING_LESSONS = [
       { route: '/movements', target: '[data-tour="movements-list"]' },
     ] },
   { id: 'print-shelf-tag', track: 'staff', module: 'printing', steps: 4 },
-  { id: 'products-find-edit', track: 'staff', module: 'products', steps: 8 , visuals: [
+  { id: 'products-find-edit', track: 'staff', module: 'products', steps: 10 , visuals: [
       { route: '/products', target: '[data-tour="products-search"]' },
       { route: '/products', target: '[data-tour="products-list"]' },
       { route: '/products', target: '[data-tour="products-list"]', door: true },
@@ -113,6 +113,8 @@ export const TRAINING_LESSONS = [
       { route: '/products', target: '[data-tour="products-list"]' },
       { route: '/products', target: '[data-tour="products-list"]', door: true },
       { route: '/products', target: '[data-tour="products-list"]' },
+      { route: '/products', target: '[data-tour="product-add"]', door: true },
+      { route: '/settings' },
     ] },
   { id: 'owner-pricing', track: 'owner', module: 'products', steps: 4, feature: 'pricing' , visuals: [
       { route: '/products', target: '[data-tour="product-add"]', door: true },

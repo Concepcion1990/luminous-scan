@@ -26,6 +26,7 @@ export const DEFAULT_BUSINESS = {
   unit_system: 'imperial',
   language: 'en',
   tax_rate: '',
+  gs1_prefix: '',
 };
 
 export const BRAND_COLORS = [
@@ -140,6 +141,7 @@ export async function saveBusiness(record, values) {
     unit_system: values.unit_system || 'imperial',
     language: values.language || 'en',
     tax_rate: values.tax_rate?.trim() || '',
+    gs1_prefix: values.gs1_prefix?.trim() || '',
   };
   return record?.id
     ? base44.entities.Business.update(record.id, payload)

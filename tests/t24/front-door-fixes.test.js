@@ -218,7 +218,7 @@ test('recovery: every client recovery path carries /api and names a real server 
 test('locale parity: all 52 locales carry the 7 new keys; tranche-1 locales are translated', () => {
   assert.equal(NEW_KEYS.length, 7);
   const enKeys = Object.keys(en).sort();
-  assert.equal(enKeys.length, 4099); // 3954 at the POS + deletion batch; +14 account-security (change password + staff reset); +1 white-label reset step; +13 locations/orders train; +2 edit-quantity; +2 photo chooser; +2 in-form scan; +4 category combobox; +3 product delete; +2 category edit door; +1 count-sheet scanner; +2 archived freeze; +3 import cap-awareness; +1 receive step; +1 draft notice; +3 owner-import lesson; +46 carrier labels + document style
+  assert.equal(enKeys.length, 4123); // 3954 at the POS + deletion batch; +14 account-security (change password + staff reset); +1 white-label reset step; +13 locations/orders train; +2 edit-quantity; +2 photo chooser; +2 in-form scan; +4 category combobox; +3 product delete; +2 category edit door; +1 count-sheet scanner; +2 archived freeze; +3 import cap-awareness; +1 receive step; +1 draft notice; +3 owner-import lesson; +46 carrier labels + document style; +13 code generator; +10 GS1 mode +1 About bookshop lead-in (Nov 15, 2026).
   for (const key of NEW_KEYS) assert.ok(key in en, `en missing ${key}`);
   assert.equal(Object.keys(LOCALES).length, 52);
   for (const code of Object.keys(LOCALES)) {

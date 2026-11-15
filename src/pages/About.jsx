@@ -3,7 +3,9 @@ import { ArrowLeft, BookOpen } from 'lucide-react';
 import AppMark from '@/components/brand/AppMark';
 import LanguagePicker from '@/components/LanguagePicker';
 import LegalFooter from '@/components/LegalFooter';
+import TrademarkNotice from '@/components/TrademarkNotice';
 import { ABOUT_FOUNDER as about } from '@/lib/aboutFounder';
+import { t, useLocale } from '@/lib/i18n';
 
 /**
  * Public "Luminous StockHaven About" page — About the Founder, in her
@@ -13,6 +15,11 @@ import { ABOUT_FOUNDER as about } from '@/lib/aboutFounder';
  * verbatim; this page only lays it out.
  */
 export default function About() {
+  // The bookstore lead-in below is translated copy (about.
+  // bookshopLeadIn), so this page follows the locale like every
+  // other translated public page; the founder text above it stays
+  // verbatim in her own words, as always.
+  useLocale();
   return (
     <div className="min-h-screen bg-background">
       <header className="bg-primary px-4 py-4 text-primary-foreground sm:px-8">
@@ -49,6 +56,27 @@ export default function About() {
             ))}
           </div>
         </section>
+
+        {/* Her Nov 9, 2026 decision, placed Nov 15, 2026: the About
+            page ties the app to the bookstore it comes from — the
+            store name is a proper noun and stays as-is; the lead-in
+            is translated (about.bookshopLeadIn). */}
+        <p className="mt-6 text-sm leading-relaxed text-muted-foreground">
+          {t('about.bookshopLeadIn')}{' '}
+          <a
+            href="https://theluminousbookshop.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-link underline underline-offset-4"
+          >
+            The Luminous Book Shop
+          </a>
+        </p>
+
+        {/* The owner's not-for-sale statement (restored Nov 15,
+            2026 — her ruling: it should have already been here).
+            Same component, same words as on Plans. */}
+        <TrademarkNotice />
 
         <nav aria-label="Related information" className="mt-8 flex flex-wrap gap-4 text-sm">
           <Link to="/plans" className="font-medium text-link underline underline-offset-4">

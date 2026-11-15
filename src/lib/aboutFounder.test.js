@@ -150,6 +150,25 @@ test('Register shows the trademark notice below the form, with an About link', (
   assert.match(screen, /getPasswordHint\(\)/);
 });
 
+test('About links to her bookstore, tying the app to the shop it comes from (Nov 9, 2026 decision, placed Nov 15, 2026)', () => {
+  const screen = read('src/pages/About.jsx');
+  // The lead-in is translated copy; the store name is a proper
+  // noun and renders as-is, exactly as she named it.
+  assert.match(screen, /t\('about\.bookshopLeadIn'\)/);
+  assert.equal(en['about.bookshopLeadIn'], 'Made by the same small business that runs our bookstore:');
+  assert.match(screen, /href="https:\/\/theluminousbookshop\.com"/);
+  assert.match(screen, /target="_blank"/);
+  assert.match(screen, /rel="noopener noreferrer"/);
+  assert.match(screen, />\s*The Luminous Book Shop\s*<\/a>/);
+  // Placement: after the founder story, ahead of the restored
+  // trademark notice — the tie-in first, then the statement.
+  const storyAt = screen.indexOf('about.paragraphs.map');
+  const leadInAt = screen.indexOf("t('about.bookshopLeadIn')");
+  const noticeAt = screen.indexOf('<TrademarkNotice />');
+  assert.ok(storyAt > -1 && leadInAt > storyAt, 'bookshop line comes after the founder story');
+  assert.ok(noticeAt > leadInAt, 'bookshop line comes before the trademark notice');
+});
+
 test('no policy or trademark wording was touched by this change', () => {
   for (const module of [
     'src/lib/stockhavenTermsOfService.js',

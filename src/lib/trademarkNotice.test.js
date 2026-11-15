@@ -190,6 +190,32 @@ test('ThankYou and the three policy pages carry the footer at the bottom', () =>
   );
 });
 
+test('Welcome shows the notice at the foot of the front door (restored Nov 15, 2026)', () => {
+  const screen = read('src/pages/Welcome.jsx');
+  assert.match(screen, /import TrademarkNotice from '@\/components\/TrademarkNotice'/);
+  assert.equal(screen.split('<TrademarkNotice />').length - 1, 1, 'Welcome must render the notice exactly once');
+  // The notice closes the page: after the plan cards and the
+  // sign-in line, inside <main> — the same statement a visitor
+  // meets on Plans, in the same component and words.
+  const cardsAt = screen.indexOf('WELCOME_OPTIONS.map');
+  const signInAt = screen.indexOf("t('welcome.alreadyHaveAccount')");
+  const noticeAt = screen.indexOf('<TrademarkNotice />');
+  assert.ok(cardsAt > -1 && noticeAt > cardsAt, 'notice comes after the plan cards');
+  assert.ok(signInAt > -1 && noticeAt > signInAt, 'notice comes after the sign-in line');
+  assert.ok(noticeAt < screen.indexOf('</main>'), 'notice sits inside <main>');
+});
+
+test('About shows the notice after the founder story, before the footer (restored Nov 15, 2026)', () => {
+  const screen = read('src/pages/About.jsx');
+  assert.match(screen, /import TrademarkNotice from '@\/components\/TrademarkNotice'/);
+  assert.equal(screen.split('<TrademarkNotice />').length - 1, 1, 'About must render the notice exactly once');
+  const storyAt = screen.indexOf('about.paragraphs.map');
+  const noticeAt = screen.indexOf('<TrademarkNotice />');
+  const footerAt = screen.indexOf('<LegalFooter />');
+  assert.ok(storyAt > -1 && noticeAt > storyAt, 'notice comes after the founder story');
+  assert.ok(footerAt > noticeAt, 'notice comes before the legal footer');
+});
+
 test('no policy wording was touched by this change', () => {
   for (const module of [
     'src/lib/stockhavenTermsOfService.js',
