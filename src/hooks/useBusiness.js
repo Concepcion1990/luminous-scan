@@ -51,7 +51,7 @@ export function useBusiness() {
   const plansKnown = ids.length === 0 || plansQuery.isFetched;
   const plansFailed = plansQuery.isError;
   const limit = businessLimitForPlan(
-    effectivePlanKey(oldestPlan, user),
+    effectivePlanKey(oldestPlan, user, businesses[0] ?? null),
     plansKnown && !plansFailed,
   );
 

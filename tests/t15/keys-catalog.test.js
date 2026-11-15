@@ -14,7 +14,7 @@ import { TRAINING_LESSONS as SERVER_LESSONS } from '../../server/trainingCatalog
 
 test('keyset parity holds across all 52 locale files at the trial-reminders total', () => {
   const enKeys = Object.keys(en).sort();
-  assert.equal(enKeys.length, 4007);
+  assert.equal(enKeys.length, 4020); // +2 category edit door, +1 count-sheet scanner, +2 archived freeze, +3 import cap-awareness, +1 receive step, +1 draft notice, +3 owner-import lesson (Nov 14, 2026)
   assert.equal(SUPPORTED_LOCALES.length, 52);
   for (const code of SUPPORTED_LOCALES) {
     const keys = Object.keys(LOCALES[code]).sort();
@@ -41,7 +41,7 @@ test('training catalogs carry the trial-reminders lesson, client and server in a
   assert.equal(server.track, 'owner');
   assert.equal(client.module, 'billing');
   assert.equal(client.steps, 4);
-  assert.equal(CLIENT_LESSONS.length, 85); // 64 through rewards; POS added 6 (5 owner + 1 staff); problem reporting added 3 (one per role); the transfer door added 1 (owner); pricing added 2 (owner + manager); shipping labels added 2 (staff + owner); the POS provider expansion added 6 (owner, one per new provider) and the deletion-request flow added 1 (owner)
+  assert.equal(CLIENT_LESSONS.length, 86); // 64 through rewards; POS added 6 (5 owner + 1 staff); problem reporting added 3 (one per role); the transfer door added 1 (owner); pricing added 2 (owner + manager); shipping labels added 2 (staff + owner); the POS provider expansion added 6 (owner, one per new provider) and the deletion-request flow added 1 (owner); the training-invisibility split added 1 (owner-import, Essentials-only)
   assert.deepEqual(
     CLIENT_LESSONS.map((lesson) => lesson.id),
     SERVER_LESSONS.map((lesson) => lesson.id),

@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/client';
 import { useBusiness } from '@/hooks/useBusiness';
 import { useAuth } from '@/lib/AuthContext';
+import { isBoss } from '@/lib/bossAuthority';
 
 /**
  * What the signed-in person may open in the active business.
@@ -15,7 +16,11 @@ export default function useStaffAccess() {
   const { activeId, record, isLoading: workspaceLoading } = useBusiness();
   const { user } = useAuth();
   const email = String(user?.email || '').toLowerCase();
-  const isAdmin = user?.role === 'admin';
+  // Boss authority (owner's doctrine, Nov 14, 2026 — admin is owner):
+  // the shared definition in lib/bossAuthority. The variable keeps its
+  // historical name; its value is the boss check, so the workspace's
+  // owner stands exactly where the legacy badge used to.
+  const isAdmin = isBoss(user, record);
   const isOwner = Boolean(record?.id && user?.id && record.created_by_id === user.id);
   const needsSeat = Boolean(activeId) && !isAdmin && !isOwner;
 

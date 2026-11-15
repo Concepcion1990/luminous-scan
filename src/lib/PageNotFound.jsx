@@ -1,11 +1,18 @@
 import { useLocation } from 'react-router-dom';
 import { base44 } from '@/api/client';
 import { useQuery } from '@tanstack/react-query';
+import { useBusiness } from '@/hooks/useBusiness';
+import { isBoss } from '@/lib/bossAuthority';
 
 
 export default function PageNotFound({}) {
     const location = useLocation();
     const pageName = location.pathname.substring(1);
+    // The Admin Note below is a boss-gated diagnostic; the gate is the
+    // shared boss definition (owner's doctrine, Nov 14, 2026 — admin
+    // is owner; see lib/bossAuthority). No loaded workspace → no boss
+    // → the note stays hidden, fail closed.
+    const { record: businessRecord } = useBusiness();
 
     const { data: authData, isFetched } = useQuery({
         queryKey: ['user'],
@@ -40,7 +47,7 @@ export default function PageNotFound({}) {
                     </div>
                     
                     {/* Admin Note */}
-                    {isFetched && authData.isAuthenticated && authData.user?.role === 'admin' && (
+                    {isFetched && authData.isAuthenticated && isBoss(authData.user, businessRecord) && (
                         <div className="mt-8 p-4 bg-stone-100 rounded-lg border border-stone-200">
                             <div className="flex items-start space-x-3">
                                 <div className="flex-shrink-0 w-5 h-5 rounded-full bg-amber-100 flex items-center justify-center mt-0.5">

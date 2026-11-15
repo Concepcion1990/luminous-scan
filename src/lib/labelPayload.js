@@ -14,9 +14,10 @@
  *              a product; aisle / room / contents for a location.
  *   code     — the scannable code: UPC / SKU for a product, the aisle
  *              or bin code for a location.
- *   codeType — 'CODE128' today (what the ESC/POS path draws and the
- *              browser-print templates draw in SVG). A future code
- *              type (QR) is a value here, not a new code path.
+ *   codeType — the code's native symbology: 'UPC-A' or 'EAN-13'
+ *              for valid numeric codes of those lengths, 'CODE128'
+ *              for everything else (what the ESC/POS path draws
+ *              and the browser-print templates draw in SVG).
  *
  * A product label and a location label flow through the SAME
  * machinery — ESC/POS bytes, Bluetooth / USB sends, client-side PDF,
@@ -30,6 +31,7 @@
  * This module only makes sure nothing in T5's label design blocks
  * them later.
  */
+import { symbologyFor } from './barcodeSym.js';
 
 export function labelMoney(value, currency = 'USD') {
   const amount = Number(value) || 0;
@@ -57,11 +59,14 @@ export function productToLabel(product) {
     lines.push(labelMoney(product.price));
   }
   if (product.sku) lines.push(`SKU ${product.sku}`);
+  const code = productCodeOf(product);
   return {
     title: String(product.name || 'Untitled').slice(0, 42),
     lines,
-    code: productCodeOf(product),
-    codeType: 'CODE128',
+    code,
+    // Native symbology (Nov 14, 2026): a valid UPC/EAN code prints
+    // as itself on every path; everything else stays Code 128.
+    codeType: symbologyFor(code),
   };
 }
 

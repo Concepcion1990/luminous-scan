@@ -6,7 +6,8 @@
  * it holds stock, states how many units on hand go with it; only an
  * explicit confirm deletes. The old admin trash button beside the
  * menu deleted INSTANTLY with no confirmation — it is gone; the
- * menu (same admin gate) is the only door. Past ledger movements
+ * menu (same boss gate — the owner's doctrine, Nov 14, 2026: admin
+ * is actually owner) is the only door. Past ledger movements
  * keep the product name recorded at the time (server/movements.js
  * snapshots product_name on every movement), so the business's
  * books stay readable after a delete.
@@ -60,11 +61,16 @@ test('page: the confirmation names the product and states its units on hand', ()
   assert.ok(page.includes('.reduce((sum, l) => sum + (l.quantity || 0), 0)'), 'units are summed across its locations');
 });
 
-test('page: the instant-delete trash button is gone; the menu door keeps the admin gate', () => {
+test('page: the instant-delete trash button is gone; the menu door keeps the boss gate', () => {
   assert.ok(!page.includes("t('products.deleteAria'"), 'no standalone delete button remains');
+  // The lap-2 pin here checked `user?.role === 'admin'` — the dead
+  // Base44 badge no part of the twin assigns, which hid Delete from
+  // every real owner. The owner's doctrine (Nov 14, 2026) settled
+  // it: admin is actually owner, everywhere — the door now goes
+  // through the shared boss definition (lib/bossAuthority).
   assert.ok(
-    page.includes("onDelete={user?.role === 'admin' ? requestRemove : undefined}"),
-    'Delete is offered to the business admin only, as the old button was',
+    page.includes("onDelete={isBoss(user, record) ? requestRemove : undefined}"),
+    'Delete is offered to the boss — the owner, as the old button intended',
   );
 });
 

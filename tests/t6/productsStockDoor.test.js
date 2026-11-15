@@ -23,13 +23,19 @@ const menu = readFileSync(new URL('../../src/components/products/ProductRowMenu.
 test('the stepper exists and each direction records the honest movement type', () => {
   assert.ok(page.includes('function InlineStockStepper'), 'the inline stepper component exists');
   assert.ok(page.includes("type: 'receive', quantity: 1"), 'up is a receive of one');
-  assert.ok(page.includes("type: 'correction', quantity: current - 1"), 'down is a correction to one lower');
-  assert.ok(page.includes('await recordMovement({'), 'taps go through the shared movement funnel');
+  // Since the optimistic queue (Nov 14, 2026), the correction target
+  // is computed at SEND time from the queue's confirmed quantity —
+  // the same honest correction to one lower, ordered behind the
+  // taps before it (behavior-pinned in stepQueue.test.js).
+  assert.ok(page.includes("type: 'correction',"), 'down is a correction');
+  assert.ok(page.includes('quantity: confirmed - 1,'), 'set to one lower than the confirmed count');
+  assert.ok(page.includes('recordMovement({ product, location,'), 'taps go through the shared movement funnel');
 });
 
 test('the down tap can never take a count below zero', () => {
-  assert.ok(page.includes('if (delta < 0 && current <= 0) return;'), 'the handler refuses at zero');
-  assert.ok(page.includes('disabled={busy || value <= 0}'), 'the down arrow disables at zero');
+  const queue = readFileSync(new URL('../../src/lib/stepQueue.js', import.meta.url), 'utf8');
+  assert.ok(queue.includes('if (display + delta < 0) return false;'), 'the queue refuses a tap that would go below zero');
+  assert.ok(page.includes('disabled={value <= 0}'), 'the down arrow disables at zero');
 });
 
 test('the stepper only acts where one location is unambiguous; elsewhere the number opens the sheet', () => {
