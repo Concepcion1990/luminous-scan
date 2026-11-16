@@ -1,0 +1,121 @@
+{
+  "version": 1,
+  "encoding": "base64",
+  "wrapColumns": 100,
+  "chunkChars": 1200000,
+  "note": "Each font ships as base64 text chunks (<Base>.b64.000, .001, ...) because the publish route carries UTF-8 text only. Join a font's chunks, strip whitespace, base64-decode: the result is byte-identical to the original TTF (sha256 below). server/printFonts.js verifies length + sha256 at load; any mismatch makes the font unavailable and printing degrades to the per-string English fallback.",
+  "fonts": {
+    "base": {
+      "file": "NotoSans-Regular.ttf",
+      "bytes": 556216,
+      "sha256": "4c8d67001d3c2977e5d6bf0a4f8add80cd564bd1df60b7569fd23751e7dda02a",
+      "chunks": [
+        "NotoSans-Regular.b64.000"
+      ]
+    },
+    "arabic": {
+      "file": "NotoSansArabic-Regular.ttf",
+      "bytes": 177004,
+      "sha256": "90f50de40af560ad55f2fcf460af8205f842b534b057bd8b8bcf7d3e10d3223a",
+      "chunks": [
+        "NotoSansArabic-Regular.b64.000"
+      ]
+    },
+    "cjk": {
+      "file": "DroidSansFallbackFull.ttf",
+      "bytes": 4033576,
+      "sha256": "2392015530438bafc48edfc4aee6d9de2387f627a6134d8ab3dfcc99d21c8240",
+      "chunks": [
+        "DroidSansFallbackFull.b64.000",
+        "DroidSansFallbackFull.b64.001",
+        "DroidSansFallbackFull.b64.002",
+        "DroidSansFallbackFull.b64.003",
+        "DroidSansFallbackFull.b64.004"
+      ]
+    },
+    "hangul": {
+      "file": "NanumGothic-Regular.ttf",
+      "bytes": 4091796,
+      "sha256": "4569ec609c5c46eedcf7a5920c950cc553f31fa6e9637c640a15d51c3d54bbf5",
+      "chunks": [
+        "NanumGothic-Regular.b64.000",
+        "NanumGothic-Regular.b64.001",
+        "NanumGothic-Regular.b64.002",
+        "NanumGothic-Regular.b64.003",
+        "NanumGothic-Regular.b64.004"
+      ]
+    },
+    "devanagari": {
+      "file": "NotoSansDevanagari-Regular.ttf",
+      "bytes": 190960,
+      "sha256": "84cda635b5395e22f428c5802b6c36eaeec66750c8b387279424a48545ac1d74",
+      "chunks": [
+        "NotoSansDevanagari-Regular.b64.000"
+      ]
+    },
+    "bengali": {
+      "file": "NotoSansBengali-Regular.ttf",
+      "bytes": 167796,
+      "sha256": "8e99829203d09a576c4599210fc094299b5f260145df6d6550278fbde21bb5e8",
+      "chunks": [
+        "NotoSansBengali-Regular.b64.000"
+      ]
+    },
+    "tamil": {
+      "file": "NotoSansTamil-Regular.ttf",
+      "bytes": 74456,
+      "sha256": "583c4dd75768b6255c696208b7cf27eae795d10f0d8761445ddfe7f177454b28",
+      "chunks": [
+        "NotoSansTamil-Regular.b64.000"
+      ]
+    },
+    "telugu": {
+      "file": "NotoSansTelugu-Regular.ttf",
+      "bytes": 172500,
+      "sha256": "5bf8d448290169b1c9306fde271dcf9516905ed5f7c0e051632018951ddbc863",
+      "chunks": [
+        "NotoSansTelugu-Regular.b64.000"
+      ]
+    },
+    "gujarati": {
+      "file": "NotoSansGujarati-Regular.ttf",
+      "bytes": 170256,
+      "sha256": "40669626d93bbd9aab172ef3bc69b39a4c7a33f68afbeeea8107c4ba42af1f80",
+      "chunks": [
+        "NotoSansGujarati-Regular.b64.000"
+      ]
+    },
+    "kannada": {
+      "file": "NotoSansKannada-Regular.ttf",
+      "bytes": 141284,
+      "sha256": "c036fd2eb95ba0d1433a1673d60a5a47eac1974d85ba27479e9559bcd082b8aa",
+      "chunks": [
+        "NotoSansKannada-Regular.b64.000"
+      ]
+    },
+    "gurmukhi": {
+      "file": "NotoSansGurmukhi-Regular.ttf",
+      "bytes": 58032,
+      "sha256": "98a435e5adcc14633e5be036cf011741d95c9d1f87f94931c34825e6372241b2",
+      "chunks": [
+        "NotoSansGurmukhi-Regular.b64.000"
+      ]
+    },
+    "ethiopic": {
+      "file": "NotoSansEthiopic-Regular.ttf",
+      "bytes": 362896,
+      "sha256": "41c9c843b1c78267c5ca4cf548e2186d6c55da6ba74aa713515fe27a550f0ab0",
+      "chunks": [
+        "NotoSansEthiopic-Regular.b64.000"
+      ]
+    },
+    "thai": {
+      "file": "NotoSansThai-Regular.ttf",
+      "bytes": 47404,
+      "sha256": "f73be376b0e1704da118312e202be49e8ac04a6b2e19b588cdfc2707c7f3e25d",
+      "chunks": [
+        "NotoSansThai-Regular.b64.000"
+      ]
+    }
+  }
+}
