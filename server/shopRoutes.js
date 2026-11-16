@@ -746,6 +746,7 @@ export function createShopRouter({ getPool: getPoolFn }) {
       to: String(req.query.to || ''),
       locationId: String(req.query.locationId || ''),
       category: String(req.query.category || ''),
+      language: access.business.language,
     });
     return res.json(report);
   }));
@@ -756,7 +757,7 @@ export function createShopRouter({ getPool: getPoolFn }) {
     if (!featureAllowed(access.planKey, 'purchasing')) {
       throw err(403, 'plan_gated', 'Purchasing summaries are part of the Business plan.');
     }
-    return res.json(await buildPurchasingSummary(pool(), req.params.bid));
+    return res.json(await buildPurchasingSummary(pool(), req.params.bid, access.business.language));
   }));
 
   // ---- Print PDFs (T5) ---------------------------------------------------
@@ -876,6 +877,7 @@ export function createShopRouter({ getPool: getPoolFn }) {
       to: String(req.query.to || ''),
       locationId: String(req.query.locationId || ''),
       category: String(req.query.category || ''),
+      language: access.business.language,
     });
     return pdfResponse(
       res,
@@ -1107,7 +1109,7 @@ export function createShopRouter({ getPool: getPoolFn }) {
     // missing mailer never blocks the invite itself (T3 sends no real
     // email in tests; the mailer fails closed for auth codes only).
     try {
-      await sendMail(staffInviteEmail({ to: email, businessName: access.business.name, inviterName: req.user.email }));
+      await sendMail(staffInviteEmail({ to: email, businessName: access.business.name, inviterName: req.user.email, lang: access.business.language }));
     } catch (error) {
       if (!(error instanceof EmailNotConfigured)) console.error('[twin] staff invite email failed:', error.message);
     }

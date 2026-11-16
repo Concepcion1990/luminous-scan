@@ -33,6 +33,7 @@ import { checkLimit } from './rateLimit.js';
 import {
   sendMail,
   EmailNotConfigured,
+  resolveAccountLanguage,
   backupEmailCodeEmail,
   accountRecoveryCodeEmail,
   newEmailCodeEmail,
@@ -124,9 +125,10 @@ async function sendChangeNotices(pool, userId, oldEmail, newEmail) {
   } catch (error) {
     console.error('[twin] recovery notice lookup failed:', error.message);
   }
+  const lang = await resolveAccountLanguage(pool, userId);
   for (const to of targets) {
     try {
-      await sendMail(emailChangedNoticeEmail({ to, newEmail }));
+      await sendMail(emailChangedNoticeEmail({ to, newEmail, lang }));
     } catch (error) {
       // A notice must never fail the change itself — log and move on.
       console.error(`[twin] email-change notice to previous address failed (${error.code || error.message})`);
@@ -225,7 +227,7 @@ export function createRecoveryRouter({ getPool: getPoolOverride } = {}) {
         return issueOtp(client, req.user.id, 'backup_email', ACCOUNT_CODES);
       });
       try {
-        await sendMail(backupEmailCodeEmail({ to: email, code: issued.code }));
+        await sendMail(backupEmailCodeEmail({ to: email, code: issued.code, lang: await resolveAccountLanguage(pool, req.user.id) }));
       } catch (error) {
         if (error instanceof EmailNotConfigured || error.code === 'email_not_configured') {
           return res.status(503).json({ error: 'email_not_configured', message: 'Email is not configured yet, so the code cannot be sent.' });
@@ -306,7 +308,7 @@ export function createRecoveryRouter({ getPool: getPoolOverride } = {}) {
         return issueOtp(client, req.user.id, 'change_email', ACCOUNT_CODES);
       });
       try {
-        await sendMail(newEmailCodeEmail({ to: newEmail, code: issued.code }));
+        await sendMail(newEmailCodeEmail({ to: newEmail, code: issued.code, lang: await resolveAccountLanguage(pool, req.user.id) }));
       } catch (error) {
         if (error instanceof EmailNotConfigured || error.code === 'email_not_configured') {
           return res.status(503).json({ error: 'email_not_configured', message: 'Email is not configured yet, so the code cannot be sent.' });
@@ -401,7 +403,7 @@ export function createRecoveryRouter({ getPool: getPoolOverride } = {}) {
               await invalidateLiveOtps(client, user.id, 'recover', ACCOUNT_CODES);
               return issueOtp(client, user.id, 'recover', ACCOUNT_CODES);
             });
-            await sendMail(accountRecoveryCodeEmail({ to: user.backup_email, code: issued.code }));
+            await sendMail(accountRecoveryCodeEmail({ to: user.backup_email, code: issued.code, lang: await resolveAccountLanguage(pool, user.id) }));
           } catch (error) {
             // Still the same outward answer — but log it; a configured
             // mailer failing is an operations problem, not a user one.
@@ -606,7 +608,7 @@ export function createRecoveryRouter({ getPool: getPoolOverride } = {}) {
         return { code, resetUrl };
       });
       try {
-        await sendMail(passwordResetEmail({ to: account.email, resetUrl: result.resetUrl, code: result.code }));
+        await sendMail(passwordResetEmail({ to: account.email, resetUrl: result.resetUrl, code: result.code, lang: await resolveAccountLanguage(pool, account.id) }));
       } catch (error) {
         if (error instanceof EmailNotConfigured) {
           return res.status(503).json({
