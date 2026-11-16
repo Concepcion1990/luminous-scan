@@ -14,6 +14,8 @@ import {
   ownerWithBusiness,
   createBusiness,
   createProducts,
+  seededLocation,
+  receive,
   setPlan,
 } from './helpers.js';
 
@@ -250,4 +252,38 @@ test('a second business needs the Business plan (oldest workspace decides)', asy
   await setPlan(first.id, 'business', owner.user.id);
   const second = await createBusiness(owner.cookie, 'Second shop');
   assert.equal(second.name, 'Second shop');
+});
+
+test('bulk delete sweep: the dialog loop deletes active, archived and stocked products alike', async () => {
+  // The Bulk edit danger zone (owner ruling, Nov 15, 2026) deletes
+  // by looping the single-product delete over the whole selection.
+  // This pins the server half of that loop: every row goes,
+  // whatever its status — deleting is how an archived product
+  // leaves — its stock levels go with it, and the catalog is empty
+  // afterwards, so a from-scratch start really starts from zero.
+  const { cookie, business } = await ownerWithBusiness('bulk-sweep@example.com');
+  const location = await seededLocation(cookie, business.id);
+  const created = await createProducts(cookie, business.id, [product(1), product(2), product(3)]);
+  await receive(cookie, business.id, created[0].id, location.id, 5);
+  await req(`/api/entities/Product/${created[1].id}`, {
+    method: 'PATCH',
+    body: { status: 'archived' },
+    cookie,
+  });
+  for (const p of created) {
+    const del = await req(`/api/entities/Product/${p.id}`, { method: 'DELETE', cookie });
+    assert.equal(del.status, 200, `delete ${p.name}`);
+  }
+  const listed = await req('/api/entities/Product/query', {
+    method: 'POST',
+    body: { filter: { business_id: business.id } },
+    cookie,
+  });
+  assert.equal(listed.json.items.length, 0);
+  const levels = await req('/api/entities/StockLevel/query', {
+    method: 'POST',
+    body: { filter: { business_id: business.id } },
+    cookie,
+  });
+  assert.equal(levels.json.items.length, 0, 'stock levels go with their products');
 });

@@ -28,6 +28,7 @@
 import { csrfHeadersFor } from '../lib/csrf.js';
 import { loginBounceTarget } from '../lib/authReturnTo.js';
 import { bumpData } from '../lib/dataFreshness.js';
+import { isEmbedVisual } from '../lib/embedMode.js';
 import { prepareImageForUpload } from '../lib/imagePrep.js';
 import { t } from '../lib/i18n.js';
 
@@ -235,6 +236,23 @@ export const base44 = {  entities: Object.fromEntries(
     // Revokes the server-side session, then navigates when the caller
     // passes a URL (AuthContext passes the current URL).
     logout: async (redirectUrl) => {
+      // One session, one door out (owner ruling, Nov 15, 2026): a
+      // lesson visual's wide view is this same app in a frame, on
+      // this same session. Logging out inside the frame ends the
+      // session for the WHOLE app — the parent is told first, so it
+      // can tear the wide view down and walk out the same door,
+      // instead of sitting signed-in over the frame's login page.
+      // Every logout passes through here (AuthContext delegates;
+      // the paused-access screen calls this directly), so every
+      // plan and every role is covered. The message goes before
+      // the request: the navigation below may tear the frame down.
+      if (isEmbedVisual() && typeof window !== 'undefined' && window.parent !== window) {
+        try {
+          window.parent.postMessage({ type: 'sh:session-ended' }, window.location.origin);
+        } catch {
+          /* a parent that cannot hear cannot be left behind either */
+        }
+      }
       try {
         await request('/api/auth/logout', { method: 'POST' });
       } finally {

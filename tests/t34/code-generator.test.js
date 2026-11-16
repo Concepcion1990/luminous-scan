@@ -363,13 +363,17 @@ test('wiring: the form box, the GS1 door, Settings field, plans, training', () =
   assert.match(business, /gs1_prefix: values\.gs1_prefix\?\.trim\(\) \|\| ''/);
 
   const plans = readFileSync('src/lib/plans.js', 'utf8');
-  assert.equal((plans.match(/plansLib\.includes\.codeGenerator/g) || []).length, 5);
-  assert.equal((plans.match(/plansLib\.includes\.gs1Codes/g) || []).length, 5);
+  // Five surfaces carried the generator + GS1 lines (Essentials and
+  // Business, in PLANS and on the Welcome, plus the comparison row);
+  // the Mobile scope rulings (Nov 15, 2026) made Mobile the sixth —
+  // the generator and the GS1 prefix option are Mobile-only scope too.
+  assert.equal((plans.match(/plansLib\.includes\.codeGenerator/g) || []).length, 6);
+  assert.equal((plans.match(/plansLib\.includes\.gs1Codes/g) || []).length, 6);
 
   const clientCatalog = readFileSync('src/lib/trainingCatalog.js', 'utf8');
   const serverCatalog = readFileSync('server/trainingCatalog.js', 'utf8');
   for (const catalog of [clientCatalog, serverCatalog]) {
-    assert.match(catalog, /id: 'products-find-edit'[^}]*steps: 10/);
+    assert.match(catalog, /id: 'products-find-edit'[^}]*steps: 11/);
   }
 
   const en = readFileSync('src/lib/locales/en.js', 'utf8');

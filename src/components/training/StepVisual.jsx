@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Maximize2, X } from 'lucide-react';
 import { visualUrl } from '@/lib/embedMode';
 import { t } from '@/lib/i18n';
+import { useAuth } from '@/lib/AuthContext';
 
 // A lesson step's visual (Nov 15, 2026): the app's OWN page,
 // rendered live by the app itself inside a frame — the reader's
@@ -41,6 +42,37 @@ export default function StepVisual({ visual, title }) {
   const [ring, setRing] = useState(null);
   const [wide, setWide] = useState(false);
   const [bleed, setBleed] = useState(null);
+  // One session, one door out (owner ruling, Nov 15, 2026): the
+  // wide view is the same app on the same session, fully usable —
+  // including its Log out. If the session ends in there, it ends
+  // out here too: the wide view closes and the outer app walks
+  // out through its own logout, landing on the real login page.
+  // The lesson chrome must never sit above a login page.
+  const { logout } = useAuth();
+  const logoutRef = useRef(logout);
+  useEffect(() => {
+    logoutRef.current = logout;
+  }, [logout]);
+  const endOuterSession = useCallback(() => {
+    setWide(false);
+    logoutRef.current?.();
+  }, []);
+
+  // The framed app posts 'sh:session-ended' the moment its own
+  // logout begins (see the client logout). Only THIS visual's own
+  // wide frame may end the outer session — origin-checked and
+  // source-checked, so no other frame or window can spoof it.
+  useEffect(() => {
+    const onMessage = (event) => {
+      if (event.origin !== window.location.origin) return;
+      if (event.data?.type !== 'sh:session-ended') return;
+      const frame = wideFrameRef.current;
+      if (!frame || event.source !== frame.contentWindow) return;
+      endOuterSession();
+    };
+    window.addEventListener('message', onMessage);
+    return () => window.removeEventListener('message', onMessage);
+  }, [endOuterSession]);
 
   useEffect(() => {
     const node = wrapRef.current;
@@ -165,6 +197,18 @@ export default function StepVisual({ visual, title }) {
   }, [wide]);
 
   const onWideLoad = () => {
+    // The catch-all for a session that ended without the message
+    // (expiry, a door the message missed): the framed app only
+    // ever lands on /login when nobody is signed in — and if
+    // nobody is signed in inside, nobody is signed in outside.
+    try {
+      if (wideFrameRef.current?.contentWindow?.location?.pathname === '/login') {
+        endOuterSession();
+        return;
+      }
+    } catch {
+      /* same-origin by construction; a failure just skips the check */
+    }
     if (!visual.target) return;
     window.setTimeout(() => {
       try {

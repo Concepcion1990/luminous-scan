@@ -29,6 +29,7 @@ export const PLANS = {
         t('plansLib.welcomeEssentialsIncludes.products'),
         t('plansLib.essentialsIncludes.catalog'),
         t('plansLib.essentialsIncludes.imports'),
+        t('plansLib.includes.bulkEdit'),
         t('plansLib.essentialsIncludes.scanning'),
         t('plansLib.essentialsIncludes.receiving'),
         t('plansLib.essentialsIncludes.orders'),
@@ -65,6 +66,7 @@ export const PLANS = {
         t('plansLib.businessIncludes.everything'),
         t('plansLib.essentialsIncludes.scanning'),
         t('plansLib.essentialsIncludes.imports'),
+        t('plansLib.includes.bulkEdit'),
         t('plansLib.essentialsIncludes.labels'),
         t('plansLib.includes.shippingLabels'),
         t('plansLib.includes.docStyle'),
@@ -213,9 +215,16 @@ export function formatLimit(limit) {
 /**
  * The mobile-only offering, shown on the welcome and comparison screens.
  *
- * It grants nothing yet on purpose: store billing is not live, and the mobile
- * product, site and staff allowances have not been approved, so they are never
- * inferred from the website tiers. Nothing here is read by an entitlement check.
+ * It grants nothing yet on purpose: store billing is not live. The scope
+ * below is the owner's own rulings (Nov 15, 2026): a clear subset of
+ * Essentials — capped at 50 distinct products like Essentials, solo —
+ * with the code generator and the GS1 prefix option, printing for UPC
+ * and product labels plus 4×6 shipping labels (the carrier's own label
+ * can be kept on file), and training for exactly the features it has.
+ * NOT the document suite and NOT the Document Style Studio: Mobile's
+ * printing stops at labels. The site allowance is still unruled, so it
+ * is never inferred from the website tiers. Nothing here is read by an
+ * entitlement check.
  */
 export const MOBILE_PLAN = {
   key: 'mobile',
@@ -226,6 +235,7 @@ export const MOBILE_PLAN = {
   get includes() {
     return [
       t('plansLib.mobileIncludes.simplified'),
+      t('plansLib.welcomeEssentialsIncludes.products'),
       t('plansLib.mobileIncludes.scanning'),
       t('plansLib.mobileIncludes.lookup'),
       t('plansLib.mobileIncludes.creation'),
@@ -235,6 +245,11 @@ export const MOBILE_PLAN = {
       t('plansLib.mobileIncludes.sales'),
       t('plansLib.mobileIncludes.history'),
       t('plansLib.mobileIncludes.orders'),
+      t('plansLib.includes.codeGenerator'),
+      t('plansLib.includes.gs1Codes'),
+      t('plansLib.mobileIncludes.labels'),
+      t('plansLib.includes.shippingLabels'),
+      t('plansLib.mobileIncludes.training'),
       t('plansLib.mobileIncludes.trial'),
     ];
   },
@@ -261,6 +276,7 @@ export const WELCOME_OPTIONS = [
         t('plansLib.welcomeEssentialsIncludes.tools'),
         t('plansLib.essentialsIncludes.scanning'),
         t('plansLib.essentialsIncludes.imports'),
+        t('plansLib.includes.bulkEdit'),
         t('plansLib.essentialsIncludes.labels'),
         t('plansLib.includes.shippingLabels'),
         t('plansLib.includes.docStyle'),
@@ -293,6 +309,7 @@ export const WELCOME_OPTIONS = [
       return [
         t('plansLib.essentialsIncludes.scanning'),
         t('plansLib.essentialsIncludes.imports'),
+        t('plansLib.includes.bulkEdit'),
         t('plansLib.essentialsIncludes.labels'),
         t('plansLib.includes.shippingLabels'),
         t('plansLib.includes.docStyle'),
@@ -340,7 +357,7 @@ export const WELCOME_OPTIONS = [
 export const COMPARISON_ROWS = [
   { get label() { return t('plansLib.compare.businesses'); }, get mobile() { return t('plansLib.unset'); }, get essentials() { return t('plansLib.compare.one'); }, get business() { return t('plansLib.compare.upToFive'); } },
   { get label() { return t('plansLib.compare.sites'); }, get mobile() { return t('plansLib.unset'); }, get essentials() { return t('plansLib.compare.one'); }, get business() { return t('plansLib.compare.upToFiveTotal'); } },
-  { get label() { return t('plansLib.compare.products'); }, get mobile() { return t('plansLib.unset'); }, get essentials() { return t('plansLib.compare.upToFifty'); }, get business() { return t('plansLib.unlimited'); } },
+  { get label() { return t('plansLib.compare.products'); }, get mobile() { return t('plansLib.compare.upToFifty'); }, get essentials() { return t('plansLib.compare.upToFifty'); }, get business() { return t('plansLib.unlimited'); } },
   { get label() { return t('plansLib.compare.quantities'); }, get mobile() { return t('plansLib.unlimited'); }, get essentials() { return t('plansLib.unlimited'); }, get business() { return t('plansLib.unlimited'); } },
   { get label() { return t('plansLib.compare.staff'); }, get mobile() { return t('plansLib.compare.solo'); }, get essentials() { return t('plansLib.compare.upToThree'); }, get business() { return t('plansLib.unlimited'); } },
   { get label() { return t('plansLib.compare.customRoles'); }, get mobile() { return t('plansLib.unset'); }, essentials: false, business: true },
@@ -368,16 +385,23 @@ export const COMPARISON_ROWS = [
   // team-era features stay "Set at launch": the mobile allowances
   // were never approved beyond the owner's decided design (solo,
   // scanner-first), so nothing is invented for that column.
+  // Mobile scope rulings (Nov 15, 2026) fill in the cells she has
+  // now decided: 50 distinct products (the products row), the code
+  // generator and GS1 codes, product-label and shipping-label
+  // printing, and training for its own features are IN; the
+  // Document Style Studio is OUT (Mobile printing stops at labels,
+  // so that cell is a plain false, not "Set at launch").
   { get label() { return t('plansLib.essentialsIncludes.imports'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
-  { get label() { return t('plansLib.compare.labels'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
-  { get label() { return t('plansLib.includes.shippingLabels'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
-  { get label() { return t('plansLib.includes.docStyle'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
+  { get label() { return t('plansLib.includes.bulkEdit'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
+  { get label() { return t('plansLib.compare.labels'); }, mobile: true, essentials: true, business: true },
+  { get label() { return t('plansLib.includes.shippingLabels'); }, mobile: true, essentials: true, business: true },
+  { get label() { return t('plansLib.includes.docStyle'); }, mobile: false, essentials: true, business: true },
   { get label() { return t('plansLib.includes.taxRate'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
-  { get label() { return t('plansLib.includes.codeGenerator'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
-  { get label() { return t('plansLib.includes.gs1Codes'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
+  { get label() { return t('plansLib.includes.codeGenerator'); }, mobile: true, essentials: true, business: true },
+  { get label() { return t('plansLib.includes.gs1Codes'); }, mobile: true, essentials: true, business: true },
   { get label() { return t('plansLib.includes.workforce'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
   { get label() { return t('plansLib.includes.payroll'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
-  { get label() { return t('plansLib.includes.training'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
+  { get label() { return t('plansLib.includes.training'); }, mobile: true, essentials: true, business: true },
   { get label() { return t('plansLib.includes.inbox'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
   { get label() { return t('plansLib.includes.recovery'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
   { get label() { return t('plansLib.includes.support'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },

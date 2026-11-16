@@ -109,3 +109,20 @@ test('StepVisual pans inside the picture and opens it wide (owner fix, Nov 15, 2
   // along with a pan instead of detaching from its target).
   assert.match(visual, /addEventListener\('scroll', scheduleMeasure/);
 });
+
+test('logout inside the wide view logs out the WHOLE app (owner ruling, Nov 15, 2026)', () => {
+  // One session, one door out — every plan, every role: the frame
+  // and the parent are the same app on the same cookie session.
+  const client = readFileSync('src/api/client.js', 'utf8');
+  assert.match(client, /isEmbedVisual\(\)/, 'the client logout knows when it runs in a frame');
+  assert.match(client, /postMessage\(\{ type: 'sh:session-ended' \}/, 'the framed app tells the parent its session ended');
+  assert.ok(
+    client.indexOf("postMessage({ type: 'sh:session-ended' }") < client.indexOf("request('/api/auth/logout'"),
+    'the message goes before the logout request — the navigation may tear the frame down',
+  );
+  const visual = readFileSync('src/components/training/StepVisual.jsx', 'utf8');
+  assert.match(visual, /event\.origin !== window\.location\.origin/, 'the parent origin-checks the message');
+  assert.match(visual, /event\.source !== frame\.contentWindow/, 'only the visual’s own wide frame may end the outer session');
+  assert.match(visual, /logoutRef\.current\?\.\(\)/, 'the parent walks out through its own logout');
+  assert.match(visual, /location\?\.pathname === '\/login'/, 'a framed landing on /login ends the outer session too');
+});
