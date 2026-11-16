@@ -5,6 +5,7 @@ import LanguagePicker from '@/components/LanguagePicker';
 import PlanOptionCard from '@/components/plans/PlanOptionCard';
 import TrialCountdown from '@/components/plans/TrialCountdown';
 import TrademarkNotice from '@/components/TrademarkNotice';
+import LegalFooter from '@/components/LegalFooter';
 import { Button } from '@/components/ui/button';
 import { WELCOME_OPTIONS } from '@/lib/plans';
 import { markWelcomeSeen } from '@/lib/welcome';
@@ -104,6 +105,12 @@ export default function Welcome() {
             door Nov 15, 2026 — her ruling: it should have already
             been here). Same component, same words as on Plans. */}
         <TrademarkNotice />
+
+        {/* The legal footer line (with the © restored Nov 15, 2026)
+            closes the front door too — her ruling: it must be there
+            before anyone registers or subscribes, not only inside
+            the app. Same shared component as every other page. */}
+        <LegalFooter />
       </main>
     </div>
   );

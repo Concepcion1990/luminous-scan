@@ -30,6 +30,12 @@
  * infringe upon our intellectual property" phrase to the legal body
  * above; "and federal statutory damages" stays out.
  *
+ * RESTORED Nov 15, 2026 — HER DECISION, on her attorney's advice: the
+ * © symbol returns to the footer line ("© 2026 The Luminous Book Shop,
+ * LLC. All rights reserved."), because she plans to copyright the app
+ * within the next year. This supersedes the Nov 12 removal of ©. The
+ * ® and ™ symbols stay out, and the second footer line is unchanged.
+ *
  * The notice block (heading + quote) is shown on Plans — the page people
  * see before subscribing — and on Subscribe, right as the subscription
  * process starts. The footer line sits small and centered at the bottom
@@ -45,6 +51,6 @@ export const TRADEMARK_NOTICE = Object.freeze({
 });
 
 export const LEGAL_FOOTER = Object.freeze({
-  copyrightLine: '2026 The Luminous Book Shop, LLC. All rights reserved.',
+  copyrightLine: '© 2026 The Luminous Book Shop, LLC. All rights reserved.',
   trademarkLine: 'Unauthorized duplication, cloning, or scraping is strictly prohibited.',
 });

@@ -41,9 +41,12 @@ test('footer text is the owner\'s exact words, verbatim', () => {
   // copyright claim), then restored the same day on her word — minus
   // only the © symbol, and with her registered legal name, "The
   // Luminous Book Shop, LLC" (Book and Shop separate words).
+  // Nov 15, 2026: the © is restored on her attorney's advice — she
+  // plans to copyright the app within the next year. This supersedes
+  // the Nov 12 removal of the symbol.
   assert.equal(
     footer.copyrightLine,
-    '2026 The Luminous Book Shop, LLC. All rights reserved.',
+    '© 2026 The Luminous Book Shop, LLC. All rights reserved.',
   );
   assert.equal(
     footer.trademarkLine,
@@ -51,19 +54,24 @@ test('footer text is the owner\'s exact words, verbatim', () => {
   );
 });
 
-test('no trademark / copyright claim language remains (Nov 12, 2026)', () => {
-  // Her decision Nov 12, 2026: she is launching without a trademark /
-  // copyright filing, so the app must not claim them — no ®, ™ or ©
-  // symbols, no registration or protection claims. This test replaces
-  // the Nov 9 "® stays" test, which her Nov 12 decision superseded.
+test('the © is restored; no other claim language returns (Nov 15, 2026)', () => {
+  // Her decision Nov 12, 2026 was to launch without claiming a
+  // trademark / copyright filing — no ®, ™ or © symbols, no
+  // registration or protection claims. On Nov 15, 2026, on her
+  // attorney's advice, she restored the © alone: she CAN keep it
+  // because she plans to copyright the app within the next year.
+  // The ® and ™ stay out, and no registration / protection wording
+  // returns. This test supersedes the Nov 12 no-claim-language test
+  // where the © is concerned.
   const rendered = [...Object.values(notice), ...Object.values(footer)].join('\n');
-  assert.doesNotMatch(rendered, /[®™©]/);
+  assert.match(footer.copyrightLine, /^© 2026 /, 'the © leads the footer line');
+  assert.doesNotMatch(rendered, /[®™]/);
   assert.doesNotMatch(rendered, /trademark/i);
   assert.doesNotMatch(rendered, /copyright/i);
   assert.doesNotMatch(rendered, /registered/i);
   // "All rights reserved" is NOT forbidden: on Nov 12, 2026 she
-  // explicitly kept that phrase in the restored footer line, minus
-  // only the © symbol.
+  // explicitly kept that phrase in the restored footer line, and on
+  // Nov 15, 2026 the © came back in front of it.
   assert.doesNotMatch(rendered, /statutory damages/i);
   assert.ok(Object.isFrozen(notice), 'notice module must be frozen');
   assert.ok(Object.isFrozen(footer), 'footer module must be frozen');
@@ -227,6 +235,15 @@ test('Welcome shows the notice at the foot of the front door (restored Nov 15, 2
   assert.ok(cardsAt > -1 && noticeAt > cardsAt, 'notice comes after the plan cards');
   assert.ok(signInAt > -1 && noticeAt > signInAt, 'notice comes after the sign-in line');
   assert.ok(noticeAt < screen.indexOf('</main>'), 'notice sits inside <main>');
+  // Nov 15, 2026 — her ruling: the legal footer line (with the ©)
+  // must be on the public front door too, before anyone registers
+  // or subscribes — the same shared LegalFooter as everywhere else,
+  // after the notice, closing the page inside <main>.
+  assert.match(screen, /import LegalFooter from '@\/components\/LegalFooter'/);
+  assert.equal(screen.split('<LegalFooter />').length - 1, 1, 'Welcome must render the footer exactly once');
+  const footerAt = screen.indexOf('<LegalFooter />');
+  assert.ok(footerAt > noticeAt, 'footer comes after the notice, at the foot of the front door');
+  assert.ok(footerAt < screen.indexOf('</main>'), 'footer sits inside <main>');
 });
 
 test('About shows the notice after the founder story, before the footer (restored Nov 15, 2026)', () => {
