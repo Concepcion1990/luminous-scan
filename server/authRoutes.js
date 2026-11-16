@@ -31,7 +31,7 @@ import crypto from 'node:crypto';
 import { Router } from 'express';
 import { hashPassword, verifyPassword, dummyPasswordCheck } from './passwords.js';
 import { checkLimit, resetRateLimits } from './rateLimit.js';
-import { sendMail, verificationEmail, passwordResetEmail, EmailNotConfigured } from './email.js';
+import { sendMail, verificationEmail, passwordResetEmail, EmailNotConfigured, resolveAccountLanguage } from './email.js';
 import {
   issueOtp,
   secondsSinceLastOtp,
@@ -200,6 +200,13 @@ const BUSINESS_UPDATE_FIELDS = [
   'date_format', 'unit_system', 'language', 'doc_style', 'tax_rate', 'gs1_prefix',
 ];
 const SUPPORTED_LANGUAGES = ['am', 'ar', 'bho', 'bn', 'de', 'en', 'en-AU', 'en-CA', 'en-GB', 'en-IN', 'es-CU', 'es-ES', 'es-MX', 'es-PR', 'es-US', 'es-VE', 'fa', 'fr-CA', 'fr-FR', 'gu', 'ha', 'hi', 'id', 'it', 'ja', 'jv', 'kn', 'ko', 'mr', 'ms', 'pa-Arab', 'pa-Guru', 'pcm', 'prs', 'pt-BR', 'pt-PT', 'ru', 'sw', 'ta', 'te', 'tg', 'th', 'tl', 'tr', 'uk', 'ur', 'vi', 'wuu', 'yo', 'yue', 'zh-Hans', 'zh-Hant'];
+// The language the reader is using right now, when the client sends
+// it (signup and code-resend do): account mail renders in it until
+// the account has a business whose language governs instead.
+function requestLanguage(req) {
+  const requested = String(req.body?.language || '').trim();
+  return SUPPORTED_LANGUAGES.includes(requested) ? requested : null;
+}
 // Mirrors CURRENCIES in src/lib/business.js EXACTLY (tests/t6 pins the
 // two identical): every active ISO 4217 code. This validates the
 // workspace's DISPLAY currency only; billing never reads it.
@@ -377,7 +384,7 @@ export function createAuthRouter({ getPool }) {
         // Re-registering an unverified account just (re)issues its code.
         const { code } = await issueOtp(client, user.id, 'verify');
         try {
-          await sendMail(verificationEmail({ to: email, code }));
+          await sendMail(verificationEmail({ to: email, code, lang: requestLanguage(req) }));
         } catch (error) {
           if (error instanceof EmailNotConfigured) throw error;
           throw new Error(`email_send_failed: ${error.message}`);
@@ -483,7 +490,7 @@ export function createAuthRouter({ getPool }) {
       }
       await withTx(pool, async (client) => {
         const { code } = await issueOtp(client, user.id, 'verify');
-        await sendMail(verificationEmail({ to: email, code }));
+        await sendMail(verificationEmail({ to: email, code, lang: requestLanguage(req) || (await resolveAccountLanguage(pool, user.id)) }));
       });
       return res.json({ ok: true });
     } catch (error) {
@@ -604,7 +611,7 @@ export function createAuthRouter({ getPool }) {
             return { code, resetUrl };
           });
           try {
-            await sendMail(passwordResetEmail({ to: email, resetUrl: result.resetUrl, code: result.code }));
+            await sendMail(passwordResetEmail({ to: email, resetUrl: result.resetUrl, code: result.code, lang: await resolveAccountLanguage(pool, user.id) }));
           } catch (error) {
             // The reset code row exists but the mail failed: log it
             // server-side (ops issue) and keep the generic 200 — the
