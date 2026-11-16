@@ -47,7 +47,7 @@ export default function VariationFields({ form, set, setForm }) {
           id="variant_label"
           value={form.variant_label}
           onChange={set('variant_label')}
-          placeholder="Large / navy, 2nd printing, gift box"
+          placeholder={t('productForm.variantLabelPlaceholder')}
         />
       </div>
 
@@ -76,13 +76,13 @@ export default function VariationFields({ form, set, setForm }) {
             <Input
               value={row.name}
               onChange={setOption(index, 'name')}
-              placeholder="Size"
+              placeholder={t('productForm.variantNamePlaceholder')}
               className="h-8 w-[40%]"
             />
             <Input
               value={row.value}
               onChange={setOption(index, 'value')}
-              placeholder="Large"
+              placeholder={t('productForm.variantValuePlaceholder')}
               className="h-8"
             />
             <Button

@@ -115,7 +115,7 @@ export default function CategoryDialog({ open, onOpenChange, entry, rows, onSave
               id="category-name"
               value={name}
               onChange={(event) => setName(event.target.value)}
-              placeholder={kind === 'tag' ? 'signed' : kind === 'subcategory' ? 'Poetry' : 'Books'}
+              placeholder={kind === 'tag' ? t('categories.exampleTag') : kind === 'subcategory' ? t('categories.exampleSubcategory') : t('categories.exampleCategory')}
             />
           </div>
 
