@@ -1012,6 +1012,20 @@ export async function deleteEntity(pool, user, name, id) {
         'DELETE FROM direct_deposit_details WHERE business_id = $1 AND staff_member_id = $2',
         [row.business_id, id],
       );
+      // The workspace-list link goes too (Nov 15, 2026): the member's
+      // business_memberships row is deleted in the same transaction,
+      // so the workspace leaves their list at once and a later
+      // sign-in cannot resurrect it (ensureStaffMemberships only
+      // materializes memberships for ACTIVE staff rows).
+      const memberUser = (
+        await client.query('SELECT id FROM users WHERE LOWER(email) = LOWER($1) LIMIT 1', [row.email])
+      ).rows[0];
+      if (memberUser) {
+        await client.query(
+          "DELETE FROM business_memberships WHERE business_id = $1 AND user_id = $2 AND role = 'member'",
+          [row.business_id, memberUser.id],
+        );
+      }
       await client.query(`DELETE FROM ${def.table} WHERE id = $1`, [id]);
     });
     return { ok: true, id };

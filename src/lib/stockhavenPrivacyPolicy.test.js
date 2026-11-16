@@ -19,9 +19,14 @@ test('StockHaven privacy policy is effective November 8, 2026 and never says dra
   assert.doesNotMatch(body, /draft|not yet effective/i);
 });
 
-test('privacy policy page shows the effective date, not a draft header', () => {
+test('privacy policy page shows the effective date, not a draft header', async () => {
   const page = read('src/pages/PrivacyPolicy.jsx');
-  assert.match(page, /Effective \{policy\.effectiveDate\} · Reviewed \{policy\.lastReviewed\}/);
+  // Nov 15, 2026 (translation sweep): the chrome line renders
+  // through the policies.effectiveLine key so it translates; the
+  // dates themselves still come from the frozen policy module.
+  assert.match(page, /t\('policies\.effectiveLine', \{ effective: policy\.effectiveDate, reviewed: policy\.lastReviewed \}\)/);
+  const { en } = await import('./locales/en.js');
+  assert.equal(en['policies.effectiveLine'], 'Effective {effective} · Reviewed {reviewed}');
   assert.doesNotMatch(page, /Draft reviewed|Effective date pending|privacy — draft|This draft does not override/i);
 });
 
