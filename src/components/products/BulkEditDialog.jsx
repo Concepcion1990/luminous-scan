@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Trash2 } from 'lucide-react';
 import { base44 } from '@/api/client';
 import { Button } from '@/components/ui/button';
 import {
@@ -88,11 +89,19 @@ export default function BulkEditDialog({
   locations = [],
   levels = [],
   planKey = '',
+  canDelete = false,
   onDone,
 }) {
   const [form, setForm] = useState(empty);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  // Bulk delete (owner ruling, Nov 15, 2026): a red danger zone at
+  // the very bottom of this dialog, boss-only like the row menu's
+  // Delete (the caller passes canDelete from isBoss). It never
+  // deletes on one tap — a confirmation window names the exact
+  // count and asks once more before anything goes.
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   // Category/subcategory pickers (owner ruling, Nov 15, 2026): the
   // same app-rendered combobox + Add-new window as the product form.
   // The native <datalist> these fields used before never surfaces
@@ -131,6 +140,8 @@ export default function BulkEditDialog({
     if (open) {
       setForm(empty);
       setError('');
+      setConfirmDelete(false);
+      setDeleting(false);
       setAddNewField(null);
       setAddedNames({ category: [], subcategory: [] });
       let remembered = null;
@@ -340,6 +351,43 @@ export default function BulkEditDialog({
     }
   };
 
+  // Bulk delete, through the single delete's exact semantics: every
+  // selected product — copies and archived products included, since
+  // deleting is how an archived product leaves and a true delete is
+  // the only way the plan count goes down — goes through the entity
+  // delete (the server enforces access and the products.edit
+  // permission), then its stock levels are cleared the same way the
+  // row delete clears them. A product counts as deleted when its
+  // row is gone; the level cleanup is belt-and-braces over the
+  // database cascade. Failures are named in the result, never
+  // hidden behind an all-clear.
+  const deleteSelected = async () => {
+    if (!canDelete || !products.length || deleting) return;
+    setDeleting(true);
+    let deleted = 0;
+    const failed = [];
+    for (const product of products) {
+      try {
+        await base44.entities.Product.delete(product.id);
+        deleted += 1;
+        const own = levels.filter((l) => l.product_id === product.id);
+        if (own.length) {
+          try {
+            await base44.entities.StockLevel.deleteMany({ product_id: product.id });
+          } catch {
+            /* the product row is gone; its levels cascade with it */
+          }
+        }
+      } catch {
+        failed.push(product.name);
+      }
+    }
+    setDeleting(false);
+    setConfirmDelete(false);
+    onOpenChange(false);
+    onDone?.({ deleted: { count: deleted, failed } });
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] w-[calc(100vw-2rem)] max-w-lg overflow-y-auto">
@@ -544,7 +592,91 @@ export default function BulkEditDialog({
             {saving ? t('products.saving') : t('products.bulkUpdateButton', { count: products.length })}
           </Button>
         </DialogFooter>
+
+        {/* Danger zone — the very bottom of the dialog (owner
+            ruling, Nov 15, 2026): below even the footer, in red,
+            with the warning in plain words and a button that names
+            the live selection. Boss-only, like the row menu's
+            Delete; it opens the confirmation window, never a
+            delete. */}
+        {canDelete && products.length > 0 && (
+          <div className="rounded-lg border border-destructive/50 bg-destructive/5 p-3">
+            <p className="text-sm font-semibold text-destructive">
+              {t('products.bulkDeleteTitle')}
+            </p>
+            <p className="mt-1 text-xs leading-snug text-muted-foreground">
+              {t('products.bulkDeleteWarning')}
+            </p>
+            <Button
+              variant="destructive"
+              className="mt-3 w-full sm:w-auto"
+              onClick={() => setConfirmDelete(true)}
+              disabled={saving || deleting}
+            >
+              <Trash2 className="mr-1.5 h-4 w-4" />
+              {t('products.bulkDeleteButton', {
+                count: products.length,
+                plural: products.length === 1 ? '' : 's',
+              })}
+            </Button>
+          </div>
+        )}
       </DialogContent>
+
+      {/* Bulk-delete confirmation — the same fixed-overlay pattern
+          as the Add-new window below: the dialog behind it does not
+          move. It names the exact count, says plainly that this
+          cannot be undone, and its only road forward is the red
+          Yes button; Cancel (or nothing) deletes nothing. */}
+      {confirmDelete && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 p-4">
+          <div
+            role="alertdialog"
+            aria-modal="true"
+            aria-label={t('products.bulkDeleteConfirmTitle', {
+              count: products.length,
+              plural: products.length === 1 ? '' : 's',
+            })}
+            className="w-full max-w-sm space-y-3 rounded-xl bg-card p-4 shadow-lg"
+          >
+            <p className="text-sm font-semibold text-destructive">
+              {t('products.bulkDeleteConfirmTitle', {
+                count: products.length,
+                plural: products.length === 1 ? '' : 's',
+              })}
+            </p>
+            <p className="text-xs leading-snug text-muted-foreground">
+              {t('products.bulkDeleteConfirmBody', {
+                count: products.length,
+                plural: products.length === 1 ? '' : 's',
+              })}
+            </p>
+            <div className="flex gap-2 pt-1">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => setConfirmDelete(false)}
+                disabled={deleting}
+              >
+                {t('products.cancel')}
+              </Button>
+              <Button
+                variant="destructive"
+                className="flex-1"
+                onClick={deleteSelected}
+                disabled={deleting}
+              >
+                {deleting
+                  ? t('products.bulkDeleting')
+                  : t('products.bulkDeleteConfirmButton', {
+                      count: products.length,
+                      plural: products.length === 1 ? '' : 's',
+                    })}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Add-new vocabulary window — the same fixed overlay as the
           product form: the bulk dialog behind it does not move, the

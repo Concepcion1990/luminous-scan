@@ -871,7 +871,42 @@ export default function Products() {
         locations={locations}
         levels={levels}
         planKey={planKey}
+        canDelete={isBoss(user, record)}
         onDone={(summary) => {
+          // Bulk delete reports its own result (owner ruling,
+          // Nov 15, 2026): how many products were deleted — and,
+          // if any refused, their names. Never a false all-clear,
+          // and never dressed up as an edit.
+          if (summary?.deleted) {
+            const d = summary.deleted;
+            const parts = [];
+            if (d.count > 0) {
+              parts.push(
+                t('products.bulkDeleted', {
+                  count: d.count,
+                  plural: d.count === 1 ? '' : 's',
+                }),
+              );
+            }
+            if (d.failed?.length) {
+              parts.push(
+                t('products.bulkDeleteFailed', {
+                  count: d.failed.length,
+                  plural: d.failed.length === 1 ? '' : 's',
+                  names: d.failed.join(', '),
+                }),
+              );
+            }
+            toast({
+              title:
+                d.count > 0
+                  ? t('products.bulkDeletedTitle')
+                  : t('products.bulkDeleteFailedTitle'),
+              description: parts.join(' '),
+            });
+            setReload((r) => r + 1);
+            return;
+          }
           const count = summary?.count ?? 0;
           const parts = [
             t('products.productsChanged', { count, plural: count === 1 ? '' : 's' }),
