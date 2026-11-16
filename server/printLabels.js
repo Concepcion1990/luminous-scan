@@ -7,20 +7,21 @@
  *
  * Two honest limits, both reported to the owner rather than
  * papered over:
- *  1. jsPDF's standard fonts encode WinAnsi (cp1252). A label
- *     string containing characters outside that set (most
- *     non-Latin scripts, some diacritics) would render as
- *     garbage, which is worse than English — so resolution is
- *     PER STRING: a string that cannot render safely falls back
- *     to its English form, the rest of the document localizes.
- *     Embedded-font support for full-script PDFs is separate work.
- *  2. Money/number formatting inside the documents still uses
- *     the existing money() helper (en-US grouping) — unchanged
- *     by this pass.
+ *  1. jsPDF's standard fonts encode WinAnsi (cp1252), but the PDF
+ *     pipeline now embeds real script fonts (server/printFonts.js,
+ *     leftovers sweep): a label string renders in the business's
+ *     language whenever WinAnsi OR an embedded font can draw it.
+ *     What still falls back to English, per string, is only what
+ *     neither can draw honestly — labels in Indic scripts, whose
+ *     shaping (conjuncts, pre-base matras) jsPDF cannot do.
+ *  2. Money/number formatting inside the documents groups by the
+ *     business's locale (server/printPdf.js money()) — amounts
+ *     themselves stay exact to the cent.
  *
  * The English row is the source; every other row is a rendering,
  * never an edit of the English.
  */
+import { isPrintRenderable } from './printFonts.js';
 const LABELS = {
   en: {
     pageOf: 'Page {page} of {pages}', labels: 'Labels', untitled: 'Untitled', noCode: 'NO CODE',
@@ -256,23 +257,6 @@ Object.assign(LABELS, {
   pcm: { pageOf: 'Page {page} of {pages}', labels: 'Labels', untitled: 'No title', noCode: 'NO CODE', codeLine: 'Code: {code}', skuLine: 'SKU {sku}', chooseLabel: 'Choose at least one label to print.', packingSlip: 'Packing slip', supplierPackingSlip: 'Supplier packing slip', purchaseOrder: 'Purchase order', orderLine: 'Order {number}', poLine: 'PO {number}', customerLine: 'Customer {name}', supplierLine: 'Supplier {name}', orderedLine: 'Ordered {date}', expectedLine: 'Expected {date}', statusLine: 'Status {status}', product: 'Product', qty: 'Qty', item: 'Item', unitCost: 'Unit cost', lineTotal: 'Line total', subtotalLine: 'Subtotal {amount}', totalLine: 'Total {amount}', noteLine: 'Note: {note}', supplierTitle: 'Supplier: {name}', contact: 'Contact', email: 'Email', phone: 'Phone', account: 'Account', leadTime: 'Lead time', leadTimeDays: '{days} days', website: 'Website', address: 'Address', openPurchaseOrders: 'Open purchase orders', noOpenOrders: 'No open orders wit dis supplier.', receivedLine: '{number} · {status} · {received}/{ordered} received', reportFallback: 'Report', groupedBy: 'Grouped by {group}', periodLine: 'Period {from} to {to}', earliest: 'earliest', today: 'today', group: 'Group', records: 'Records', units: 'Units', totalRecordsLine: 'Total {count} records · {units} units · {value}', missingUnits: '{units} units for dis view no get {label} recorded. Money wey miss no be zero — dem leave am out of di figures.' },
 });
 
-// WinAnsi (cp1252) repertoire check — jsPDF standard fonts.
-const WINANSI_EXTRA = new Set([
-  0x20ac, 0x201a, 0x0192, 0x201e, 0x2026, 0x2020, 0x2021, 0x02c6, 0x2030,
-  0x0160, 0x2039, 0x0152, 0x017d, 0x2018, 0x2019, 0x201c, 0x201d, 0x2022,
-  0x2013, 0x2014, 0x02dc, 0x2122, 0x0161, 0x203a, 0x0153, 0x017e, 0x0178,
-]);
-function isWinAnsiSafe(value) {
-  for (const ch of value) {
-    const cp = ch.codePointAt(0);
-    if (cp >= 0x20 && cp <= 0x7e) continue;
-    if (cp >= 0xa0 && cp <= 0xff) continue;
-    if (WINANSI_EXTRA.has(cp)) continue;
-    return false;
-  }
-  return true;
-}
-
 const baseOf = (language) => String(language || 'en').split('-')[0];
 
 /**
@@ -285,7 +269,7 @@ export function printLabelsFor(language) {
   const out = {};
   for (const key of Object.keys(LABELS.en)) {
     const candidate = row[key] || LABELS.en[key];
-    out[key] = isWinAnsiSafe(candidate) ? candidate : LABELS.en[key];
+    out[key] = isPrintRenderable(candidate) ? candidate : LABELS.en[key];
   }
   return out;
 }
