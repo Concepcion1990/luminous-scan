@@ -121,6 +121,9 @@ const FR_FR_COGNATE_KEYS = new Set([
   'staffLib.area.stock', 'suppliers.contact', 'training.module.exports',
   'training.module.messaging', 'training.module.scanner', 'workforce.messages.title',
   'workforce.tasks.notes',
+  // Translation sweep (Nov 15, 2026): 'Photo' and 'Fiction' are
+  // the genuine French words — true cognates, not untranslated.
+  'products.colPhoto', 'productForm.categoryPlaceholder',
 ]);
 const FR_CA_COGNATE_KEYS = new Set([
   'counts.notesLabel', 'dashboard.minReorder', 'importLib.field.description',
@@ -142,6 +145,8 @@ const FR_CA_COGNATE_KEYS = new Set([
   'staff.memberDialog.notesLabel', 'staffLib.area.stock', 'suppliers.contact',
   'suppliers.notes', 'training.module.messaging', 'workforce.messages.title',
   'workforce.tasks.notes',
+  // Translation sweep (Nov 15, 2026): same French cognates as fr-FR.
+  'products.colPhoto', 'productForm.categoryPlaceholder',
 ]);
 const PT_BR_COGNATE_KEYS = new Set([
   'bomLib.kindBundleShort', 'dashboard.skusCount', 'exports.backupJson',
@@ -304,6 +309,9 @@ const TL_COGNATE_KEYS = new Set([
   'suppliers.website', 'training.module.cross-store', 'training.module.direct-deposit',
   'training.module.payroll', 'training.module.scanner', 'upgrade.introTrial',
   'workforce.tab.clock', 'workforce.tab.inbox', 'workforce.title',
+  // Translation sweep (Nov 15, 2026): 'clearance' is the standard
+  // retail word in the Philippines — sale signage uses it verbatim.
+  'products.bulkTagExampleBusiness',
 ]);
 const HA_COGNATE_KEYS = new Set([
   'bomLib.kindBundle', 'bomLib.kindBundleShort', 'businessLib.brandColor.plum',
@@ -428,12 +436,22 @@ const EXAMPLE_VALUES = new Set([
   'you@example.com', 'alex@example.com', 'Dana Ruiz',
   'Ingram Content Group', 'supplier.com', 'Harbor & Pine Books',
   'Alex Rivera',
+  // Translation sweep (Nov 15, 2026): the product form's example
+  // author name — example data, like Dana Ruiz above.
+  'Ada Mercer',
 ]);
 
 function legitIdentical(key, value) {
   if (typeof value !== 'string') return 'non-string';
   if (value === '') return 'empty';
   if (key === 'settings.deleteConfirmWord') return 'confirm-word';
+  // Translation sweep (Nov 15, 2026): two placeholder examples are
+  // formats, not prose — a measurement ('21 × 14 × 2 cm', SI units
+  // are the same in every language) and a purchase-order code
+  // ('PO-1043'). They stay identical in every locale on purpose;
+  // the words around them are genuinely translated.
+  if (key === 'productForm.dimensionsPlaceholder') return 'measurement-format';
+  if (key === 'import.referencePlaceholderBusiness') return 'code-format';
   if (key.startsWith('settings.details.')) return 'language-label';
   const stripped = value.replace(/\{[^}]*\}/g, '').trim();
   if (stripped === '') return 'placeholder-only';

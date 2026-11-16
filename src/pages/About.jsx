@@ -4,21 +4,29 @@ import AppMark from '@/components/brand/AppMark';
 import LanguagePicker from '@/components/LanguagePicker';
 import LegalFooter from '@/components/LegalFooter';
 import TrademarkNotice from '@/components/TrademarkNotice';
-import { ABOUT_FOUNDER as about } from '@/lib/aboutFounder';
 import { t, useLocale } from '@/lib/i18n';
 
 /**
  * Public "Luminous StockHaven About" page — About the Founder, in her
  * own words. No calls to Base44 or payment providers. Accessible before
  * sign-up and before any subscription authorization, like the policy
- * pages. The text lives in src/lib/aboutFounder.js and is rendered
- * verbatim; this page only lays it out.
+ * pages.
+ *
+ * Nov 15, 2026 — her ruling: the founder story translates into all
+ * 52 locales like everything else. The story renders from the locale
+ * keys (about.founder.*); the English values are byte-identical to
+ * the frozen module src/lib/aboutFounder.js, which stays the frozen
+ * reference of her exact words — translations are renderings, never
+ * edits. This page only lays the text out.
  */
+const FOUNDER_PARAGRAPH_KEYS = [
+  'about.founder.p1',
+  'about.founder.p2',
+  'about.founder.p3',
+  'about.founder.p4',
+];
+
 export default function About() {
-  // The bookstore lead-in below is translated copy (about.
-  // bookshopLeadIn), so this page follows the locale like every
-  // other translated public page; the founder text above it stays
-  // verbatim in her own words, as always.
   useLocale();
   return (
     <div className="min-h-screen bg-background">
@@ -31,7 +39,7 @@ export default function About() {
               to="/plans"
               className="inline-flex items-center gap-1.5 text-xs font-medium text-primary-foreground/80 underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground"
             >
-              <ArrowLeft className="h-4 w-4" aria-hidden="true" /> View plans
+              <ArrowLeft className="h-4 w-4" aria-hidden="true" /> {t('legalNav.viewPlans')}
             </Link>
           </div>
         </div>
@@ -39,20 +47,20 @@ export default function About() {
 
       <main className="mx-auto max-w-4xl px-4 py-8 sm:px-8 sm:py-12">
         <div className="mb-5 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          <BookOpen className="h-4 w-4" aria-hidden="true" /> About Luminous StockHaven
+          <BookOpen className="h-4 w-4" aria-hidden="true" /> {t('about.eyebrow')}
         </div>
-        <h1 className="text-2xl font-semibold leading-tight sm:text-3xl">{about.pageTitle}</h1>
+        <h1 className="text-2xl font-semibold leading-tight sm:text-3xl">{t('about.pageTitle')}</h1>
 
         <section
           aria-labelledby="about-founder"
           className="mt-6 scroll-mt-6 rounded-xl border border-border bg-card p-4 sm:p-6"
         >
           <h2 id="about-founder" className="text-base font-semibold sm:text-lg">
-            {about.sectionHeading}
+            {t('about.founderHeading')}
           </h2>
           <div className="mt-3 space-y-3 text-sm leading-relaxed text-muted-foreground">
-            {about.paragraphs.map((paragraph, index) => (
-              <p key={'about-founder-' + index}>{paragraph}</p>
+            {FOUNDER_PARAGRAPH_KEYS.map((key) => (
+              <p key={key}>{t(key)}</p>
             ))}
           </div>
         </section>
@@ -78,21 +86,21 @@ export default function About() {
             Same component, same words as on Plans. */}
         <TrademarkNotice />
 
-        <nav aria-label="Related information" className="mt-8 flex flex-wrap gap-4 text-sm">
+        <nav aria-label={t('legalNav.relatedInfo')} className="mt-8 flex flex-wrap gap-4 text-sm">
           <Link to="/plans" className="font-medium text-link underline underline-offset-4">
-            Compare plans
+            {t('legalNav.comparePlans')}
           </Link>
           <Link to="/terms-of-service" className="font-medium text-link underline underline-offset-4">
-            Terms of Service
+            {t('legalNav.terms')}
           </Link>
           <Link to="/subscription-policy" className="font-medium text-link underline underline-offset-4">
-            Subscription and refunds
+            {t('legalNav.subscription')}
           </Link>
           <Link to="/privacy-policy" className="font-medium text-link underline underline-offset-4">
-            Privacy Policy
+            {t('legalNav.privacy')}
           </Link>
           <Link to="/welcome" className="font-medium text-link underline underline-offset-4">
-            Back to welcome
+            {t('legalNav.backToWelcome')}
           </Link>
         </nav>
 
