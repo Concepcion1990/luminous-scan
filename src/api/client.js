@@ -30,7 +30,8 @@ import { loginBounceTarget } from '../lib/authReturnTo.js';
 import { bumpData } from '../lib/dataFreshness.js';
 import { isEmbedVisual } from '../lib/embedMode.js';
 import { prepareImageForUpload } from '../lib/imagePrep.js';
-import { t } from '../lib/i18n.js';
+import { t, getLocale } from '../lib/i18n.js';
+import { apiErrorMessage } from '../lib/apiErrors.js';
 
 const notImplemented = (area) =>
   new Error(`${area} is not yet implemented (T2/T3) — the twin skeleton serves public pages only.`);
@@ -60,9 +61,12 @@ async function request(path, { method = 'GET', body, timeoutMs } = {}) {
   }
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
-    const error = new Error(
-      data.message || data.error || data.detail || t('apiLib.requestFailed', { status: response.status })
-    );
+    // The banner text resolves through the API-error map
+    // (src/lib/apiErrors.js): the server's stable code + English
+    // message become the reader's language whenever the words are
+    // known; the English message itself is the final fallback —
+    // never a raw code, never a blank.
+    const error = new Error(apiErrorMessage(data, response.status));
     error.status = response.status;
     error.data = data;
     throw error;
@@ -190,7 +194,7 @@ export async function apiDownload(path) {
   const response = await fetch(path, { method: 'GET', credentials: 'same-origin' });
   if (!response.ok) {
     const data = await response.json().catch(() => ({}));
-    const error = new Error(data.message || data.error || t('apiLib.downloadFailed', { status: response.status }));
+    const error = new Error(apiErrorMessage(data, response.status, 'apiLib.downloadFailed'));
     error.status = response.status;
     error.data = data;
     throw error;
@@ -212,12 +216,14 @@ export const base44 = {  entities: Object.fromEntries(
     // Real endpoints (T2): the server answers with the signed-in user
     // or 401 while signed out.
     me: () => request('/api/auth/me'),
-    register: ({ email, password }) =>
-      request('/api/auth/register', { method: 'POST', body: { email, password } }),
+    // The reader's current language rides along so the verification
+    // email itself arrives in their language (leftovers sweep).
+    register: ({ email, password, language }) =>
+      request('/api/auth/register', { method: 'POST', body: { email, password, language: language || getLocale() } }),
     verifyOtp: ({ email, otpCode }) =>
       request('/api/auth/verify', { method: 'POST', body: { email, otpCode } }),
     resendOtp: (email) =>
-      request('/api/auth/resend-otp', { method: 'POST', body: { email } }),
+      request('/api/auth/resend-otp', { method: 'POST', body: { email, language: getLocale() } }),
     resetPasswordRequest: (email) =>
       request('/api/auth/forgot-password', { method: 'POST', body: { email } }),
     resetPassword: ({ resetToken, newPassword }) =>

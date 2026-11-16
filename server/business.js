@@ -172,6 +172,7 @@ export async function sendPurchaseOrder(pool, user, businessId, poId) {
         businessName: access.business.name,
         currency: access.business.currency,
         order,
+        lang: access.business.language,
       }),
       attachments: [{ filename: `purchase-order-${safeNumber}.pdf`, content: pdf }],
     });
