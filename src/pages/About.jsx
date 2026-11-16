@@ -5,6 +5,18 @@ import LanguagePicker from '@/components/LanguagePicker';
 import LegalFooter from '@/components/LegalFooter';
 import TrademarkNotice from '@/components/TrademarkNotice';
 import { t, useLocale } from '@/lib/i18n';
+import { SOCIAL_LINKS } from '@/lib/socialLinks';
+import instagramQr from '@/assets/social/instagram-qr.svg';
+import facebookQr from '@/assets/social/facebook-qr.svg';
+import threadsQr from '@/assets/social/threads-qr.svg';
+import tiktokQr from '@/assets/social/tiktok-qr.svg';
+
+const SOCIAL_QR = {
+  instagram: instagramQr,
+  facebook: facebookQr,
+  threads: threadsQr,
+  tiktok: tiktokQr,
+};
 
 /**
  * Public "Luminous StockHaven About" page — About the Founder, in her
@@ -80,6 +92,46 @@ export default function About() {
             The Luminous Book Shop
           </a>
         </p>
+
+        {/* Her Nov 16, 2026 request: the shop's four social pages,
+            each with a QR code beside its link. Platform names and
+            handles are proper nouns — they render as-is in every
+            locale, so this section carries no translation keys. The
+            QR artwork is generated SVG text (scripts/generate-social-qrs.mjs)
+            pinned to these exact URLs by tests/t35/about-social-qr.test.js,
+            which decodes every code with a real QR reader. */}
+        <section className="mt-6 rounded-xl border border-border bg-card p-4 sm:p-6">
+          <ul className="grid gap-5 sm:grid-cols-2">
+            {SOCIAL_LINKS.map((link) => (
+              <li key={link.id} className="flex items-center gap-4">
+                <a
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="shrink-0 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <img
+                    src={SOCIAL_QR[link.id]}
+                    alt=""
+                    aria-hidden="true"
+                    className="h-20 w-20 rounded-md border border-border"
+                  />
+                </a>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold">{link.platform}</p>
+                  <a
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="break-all text-sm font-medium text-link underline underline-offset-4"
+                  >
+                    {link.handle}
+                  </a>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
 
         {/* The owner's not-for-sale statement (restored Nov 15,
             2026 — her ruling: it should have already been here).
