@@ -58,9 +58,12 @@ test('about: the About page carries the language picker like the other public pa
   const about = readSrc('src/pages/About.jsx');
   assert.ok(about.includes("import LanguagePicker from '@/components/LanguagePicker'"));
   assert.ok(about.includes('<LanguagePicker tone="onPrimary" />'));
-  // The founder text still renders verbatim from its protected module.
-  assert.ok(about.includes('ABOUT_FOUNDER'));
-  assert.ok(about.includes('about.paragraphs.map'));
+  // The founder text renders from the locale keys (Nov 15, 2026 —
+  // her ruling: the story translates into all 52); the English key
+  // values are byte-identical to its protected module, which
+  // src/lib/aboutFounder.test.js pins.
+  assert.ok(about.includes('FOUNDER_PARAGRAPH_KEYS.map'));
+  assert.ok(about.includes("t('about.founderHeading')"));
   // Every other public page already had it — pin the full set so a
   // future page cannot quietly lose (or never gain) the picker.
   for (const page of ['Welcome', 'Plans', 'Subscribe', 'TermsOfService', 'SubscriptionPolicy', 'PrivacyPolicy']) {
@@ -218,7 +221,7 @@ test('recovery: every client recovery path carries /api and names a real server 
 test('locale parity: all 52 locales carry the 7 new keys; tranche-1 locales are translated', () => {
   assert.equal(NEW_KEYS.length, 7);
   const enKeys = Object.keys(en).sort();
-  assert.equal(enKeys.length, 4141); // 3954 at the POS + deletion batch; +14 account-security (change password + staff reset); +1 white-label reset step; +13 locations/orders train; +2 edit-quantity; +2 photo chooser; +2 in-form scan; +4 category combobox; +3 product delete; +2 category edit door; +1 count-sheet scanner; +2 archived freeze; +3 import cap-awareness; +1 receive step; +1 draft notice; +3 owner-import lesson; +46 carrier labels + document style; +13 code generator; +10 GS1 mode +1 About bookshop lead-in (Nov 15, 2026). The lesson-visual fix batch (Nov 15, 2026) added 2 more (the wide view’s See it full screen / Back to the lesson labels), for 4125. The carrier-door fix (Nov 15, 2026) added 1 more (the Upload button’s pick-an-order-first guidance), for 4126. The bulk-delete batch (Nov 15, 2026) added 12 more (11 bulk-delete UI keys + the products-find-edit step 11 it teaches), for 4138. The plan-lists batch (Nov 15, 2026) added 3 more (the bulk edit/delete plans line + the Mobile label-printing and Mobile training lines), for 4141.
+  assert.equal(enKeys.length, 4205); // 3954 at the POS + deletion batch; +14 account-security (change password + staff reset); +1 white-label reset step; +13 locations/orders train; +2 edit-quantity; +2 photo chooser; +2 in-form scan; +4 category combobox; +3 product delete; +2 category edit door; +1 count-sheet scanner; +2 archived freeze; +3 import cap-awareness; +1 receive step; +1 draft notice; +3 owner-import lesson; +46 carrier labels + document style; +13 code generator; +10 GS1 mode +1 About bookshop lead-in (Nov 15, 2026). The lesson-visual fix batch (Nov 15, 2026) added 2 more (the wide view’s See it full screen / Back to the lesson labels), for 4125. The carrier-door fix (Nov 15, 2026) added 1 more (the Upload button’s pick-an-order-first guidance), for 4126. The bulk-delete batch (Nov 15, 2026) added 12 more (11 bulk-delete UI keys + the products-find-edit step 11 it teaches), for 4138. The plan-lists batch (Nov 15, 2026) added 3 more (the bulk edit/delete plans line + the Mobile label-printing and Mobile training lines), for 4141. The full-app translation sweep batch (Nov 15, 2026) added 64 more (the About page, the notice block, legal-page chrome, the 404 page and the sweep stragglers, all ×52), for 4205.
   for (const key of NEW_KEYS) assert.ok(key in en, `en missing ${key}`);
   assert.equal(Object.keys(LOCALES).length, 52);
   for (const code of Object.keys(LOCALES)) {

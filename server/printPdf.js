@@ -17,8 +17,13 @@
  *
  * Every builder returns a Buffer. Tests assert a valid %PDF header,
  * a non-trivial size, and the expected content strings.
+ *
+ * Document labels render in the business's language
+ * (server/printLabels.js, Nov 15, 2026) with a per-string English
+ * fallback for anything the standard PDF fonts cannot encode.
  */
 import { jsPDF } from 'jspdf';
+import { printLabelsFor, fillLabel } from './printLabels.js';
 
 const money = (value, currency = 'USD') => {
   const amount = Number(value) || 0;
@@ -47,13 +52,13 @@ function newDoc(businessName) {
   return doc;
 }
 
-function footer(doc, label) {
+function footer(doc, label, labels) {
   const pages = doc.getNumberOfPages();
   for (let i = 1; i <= pages; i += 1) {
     doc.setPage(i);
     doc.setFontSize(8);
     doc.setTextColor(140, 140, 140);
-    doc.text(`${label} · Page ${i} of ${pages}`, 40, 756);
+    doc.text(`${label} · ${fillLabel(labels.pageOf, { page: i, pages })}`, 40, 756);
   }
 }
 
@@ -72,8 +77,8 @@ function codeOf(product) {
  * codeType }). A product row maps to it; a location / bin label will
  * map to it the same way when the aisle feature lands.
  */
-function toLabel(item) {
-  if (!item) return { title: 'Untitled', lines: [], code: '', codeType: 'CODE128' };
+function toLabel(item, labelsText) {
+  if (!item) return { title: labelsText.untitled, lines: [], code: '', codeType: 'CODE128' };
   if (typeof item.title === 'string') {
     return {
       title: item.title.slice(0, 42),
@@ -86,18 +91,19 @@ function toLabel(item) {
   if (item.price !== null && item.price !== undefined && item.price !== '') {
     lines.push(money(item.price));
   }
-  if (item.sku) lines.push(`SKU ${item.sku}`);
-  return { title: String(item.name || 'Untitled').slice(0, 42), lines, code: codeOf(item), codeType: 'CODE128' };
+  if (item.sku) lines.push(fillLabel(labelsText.skuLine, { sku: item.sku }));
+  return { title: String(item.name || labelsText.untitled).slice(0, 42), lines, code: codeOf(item), codeType: 'CODE128' };
 }
 
 /** Labels, both plans. One label per item per copy — product or location. */
-export function buildLabelsPdf(items, { copies = 1, businessName = '' } = {}) {
+export function buildLabelsPdf(items, { copies = 1, businessName = '', language = 'en' } = {}) {
+  const labelsText = printLabelsFor(language);
   const doc = newDoc(businessName);
   const perCopy = Math.min(Math.max(Number(copies) || 1, 1), 20);
   const labels = (items || [])
-    .map((item) => toLabel(item))
+    .map((item) => toLabel(item, labelsText))
     .flatMap((label) => Array.from({ length: perCopy }, () => label));
-  if (!labels.length) throw new Error('Choose at least one label to print.');
+  if (!labels.length) throw new Error(labelsText.chooseLabel);
   const labelW = 252;
   const labelH = 144;
   const gap = 12;
@@ -115,7 +121,7 @@ export function buildLabelsPdf(items, { copies = 1, businessName = '' } = {}) {
     doc.setTextColor(30, 30, 30);
     doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
-    doc.text(doc.splitTextToSize(String(label.title || 'Untitled'), labelW - 20), x + 10, y + 20);
+    doc.text(doc.splitTextToSize(String(label.title || labelsText.untitled), labelW - 20), x + 10, y + 20);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
     label.lines.slice(0, 3).forEach((line, i) => {
@@ -125,11 +131,11 @@ export function buildLabelsPdf(items, { copies = 1, businessName = '' } = {}) {
     const code = label.code || '';
     doc.setFontSize(13);
     doc.setFont('helvetica', 'bold');
-    doc.text(code || 'NO CODE', x + 10, y + codeY, { maxWidth: labelW - 20 });
+    doc.text(code || labelsText.noCode, x + 10, y + codeY, { maxWidth: labelW - 20 });
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
     doc.setTextColor(90, 90, 90);
-    doc.text(`Code: ${code || '—'}`, x + 10, y + codeY + 36);
+    doc.text(fillLabel(labelsText.codeLine, { code: code || '—' }), x + 10, y + codeY + 36);
     col += 1;
     if (col >= cols) {
       col = 0;
@@ -139,31 +145,32 @@ export function buildLabelsPdf(items, { copies = 1, businessName = '' } = {}) {
       x += labelW + gap;
     }
   });
-  footer(doc, 'Labels');
+  footer(doc, labelsText.labels, labelsText);
   return toBuffer(doc);
 }
 
 /** Customer packing slip (quantities only, no prices) — Business. */
 export function buildPackingSlipPdf(order, business) {
+  const labels = printLabelsFor(business?.language);
   const doc = newDoc(business?.name);
   doc.setTextColor(30, 30, 30);
   doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
-  doc.text('Packing slip', 40, 64);
+  doc.text(labels.packingSlip, 40, 64);
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);
-  doc.text(`Order ${order.number || ''}`, 40, 84);
-  doc.text(`Customer ${order.customer_name || ''}`, 40, 100);
-  if (order.order_date) doc.text(`Ordered ${order.order_date}`, 40, 116);
+  doc.text(fillLabel(labels.orderLine, { number: order.number || '' }), 40, 84);
+  doc.text(fillLabel(labels.customerLine, { name: order.customer_name || '' }), 40, 100);
+  if (order.order_date) doc.text(fillLabel(labels.orderedLine, { date: order.order_date }), 40, 116);
   let y = 148;
   doc.setFont('helvetica', 'bold');
-  doc.text('Product', 40, y);
-  doc.text('Qty', 420, y);
+  doc.text(labels.product, 40, y);
+  doc.text(labels.qty, 420, y);
   doc.setFont('helvetica', 'normal');
   y += 18;
   (order.lines || []).forEach((line) => {
     const qty = line.qty ?? line.quantity ?? line.qty_ordered ?? 0;
-    doc.text(String(line.product_name || line.sku || 'Item'), 40, y);
+    doc.text(String(line.product_name || line.sku || labels.item), 40, y);
     doc.text(String(qty), 420, y);
     y += 16;
     if (y > 720) {
@@ -171,7 +178,7 @@ export function buildPackingSlipPdf(order, business) {
       y = 56;
     }
   });
-  footer(doc, `Packing slip ${order.number || ''}`);
+  footer(doc, `${labels.packingSlip} ${order.number || ''}`, labels);
   return toBuffer(doc);
 }
 
@@ -180,32 +187,33 @@ export function buildPackingSlipPdf(order, business) {
  * (mode 'packing': quantities only, no prices) — Business.
  */
 export function buildPoPdf(order, business, { mode = 'po' } = {}) {
+  const labels = printLabelsFor(business?.language);
   const doc = newDoc(business?.name);
   doc.setTextColor(30, 30, 30);
   doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
-  doc.text(mode === 'packing' ? 'Supplier packing slip' : 'Purchase order', 40, 64);
+  doc.text(mode === 'packing' ? labels.supplierPackingSlip : labels.purchaseOrder, 40, 64);
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);
-  doc.text(`PO ${order.number || ''}`, 40, 84);
-  doc.text(`Supplier ${order.supplier_name || ''}`, 40, 100);
-  if (order.order_date) doc.text(`Ordered ${order.order_date}`, 40, 116);
-  if (order.expected_date) doc.text(`Expected ${order.expected_date}`, 40, 132);
-  doc.text(`Status ${order.status || ''}`, 40, 148);
+  doc.text(fillLabel(labels.poLine, { number: order.number || '' }), 40, 84);
+  doc.text(fillLabel(labels.supplierLine, { name: order.supplier_name || '' }), 40, 100);
+  if (order.order_date) doc.text(fillLabel(labels.orderedLine, { date: order.order_date }), 40, 116);
+  if (order.expected_date) doc.text(fillLabel(labels.expectedLine, { date: order.expected_date }), 40, 132);
+  doc.text(fillLabel(labels.statusLine, { status: order.status || '' }), 40, 148);
   let y = 180;
   doc.setFont('helvetica', 'bold');
-  doc.text('Product', 40, y);
-  doc.text('Qty', 340, y);
+  doc.text(labels.product, 40, y);
+  doc.text(labels.qty, 340, y);
   if (mode === 'po') {
-    doc.text('Unit cost', 400, y);
-    doc.text('Line total', 490, y);
+    doc.text(labels.unitCost, 400, y);
+    doc.text(labels.lineTotal, 490, y);
   }
   doc.setFont('helvetica', 'normal');
   y += 18;
   (order.lines || []).forEach((line) => {
     const qty = Number(line.qty_ordered) || 0;
     const cost = Number(line.unit_cost) || 0;
-    doc.text(String(line.product_name || line.sku || 'Item'), 40, y);
+    doc.text(String(line.product_name || line.sku || labels.item), 40, y);
     doc.text(String(qty), 340, y);
     if (mode === 'po') {
       doc.text(money(cost, business?.currency), 400, y);
@@ -220,39 +228,40 @@ export function buildPoPdf(order, business, { mode = 'po' } = {}) {
   if (mode === 'po') {
     y += 8;
     doc.setFont('helvetica', 'bold');
-    doc.text(`Subtotal ${money(order.subtotal, business?.currency)}`, 400, y);
+    doc.text(fillLabel(labels.subtotalLine, { amount: money(order.subtotal, business?.currency) }), 400, y);
     y += 16;
-    doc.text(`Total ${money(order.total, business?.currency)}`, 400, y);
+    doc.text(fillLabel(labels.totalLine, { amount: money(order.total, business?.currency) }), 400, y);
     doc.setFont('helvetica', 'normal');
   }
   if (order.note) {
     y += 24;
     doc.setFontSize(9);
     doc.setTextColor(90, 90, 90);
-    doc.text(doc.splitTextToSize(`Note: ${order.note}`, 480), 40, y);
+    doc.text(doc.splitTextToSize(fillLabel(labels.noteLine, { note: order.note }), 480), 40, y);
   }
-  footer(doc, `Purchase order ${order.number || ''}`);
+  footer(doc, `${labels.purchaseOrder} ${order.number || ''}`, labels);
   return toBuffer(doc);
 }
 
 /** Supplier profile sheet with its open orders — Business. */
 export function buildSupplierDocPdf(supplier, business, openOrders = []) {
+  const labels = printLabelsFor(business?.language);
   const doc = newDoc(business?.name);
   doc.setTextColor(30, 30, 30);
   doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
-  doc.text(`Supplier: ${supplier.name || ''}`, 40, 64);
+  doc.text(fillLabel(labels.supplierTitle, { name: supplier.name || '' }), 40, 64);
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);
   let y = 88;
   const fields = [
-    ['Contact', supplier.contact_name || ''],
-    ['Email', supplier.email || ''],
-    ['Phone', supplier.phone || ''],
-    ['Account', supplier.account_number || ''],
-    ['Lead time', supplier.lead_time_days ? `${supplier.lead_time_days} days` : ''],
-    ['Website', supplier.website || ''],
-    ['Address', supplier.address || ''],
+    [labels.contact, supplier.contact_name || ''],
+    [labels.email, supplier.email || ''],
+    [labels.phone, supplier.phone || ''],
+    [labels.account, supplier.account_number || ''],
+    [labels.leadTime, supplier.lead_time_days ? fillLabel(labels.leadTimeDays, { days: supplier.lead_time_days }) : ''],
+    [labels.website, supplier.website || ''],
+    [labels.address, supplier.address || ''],
   ];
   fields.forEach(([label, value]) => {
     if (!value) return;
@@ -270,43 +279,44 @@ export function buildSupplierDocPdf(supplier, business, openOrders = []) {
   doc.setTextColor(30, 30, 30);
   doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
-  doc.text('Open purchase orders', 40, y);
+  doc.text(labels.openPurchaseOrders, 40, y);
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);
   y += 20;
   if (!openOrders.length) {
-    doc.text('No open orders with this supplier.', 40, y);
+    doc.text(labels.noOpenOrders, 40, y);
   }
   openOrders.forEach((po) => {
     const received = (po.lines || []).reduce((s, l) => s + (Number(l.qty_received) || 0), 0);
     const ordered = (po.lines || []).reduce((s, l) => s + (Number(l.qty_ordered) || 0), 0);
-    doc.text(`${po.number || ''} · ${po.status || ''} · ${received}/${ordered} received`, 40, y);
+    doc.text(fillLabel(labels.receivedLine, { number: po.number || '', status: po.status || '', received, ordered }), 40, y);
     y += 16;
     if (y > 720) {
       doc.addPage();
       y = 56;
     }
   });
-  footer(doc, `Supplier ${supplier.name || ''}`);
+  footer(doc, fillLabel(labels.supplierLine, { name: supplier.name || '' }), labels);
   return toBuffer(doc);
 }
 
 /** One report as a PDF — Business. Same rows the server report endpoint returns. */
 export function buildReportPdf(report, business, { from = '', to = '' } = {}) {
+  const labels = printLabelsFor(business?.language);
   const doc = newDoc(business?.name);
   doc.setTextColor(30, 30, 30);
   doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
-  doc.text(String(report?.report?.label || 'Report'), 40, 64);
+  doc.text(String(report?.report?.label || labels.reportFallback), 40, 64);
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);
-  doc.text(`Grouped by ${(report?.groupLabel || '').toLowerCase()}`, 40, 84);
-  if (from || to) doc.text(`Period ${from || 'earliest'} to ${to || 'today'}`, 40, 100);
+  doc.text(fillLabel(labels.groupedBy, { group: (report?.groupLabel || '').toLowerCase() }), 40, 84);
+  if (from || to) doc.text(fillLabel(labels.periodLine, { from: from || labels.earliest, to: to || labels.today }), 40, 100);
   let y = 132;
   doc.setFont('helvetica', 'bold');
-  doc.text('Group', 40, y);
-  doc.text('Records', 300, y);
-  doc.text('Units', 380, y);
+  doc.text(labels.group, 40, y);
+  doc.text(labels.records, 300, y);
+  doc.text(labels.units, 380, y);
   doc.text(String(report?.valueLabel || 'Value'), 450, y);
   doc.setFont('helvetica', 'normal');
   y += 18;
@@ -324,7 +334,11 @@ export function buildReportPdf(report, business, { from = '', to = '' } = {}) {
   y += 8;
   doc.setFont('helvetica', 'bold');
   doc.text(
-    `Total ${report?.totals?.count ?? 0} records · ${report?.totals?.units ?? 0} units · ${money(report?.totals?.value, business?.currency)}`,
+    fillLabel(labels.totalRecordsLine, {
+      count: report?.totals?.count ?? 0,
+      units: report?.totals?.units ?? 0,
+      value: money(report?.totals?.value, business?.currency),
+    }),
     40,
     y,
   );
@@ -335,13 +349,13 @@ export function buildReportPdf(report, business, { from = '', to = '' } = {}) {
     doc.setTextColor(90, 90, 90);
     doc.text(
       doc.splitTextToSize(
-        `${report.missing.units} units in this view have no ${report.missing.label} recorded. Missing money is never treated as zero — they are left out of the figures.`,
+        fillLabel(labels.missingUnits, { units: report.missing.units, label: report.missing.label }),
         480,
       ),
       40,
       y,
     );
   }
-  footer(doc, String(report?.report?.label || 'Report'));
+  footer(doc, String(report?.report?.label || labels.reportFallback), labels);
   return toBuffer(doc);
 }

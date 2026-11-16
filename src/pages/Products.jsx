@@ -600,7 +600,7 @@ export default function Products() {
       <div data-tour="products-list" className="overflow-hidden rounded-xl border border-border bg-card">
         <div className="hidden grid-cols-[26px_minmax(0,2.2fr)_minmax(0,1.2fr)_110px_110px_88px] gap-3 border-b border-border bg-muted/50 px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground md:grid xl:grid-cols-[26px_48px_minmax(0,2.4fr)_minmax(0,1.3fr)_120px_110px_84px_104px_96px]">
           <span />
-          <span className="hidden xl:block">Photo</span>
+          <span className="hidden xl:block">{t('products.colPhoto')}</span>
           <SortHeader label={t('products.colProduct')} column="name" sort={sort} onSort={toggleSort} />
           <SortHeader label={t('products.colCodes')} column="codes" sort={sort} onSort={toggleSort} />
           <SortHeader label={t('products.colCategory')} column="category" sort={sort} onSort={toggleSort} />

@@ -138,10 +138,14 @@ test('bulk quantity: the dialog carries the whole discipline', () => {
 
 test('plan-scoped examples: Business vocabulary stays off Essentials surfaces', () => {
   const bulk = readFileSync('src/components/products/BulkEditDialog.jsx', 'utf8');
-  assert.match(bulk, /placeholder=\{planKey === 'business' \? 'clearance' : 'seasonal'\}/,
+  // Nov 15, 2026 (translation sweep): the plan-scoped examples now
+  // render through locale keys — the scoping itself is unchanged
+  // (Business sees the clearance example, Essentials the seasonal
+  // one; the PO reference stays Business-only vocabulary).
+  assert.match(bulk, /placeholder=\{planKey === 'business' \? t\('products\.bulkTagExampleBusiness'\) : t\('products\.bulkTagExampleEssentials'\)\}/,
     'the Remove tags example is clearance only on Business');
   const receive = readFileSync('src/components/import/ReceiveWorkbench.jsx', 'utf8');
-  assert.match(receive, /placeholder=\{planKey === 'business' \? 'PO-1043' : 'Delivery 1043'\}/);
+  assert.match(receive, /placeholder=\{planKey === 'business' \? t\('import\.referencePlaceholderBusiness'\) : t\('import\.referencePlaceholderEssentials'\)\}/);
   assert.match(receive, /useEntitlements/);
   const scan = readFileSync('src/pages/Scan.jsx', 'utf8');
   assert.match(scan, /planKey === 'business' \? 'scan\.neverChangesStock' : 'scan\.neverChangesStockEssentials'/,

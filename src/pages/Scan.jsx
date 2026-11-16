@@ -457,7 +457,7 @@ export default function Scan() {
 <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Scan station</p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">{t('scan.eyebrow')}</p>
           <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">{t('scan.title')}</h1>
           <p className="mt-1 text-sm text-muted-foreground">{t('scan.subtitle')}</p>
         </div>

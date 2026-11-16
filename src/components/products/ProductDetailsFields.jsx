@@ -122,7 +122,7 @@ export default function ProductDetailsFields({
                 id="tags"
                 value={form.tags_text}
                 onChange={set('tags_text')}
-                placeholder="signed, gift, series"
+                placeholder={t('productForm.tagsPlaceholder')}
               />
               {vocabulary.tags?.length > 0 && (
                 <p className="text-[11px] leading-snug text-muted-foreground">
@@ -213,14 +213,14 @@ export default function ProductDetailsFields({
                 id="dimensions"
                 value={form.dimensions}
                 onChange={set('dimensions')}
-                placeholder="21 × 14 × 2 cm"
+                placeholder={t('productForm.dimensionsPlaceholder')}
               />
             </div>
           </div>
 
           <div className="grid gap-2">
             <Label htmlFor="warranty">{t('productForm.warrantyLabel')}</Label>
-            <Input id="warranty" value={form.warranty} onChange={set('warranty')} placeholder="90 days" />
+            <Input id="warranty" value={form.warranty} onChange={set('warranty')} placeholder={t('productForm.warrantyPlaceholder')} />
           </div>
 
           <div className="grid gap-2">

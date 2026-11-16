@@ -239,7 +239,7 @@ export default function Upgrade() {
                 <h2 className="text-lg font-semibold">{entry.name}</h2>
                 {current && (
                   <span className="rounded-full bg-primary/10 px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-primary">
-                    Your plan
+                    {t('plans.yourPlan')}
                   </span>
                 )}
               </div>

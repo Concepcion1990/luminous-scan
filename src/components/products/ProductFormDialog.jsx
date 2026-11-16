@@ -729,7 +729,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
         <div className="grid gap-4">
           <div className="grid gap-2">
             <Label htmlFor="name">{t('productForm.nameLabel')}</Label>
-            <Input id="name" value={form.name} onChange={set('name')} placeholder="The Quiet Year — paperback" />
+            <Input id="name" value={form.name} onChange={set('name')} placeholder={t('productForm.namePlaceholder')} />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -744,7 +744,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
                 value={form.category}
                 onChange={set('category')}
                 options={vocabulary.categories}
-                placeholder="Fiction"
+                placeholder={t('productForm.categoryPlaceholder')}
                 label={t('productForm.categoryLabel')}
                 addNewLabel={t('productForm.addNewCategory')}
                 onAddNewRequest={() => setAddNewField('category')}
@@ -765,7 +765,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
             </div>
             <div className="grid gap-2">
               <Label htmlFor="author">{t('productForm.authorLabel')}</Label>
-              <Input id="author" value={form.author} onChange={set('author')} placeholder="Ada Mercer" />
+              <Input id="author" value={form.author} onChange={set('author')} placeholder={t('productForm.authorPlaceholder')} />
             </div>
           </div>
 

@@ -8,6 +8,11 @@ import { en } from './locales/en.js';
 // Nov 9, 2026. The text lives in src/lib/aboutFounder.js — a single
 // source of truth — and the page only lays it out, so the wording cannot
 // drift. The page is public, like the policy pages.
+//
+// Nov 15, 2026 — her ruling: the story translates into all 52
+// locales. The page now renders the about.* locale keys; this file
+// pins the English key values byte-identical to the frozen module,
+// so the module remains the reference her English cannot drift from.
 
 const read = (file) => readFileSync(file, 'utf8');
 
@@ -40,21 +45,30 @@ test('founder text is the owner\'s exact words, verbatim', () => {
   );
 });
 
-test('About page renders the founder text from the module, never hardcoded copy', () => {
+test('About page renders the founder text from the locale keys, never hardcoded copy', () => {
+  // Nov 15, 2026 — her ruling: the founder story translates into
+  // all 52 locales. The page renders the about.* keys; the module
+  // stays the frozen reference, and the English key values below
+  // are pinned byte-identical to it, so her English words cannot
+  // drift — translations are renderings, never edits.
   const page = read('src/pages/About.jsx');
-  assert.match(page, /import \{ ABOUT_FOUNDER as about \} from '@\/lib\/aboutFounder'/);
   assert.match(page, /import LegalFooter from '@\/components\/LegalFooter'/);
-  assert.match(page, /\{about\.pageTitle\}/);
-  assert.match(page, /\{about\.sectionHeading\}/);
-  assert.match(page, /about\.paragraphs\.map\(\(paragraph, index\) =>/);
+  assert.match(page, /\{t\('about\.pageTitle'\)\}/);
+  assert.match(page, /\{t\('about\.founderHeading'\)\}/);
+  assert.match(page, /FOUNDER_PARAGRAPH_KEYS\.map\(\(key\) =>/);
+  assert.equal(en['about.pageTitle'], about.pageTitle);
+  assert.equal(en['about.founderHeading'], about.sectionHeading);
+  assert.equal(en['about.founder.p1'], about.paragraphs[0]);
+  assert.equal(en['about.founder.p2'], about.paragraphs[1]);
+  assert.equal(en['about.founder.p3'], about.paragraphs[2]);
+  assert.equal(en['about.founder.p4'], about.paragraphs[3]);
   assert.match(page, /<LegalFooter \/>/);
   assert.ok(
     page.indexOf('<LegalFooter />') < page.indexOf('</main>'),
     'About must render the footer inside <main>, at the bottom',
   );
-  // Single source of truth: the sentences live in the module, not here.
-  // (The page title string appears only in the file's own doc comment,
-  // never as rendered copy — the <h1> reads {about.pageTitle}.)
+  // Single source of truth: the sentences live in the module and
+  // the locale files, not in the page.
   assert.doesNotMatch(page, /Hey there, I'm Concepcion/);
   assert.doesNotMatch(page, /predatory—charging/);
   assert.doesNotMatch(page, /built by a retailer, for retailers/);
@@ -88,7 +102,12 @@ test('LegalFooter links to /about, small and subtle', () => {
   // Nov 12, 2026, then restored the same day minus the © symbol — see
   // trademarkNotice.test.js.)
   assert.match(footer, /\{footer\.copyrightLine\}/);
-  assert.match(footer, /\{footer\.trademarkLine\}/);
+  // Nov 15, 2026: the anti-cloning line renders from its locale key
+  // (it translates with the notice family); the English key value
+  // is pinned to the module's line. The copyright line above stays
+  // module-rendered verbatim in every locale — the exact footer.
+  assert.match(footer, /\{t\('footer\.trademarkLine'\)\}/);
+  assert.equal(en['footer.trademarkLine'], 'Unauthorized duplication, cloning, or scraping is strictly prohibited.');
 });
 
 test('Plans links to /about near the trademark notice', () => {
@@ -162,7 +181,7 @@ test('About links to her bookstore, tying the app to the shop it comes from (Nov
   assert.match(screen, />\s*The Luminous Book Shop\s*<\/a>/);
   // Placement: after the founder story, ahead of the restored
   // trademark notice — the tie-in first, then the statement.
-  const storyAt = screen.indexOf('about.paragraphs.map');
+  const storyAt = screen.indexOf('FOUNDER_PARAGRAPH_KEYS.map');
   const leadInAt = screen.indexOf("t('about.bookshopLeadIn')");
   const noticeAt = screen.indexOf('<TrademarkNotice />');
   assert.ok(storyAt > -1 && leadInAt > storyAt, 'bookshop line comes after the founder story');

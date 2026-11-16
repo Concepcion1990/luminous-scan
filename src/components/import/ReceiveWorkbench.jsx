@@ -439,7 +439,7 @@ export default function ReceiveWorkbench({ businessId }) {
                   setReference(event.target.value);
                   setDryRun(null);
                 }}
-                placeholder={planKey === 'business' ? 'PO-1043' : 'Delivery 1043'}
+                placeholder={planKey === 'business' ? t('import.referencePlaceholderBusiness') : t('import.referencePlaceholderEssentials')}
               />
             </div>
             <div className="grid gap-1">
@@ -452,7 +452,7 @@ export default function ReceiveWorkbench({ businessId }) {
                   setNote(event.target.value);
                   setDryRun(null);
                 }}
-                placeholder="Delivered in three cartons"
+                placeholder={t('import.receiveNotePlaceholder')}
               />
             </div>
           </div>

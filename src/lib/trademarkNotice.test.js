@@ -9,6 +9,12 @@ import { en } from './locales/en.js';
 // small centered footer at the bottom of the pages. The text lives in
 // src/lib/trademarkNotice.js — a single source of truth — and the
 // components only lay it out, so the wording cannot drift between pages.
+//
+// Nov 15, 2026 — her ruling: the block translates into all 52
+// locales. The component now renders the notice.* locale keys; this
+// file pins the English key values byte-identical to the frozen
+// module. The footer's copyright line is the exception: it stays
+// module-rendered verbatim in every locale (the exact footer line).
 
 const read = (file) => readFileSync(file, 'utf8');
 
@@ -63,19 +69,32 @@ test('no trademark / copyright claim language remains (Nov 12, 2026)', () => {
   assert.ok(Object.isFrozen(footer), 'footer module must be frozen');
 });
 
-test('TrademarkNotice renders the notice from the module, never hardcoded copy', () => {
+test('TrademarkNotice renders the notice from the locale keys, never hardcoded copy', () => {
+  // Nov 15, 2026 — her ruling: the not-for-sale block translates
+  // into all 52 locales. The component renders the notice.* keys;
+  // the module stays the frozen reference, and the English key
+  // values below are pinned byte-identical to it, so her English
+  // words cannot drift — translations are renderings, never edits.
   const component = read('src/components/TrademarkNotice.jsx');
-  assert.match(component, /import \{ TRADEMARK_NOTICE as notice \} from '@\/lib\/trademarkNotice'/);
+  assert.match(component, /import \{ t, useLocale \} from '@\/lib\/i18n'/);
   assert.match(component, /<section/);
-  assert.match(component, /aria-label="Trademark and copyright notice"/);
-  assert.match(component, /\{notice\.heading\}/);
+  assert.match(component, /aria-label=\{t\('notice\.ariaLabel'\)\}/);
+  assert.equal(en['notice.ariaLabel'], 'Trademark and copyright notice');
+  assert.match(component, /\{t\('notice\.heading'\)\}/);
   assert.match(component, /<blockquote/);
-  assert.match(component, /\{notice\.intro\}/);
-  assert.match(component, /<strong className="font-semibold text-foreground">\{notice\.legalHeading\}<\/strong>/);
-  assert.match(component, /\{notice\.legalBody\}/);
-  assert.match(component, /<strong className="font-semibold text-foreground">\{notice\.acquisitionHeading\}<\/strong>/);
-  assert.match(component, /\{notice\.acquisitionBody\}/);
-  // Single source of truth: the sentences live in the module, not here.
+  assert.match(component, /\{t\('notice\.intro'\)\}/);
+  assert.match(component, /<strong className="font-semibold text-foreground">\{t\('notice\.legalHeading'\)\}<\/strong>/);
+  assert.match(component, /\{t\('notice\.legalBody'\)\}/);
+  assert.match(component, /<strong className="font-semibold text-foreground">\{t\('notice\.acquisitionHeading'\)\}<\/strong>/);
+  assert.match(component, /\{t\('notice\.acquisitionBody'\)\}/);
+  assert.equal(en['notice.heading'], notice.heading);
+  assert.equal(en['notice.intro'], notice.intro);
+  assert.equal(en['notice.legalHeading'], notice.legalHeading);
+  assert.equal(en['notice.legalBody'], notice.legalBody);
+  assert.equal(en['notice.acquisitionHeading'], notice.acquisitionHeading);
+  assert.equal(en['notice.acquisitionBody'], notice.acquisitionBody);
+  // Single source of truth: the sentences live in the module and
+  // the locale files, not in the component.
   assert.doesNotMatch(component, /price-gouged/);
   assert.doesNotMatch(component, /Corporate Vultures/);
   assert.doesNotMatch(component, /Save your breath/);
@@ -86,7 +105,12 @@ test('LegalFooter renders the footer from the module, small and centered', () =>
   assert.match(component, /import \{ LEGAL_FOOTER as footer \} from '@\/lib\/trademarkNotice'/);
   assert.match(component, /<footer/);
   assert.match(component, /\{footer\.copyrightLine\}/);
-  assert.match(component, /\{footer\.trademarkLine\}/);
+  // Nov 15, 2026: the anti-cloning line renders from its locale
+  // key; the English key value is pinned to the module's line.
+  // The copyright line stays module-rendered verbatim in every
+  // locale — the exact footer line, entity name and all.
+  assert.match(component, /\{t\('footer\.trademarkLine'\)\}/);
+  assert.equal(en['footer.trademarkLine'], footer.trademarkLine);
   assert.match(component, /text-center/);
   assert.match(component, /text-\[11px\]/);
   assert.match(component, /text-muted-foreground/);
@@ -209,7 +233,7 @@ test('About shows the notice after the founder story, before the footer (restore
   const screen = read('src/pages/About.jsx');
   assert.match(screen, /import TrademarkNotice from '@\/components\/TrademarkNotice'/);
   assert.equal(screen.split('<TrademarkNotice />').length - 1, 1, 'About must render the notice exactly once');
-  const storyAt = screen.indexOf('about.paragraphs.map');
+  const storyAt = screen.indexOf('FOUNDER_PARAGRAPH_KEYS.map');
   const noticeAt = screen.indexOf('<TrademarkNotice />');
   const footerAt = screen.indexOf('<LegalFooter />');
   assert.ok(storyAt > -1 && noticeAt > storyAt, 'notice comes after the founder story');
