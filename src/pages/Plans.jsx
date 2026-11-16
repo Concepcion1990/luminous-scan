@@ -59,6 +59,18 @@ export default function Plans() {
             >
               {t('plans.backToWelcome')}
             </Link>
+            {/* The same clear Sign in door as the Welcome header
+                (owner's ruling, Nov 16, 2026) — a returning customer
+                comparing plans can get back in from the top of the
+                page, not only from the button at the foot. */}
+            {!isAuthenticated && (
+              <Link
+                to="/login"
+                className="rounded-full bg-primary-foreground px-4 py-2 text-sm font-semibold text-primary shadow-sm transition-opacity hover:opacity-90"
+              >
+                {t('welcome.signIn')}
+              </Link>
+            )}
           </div>
         </div>
       </header>

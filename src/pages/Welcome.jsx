@@ -9,16 +9,21 @@ import LegalFooter from '@/components/LegalFooter';
 import { Button } from '@/components/ui/button';
 import { WELCOME_OPTIONS } from '@/lib/plans';
 import { markWelcomeSeen } from '@/lib/welcome';
+import { useAuth } from '@/lib/AuthContext';
 import { t, useLocale } from '@/lib/i18n';
 
 /**
  * First launch directs customers to compare plans before entering the app.
  * Opening this screen starts no trial and creates no subscription.
  * The header carries the public language picker — a visitor reads the
- * whole page in their language before subscribing.
+ * whole page in their language before subscribing — and a clear
+ * Sign in door at the top right for returning customers (the owner's
+ * ruling, Nov 16, 2026: the way back in must be obvious, not just the
+ * small link at the foot of the page). The door hides once signed in.
  */
 export default function Welcome() {
   useLocale();
+  const { isAuthenticated } = useAuth();
   return (
     <div className="min-h-screen bg-background">
       <header className="bg-primary px-4 py-4 text-primary-foreground sm:px-8">
@@ -32,6 +37,14 @@ export default function Welcome() {
             >
               {t('welcome.comparePlans')}
             </Link>
+            {!isAuthenticated && (
+              <Link
+                to="/login"
+                className="rounded-full bg-primary-foreground px-4 py-2 text-sm font-semibold text-primary shadow-sm transition-opacity hover:opacity-90"
+              >
+                {t('welcome.signIn')}
+              </Link>
+            )}
           </div>
         </div>
       </header>
