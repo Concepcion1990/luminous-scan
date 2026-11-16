@@ -123,7 +123,7 @@ export default function LocationFormDialog({
         <div className="grid gap-4">
           <div className="grid gap-2">
             <Label htmlFor="loc-name">{t('locations.nameLabel')}</Label>
-            <Input id="loc-name" value={form.name} onChange={set('name')} placeholder="Shelf A" />
+            <Input id="loc-name" value={form.name} onChange={set('name')} placeholder={t('locations.namePlaceholder')} />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="grid gap-2">

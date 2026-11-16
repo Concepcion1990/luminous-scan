@@ -29,7 +29,7 @@ export default function SubscriptionPolicy() {
               className="inline-flex items-center gap-1.5 text-xs font-medium text-primary-foreground/80 underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground"
             >
               <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-              View plans
+              {t('legalNav.viewPlans')}
             </Link>
           </div>
         </div>
@@ -38,23 +38,23 @@ export default function SubscriptionPolicy() {
       <main className="mx-auto max-w-4xl px-4 py-8 sm:px-8 sm:py-12">
         <div className="mb-5 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           <FileText className="h-4 w-4" aria-hidden="true" />
-          Customer billing information
+          {t('policies.billingInfoEyebrow')}
         </div>
         <h1 className="text-2xl font-semibold leading-tight sm:text-3xl">
           {policy.title}
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          {policy.application} · Operated by {policy.owner}
+          {t('policies.operatedBy', { application: policy.application, owner: policy.owner })}
         </p>
         <p className="mt-1 text-xs text-muted-foreground">
-          Effective {policy.effectiveDate} · Reviewed {policy.lastReviewed}
+          {t('policies.effectiveLine', { effective: policy.effectiveDate, reviewed: policy.lastReviewed })}
         </p>
 
         <aside role="note" className="mt-6 rounded-xl border border-border bg-secondary/50 p-4">
           <div className="flex items-start gap-2.5">
             <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
             <div className="space-y-2 text-sm leading-relaxed">
-              <p className="font-semibold">Website subscriptions only</p>
+              <p className="font-semibold">{t('policies.subscriptionAsideTitle')}</p>
               <p>{policy.scope}</p>
             </div>
           </div>
@@ -95,25 +95,25 @@ export default function SubscriptionPolicy() {
             to="/terms-of-service"
             className="font-medium text-link underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            Terms of Service
+            {t('legalNav.terms')}
           </Link>
           <Link
             to="/privacy-policy"
             className="font-medium text-link underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            Privacy Policy
+            {t('legalNav.privacy')}
           </Link>
           <Link
             to="/plans"
             className="font-medium text-link underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            Compare plans
+            {t('legalNav.comparePlans')}
           </Link>
           <Link
             to="/welcome"
             className="font-medium text-link underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            Back to welcome
+            {t('legalNav.backToWelcome')}
           </Link>
         </div>
 

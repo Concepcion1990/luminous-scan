@@ -44,7 +44,13 @@ export default function LegalFooter({ className = '' }) {
         </Link>
       </p>
       <p className="mt-1">{footer.copyrightLine}</p>
-      <p className="mt-1">{footer.trademarkLine}</p>
+      {/* The copyright line above is the exact footer line: it stays
+          verbatim in every locale, entity name and all. The anti-
+          cloning line below it renders from footer.trademarkLine
+          (Nov 15, 2026 — the notice family translates with the rest
+          of the app; its English value is byte-identical to
+          LEGAL_FOOTER.trademarkLine in the frozen module). */}
+      <p className="mt-1">{t('footer.trademarkLine')}</p>
     </footer>
   );
 }
