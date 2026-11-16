@@ -87,7 +87,7 @@ export default function Register() {
       // re-registered after its app data was cleaned up, and no code ever
       // arrived). Say so plainly and offer the login instead.
       const message = String(err.message || "");
-      if (/already|exists|registered/i.test(message)) {
+      if (err?.data?.error === "already_registered" || /already|exists|registered/i.test(message)) {
         setAlreadyExists(true);
         setError(t('register.alreadyExists'));
       } else {

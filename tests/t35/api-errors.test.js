@@ -1,0 +1,120 @@
+/**
+ * Leftovers sweep, item 1 — API error copy (Nov 15, 2026): every
+ * server error message resolves to an apiErrors.* key, every key
+ * exists in all 52 locales, and the client resolver renders the
+ * reader's language with the English message as the final fallback
+ * — never a raw code, never a blank.
+ */
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { readdirSync, readFileSync } from 'node:fs';
+import {
+  API_ERROR_MESSAGE_KEYS, API_ERROR_PATTERNS, API_ERROR_CODE_KEYS, apiErrorMessage,
+} from '../../src/lib/apiErrors.js';
+
+const LOCALE_DIR = new URL('../../src/lib/locales/', import.meta.url);
+const LOCALES = readdirSync(LOCALE_DIR).filter((f) => f.endsWith('.js')).map((f) => f.replace('.js', ''));
+
+async function loadLocale(code) {
+  const mod = await import(new URL(code + '.js', LOCALE_DIR));
+  return mod.default || mod[Object.keys(mod)[0]];
+}
+
+test('item 1: every apiErrors key exists in all 52 locales', async () => {
+  assert.equal(LOCALES.length, 52);
+  const registryKeys = [
+    ...Object.values(API_ERROR_MESSAGE_KEYS),
+    ...API_ERROR_PATTERNS.map((p) => p.key),
+    ...Object.values(API_ERROR_CODE_KEYS),
+  ];
+  assert.equal(new Set(registryKeys).size, 419);
+  for (const code of LOCALES) {
+    const dict = await loadLocale(code);
+    for (const key of registryKeys) {
+      assert.ok(typeof dict[key] === 'string' && dict[key].length > 0, `${code} missing ${key}`);
+    }
+  }
+});
+
+test('item 1: the registry covers every message literal the server can send', () => {
+  // Re-derive the inventory from the server source the same way the
+  // registry was built: err(...) calls, plan-limit helpers, the
+  // business-patch validator and the password/custom-role helpers.
+  const serverDir = new URL('../../server/', import.meta.url);
+  const messages = new Set();
+  const errRe = /\berr\(\s*\d+\s*,\s*'([a-z0-9_]+)'\s*,\s*(`(?:[^`\\]|\\.)*`|'(?:[^'\\]|\\.)*')\s*\)/g;
+  for (const file of readdirSync(serverDir).filter((f) => f.endsWith('.js'))) {
+    const src = readFileSync(new URL(file, serverDir), 'utf8');
+    for (const m of src.matchAll(errRe)) {
+      // The registry keys are the RUNTIME strings, so decode the
+      // escapes the source spells out (\u2019 and friends).
+      const raw = m[2].slice(1, -1)
+        .replace(/\\u([0-9a-fA-F]{4})/g, (_, h) => String.fromCharCode(parseInt(h, 16)))
+        .replace(/\\'/g, "'").replace(/\\n/g, '\n').replace(/\\\\/g, '\\');
+      if (raw.includes('${')) {
+        const probe = raw.replace(/\$\{[^}]+\}/g, 'ZZZ');
+        assert.ok(
+          API_ERROR_PATTERNS.some((p) => p.pattern.test(probe)),
+          `${file}: dynamic message unmapped: ${raw}`,
+        );
+      } else {
+        assert.ok(API_ERROR_MESSAGE_KEYS[raw], `${file}: message unmapped: ${raw}`);
+      }
+      messages.add(raw);
+    }
+  }
+  // The err() family alone carries ~285 distinct literals; the
+  // registry's remaining entries come from the plan-limit helpers
+  // and validators, which resolve through the same map.
+  assert.ok(messages.size > 250, `scan found only ${messages.size} messages`);
+});
+
+test('item 1: the two auth signal responses carry client doors in every language', async () => {
+  // authRoutes answers register/resend for an existing account with
+  // a { error: <code>, message } body whose message is a SIGNAL, not
+  // display copy: Register.jsx and VerifyEmail.jsx branch on the
+  // stable code and show their own keys, which predate this sweep
+  // and exist in all 52 locales.
+  const registerSrc = readFileSync(new URL('../../src/pages/Register.jsx', import.meta.url), 'utf8');
+  const verifySrc = readFileSync(new URL('../../src/pages/VerifyEmail.jsx', import.meta.url), 'utf8');
+  assert.ok(registerSrc.includes("err?.data?.error === \"already_registered\""), 'Register branches on the code');
+  assert.ok(verifySrc.includes("errorCode === 'already_verified'"), 'VerifyEmail branches on the code');
+  for (const code of LOCALES) {
+    const dict = await loadLocale(code);
+    assert.ok(dict['register.alreadyExists'], `${code} register.alreadyExists`);
+    assert.ok(dict['verifyEmail.alreadyVerified'], `${code} verifyEmail.alreadyVerified`);
+  }
+});
+
+test('item 1: resolver renders the reader language, falls back to English, never a code or blank', async () => {
+  const es = await loadLocale('es-MX');
+  const { setLocale } = await import('../../src/lib/i18n.js');
+  setLocale('es-MX');
+  // The 401 carries a code and no message at all — the code map is
+  // what renders it (before this sweep the banner showed the code).
+  assert.equal(
+    apiErrorMessage({ error: 'not_signed_in' }, 401),
+    es['apiErrors.code.notSignedIn'],
+  );
+  const exactMessage = Object.keys(API_ERROR_MESSAGE_KEYS).find((m) => es[API_ERROR_MESSAGE_KEYS[m]] !== m);
+  assert.ok(exactMessage, 'an exact message with a distinct Spanish rendering exists');
+  assert.equal(
+    apiErrorMessage({ error: 'some_code', message: exactMessage }, 400),
+    es[API_ERROR_MESSAGE_KEYS[exactMessage]],
+  );
+  assert.equal(
+    apiErrorMessage({ error: 'insufficient_stock', message: 'Only 5 on hand at Store.' }, 400),
+    es['apiErrors.insufficientStock.countHandLocation'].replace('{count}', '5').replace('{location}', 'Store'),
+  );
+  assert.equal(
+    apiErrorMessage({ error: 'brand_new_code', message: 'Something unmapped happened.' }, 400),
+    'Something unmapped happened.',
+  );
+  // No message and no known code: the generic line, itself
+  // localized — never the raw code, never a blank.
+  assert.equal(apiErrorMessage({}, 500), es['apiLib.requestFailed'].replace('{status}', '500'));
+  assert.equal(apiErrorMessage({ error: 'mystery_code' }, 400), es['apiLib.requestFailed'].replace('{status}', '400'));
+  setLocale('en');
+  assert.equal(apiErrorMessage({}, 500), 'Request failed (500)');
+});
+

@@ -25,11 +25,13 @@ export default function VerifyEmail() {
   const [email, setEmail] = useState(readPendingVerificationEmail);
   const [otpCode, setOtpCode] = useState("");
   const [error, setError] = useState("");
+  const [errorCode, setErrorCode] = useState("");
   const [loading, setLoading] = useState(false);
   const loginPath = "/login" + (safeReturnTo() !== "/" ? "?returnTo=" + encodeURIComponent(safeReturnTo()) : "");
 
   const handleVerify = async () => {
     setError("");
+    setErrorCode("");
     if (!email.trim()) {
       setError(t('auth.enterEmailFirst'));
       return;
@@ -45,6 +47,7 @@ export default function VerifyEmail() {
       window.location.href = safeReturnTo();
     } catch (err) {
       const message = String(err.message || "");
+      setErrorCode(err?.data?.error || "");
       setError(message || t('auth.invalidVerificationCode'));
     } finally {
       setLoading(false);
@@ -53,6 +56,7 @@ export default function VerifyEmail() {
 
   const handleResend = async () => {
     setError("");
+    setErrorCode("");
     if (!email.trim()) {
       setError(t('auth.enterEmailFirst'));
       return;
@@ -64,6 +68,7 @@ export default function VerifyEmail() {
         description: t('auth.codeSentDescription'),
       });
     } catch (err) {
+      setErrorCode(err?.data?.error || "");
       setError(err.message || t('auth.failedToResendCode'));
     }
   };
@@ -85,7 +90,10 @@ export default function VerifyEmail() {
       {error && (
         <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
           {error}
-          {/already verified/i.test(error) && (
+          {/* The sign-in door keys off the server's stable error
+              code, not the (now localized) message text; the regex
+              stays as a legacy fallback. */}
+          {(errorCode === 'already_verified' || /already verified/i.test(error)) && (
             <div className="mt-2">
               <Link to={loginPath} className="text-link font-medium hover:underline">
                 {t('verifyEmail.signInInstead')}

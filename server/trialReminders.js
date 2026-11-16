@@ -99,9 +99,10 @@ export function dueReminderKinds(record, now = new Date()) {
  */
 export async function runTrialReminderSweep(pool, { now = new Date(), logger = console } = {}) {
   const { rows: trials } = await pool.query(
-    `SELECT s.*, u.email AS owner_email
+    `SELECT s.*, u.email AS owner_email, b.language AS business_language
        FROM subscriptions s
        JOIN users u ON u.id = s.owner_id
+       LEFT JOIN businesses b ON b.id = s.business_id
       WHERE s.status = 'trialing' AND s.trial_ends_at IS NOT NULL AND s.trial_ends_at > $1
       ORDER BY s.trial_ends_at ASC`,
     [now.toISOString()],
@@ -129,12 +130,14 @@ export async function runTrialReminderSweep(pool, { now = new Date(), logger = c
           plan: sub.plan,
           trialEndsAt: sub.trial_ends_at,
           cancelAtPeriodEnd: sub.cancel_at_period_end === true,
+          lang: sub.business_language,
         })
         : trialReminderFinalEmail({
           to: sub.owner_email,
           plan: sub.plan,
           trialEndsAt: sub.trial_ends_at,
           cancelAtPeriodEnd: sub.cancel_at_period_end === true,
+          lang: sub.business_language,
         });
       try {
         await sendMail(message);

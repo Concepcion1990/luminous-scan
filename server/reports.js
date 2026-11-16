@@ -14,6 +14,7 @@
  * first) and the cap is reported, never hidden.
  */
 import { MOVEMENT_TYPES } from './movements.js';
+import { reportLabelsFor } from './reportLabels.js';
 
 export const REPORT_TYPES = [
   { id: 'stock', label: 'Stock on hand', valueLabel: 'Cost value', snapshot: true, defaultGroup: 'location', groups: ['location', 'category', 'product', 'supplier'] },
@@ -115,42 +116,42 @@ function locationPath(location, locationById) {
   return parts.join(' › ');
 }
 
-function resolveGroup(groupBy, { product, location, movement }, locationById) {
+function resolveGroup(groupBy, { product, location, movement }, locationById, labels) {
   switch (groupBy) {
     case 'product':
       return {
         key: product?.id || 'unknown',
-        label: product?.name || movement?.product_name || 'Unknown product',
+        label: product?.name || movement?.product_name || labels['fallback.unknownProduct'],
         sub: product?.sku || movement?.sku || '',
       };
     case 'category': {
       const name = (product?.category || '').trim();
-      return { key: name.toLowerCase() || 'uncategorized', label: name || 'Uncategorized', sub: '' };
+      return { key: name.toLowerCase() || 'uncategorized', label: name || labels['fallback.uncategorized'], sub: '' };
     }
     case 'location':
       return {
         key: location?.id || movement?.location_id || 'unknown',
-        label: location ? locationPath(location, locationById) : movement?.location_name || 'Unknown location',
+        label: location ? locationPath(location, locationById) : movement?.location_name || labels['fallback.unknownLocation'],
         sub: '',
       };
     case 'type':
       return {
         key: movement?.type || 'unknown',
-        label: MOVEMENT_TYPES[movement?.type]?.label || movement?.type || 'Unknown type',
+        label: labels[`type.${movement?.type}`] || MOVEMENT_TYPES[movement?.type]?.label || movement?.type || labels['fallback.unknownType'],
         sub: '',
       };
     case 'supplier': {
       const name = movement?.supplier_name || product?.supplier_name || '';
-      return { key: name || 'none', label: name || 'No supplier', sub: '' };
+      return { key: name || 'none', label: name || labels['fallback.noSupplier'], sub: '' };
     }
     case 'user':
       return {
         key: movement?.user_name || 'none',
-        label: movement?.user_name || 'Not recorded',
+        label: movement?.user_name || labels['fallback.notRecorded'],
         sub: '',
       };
     default:
-      return { key: 'all', label: 'All records', sub: '' };
+      return { key: 'all', label: labels['fallback.allRecords'], sub: '' };
   }
 }
 
@@ -159,9 +160,10 @@ function resolveGroup(groupBy, { product, location, movement }, locationById) {
  * algorithm as src/lib/reports.js buildReport — the two must agree
  * (tests compare the server report against the server export).
  */
-export function buildServerReport({ reportId, groupBy, source, from = '', to = '', locationId = '', category = '' }) {
+export function buildServerReport({ reportId, groupBy, source, from = '', to = '', locationId = '', category = '', language = 'en' }) {
   if (!source) return null;
   const report = reportDefinition(reportId);
+  const labels = reportLabelsFor(language);
   const resolvedGroup = report.groups.includes(groupBy) ? groupBy : report.defaultGroup;
 
   const scopeIds = locationId ? descendantIds(source.locations, locationId) : null;
@@ -180,7 +182,7 @@ export function buildServerReport({ reportId, groupBy, source, from = '', to = '
   // first — the same rule as src/lib/reports.js and server/exportData.js.
   const moneyKnown = (value) =>
     value !== null && value !== undefined && value !== '' && Number.isFinite(Number(value));
-  const missing = { units: 0, label: report.id === 'sales' ? 'retail price' : 'cost' };
+  const missing = { units: 0, label: report.id === 'sales' ? labels['missing.retailPrice'] : labels['missing.cost'] };
 
   const buckets = new Map();
   const add = (group, units, value) => {
@@ -208,7 +210,7 @@ export function buildServerReport({ reportId, groupBy, source, from = '', to = '
       if (!quantity) return;
       if (!moneyKnown(product.cost)) missing.units += quantity;
       add(
-        resolveGroup(resolvedGroup, { product, location: locationById.get(level.location_id) }, locationById),
+        resolveGroup(resolvedGroup, { product, location: locationById.get(level.location_id) }, locationById, labels),
         quantity,
         quantity * (Number(product.cost) || 0),
       );
@@ -234,6 +236,7 @@ export function buildServerReport({ reportId, groupBy, source, from = '', to = '
           resolvedGroup,
           { product, location: locationById.get(movement.location_id), movement },
           locationById,
+          labels,
         ),
         units,
         movedValue(report.id, movement, product, units),
@@ -256,10 +259,10 @@ export function buildServerReport({ reportId, groupBy, source, from = '', to = '
   );
 
   return {
-    report: { id: report.id, label: report.label },
+    report: { id: report.id, label: labels[`title.${report.id}`] || report.label },
     groupBy: resolvedGroup,
-    groupLabel: GROUPINGS[resolvedGroup],
-    valueLabel: report.valueLabel,
+    groupLabel: labels[`group.${resolvedGroup}`] || GROUPINGS[resolvedGroup],
+    valueLabel: labels[`value.${{ stock: 'cost', movements: 'costMoved', sales: 'sale', receipts: 'costReceived', losses: 'affected' }[report.id]}`] || report.valueLabel,
     rows,
     totals,
     missing,
@@ -269,7 +272,8 @@ export function buildServerReport({ reportId, groupBy, source, from = '', to = '
 }
 
 /** Purchasing summary: open orders, totals by supplier and status, low-stock counts. */
-export async function buildPurchasingSummary(pool, businessId) {
+export async function buildPurchasingSummary(pool, businessId, language = 'en') {
+  const labels = reportLabelsFor(language);
   const [pos, products, levels] = await Promise.all([
     pool.query('SELECT * FROM purchase_orders WHERE business_id = $1', [businessId]),
     pool.query('SELECT * FROM products WHERE business_id = $1', [businessId]),
@@ -287,7 +291,7 @@ export async function buildPurchasingSummary(pool, businessId) {
   pos.rows.forEach((po) => {
     const lines = typeof po.lines === 'string' ? JSON.parse(po.lines || '[]') : po.lines || [];
     byStatus[po.status] = (byStatus[po.status] || 0) + 1;
-    const key = po.supplier_name || 'No supplier';
+    const key = po.supplier_name || labels['fallback.noSupplier'];
     bySupplier[key] = bySupplier[key] || { orders: 0, openValue: 0 };
     bySupplier[key].orders += 1;
     if (['ordered', 'partial'].includes(po.status)) {

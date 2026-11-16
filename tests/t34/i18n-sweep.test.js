@@ -8,7 +8,8 @@
  *    values in the spot-checked locales;
  *  - the server print PDFs render their labels in the business's
  *    language (server/printLabels.js), with the per-string English
- *    fallback for strings the standard PDF fonts cannot encode.
+ *    fallback only for strings no PDF font can encode (the
+ *    embedded-font pipeline is pinned in tests/t35).
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -86,16 +87,18 @@ test('print labels resolve per language, variants inherit their base', () => {
   }
 });
 
-test('print labels fall back per string when the PDF fonts cannot encode them', () => {
-  // Chinese labels are genuine in the table, but jsPDF's standard
-  // fonts cannot render the script — those strings fall back to
-  // English rather than printing garbage; pure-ASCII strings in
-  // the same row (SKU line) still resolve.
+test('print labels fall back per string only when no PDF font can encode them', () => {
+  // Leftovers sweep (Nov 15, 2026): the PDF pipeline embeds real
+  // script fonts (server/printFonts.js), so Chinese and Greek
+  // labels now resolve in their own script instead of falling back.
   const zh = printLabelsFor('zh');
-  assert.equal(zh.packingSlip, 'Packing slip');
+  assert.equal(zh.packingSlip, '装箱单');
   assert.equal(zh.skuLine, 'SKU {sku}');
-  // Greek is likewise outside WinAnsi.
-  assert.equal(printLabelsFor('el').product, 'Product');
+  assert.equal(printLabelsFor('el').product, 'Προϊόν');
+  // What still falls back, per string: Indic scripts, whose shaping
+  // (conjuncts, pre-base matras) jsPDF cannot do — English rather
+  // than mis-shaped print.
+  assert.equal(printLabelsFor('hi').packingSlip, 'Packing slip');
   // Spanish diacritics are inside WinAnsi and survive.
   assert.equal(printLabelsFor('es').noCode, 'SIN CÓDIGO');
 });
