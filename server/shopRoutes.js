@@ -793,6 +793,7 @@ export function createShopRouter({ getPool: getPoolFn }) {
     const buffer = buildLabelsPdf(rows, {
       copies: req.query.copies,
       businessName: access.business.name,
+      language: access.business.language,
     });
     return pdfResponse(res, buffer, `${fileSlug(access.business.name)}-labels-${fileStamp()}.pdf`);
   }));

@@ -444,7 +444,7 @@ export default function BulkEditDialog({
                 id="bulk-add"
                 value={form.add}
                 onChange={set('add')}
-                placeholder="signed, gift"
+                placeholder={t('products.bulkTagsPlaceholder')}
               />
             </div>
             <div className="grid gap-2">
@@ -453,7 +453,7 @@ export default function BulkEditDialog({
                 id="bulk-remove"
                 value={form.remove}
                 onChange={set('remove')}
-                placeholder={planKey === 'business' ? 'clearance' : 'seasonal'}
+                placeholder={planKey === 'business' ? t('products.bulkTagExampleBusiness') : t('products.bulkTagExampleEssentials')}
               />
             </div>
           </div>
