@@ -1,6 +1,7 @@
 import React from "react";
 import { t, useLocale } from '@/lib/i18n';
 import LanguagePicker from "@/components/LanguagePicker";
+import LegalFooter from "@/components/LegalFooter";
 
 export default function AuthLayout({ icon: Icon, title, subtitle, footer, below, children }) {
   // The auth pages are public pages: the language picker sits at the
@@ -54,6 +55,15 @@ export default function AuthLayout({ icon: Icon, title, subtitle, footer, below,
           pass nothing and render exactly as before.
         */}
         {below && <div className="mt-6 pb-10">{below}</div>}
+        {/*
+          The shared legal footer closes every auth page too (owner's
+          word, Nov 16, 2026 — the © line belongs at the bottom of the
+          Login and Register pages as well, not only inside the app).
+          Same component, same shared source as Welcome and every other
+          public surface; the text itself lives in
+          src/lib/trademarkNotice.js and is never copied here.
+        */}
+        <LegalFooter />
       </div>
     </div>
   );
