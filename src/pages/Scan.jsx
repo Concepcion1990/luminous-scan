@@ -115,6 +115,15 @@ export default function Scan() {
   const [nameSearching, setNameSearching] = useState(false);
   const busyRef = useRef(false);
   const savingRef = useRef(false);
+  // Scan-to-tally bookkeeping for Receive (owner ruling, Nov 16,
+  // 2026): which product the quantity on screen is being tallied
+  // for. A product id means the shown quantity already counts
+  // scans of that product; 'fresh' means the box still shows the
+  // untouched default from the last confirm/reset, so the next
+  // scan of the shown product is a new run's first item; null
+  // means the quantity is the user's own (typed, or the product
+  // was picked by name) and a scan adds one more to it.
+  const tallyRef = useRef(null);
   const manualRef = useRef(null);
   const scanListRef = useRef(null);
 
@@ -165,6 +174,7 @@ export default function Scan() {
     setMatches([]);
     setNotFound(null);
     setExternal(null);
+    tallyRef.current = null;
   };
 
   const selectProduct = async (match) => {
@@ -172,6 +182,9 @@ export default function Scan() {
     setMatches([]);
     setNotFound(null);
     setProduct(match);
+    // A deliberate pick (match list, name search) is not a scan:
+    // any tally run for a previous product ends here.
+    tallyRef.current = null;
     setLevels(await getLevelsForProduct(match.id, activeId || ''));
   };
 
@@ -189,7 +202,37 @@ export default function Scan() {
     try {
       const found = await findProductsByCode(code, activeId || '');
       if (found.length === 1) {
-        await selectProduct(found[0]);
+        const match = found[0];
+        // Scan-to-tally (owner ruling, Nov 16, 2026): in Receive,
+        // scanning the product already on screen again adds +1 to
+        // the quantity being received instead of starting over —
+        // scan a whole delivery item by item and confirm once. The
+        // tally only fills in the quantity; the location was chosen
+        // first as always, and the confirm step is unchanged.
+        if (action === 'receive' && product && match.id === product.id) {
+          if ((match.status || 'active') === 'archived') {
+            // Archived stock is frozen: the tally never climbs for
+            // it — the restore-first guidance answers instead.
+            setError(t('inventoryLib.archivedFrozen', { name: match.name }));
+            return;
+          }
+          if (tallyRef.current === 'fresh') {
+            tallyRef.current = match.id;
+            setFlash(t('scanTally.scanned', { name: match.name, count: Number(qty) || 1 }));
+            return;
+          }
+          const nextQty = (Number(qty) || 0) + 1;
+          tallyRef.current = match.id;
+          setQty(String(nextQty));
+          setFlash(t('scanTally.scanned', { name: match.name, count: nextQty }));
+          return;
+        }
+        await selectProduct(match);
+        if (action === 'receive') {
+          // A scan presents its product at one — its tally starts here.
+          setQty('1');
+          tallyRef.current = match.id;
+        }
       } else if (found.length > 1) {
         clearResult();
         setMatches(found);
@@ -329,6 +372,7 @@ export default function Scan() {
       await getOfflineQueue().add(queued);
       await sync.refreshQueue();
       setQty('1');
+      tallyRef.current = 'fresh';
       setNote('');
       setCost('');
       setFlash(t('scan.savedOffline'));
@@ -356,6 +400,7 @@ export default function Scan() {
         });
         setLevels(await getLevelsForProduct(product.id, activeId || ''));
         setQty('1');
+        tallyRef.current = 'fresh';
         setNote('');
         setFlash(
           t('scan.holdFlash', {
@@ -396,6 +441,7 @@ export default function Scan() {
       }
       setLevels(await getLevelsForProduct(product.id, activeId || ''));
       setQty('1');
+      tallyRef.current = 'fresh';
       setNote('');
       setCost('');
       const verb = MOVEMENT_TYPES[action]?.label || 'Recorded';
@@ -727,7 +773,13 @@ export default function Scan() {
                   </Label>
                   <QuantityStepper
                     value={qty}
-                    onChange={setQty}
+                    onChange={(value) => {
+                      // A hand-set quantity is the user's own: a
+                      // later scan adds one more to it instead of
+                      // treating the box as an untouched default.
+                      if (tallyRef.current === 'fresh') tallyRef.current = null;
+                      setQty(value);
+                    }}
                     allowZero={action === 'count' || action === 'correction'}
                   />
                 </div>

@@ -127,7 +127,12 @@ export const TRAINING_LESSONS = [
   { id: 'categories-basics', track: 'staff', module: 'categories', steps: 4 },
   { id: 'locations-basics', track: 'staff', module: 'locations', steps: 4 },
   { id: 'movements-what', track: 'staff', module: 'movements', steps: 4 },
-  { id: 'counts-run', track: 'staff', module: 'counts', steps: 4 },
+  { id: 'counts-run', track: 'staff', module: 'counts', steps: 4 , visuals: [
+      { route: '/counts', target: '[data-tour="count-start"]', door: true },
+      { route: '/counts', target: '[data-tour="count-start"]', door: true },
+      null,
+      { route: '/counts', target: '[data-tour="count-start"]', door: true },
+    ] },
   { id: 'orders-basics', track: 'staff', module: 'orders', steps: 6 , visuals: [
       { route: '/orders', target: '[data-tour="orders-list"]' },
       { route: '/orders', target: '[data-tour="orders-list"]' },

@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
-import { Check } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Check, ScanLine } from 'lucide-react';
 import { t } from '@/lib/i18n';
 
 import { useAuth } from '@/lib/AuthContext';
-import { recordMovement } from '@/lib/inventory';
+import { findProductsByCode, recordMovement } from '@/lib/inventory';
+import BarcodeScanner from '@/components/scan/BarcodeScanner';
 import AddLocationInline from '@/components/locations/AddLocationInline';
 import QuantityStepper from '@/components/inventory/QuantityStepper';
 import { Button } from '@/components/ui/button';
@@ -45,6 +46,20 @@ export default function AdjustStockDialog({
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  // Scan-to-tally (owner ruling, Nov 16, 2026): in Receive, the
+  // button beside the quantity stepper opens this sheet's own
+  // scanner; every scan of THIS product adds +1 to the very same
+  // quantity the arrows control. The tally only fills the number —
+  // Save change remains the one confirm that writes the movement.
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const [tallyNote, setTallyNote] = useState(null);
+  const quantityRef = useRef('1');
+  const scanQueueRef = useRef(Promise.resolve());
+  // The dialog opens on a default quantity of 1 that no scan has
+  // claimed yet: the first scan stands for that 1 (the item in
+  // hand), later scans add. Any hand touch of the stepper ends
+  // the fresh state — from then on every scan adds one more.
+  const tallyFreshRef = useRef(true);
   // The dialog keeps its own copy of the location list so the
   // inline "add a location" door (shown when the list is empty —
   // the dead end the owner hit) can add + preselect a location
@@ -62,11 +77,71 @@ export default function AdjustStockDialog({
     setLocalLocations(locations);
     setMode('receive');
     setQuantity('1');
+    quantityRef.current = '1';
+    tallyFreshRef.current = true;
     setNote('');
     setError('');
     setBusy(false);
+    setScannerOpen(false);
+    setTallyNote(null);
     setLocationId(defaultLocationId || locations[0]?.id || '');
   }, [open, defaultLocationId, locations]);
+
+  const changeQuantity = (value) => {
+    quantityRef.current = value;
+    setQuantity(value);
+  };
+
+  // Hand control of the stepper: the number is the user's own now.
+  const changeQuantityByHand = (value) => {
+    tallyFreshRef.current = false;
+    changeQuantity(value);
+  };
+
+  const processTallyScan = async (code) => {
+    try {
+      const matches = await findProductsByCode(code, businessId);
+      if (!matches.length) {
+        setTallyNote({ ok: false, text: t('counts.noProductMatch', { code }) });
+        return;
+      }
+      const match = matches[0];
+      if (match.id !== product.id) {
+        // This sheet is for one product only: a different product's
+        // scan is named and adds nothing.
+        setTallyNote({
+          ok: false,
+          text: t('scanTally.otherProduct', { name: match.name, product: product.name }),
+        });
+        return;
+      }
+      if ((product.status || 'active') === 'archived') {
+        setTallyNote({ ok: false, text: t('inventoryLib.archivedFrozen', { name: product.name }) });
+        return;
+      }
+      if (tallyFreshRef.current && (Number(quantityRef.current) || 0) === 1) {
+        tallyFreshRef.current = false;
+        setTallyNote({ ok: true, text: t('scanTally.scanned', { name: product.name, count: 1 }) });
+        return;
+      }
+      tallyFreshRef.current = false;
+      const next = (Number(quantityRef.current) || 0) + 1;
+      changeQuantity(String(next));
+      setTallyNote({ ok: true, text: t('scanTally.scanned', { name: product.name, count: next }) });
+    } catch (e) {
+      setTallyNote({ ok: false, text: e.message || t('counts.codeReadFailed') });
+    }
+  };
+
+  const handleTallyDetect = (raw) => {
+    const code = String(raw || '').trim();
+    if (!code) return;
+    // Serialize captures, exactly as on the count sheet: the
+    // camera re-arms itself, and queued scans must land in order.
+    scanQueueRef.current = scanQueueRef.current
+      .then(() => processTallyScan(code))
+      .catch(() => {});
+  };
 
   if (!product) return null;
 
@@ -166,7 +241,19 @@ export default function AdjustStockDialog({
 
           <div className="grid gap-2">
             <Label>{mode === 'count' ? t('inventory.countedQuantity') : t('inventory.quantityLabel')}</Label>
-            <QuantityStepper value={quantity} onChange={setQuantity} allowZero={mode === 'count'} />
+            <QuantityStepper value={quantity} onChange={changeQuantityByHand} allowZero={mode === 'count'} />
+            {mode === 'receive' && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setTallyNote(null);
+                  setScannerOpen(true);
+                }}
+              >
+                <ScanLine className="mr-1.5 h-4 w-4" /> {t('scanTally.title')}
+              </Button>
+            )}
           </div>
 
           <div className="grid gap-2">
@@ -181,6 +268,36 @@ export default function AdjustStockDialog({
 
           {error && <p className="text-sm text-destructive">{error}</p>}
         </div>
+
+        {/* Tally scanner overlay: this sheet's own scanner, opened
+            from beside the quantity stepper. It tallies into the
+            quantity above and nothing else — Save change is still
+            the only write. */}
+        {scannerOpen && (
+          <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 p-4">
+            <div className="w-full max-w-sm space-y-3 rounded-xl bg-card p-4 shadow-lg">
+              <p className="flex items-center gap-1.5 text-sm font-medium">
+                <ScanLine className="h-4 w-4" /> {t('scanTally.title')}
+              </p>
+              <BarcodeScanner onDetect={handleTallyDetect} />
+              <p className="text-sm text-muted-foreground">{t('scanTally.hint')}</p>
+              {tallyNote && (
+                <p
+                  className={`flex items-start gap-1.5 text-sm ${
+                    tallyNote.ok ? 'text-ok' : 'text-destructive'
+                  }`}
+                  role="status"
+                >
+                  {tallyNote.ok && <Check className="mt-0.5 h-4 w-4 shrink-0" />}
+                  <span>{tallyNote.text}</span>
+                </p>
+              )}
+              <Button type="button" className="w-full" onClick={() => setScannerOpen(false)}>
+                {t('scanTally.done')}
+              </Button>
+            </div>
+          </div>
+        )}
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>

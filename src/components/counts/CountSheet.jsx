@@ -10,36 +10,68 @@ import { Label } from '@/components/ui/label';
 import { findProductsByCode } from '@/lib/inventory';
 import {
   applyCounts,
-  bumpCountedLine,
   countSummary,
   discrepancies,
   expectedAt,
   reopenCounts,
   saveCounts,
   submitCounts,
+  tallyCountedLine,
 } from '@/lib/counts';
 
 export default function CountSheet({ session, products, levels, user, onChanged }) {
   const [lines, setLines] = useState(session.lines || []);
+  // The tally path resolves codes asynchronously while the camera
+  // keeps firing, so scan handling reads and writes the lines
+  // through this ref — every scan lands on the sheet the previous
+  // scan left behind, never on a stale render's copy.
+  const linesRef = useRef(session.lines || []);
   const [scan, setScan] = useState('');
   const [scannerOpen, setScannerOpen] = useState(false);
-  const scanHandledRef = useRef(false);
+  const [tallyNote, setTallyNote] = useState(null);
+  const scanQueueRef = useRef(Promise.resolve());
   const [busy, setBusy] = useState('');
   const [error, setError] = useState('');
   const [dirty, setDirty] = useState(false);
 
+  const commitLines = (next) => {
+    linesRef.current = next;
+    setLines(next);
+  };
+
   useEffect(() => {
-    setLines(session.lines || []);
+    commitLines(session.lines || []);
     setDirty(false);
     setError('');
+    setTallyNote(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session.id, session.status]);
 
   const summary = useMemo(() => countSummary(lines), [lines]);
   const locked = ['applied', 'cancelled'].includes(session.status);
 
   const setCount = (productId, value) => {
-    setLines((prev) => prev.map((l) => (l.product_id === productId ? { ...l, counted: value } : l)));
+    commitLines(linesRef.current.map((l) => (l.product_id === productId ? { ...l, counted: value } : l)));
     setDirty(true);
+  };
+
+  // One scanned unit, shared by the typed code box and the camera
+  // tally below: +1 on the product's line, or the product joins the
+  // sheet at 1. Archived products stay frozen (owner doctrine): the
+  // scan is refused with the restore-first guidance and no quantity
+  // moves. An unknown code changes nothing.
+  const applyScannedProduct = (product) => {
+    if ((product.status || 'active') === 'archived') {
+      throw new Error(t('inventoryLib.archivedFrozen', { name: product.name }));
+    }
+    const next = tallyCountedLine(
+      linesRef.current,
+      product,
+      expectedAt(levels, session.location_id, product.id)
+    );
+    commitLines(next);
+    setDirty(true);
+    return next.find((l) => l.product_id === product.id);
   };
 
   const addByScan = async () => {
@@ -50,28 +82,7 @@ export default function CountSheet({ session, products, levels, user, onChanged 
     try {
       const matches = await findProductsByCode(code, session.business_id);
       if (!matches.length) throw new Error(t('counts.noProductMatch', { code }));
-      const product = matches[0];
-      setLines((prev) => {
-        const existing = prev.find((l) => l.product_id === product.id);
-        if (existing) {
-          return prev.map((l) =>
-            l.product_id === product.id
-              ? { ...l, counted: (Number(l.counted) || 0) + 1 }
-              : l
-          );
-        }
-        return [
-          ...prev,
-          {
-            product_id: product.id,
-            product_name: product.name,
-            sku: product.sku || '',
-            expected: expectedAt(levels, session.location_id, product.id),
-            counted: 1,
-          },
-        ];
-      });
-      setDirty(true);
+      applyScannedProduct(matches[0]);
       setScan('');
     } catch (e) {
       setError(e.message || t('counts.codeReadFailed'));
@@ -82,45 +93,48 @@ export default function CountSheet({ session, products, levels, user, onChanged 
 
   // The Add button's second job (owner ruling, Nov 14, 2026): with
   // the code box EMPTY, tapping it opens the scanner over the sheet —
-  // the button carries the scan icon, so it should scan. A scanned
-  // product already on the sheet gains +1 on its line (from its
-  // current counted value, or 0 if untouched); a scanned product NOT
-  // on the sheet is never silently added (counts are audited) — a
-  // plain notice names it and the sheet stays exactly as it was. With
-  // a code typed in the box, Add keeps its original behavior above.
-  const handleScanDetect = async (raw) => {
-    // One capture per opening: a scanner double-fire must never
-    // double-count an audited sheet.
-    if (scanHandledRef.current) return;
-    scanHandledRef.current = true;
-    setScannerOpen(false);
-    const code = String(raw || '').trim();
-    if (!code) return;
-    setError('');
-    setBusy('scan');
+  // the button carries the scan icon, so it should scan. What the
+  // scanner DOES changed on Nov 16, 2026 (her scan-to-tally ruling):
+  // it now stays open and tallies — every scan adds +1 to that
+  // product's line and the count climbs on its own, so a whole
+  // aisle can be scanned item by item with no typing. The scanner
+  // knows it is scanning for THIS count only: a scan touches the
+  // sheet and nothing else — stock moves later, through Save /
+  // Send for review / Apply, exactly as before. With a code typed
+  // in the box, Add keeps its original behavior above.
+  const processTallyScan = async (code) => {
     try {
       const matches = await findProductsByCode(code, session.business_id);
-      if (!matches.length) throw new Error(t('counts.noProductMatch', { code }));
-      const product = matches[0];
-      const bumped = bumpCountedLine(lines, product.id);
-      if (!bumped) {
-        setError(t('counts.notOnSheet', { name: product.name }));
+      if (!matches.length) {
+        setTallyNote({ ok: false, text: t('counts.noProductMatch', { code }) });
         return;
       }
-      setLines(bumped);
-      setDirty(true);
+      const line = applyScannedProduct(matches[0]);
+      setTallyNote({
+        ok: true,
+        text: t('scanTally.scanned', { name: line.product_name, count: line.counted }),
+      });
     } catch (e) {
-      setError(e.message || t('counts.codeReadFailed'));
-    } finally {
-      setBusy('');
+      setTallyNote({ ok: false, text: e.message || t('counts.codeReadFailed') });
     }
+  };
+
+  const handleTallyDetect = (raw) => {
+    const code = String(raw || '').trim();
+    if (!code) return;
+    // Serialize the captures: the camera re-arms itself while an
+    // earlier code is still being looked up, and two scans racing
+    // the same line must never lose a count.
+    scanQueueRef.current = scanQueueRef.current
+      .then(() => processTallyScan(code))
+      .catch(() => {});
   };
 
   const onAddPressed = () => {
     if (scan.trim()) {
       addByScan();
     } else {
-      scanHandledRef.current = false;
+      setTallyNote(null);
       setScannerOpen(true);
     }
   };
@@ -211,15 +225,32 @@ export default function CountSheet({ session, products, levels, user, onChanged 
         </div>
       )}
 
-      {/* In-sheet scanner overlay: same in-dialog scanner as the
-          product form; the sheet underneath never unmounts, so every
-          counted value typed so far is preserved. */}
+      {/* In-sheet tally scanner overlay: same in-dialog scanner as
+          the product form; the sheet underneath never unmounts, so
+          every counted value typed so far is preserved. The scanner
+          stays open and tallies until Done — each capture lands on
+          this sheet only (Nov 16, 2026). */}
       {scannerOpen && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 p-4">
           <div className="w-full max-w-sm space-y-3 rounded-xl bg-card p-4 shadow-lg">
-            <BarcodeScanner onDetect={handleScanDetect} />
-            <Button type="button" variant="outline" className="w-full" onClick={() => setScannerOpen(false)}>
-              {t('productForm.cancel')}
+            <p className="flex items-center gap-1.5 text-sm font-medium">
+              <ScanLine className="h-4 w-4" /> {t('scanTally.title')}
+            </p>
+            <BarcodeScanner onDetect={handleTallyDetect} />
+            <p className="text-sm text-muted-foreground">{t('scanTally.hint')}</p>
+            {tallyNote && (
+              <p
+                className={`flex items-start gap-1.5 text-sm ${
+                  tallyNote.ok ? 'text-ok' : 'text-destructive'
+                }`}
+                role="status"
+              >
+                {tallyNote.ok && <Check className="mt-0.5 h-4 w-4 shrink-0" />}
+                <span>{tallyNote.text}</span>
+              </p>
+            )}
+            <Button type="button" className="w-full" onClick={() => setScannerOpen(false)}>
+              {t('scanTally.done')}
             </Button>
           </div>
         </div>

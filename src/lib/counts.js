@@ -88,17 +88,34 @@ export function countSummary(lines = []) {
 }
 
 /**
- * One scanned unit on a count sheet (Nov 14, 2026): the product's
- * line gains +1 from its current counted value (0 when untouched).
- * A product that is NOT on the sheet returns null — a scan never
- * silently adds a line, because counts are audited; the caller
- * shows a plain notice naming the product instead.
+ * One scanned unit on a count sheet — scan-to-tally (owner ruling,
+ * Nov 16, 2026). The product's line gains +1 from its current
+ * counted value (0 when untouched); a product NOT on the sheet
+ * joins it at 1, wearing the expected quantity for the sheet's
+ * location — the exact line the typed-code Add has always
+ * appended. This supersedes the Nov 14 camera rule (one capture,
+ * off-sheet products refused): she asked for both ways of counting
+ * side by side — type the total, or scan item after item and let
+ * the tally climb on its own. A scan inside a count touches ONLY
+ * the sheet: no stock moves until the sheet is saved, sent for
+ * review and applied through the usual lifecycle.
  */
-export function bumpCountedLine(lines = [], productId) {
-  if (!lines.some((l) => l.product_id === productId)) return null;
-  return lines.map((l) =>
-    l.product_id === productId ? { ...l, counted: (Number(l.counted) || 0) + 1 } : l
-  );
+export function tallyCountedLine(lines = [], product, expected = 0) {
+  if (lines.some((l) => l.product_id === product.id)) {
+    return lines.map((l) =>
+      l.product_id === product.id ? { ...l, counted: (Number(l.counted) || 0) + 1 } : l
+    );
+  }
+  return [
+    ...lines,
+    {
+      product_id: product.id,
+      product_name: product.name,
+      sku: product.sku || '',
+      expected,
+      counted: 1,
+    },
+  ];
 }
 
 export async function saveCounts(sessionId, lines) {
