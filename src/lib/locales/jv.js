@@ -3656,7 +3656,7 @@ export const jv = {
   "training.lessons.welcome-basics.title": "Sugeng rawuh: manggihi dalan Panjenengan",
   "training.lessons.your-language.step1": "Bikak Pangaturan, utawi tutul menu basa ing nginggil layar mlebet.",
   "training.lessons.your-language.step2": "Pilih basa Panjenengan saking dhaptar. Sedaya aplikasi ewah langsung — menu, tombol, lan pelajaran kados punika.",
-  "training.lessons.your-language.step3": "Panjenengan saged ngowahi wangsul kapan kemawon. Pilihan Panjenengan tetep ing piranti punika.",
+  "training.lessons.your-language.step3": "Panjenengan saged ngowahi wangsul kapan kemawon. Pilihan Panjenengan dipunemutaken — pilih ing layar mlebet lan aplikasi badhe mbikak kanthi basa Panjenengan.",
   "training.lessons.your-language.step4": "Tanggal lan wekdal ndherek pangaturan toko Panjenengan, dados jadwal Panjenengan tansah nedahaken wekdal lokal toko Panjenengan.",
   "training.lessons.your-language.title": "Ginakaken aplikasi ing basa Panjenengan",
   "training.lessonsDoneOf": "{done} saking {total} pelajaran rampung",
