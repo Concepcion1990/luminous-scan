@@ -24,6 +24,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import AddLocationInline from '@/components/locations/AddLocationInline';
+import { useCarrierLabel } from '@/components/print/CarrierLabelPanel';
+import OrderLabelField from '@/components/orders/OrderLabelField';
 import { blankLine, CHANNELS, orderNumber, orderTotals } from '@/lib/orders';
 import { money, todayIso } from '@/lib/purchasing';
 import { computeOrderTax, formatTaxRate, parseTaxRate } from '@/lib/taxRate';
@@ -54,6 +56,17 @@ export default function OrderFormDialog({ open, onOpenChange, order, products, l
   // the field, and Save stays the only write.
   const [trackingScanOpen, setTrackingScanOpen] = useState(false);
   const trackingScanHandledRef = useRef(false);
+  // The shipping-label door (Nov 18, 2026): the form's own section
+  // onto the SAME carrier-label record the Print Center keeps —
+  // one label, two doors. On an existing order the hook reads and
+  // writes the saved record directly; on a new order the field
+  // stages the file and save() attaches it the moment the order
+  // exists. createdIdRef remembers a just-created order so that if
+  // the label attach ever fails, pressing Save again updates that
+  // order and retries the label — never a duplicate order.
+  const carrier = useCarrierLabel(activeId, order?.id || '');
+  const labelFieldRef = useRef(null);
+  const createdIdRef = useRef('');
 
   const openTrackingScanner = () => {
     trackingScanHandledRef.current = false;
@@ -131,6 +144,8 @@ export default function OrderFormDialog({ open, onOpenChange, order, products, l
     setSavedAddresses([]);
     setError('');
     setTaxTouched(false);
+    createdIdRef.current = '';
+    labelFieldRef.current?.clearStaged();
     if (order) {
       setForm({
         number: order.number || orderNumber(),
@@ -248,8 +263,34 @@ export default function OrderFormDialog({ open, onOpenChange, order, products, l
     };
 
     try {
-      if (order) await base44.entities.Order.update(order.id, payload);
-      else await base44.entities.Order.create(withBusiness({ ...payload, status: 'new' }, activeId));
+      let savedId = order?.id || createdIdRef.current || '';
+      if (order) {
+        await base44.entities.Order.update(order.id, payload);
+      } else if (savedId) {
+        // A retry after the order was created but its staged label
+        // failed to attach: update the same order, never duplicate.
+        await base44.entities.Order.update(savedId, payload);
+      } else {
+        const created = await base44.entities.Order.create(
+          withBusiness({ ...payload, status: 'new' }, activeId),
+        );
+        savedId = created?.id || '';
+        createdIdRef.current = savedId;
+      }
+      // A label staged on a new order attaches NOW, onto the saved
+      // order, through the same route the Print Center posts to —
+      // from here on it is the order's permanent record. If the
+      // attach fails, the order itself is saved; the form stays
+      // open with the label still staged so Save can retry it.
+      if (labelFieldRef.current?.hasStaged()) {
+        const attached = savedId
+          ? await labelFieldRef.current.uploadStaged(savedId)
+          : false;
+        if (!attached) {
+          setError(t('print.carrier.failed'));
+          return;
+        }
+      }
       onOpenChange(false);
       onSaved?.(order ? t('orders.orderUpdated') : t('orders.orderCreated'));
     } catch (e) {
@@ -557,6 +598,13 @@ export default function OrderFormDialog({ open, onOpenChange, order, products, l
               </div>
             </div>
           </div>
+
+          <OrderLabelField
+            ref={labelFieldRef}
+            businessId={activeId}
+            orderId={order?.id || ''}
+            carrier={carrier}
+          />
 
           <div className="grid gap-1">
             <Label className="text-xs">{t('orders.notes')}</Label>
