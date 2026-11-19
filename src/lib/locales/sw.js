@@ -3656,7 +3656,7 @@ export const sw = {
   "training.lessons.welcome-basics.title": "Karibu: kupata njia yako",
   "training.lessons.your-language.step1": "Fungua Mipangilio, au gusa menyu ya lugha juu ya skrini ya kuingia.",
   "training.lessons.your-language.step2": "Chagua lugha yako kutoka kwenye orodha. Programu nzima hubadilika mara moja — menyu, vitufe na masomo kama hili.",
-  "training.lessons.your-language.step3": "Unaweza kuibadilisha wakati wowote. Uchaguzi wako unabaki kwenye kifaa hiki.",
+  "training.lessons.your-language.step3": "Unaweza kuibadilisha wakati wowote. Chaguo lako hukumbukwa — lichague kwenye skrini ya kuingia na programu itafunguka kwa lugha yako.",
   "training.lessons.your-language.step4": "Tarehe na nyakati hufuata mipangilio ya duka lako, kwa hivyo ratiba yako daima huonyesha saa za eneo la duka lako.",
   "training.lessons.your-language.title": "Tumia programu kwa lugha yako",
   "training.lessonsDoneOf": "Masomo {done} kati ya {total} yamemalizika",
