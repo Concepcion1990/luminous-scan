@@ -3656,7 +3656,7 @@ export const yue = {
   "training.lessons.welcome-basics.title": "歡迎：熟悉操作方式",
   "training.lessons.your-language.step1": "打開「設定」，或撳登入畫面頂部嘅語言選單。",
   "training.lessons.your-language.step2": "從清單中揀你嘅語言。整個應用程式會即刻更改 — 選單、按鈕同像咁樣嘅課程。",
-  "training.lessons.your-language.step3": "你可以隨時改返嚟。你嘅揀會保留喺呢度裝置上。",
+  "training.lessons.your-language.step3": "你可以隨時改返嚟。你嘅揀會被記住——喺登入畫面揀佢，應用程式就會用你嘅語言開。",
   "training.lessons.your-language.step4": "日期同時間遵循你商店嘅設定，因此你嘅更表始終顯示你商店嘅當地時間。",
   "training.lessons.your-language.title": "以你嘅語言使用應用程式",
   "training.lessonsDoneOf": "已完成 {total} 堂課程入面嘅 {done} 堂",

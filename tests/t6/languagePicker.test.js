@@ -149,20 +149,38 @@ test('registration: the create call carries the chosen locale', () => {
   );
 });
 
-test('sign-in: the account’s saved language wins over the door choice (Nov 14, 2026)', () => {
-  // The smooth-door rule: the public picker's choice seeds a NEW
-  // account at signup (above). For an EXISTING account, signing
-  // in restores the language saved on the workspace — Layout
-  // syncs the UI locale from the loaded profile, so the saved
-  // language overrides whatever the browser's door choice was.
+test('sign-in: a door pick wins and becomes the saved language; with no pick, the saved language governs (Nov 18, 2026)', () => {
+  // Supersedes the Nov 14 door rule. That rule restored the
+  // workspace's saved language over whatever the visitor picked at
+  // the door — and the owner's hand-test (Nov 18, 2026) showed it
+  // stranding a Spanish reader in an English app: she picked
+  // Español on the login page, signed in, and everything opened in
+  // English. Her reversal: an explicit door pick WINS at sign-in,
+  // and for the business's owner it is written into the business
+  // record, so the pick BECOMES the saved language and the two
+  // never disagree again. With no door pick, the saved language
+  // still governs sign-in, exactly as Nov 14 wanted. The public
+  // picker's choice still seeds a NEW account at signup (above).
   const layout = read('src/components/Layout.jsx');
   assert.ok(
-    layout.includes('const code = profile?.language || \'en\';'),
-    'Layout does not read the saved language from the profile',
+    layout.includes('if (!profile || !activeId) return;'),
+    'Layout applies a language before the workspace has loaded',
   );
   assert.ok(
-    layout.includes('if (code !== getLocale()) setLocale(code);'),
-    'Layout does not restore the saved language over the door choice',
+    layout.includes('const pick = readLocalePick();'),
+    'Layout does not read the door pick',
+  );
+  assert.ok(
+    layout.includes('if (pick && pick !== businessCode) {'),
+    'Layout does not let a door pick win over the saved language',
+  );
+  assert.ok(
+    layout.includes('body: { language: pick }'),
+    'Layout does not save the winning pick into the business record',
+  );
+  assert.ok(
+    layout.includes('if (businessCode !== getLocale()) setLocale(businessCode);'),
+    'Layout does not restore the saved language when there is no door pick',
   );
 });
 

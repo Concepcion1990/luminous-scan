@@ -3656,7 +3656,7 @@ export const zhHant = {
   "training.lessons.welcome-basics.title": "歡迎：熟悉操作方式",
   "training.lessons.your-language.step1": "開啟「設定」，或點按登入畫面頂部的語言選單。",
   "training.lessons.your-language.step2": "從清單中選擇您的語言。整個應用程式會立即變更 — 選單、按鈕和像這樣的課程。",
-  "training.lessons.your-language.step3": "您可以隨時改回來。您的選擇會保留在此裝置上。",
+  "training.lessons.your-language.step3": "您可以隨時改回來。您的選擇會被記住——在登入畫面上選擇它，應用程式就會以您的語言開啟。",
   "training.lessons.your-language.step4": "日期和時間遵循您商店的設定，因此您的班表始終顯示您商店的當地時間。",
   "training.lessons.your-language.title": "以您的語言使用應用程式",
   "training.lessonsDoneOf": "已完成 {total} 堂課程中的 {done} 堂",

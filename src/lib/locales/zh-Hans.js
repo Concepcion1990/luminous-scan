@@ -3656,7 +3656,7 @@ export const zhHans = {
   "training.lessons.welcome-basics.title": "欢迎：熟悉应用",
   "training.lessons.your-language.step1": "打开“设置”，或点击登录页面顶部的语言菜单。",
   "training.lessons.your-language.step2": "从列表中选择您的语言。整个应用会立即切换——菜单、按钮和这样的课程。",
-  "training.lessons.your-language.step3": "您可以随时改回来。您的选择会保存在此设备上。",
+  "training.lessons.your-language.step3": "您可以随时改回来。您的选择会被记住——在登录屏幕上选择它，应用就会以您的语言打开。",
   "training.lessons.your-language.step4": "日期和时间遵循您门店的设置，因此您的排班始终显示门店的当地时间。",
   "training.lessons.your-language.title": "以您的语言使用应用",
   "training.lessonsDoneOf": "已完成 {done} / {total} 节课程",
