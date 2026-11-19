@@ -3586,7 +3586,7 @@ export const ha = {
   "training.lessons.products-find-edit.step1": "Buɗe Samfura don neman duk abin da shagonka ke ɗauka, ta suna, SKU, barcode ko ISBN.",
   "training.lessons.products-find-edit.step2": "Buɗe samfur don ganin bayanansa, hotunansa, farashinsa da nawa ne a kowane wuri.",
   "training.lessons.products-find-edit.step3": "Idan matsayinka ya ba da izinin gyara, za ka iya gyara sunaye, farashi da bayani — ajiye, kuma canjin yana ko'ina a lokaci guda. Goge kaya na dindindin yana cikin menu na layi kuma na mai shi ne — koyaushe yana neman tabbatarwa da farko, kuma shine kaɗai hanyar da adadin kayayyaki ke raguwa.",
-  "training.lessons.products-find-edit.step4": "Sabon samfur? Ƙara shi da barcode ɗinsa domin na'urar dubawa ta gane shi daga lokacin. Kowane akwatin lamba a cikin fom — UPC, barcode da lambar QR — yana da maɓallin bincikensa, don haka za ka iya nuna kyamara maimakon bugawa.",
+  "training.lessons.products-find-edit.step4": "Sabon samfur? Idan ka ga maɓallin Sabon samfur, za ka iya ƙara shi da barcode ɗinsa domin na’urar dubawa ta gane shi daga lokacin. Kowane akwatin lamba a cikin fom — UPC, barcode da lambar QR — yana da maɓallin bincikensa, don haka za ka iya nuna kyamara maimakon bugawa.",
   'training.lessons.products-find-edit.step5': 'Kana ƙara samfur? Rubuta nawa kake da shi a «Adadin da ke hannu» kuma zai shiga cikin kaya nan take, an rubuta shi a matsayin karɓa — babu wani matakin karɓa daban. Bar shi fanko kuma samfurin zai fara daga sifili.',
   'training.lessons.products-find-edit.step6': "A shafin Kayayyaki da kansa za ka iya canja kaya a cikin layin: taɓa kibiya ta sama don ƙara ɗaya, kibiya ta ƙasa don rage ɗaya — kowanne taɓawa ana rubuta shi cikin tarihin motsi. Idan wurare suna da yawa, taɓa lambar (ko «Ƙara kaya» a menu na layi) don buɗe takardar kaya ka zaɓi wurin. A cikin takardar nan, maɓallin Duba don ƙidaya da ke kusa da adadi yana dubawa a madadinka: ka nuna kyamara ga kowane kaya da ya iso kuma adadin yana tashi da kansa — kibiyoyi har yanzu suna aiki da hannu, kuma Ajiye ya ci gaba da zama taɓawar da take rubuta shi.",
   "training.lessons.products-find-edit.step7": "Kana gyara kaya? Fom ɗin gyara yana da akwatin «Adadin da ke hannu» iri ɗaya, yana nuna adadi a wurin da aka zaɓa. Canza lambar ka adana — bambancin yana rubutuwa a matsayin motsin kaya, ba ya taɓa maye gurbinsa ba tare da rubutu ba.",
@@ -4752,4 +4752,7 @@ export const ha = {
   "returns.waitingApproval": "Tana jiran amincewa daga mai shi ko ɗan ƙungiyar da aka amince da shi.",
   "returns.waitingToFinish": "An amince — mai shi ko ɗan ƙungiyar da aka amince da shi zai kammala wannan dawowar.",
   "apiErrors.returnsCompleteReserved": "Mai shi kaɗai, ko ɗan ƙungiyar da mai shi ya ba shi izinin kammala mayar da kuɗi da musanya, ne zai iya amincewa da dawowa ya kammala ta.",
+  "staffLib.perm.productsCreate": "Ƙara sabbin samfura",
+  "staffLib.area.productsAccess": "Ƙara samfura",
+  "staff.memberDialog.productsAccessHint": "Da wannan alamar, wannan mutum yana ganin maɓallan Sabon samfur kuma zai iya ƙara samfura a cikin kasidar. Idan babu shi, maɓallan ba sa bayyana gare shi.",
 };
