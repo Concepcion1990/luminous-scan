@@ -18,8 +18,7 @@ import { createApp } from './server/app.js';
 import { config, configuredSecretNames } from './server/config.js';
 import { runMigrations } from './server/migrate.js';
 import { setPoolOverride, getPool } from './server/db.js';
-import { runWipeSweep } from './server/billing.js';
-import { runTrialReminderSweep } from './server/trialReminders.js';
+import { startSweepScheduler } from './server/sweepScheduler.js';
 
 const app = createApp();
 
@@ -42,43 +41,22 @@ async function main() {
     console.warn('[twin] using in-memory pg-mem Postgres (local dev only — data is lost on restart).');
   }
   await runMigrations();
-  // Wipe sweep (T4): the daily job that deletes accounts 15 days after
-  // paid-through (keeping the TrialHistory row). Wired as a server
-  // timer when BILLING_JOBS_ENABLED is exactly 'true' — the future
-  // worker machine will call POST /api/billing/wipe-sweep with the
-  // job secret instead. Off by default; the endpoint is the manual
-  // trigger either way.
-  if (process.env.BILLING_JOBS_ENABLED === 'true') {
-    const runSweep = async () => {
-      try {
-        const pool = getPool();
-        if (pool) await runWipeSweep(pool, { now: new Date() });
-      } catch (error) {
-        console.error('[twin] wipe sweep failed:', error.message);
-      }
-    };
-    setInterval(runSweep, 24 * 60 * 60 * 1000);
-    console.log('[twin] wipe sweep timer enabled (daily).');
-    // Trial reminder sweep (owner decision 2026-11-12: reminders ON):
-    // hourly, because the final reminder is a 24-hours-before email —
-    // a daily cadence could land it a day late. Runs once at startup
-    // too, so a restart never delays a due reminder by a full hour.
-    // The job endpoint POST /api/billing/trial-reminder-sweep is the
-    // manual/worker trigger either way, exactly like the wipe sweep.
-    const runReminders = async () => {
-      try {
-        const pool = getPool();
-        if (pool) await runTrialReminderSweep(pool, { now: new Date() });
-      } catch (error) {
-        console.error('[twin] trial reminder sweep failed:', error.message);
-      }
-    };
-    void runReminders();
-    setInterval(runReminders, 60 * 60 * 1000);
-    console.log('[twin] trial reminder sweep timer enabled (hourly).');
-  }
   app.listen(config.port, () => {
     console.log(`[twin] Luminous StockHaven listening on port ${config.port}`);
+    // Billing sweeps (Nov 18, 2026): the wipe sweep (T4 — deletes
+    // accounts 15 days after paid-through, keeping the TrialHistory
+    // row; the 90-day customer address purge rides it), and the
+    // trial reminder sweep (owner decision 2026-11-12: reminders
+    // ON). They used to be timers gated on BILLING_JOBS_ENABLED
+    // being exactly 'true' — a flag production never carried, so
+    // nothing ever ran and a due day-4 reminder email was never
+    // sent. The scheduler (server/sweepScheduler.js) now rings on
+    // its own: a boot run shortly after listen, then every 6
+    // hours, ON unless BILLING_JOBS_ENABLED is exactly 'false'.
+    // The job endpoints POST /api/billing/wipe-sweep and
+    // POST /api/billing/trial-reminder-sweep stay as the manual
+    // door either way.
+    startSweepScheduler({ getPoolFn: getPool });
   });
 }
 
