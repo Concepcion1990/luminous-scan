@@ -3656,7 +3656,7 @@ export const fa = {
   "training.lessons.welcome-basics.title": "خوش آمدید: پیدا کردن راه خود",
   "training.lessons.your-language.step1": "تنظیمات را باز کنید، یا روی منوی زبان در بالای صفحه ورود بزنید.",
   "training.lessons.your-language.step2": "زبان خود را از فهرست انتخاب کنید. کل برنامه بلافاصله تغییر می‌کند — منوها، دکمه‌ها و درس‌هایی مانند این یکی.",
-  "training.lessons.your-language.step3": "می‌توانید هر زمان آن را برگردانید. انتخاب شما روی این دستگاه می‌ماند.",
+  "training.lessons.your-language.step3": "می‌توانید هر زمان آن را برگردانید. انتخاب شما ذخیره می‌شود — آن را در صفحه ورود انتخاب کنید تا برنامه به زبان شما باز شود.",
   "training.lessons.your-language.step4": "تاریخ‌ها و زمان‌ها از تنظیمات فروشگاه شما پیروی می‌کنند، بنابراین برنامه شما همیشه زمان محلی فروشگاه شما را نشان می‌دهد.",
   "training.lessons.your-language.title": "استفاده از برنامه به زبان شما",
   "training.lessonsDoneOf": "{done} از {total} درس تمام شد",

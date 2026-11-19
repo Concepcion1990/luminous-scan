@@ -3656,7 +3656,7 @@ export const frCA = {
   "training.lessons.welcome-basics.title": "Bienvenue : vous y retrouver",
   "training.lessons.your-language.step1": "Ouvrez Réglages, ou touchez le menu de langue en haut de l’écran de connexion.",
   "training.lessons.your-language.step2": "Choisissez votre langue dans la liste. Toute l’application change tout de suite — menus, boutons et leçons comme celle-ci.",
-  "training.lessons.your-language.step3": "Vous pouvez la rechanger en tout temps. Votre choix reste sur cet appareil.",
+  "training.lessons.your-language.step3": "Vous pouvez la rechanger en tout temps. Votre choix est retenu — choisissez-la sur l’écran de connexion et l’application s’ouvre dans votre langue.",
   "training.lessons.your-language.step4": "Les dates et les heures suivent les réglages de votre magasin, alors votre horaire montre toujours l’heure locale de votre magasin.",
   "training.lessons.your-language.title": "Utiliser l’application dans votre langue",
   "training.lessonsDoneOf": "{done} de {total} leçons terminées",
