@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { base44, apiRequest } from '@/api/client';
-import { Plus } from 'lucide-react';
+import { Plus, ScanBarcode } from 'lucide-react';
+import BarcodeScanner from '@/components/scan/BarcodeScanner';
 import OrderLineRow from '@/components/orders/OrderLineRow';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -43,6 +44,35 @@ export default function OrderFormDialog({ open, onOpenChange, order, products, l
   const [error, setError] = useState('');
   const [addressOnFile, setAddressOnFile] = useState(false);
   const shipsFromRef = useRef(null);
+  // In-form tracking scanner (Nov 18, 2026): the scan button beside
+  // Tracking reference opens the camera scanner as an overlay INSIDE
+  // this dialog — the form never unmounts, so a half-filled order
+  // keeps every value. A carrier label's barcode (USPS numbers run
+  // ~30 digits) drops straight into the field instead of being typed
+  // by hand. Same pattern as the product form's code scanners: the
+  // first capture is latched, the overlay closes, focus returns to
+  // the field, and Save stays the only write.
+  const [trackingScanOpen, setTrackingScanOpen] = useState(false);
+  const trackingScanHandledRef = useRef(false);
+
+  const openTrackingScanner = () => {
+    trackingScanHandledRef.current = false;
+    setTrackingScanOpen(true);
+  };
+
+  // A capture REPLACES the field's contents with the decoded text
+  // (trimmed) — exactly how the product form's scan-to-fill fields
+  // behave. No product lookup, no carrier validation, no save: the
+  // number simply lands in the box.
+  const handleTrackingScan = (raw) => {
+    if (trackingScanHandledRef.current) return;
+    trackingScanHandledRef.current = true;
+    const value = String(raw || '').trim();
+    setTrackingScanOpen(false);
+    if (!value) return;
+    setForm((f) => (f ? { ...f, tracking_ref: value } : f));
+    requestAnimationFrame(() => document.getElementById('tracking_ref')?.focus());
+  };
 
   // Opened from a blocked-action banner: bring the ships-from
   // picker into view — the door opens at the missing field.
@@ -508,11 +538,23 @@ export default function OrderFormDialog({ open, onOpenChange, order, products, l
             </div>
             <div className="grid gap-1">
               <Label className="text-xs">{t('orders.trackingReference')}</Label>
-              <Input
-                className="font-mono text-xs"
-                value={form.tracking_ref}
-                onChange={(e) => setForm({ ...form, tracking_ref: e.target.value })}
-              />
+              <div className="flex gap-2">
+                <Input
+                  id="tracking_ref"
+                  className="min-w-0 flex-1 font-mono text-xs"
+                  value={form.tracking_ref}
+                  onChange={(e) => setForm({ ...form, tracking_ref: e.target.value })}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="shrink-0"
+                  onClick={openTrackingScanner}
+                  aria-label={t('orders.scanTracking')}
+                >
+                  <ScanBarcode className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -537,6 +579,21 @@ export default function OrderFormDialog({ open, onOpenChange, order, products, l
             {saving ? t('orders.saving') : t('orders.saveOrder')}
           </Button>
         </DialogFooter>
+
+        {/* In-form scanner overlay: rendered INSIDE the dialog, so
+            the form underneath never unmounts and nothing typed is
+            lost. Closing it (capture or Cancel) returns to the exact
+            same half-filled order. */}
+        {trackingScanOpen && (
+          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 p-4">
+            <div className="w-full max-w-sm space-y-3 rounded-xl bg-card p-4 shadow-lg">
+              <BarcodeScanner onDetect={handleTrackingScan} />
+              <Button type="button" variant="outline" className="w-full" onClick={() => setTrackingScanOpen(false)}>
+                {t('orders.cancel')}
+              </Button>
+            </div>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
