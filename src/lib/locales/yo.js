@@ -3656,7 +3656,7 @@ export const yo = {
   "training.lessons.welcome-basics.title": "Káàbọ̀: wíwá ọ̀nà rẹ",
   "training.lessons.your-language.step1": "Ṣí Àwọn Ètò, tàbí tẹ àkójọ èdè tí ó wà lókè ìbòjú ìforúkọwọlé.",
   "training.lessons.your-language.step2": "Yan èdè rẹ láti inú àkójọ náà. Gbogbo áppù náà ń yípadà lẹ́sẹ̀kẹsẹ̀ — àwọn àkójọ, àwọn bọ́tìnì àti àwọn ẹ̀kọ́ bíi èyí.",
-  "training.lessons.your-language.step3": "O lè yí i padà nígbàkigbà. Àṣàyàn rẹ dúró lórí ẹ̀rọ yìí.",
+  "training.lessons.your-language.step3": "O lè yí i padà nígbàkigbà. Àṣàyàn rẹ ni a máa rántí — yàn án lójú ìbòjú ìforúkọsílẹ̀ wọlé, ohun èlò náà á sì ṣí ní èdè rẹ.",
   "training.lessons.your-language.step4": "Àwọn ọjọ́ àti àwọn àkókò ń tẹ̀lé àwọn ètò ilé ìtajà rẹ, nítorí náà ìtòlẹ́sẹẹsẹ rẹ máa ń fi àkókò àdúgbò ilé ìtajà rẹ hàn nígbà gbogbo.",
   "training.lessons.your-language.title": "Lo áppù náà ní èdè rẹ",
   "training.lessonsDoneOf": "Ẹ̀kọ́ {done} nínú {total} ti parí",

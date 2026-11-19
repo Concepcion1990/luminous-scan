@@ -3656,7 +3656,7 @@ export const wuu = {
   "training.lessons.welcome-basics.title": "欢迎：熟悉应用",
   "training.lessons.your-language.step1": "打开“设置”，或点登录页面顶部个语言菜单。",
   "training.lessons.your-language.step2": "从列表中选择侬个语言。整个应用会立即切换——菜单、按钮搭搿能个课程。",
-  "training.lessons.your-language.step3": "侬好随时改回来。侬个选择会保存在搿个设备上。",
+  "training.lessons.your-language.step3": "侬好随时改回来。侬个选择会被记住——勒登录屏幕上选择伊，应用就会用侬个语言打开。",
   "training.lessons.your-language.step4": "日期搭时间遵循侬店铺个设置，因此侬个排班始终显示店铺个当地时间。",
   "training.lessons.your-language.title": "以侬个语言使用应用",
   "training.lessonsDoneOf": "已完成 {done} / {total} 节课程",

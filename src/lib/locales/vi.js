@@ -3656,7 +3656,7 @@ export const vi = {
   "training.lessons.welcome-basics.title": "Chào mừng: tìm đường trong ứng dụng",
   "training.lessons.your-language.step1": "Mở Cài đặt, hoặc chạm vào menu ngôn ngữ ở đầu màn hình đăng nhập.",
   "training.lessons.your-language.step2": "Chọn ngôn ngữ của bạn từ danh sách. Toàn bộ ứng dụng thay đổi ngay lập tức — menu, nút và các bài học như bài này.",
-  "training.lessons.your-language.step3": "Bạn có thể thay đổi lại bất cứ lúc nào. Lựa chọn của bạn ở lại trên thiết bị này.",
+  "training.lessons.your-language.step3": "Bạn có thể thay đổi lại bất cứ lúc nào. Lựa chọn của bạn được ghi nhớ — hãy chọn nó trên màn hình đăng nhập và ứng dụng sẽ mở bằng ngôn ngữ của bạn.",
   "training.lessons.your-language.step4": "Ngày và giờ tuân theo cài đặt của cửa hàng bạn, vì vậy lịch của bạn luôn hiển thị giờ địa phương của cửa hàng.",
   "training.lessons.your-language.title": "Dùng ứng dụng bằng ngôn ngữ của bạn",
   "training.lessonsDoneOf": "Đã hoàn thành {done} trong số {total} bài học",
