@@ -3656,7 +3656,7 @@ export const de = {
   "training.lessons.welcome-basics.title": "Willkommen: sich zurechtfinden",
   "training.lessons.your-language.step1": "Öffnen Sie Einstellungen oder tippen Sie auf das Sprachmenü oben auf dem Anmeldebildschirm.",
   "training.lessons.your-language.step2": "Wählen Sie Ihre Sprache aus der Liste. Die gesamte App ändert sich sofort — Menüs, Schaltflächen und Lektionen wie diese.",
-  "training.lessons.your-language.step3": "Sie können sie jederzeit zurückändern. Ihre Wahl bleibt auf diesem Gerät.",
+  "training.lessons.your-language.step3": "Sie können sie jederzeit zurückändern. Ihre Wahl wird gespeichert — wählen Sie sie auf dem Anmeldebildschirm, und die App öffnet sich in Ihrer Sprache.",
   "training.lessons.your-language.step4": "Daten und Zeiten folgen den Einstellungen Ihres Geschäfts, sodass Ihr Dienstplan immer die Ortszeit Ihres Geschäfts zeigt.",
   "training.lessons.your-language.title": "Die App in Ihrer Sprache nutzen",
   "training.lessonsDoneOf": "{done} von {total} Lektionen abgeschlossen",

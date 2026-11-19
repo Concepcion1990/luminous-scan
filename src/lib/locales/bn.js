@@ -3656,7 +3656,7 @@ export const bn = {
   "training.lessons.welcome-basics.title": "স্বাগতম: আপনার পথ খুঁজে নেওয়া",
   "training.lessons.your-language.step1": "সেটিংস খুলুন, অথবা সাইন-ইন পর্দার শীর্ষে ভাষা মেনুতে ট্যাপ করুন।",
   "training.lessons.your-language.step2": "তালিকা থেকে আপনার ভাষা বেছে নিন। পুরো অ্যাপ সঙ্গে সঙ্গে বদলে যায় — মেনু, বোতাম ও এর মতো পাঠ।",
-  "training.lessons.your-language.step3": "আপনি যেকোনো সময় এটি ফিরিয়ে বদলাতে পারেন। আপনার পছন্দ এই ডিভাইসেই থাকে।",
+  "training.lessons.your-language.step3": "আপনি যেকোনো সময় এটি ফিরিয়ে বদলাতে পারেন। আপনার পছন্দ মনে রাখা হয় — সাইন-ইন স্ক্রিনে এটি বেছে নিন, অ্যাপটি আপনার ভাষায় খুলবে।",
   "training.lessons.your-language.step4": "তারিখ ও সময় আপনার স্টোরের সেটিংস অনুসরণ করে, তাই আপনার সময়সূচি সবসময় আপনার স্টোরের স্থানীয় সময় দেখায়।",
   "training.lessons.your-language.title": "আপনার ভাষায় অ্যাপ ব্যবহার করুন",
   "training.lessonsDoneOf": "{total}টি পাঠের মধ্যে {done}টি শেষ",
