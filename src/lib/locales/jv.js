@@ -3586,7 +3586,7 @@ export const jv = {
   "training.lessons.products-find-edit.step1": "Bikak Produk kangge madosi sedaya ingkang dipunbekta toko Panjenengan, miturut nama, SKU, barcode, utawi ISBN.",
   "training.lessons.products-find-edit.step2": "Bikak satunggal produk kangge mirsani rincianipun, foto, regi, lan pinten ing saben lokasi.",
   "training.lessons.products-find-edit.step3": "Menawi peran Panjenengan ngidinaken nyunting, Panjenengan saged ngleresaken nama, regi, lan rincian — simpen, lan pangowahan wonten ing pundi-pundi saknalika. Mbusak produk salawase ana ing menu larik lan duweke sing duwe — tansah njaluk konfirmasi dhisik, lan iku siji-sijine cara cacah produk mudhun.",
-  "training.lessons.products-find-edit.step4": "Produk saestu enggal? Tambah kanthi barcode-ipun supados pamindai mangertosi wiwit nalika punika. Saben kothak kode ing formulir — UPC, barcode lan kode QR — duwe tombol pindai dhewe, dadi sampeyan bisa ngarahake kamera tinimbang ngetik.",
+  "training.lessons.products-find-edit.step4": "Produk saestu enggal? Menawi panjenengan ningali tombol Produk anyar, panjenengan saged nambah kanthi barcode-ipun supados pamindai mangertosi wiwit nalika punika. Saben kothak kode ing formulir — UPC, barcode lan kode QR — duwe tombol pindai dhewe, dadi sampeyan bisa ngarahake kamera tinimbang ngetik.",
   'training.lessons.products-find-edit.step5': 'Nambah produk? Tulis pira sing sampeyan duweni ing «Jumlah sing ana» lan bakal langsung mlebu stok, kacathet minangka panrima — ora ana langkah panrima kapisah. Kosongna lan produk miwiti saka nol.',
   'training.lessons.products-find-edit.step6': "Ing kaca Produk dhewe sampeyan bisa ngganti stok ing larik kasebut: tutul panah munggah kanggo nambah siji, panah mudhun kanggo nyuda siji — saben tutul ditulis ing riwayat obahe. Yen lokasine akeh, tutul angkane (utawa «Tambah stok» ing menu larik) kanggo mbukak lembar stok lan milih panggonane. Ing lembar punika, tombol Mindai kangge Ngitung ing sacelake cacah mindai nggantos Panjenengan: arahna kamera dhateng saben barang ingkang dugi lan cacahipun minggah piyambak — panah taksih saged dipunginakaken kanthi asta, lan Simpen taksih dados tutul ingkang nyathet punika.",
   "training.lessons.products-find-edit.step7": "Lagi nyunting produk? Formulir suntingan nduweni kothak «Jumlah sing ana» sing padha, nuduhake cacah ing papan sing dipilih. Owahi angkane lan simpen — selisihe kacathet minangka obahing stok, ora tau ditimpa tanpa cathetan.",
@@ -4752,4 +4752,7 @@ export const jv = {
   "returns.waitingApproval": "Ngenteni persetujuan saka sing duwe utawa anggota tim sing disetujoni.",
   "returns.waitingToFinish": "Disetujoni — sing duwe utawa anggota tim sing disetujoni bakal ngrampungake retur iki.",
   "apiErrors.returnsCompleteReserved": "Mung sing duwe, utawa anggota tim sing diidini sing duwe kanggo ngrampungake mbalekake dhuwit lan ijol-ijolan, sing bisa nyetujoni lan ngrampungake retur.",
+  "staffLib.perm.productsCreate": "Tambah produk anyar",
+  "staffLib.area.productsAccess": "Nambah produk",
+  "staff.memberDialog.productsAccessHint": "Kanthi tandha iki, wong iki ndeleng tombol Produk anyar lan bisa nambah produk menyang katalog. Tanpa tandha iki, tombol-tombol kasebut ora katon kanggo dheweke.",
 };
