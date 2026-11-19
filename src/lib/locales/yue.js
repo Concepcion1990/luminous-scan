@@ -3586,7 +3586,7 @@ export const yue = {
   "training.lessons.products-find-edit.step1": "打開「產品」，依名稱、SKU、條碼或 ISBN 搜尋你商店出售嘅所有產品。",
   "training.lessons.products-find-edit.step2": "打開一個產品，睇佢嘅詳細資料、照片、價錢，同埋每個地點嘅數量。",
   "training.lessons.products-find-edit.step3": "如果你嘅角色允許編輯，你可以修正名稱、價錢同詳細資料 — 儲存後，更改會即刻喺所有地方生效。 徹底刪走產品喺行選單入面，係店主嘅權限——佢永遠會先要求確認，而且係產品數量減少嘅唯一方法。",
-  "training.lessons.products-find-edit.step4": "全新產品嗎？新增時附上佢嘅條碼，令掃描器從此以後都能認出佢。 表單入面每個代碼框——UPC、條碼同 QR 碼——都有自己嘅掃描掣，你可以對住鏡頭而唔使打字。",
+  "training.lessons.products-find-edit.step4": "全新產品嗎？如果你見到「新產品」掣，可以新增時附上佢嘅條碼，令掃描器從此以後都能認出佢。 表單入面每個代碼框——UPC、條碼同 QR 碼——都有自己嘅掃描掣，你可以對住鏡頭而唔使打字。",
   'training.lessons.products-find-edit.step5': '加緊產品？喺「現有數量」填返你而家有幾多，佢即刻入庫，記為一次收貨 — 唔使再行收貨嗰步。留空嘅話產品由零開始。',
   'training.lessons.products-find-edit.step6': "喺產品頁面嗰行就可以改庫存：撳向上箭嘴加一，撳向下箭嘴減一 — 每一下都會記入移動歷史。如果有幾個地點，撳個數字（或者行選單入面嘅「加庫存」）打開庫存表，揀返個地點。喺嗰張表入面，數量旁邊嘅「掃描盤點」掣會代替你掃描：將鏡頭對準每件到嘅貨，數量自己向上升——箭嘴依然可以人手用，「儲存」依然係記錄佢嗰一下。",
   "training.lessons.products-find-edit.step7": "編輯緊產品？編輯表格有同一個「現有數量」框，顯示所選地點嘅數量。改個數字再儲存 — 差額會記錄為一次庫存變動，永遠唔會喺冇記錄嘅情況下被覆寫。",
@@ -4752,4 +4752,7 @@ export const yue = {
   "returns.waitingApproval": "等緊店主或者已批准嘅團隊成員審批。",
   "returns.waitingToFinish": "已批准 — 店主或者已批准嘅團隊成員會完成呢筆退貨。",
   "apiErrors.returnsCompleteReserved": "只有店主，或者經店主允許完成退款同換貨嘅團隊成員，先可以審批同完成退貨。",
+  "staffLib.perm.productsCreate": "新增新產品",
+  "staffLib.area.productsAccess": "新增產品",
+  "staff.memberDialog.productsAccessHint": "剔咗呢一格，呢個人會見到「新產品」掣，可以將產品加入目錄。冇剔嘅話，啲掣唔會出現畀佢。",
 };
