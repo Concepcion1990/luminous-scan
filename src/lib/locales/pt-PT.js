@@ -3586,7 +3586,7 @@ export const ptPT = {
   "training.lessons.products-find-edit.step1": "Abra Produtos para pesquisar tudo o que a sua loja vende, por nome, SKU, código de barras ou ISBN.",
   "training.lessons.products-find-edit.step2": "Abra um produto para ver os seus detalhes, fotografias, preços e quantos há em cada localização.",
   "training.lessons.products-find-edit.step3": "Se a sua função permitir editar, pode corrigir nomes, preços e detalhes — guarde, e a alteração aparece em todo o lado ao mesmo tempo. Eliminar um produto de vez fica no menu da linha e pertence ao dono — pede sempre confirmação primeiro, e é a única forma de o número de produtos descer.",
-  "training.lessons.products-find-edit.step4": "Produto totalmente novo? Adicione-o com o seu código de barras para que o leitor o reconheça a partir daí. Cada caixa de código do formulário — UPC, código de barras e código QR — tem o seu próprio botão de leitura, para apontar a câmara em vez de escrever.",
+  "training.lessons.products-find-edit.step4": "Produto totalmente novo? Se vir o botão Novo produto, pode adicioná-lo com o seu código de barras para que o leitor o reconheça a partir daí. Cada caixa de código do formulário — UPC, código de barras e código QR — tem o seu próprio botão de leitura, para apontar a câmara em vez de escrever.",
   'training.lessons.products-find-edit.step5': 'A adicionar um produto? Indique quantos tem em Quantidade em stock e fica em stock de imediato, registado como uma receção — sem um passo de receção separado. Deixe em branco e o produto começa do zero.',
   'training.lessons.products-find-edit.step6': "Na própria página de Produtos muda o stock na linha: toque na seta para cima para adicionar um, na seta para baixo para retirar um — cada toque fica registado no histórico de movimentos. Com vários locais, toque no número (ou em Adicionar stock no menu da linha) para abrir a ficha de stock e escolher o lugar. Nessa folha, o botão Digitalizar para contar ao lado da quantidade digitaliza por si: aponte a câmara para cada item que chega e a quantidade sobe sozinha — as setas continuam a funcionar à mão, e Guardar continua a ser o toque que o regista.",
   "training.lessons.products-find-edit.step7": "A editar um produto? O formulário de edição tem a mesma caixa «Quantidade em stock», que mostra a quantidade no local escolhido. Altere o número e guarde — a diferença é registada como um movimento de stock, nunca substituída sem registo.",
@@ -4752,4 +4752,7 @@ export const ptPT = {
   "returns.waitingApproval": "A aguardar a aprovação do proprietário ou de um membro da equipa aprovado.",
   "returns.waitingToFinish": "Aprovada — o proprietário ou um membro da equipa aprovado concluirá esta devolução.",
   "apiErrors.returnsCompleteReserved": "Apenas o proprietário, ou um membro da equipa que o proprietário autorizou a concluir reembolsos e trocas, pode aprovar e concluir uma devolução.",
+  "staffLib.perm.productsCreate": "Adicionar novos produtos",
+  "staffLib.area.productsAccess": "Adicionar produtos",
+  "staff.memberDialog.productsAccessHint": "Com esta seleção, esta pessoa vê os botões Novo produto e pode adicionar produtos ao catálogo. Sem ela, os botões não lhe aparecem.",
 };
