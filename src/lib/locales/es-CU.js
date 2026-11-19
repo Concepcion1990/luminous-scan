@@ -3586,7 +3586,7 @@ export const esCU = {
   "training.lessons.products-find-edit.step1": "Abre Productos para buscar todo lo que vende tu tienda, por nombre, SKU, código de barras o ISBN.",
   "training.lessons.products-find-edit.step2": "Abre un producto para ver sus detalles, fotos, precios y cuántos hay en cada ubicación.",
   "training.lessons.products-find-edit.step3": "Si tu rol permite editar, puedes corregir nombres, precios y detalles; guarda, y el cambio aparece en todas partes a la vez. Eliminar un producto para siempre está en el menú de la fila y pertenece al dueño: siempre pide confirmación primero, y es la única forma de que baje el conteo de productos.",
-  "training.lessons.products-find-edit.step4": "¿Un producto totalmente nuevo? Agrégalo con su código de barras para que el escáner lo reconozca desde entonces. Cada casilla de código del formulario — UPC, código de barras y código QR — tiene su propio botón de escaneo, para apuntar la cámara en vez de escribir.",
+  "training.lessons.products-find-edit.step4": "¿Un producto totalmente nuevo? Si ves el botón de producto nuevo, puedes agregarlo con su código de barras para que el escáner lo reconozca desde entonces. Cada casilla de código del formulario — UPC, código de barras y código QR — tiene su propio botón de escaneo, para apuntar la cámara en vez de escribir.",
   'training.lessons.products-find-edit.step5': '¿Estás agregando un producto? Escribe cuántos tienes en Cantidad disponible y quedará en stock al instante, registrado como una recepción, sin un paso aparte de recepción. Déjalo en blanco y el producto empieza en cero.',
   'training.lessons.products-find-edit.step6': "En la misma página de Productos puedes cambiar el stock en la fila: toca la flecha hacia arriba para añadir uno y la flecha hacia abajo para quitar uno — cada toque queda escrito en el historial de movimientos. Con varias ubicaciones, toca el número (o Añadir stock en el menú de la fila) para abrir la hoja de stock y elegir el lugar. En esa hoja, el botón Escanear para contar junto a la cantidad escanea en su lugar: apunta la cámara a cada artículo que llega y la cantidad sube sola — las flechas siguen funcionando a mano, y Guardar sigue siendo el toque que lo registra.",
   "training.lessons.products-find-edit.step7": "¿Estás editando un producto? El formulario de edición tiene el mismo cuadro de «Cantidad disponible», que muestra la cantidad en la ubicación elegida. Cambia el número y guarda — la diferencia se registra como un movimiento de inventario, nunca se sobrescribe sin un registro.",
@@ -4752,4 +4752,7 @@ export const esCU = {
   "returns.waitingApproval": "En espera de la aprobación del dueño o de un miembro del equipo aprobado.",
   "returns.waitingToFinish": "Aprobada: el dueño o un miembro del equipo aprobado completará esta devolución.",
   "apiErrors.returnsCompleteReserved": "Solo el dueño, o un miembro del equipo al que el dueño haya permitido completar reembolsos e intercambios, puede aprobar y completar una devolución.",
+  "staffLib.perm.productsCreate": "Agregar productos nuevos",
+  "staffLib.area.productsAccess": "Agregar productos",
+  "staff.memberDialog.productsAccessHint": "Con esta marca, esta persona ve los botones de Producto nuevo y puede agregar productos al catálogo. Sin ella, los botones no le aparecen.",
 };
