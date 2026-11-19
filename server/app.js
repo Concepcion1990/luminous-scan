@@ -84,6 +84,14 @@ export function createApp() {
   // Clover OAuth callback: same shape — a browser redirect from
   // Clover, the HMAC-signed state is its credential.
   app.get('/api/pos/clover/callback', cloverOAuthCallbackHandler);
+  // Voice notes (Nov 19, 2026): a 3-minute recording travels as a
+  // base64 data URL (~11 MB worst case) and must reach the voice
+  // endpoint's own clear 400, not the parser's 413 — so that one
+  // path gets a wider parser first; everything else keeps 3 MB.
+  app.use(
+    '/api/businesses/:bid/workforce/messages/threads/:threadId/voice',
+    express.json({ limit: '12mb' }),
+  );
   // 3 MB JSON bodies: a store logo (up to 2 MB as a data URL) must
   // reach the logo endpoint's own clear 400, not the parser's 413.
   app.use(express.json({ limit: '3mb' }));

@@ -43,6 +43,8 @@
  *   POST  /api/businesses/:bid/workforce/messages/threads    get-or-create
  *   GET   /api/businesses/:bid/workforce/messages/threads/:id
  *   POST  /api/businesses/:bid/workforce/messages/threads/:id/messages
+ *   POST  /api/businesses/:bid/workforce/messages/threads/:id/voice   voice note (converted to MP3 server-side)
+ *   GET   /api/businesses/:bid/workforce/messages/threads/:id/voice/:messageId/file
  *   PATCH /api/businesses/:bid/workforce/messages/threads/:id/read
  *   GET   /api/businesses/:bid/workforce/messages/unread
  *
@@ -63,6 +65,7 @@ import { requireAuth } from './sessions.js';
 import { resolveAccess, staffRowForEmail, parseJsonArray } from './authz.js';
 import { startAutoLogout, cancelAutoLogout } from './staffWindow.js';
 import { assertNotInGrace } from './billing.js';
+import { parseVoiceDataUrl, convertVoiceToMp3, VOICE_MAX_DURATION_MS } from './voiceNote.js';
 
 function err(status, code, message) {
   return Object.assign(new Error(message), { status, code });
@@ -1568,14 +1571,35 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
     return rows[0]?.count ?? 0;
   }
 
+  // READ RECEIPTS WITH THE OWNER EXCEPTION (the owner's ruling,
+  // Nov 19, 2026): a message's read_at may be shown to a viewer
+  // ONLY when the person who did the reading is not the business
+  // owner — or the viewer IS the owner. Staff and managers see
+  // each other's read marks both ways; the owner sees when staff
+  // read the owner's messages; but a staff member must NEVER
+  // learn whether the owner read theirs, under any code path.
+  // This shaper is the single choke point: every message that
+  // leaves these routes passes through it.
+  function shapeMessageForViewer(message, thread, access, viewerUserId) {
+    const participants = threadParticipants(thread);
+    const reader = participants.find((p) => p.user_id !== message.sender_user_id);
+    const hideRead = Boolean(reader) && reader.key === OWNER_KEY && !access.isOwner;
+    return {
+      ...message,
+      read_at: hideRead ? null : message.read_at,
+      mine: message.sender_user_id === viewerUserId,
+    };
+  }
+
   async function publicThread(thread, access, me, userId) {
     const participants = threadParticipants(thread);
     const key = myKey(access, me);
     const mine = participants.some((p) => p.key === key);
     const { rows: lastRows } = await pool().query(
-      'SELECT body, sender_name, sender_user_id, created_at FROM messages WHERE thread_id = $1 ORDER BY created_at DESC LIMIT 1',
+      'SELECT body, kind, sender_name, sender_user_id, created_at FROM messages WHERE thread_id = $1 ORDER BY created_at DESC LIMIT 1',
       [thread.id],
     );
+    const last = lastRows[0] ?? null;
     return {
       id: thread.id,
       business_id: thread.business_id,
@@ -1584,7 +1608,7 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
       is_mine: mine,
       can_post: mine,
       oversight: !mine && access.isOwner,
-      last_message: lastRows[0] ?? null,
+      last_message: last ? { ...last, mine: last.sender_user_id === userId } : null,
       last_message_at: thread.last_message_at,
       unread: mine ? await threadUnread(thread.id, userId) : null,
       created_at: thread.created_at,
@@ -1663,12 +1687,15 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
       throw err(403, 'forbidden', 'This conversation is private to the two people in it.');
     }
     const { rows } = await pool().query(
-      'SELECT * FROM messages WHERE thread_id = $1 ORDER BY created_at ASC LIMIT 500',
+      `SELECT m.*, vn.duration_ms AS voice_duration_ms
+         FROM messages m
+         LEFT JOIN message_voice_notes vn ON vn.message_id = m.id
+        WHERE m.thread_id = $1 ORDER BY m.created_at ASC LIMIT 500`,
       [thread.id],
     );
     return res.json({
       thread: await publicThread(thread, access, me, req.user.id),
-      messages: rows.map((m) => ({ ...m, mine: m.sender_user_id === req.user.id })),
+      messages: rows.map((m) => shapeMessageForViewer(m, thread, access, req.user.id)),
     });
   }));
 
@@ -1714,7 +1741,110 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
       detail: `New message from ${sender.name}`,
       refId: thread.id,
     });
-    return res.status(201).json({ message: { ...inserted.rows[0], mine: true } });
+    return res.status(201).json({ message: shapeMessageForViewer(inserted.rows[0], thread, access, req.user.id) });
+  }));
+
+  // ---- Voice notes -----------------------------------------------------------
+  // A voice note is a message whose body is a recording of the
+  // sender's own voice. The phone's browser records in its own
+  // container (WebM on Android, MP4 on iPhone); the server
+  // converts it to MP3 — the one format every phone plays —
+  // before anything is stored (server/voiceNote.js). The bytes
+  // live in Postgres and are served only from the file route
+  // below, behind the same conversation-access check as the
+  // thread itself: the two participants, or the owner reading
+  // in oversight. The owner still cannot POST voice (or text)
+  // into a conversation that is not theirs.
+
+  async function messageSenderOr403(req, access, me) {
+    const thread = await threadOr404(req.params.threadId, req.params.bid);
+    const participants = threadParticipants(thread);
+    const key = myKey(access, me);
+    const sender = participants.find((p) => p.key === key);
+    if (!sender) {
+      throw err(
+        403,
+        'forbidden',
+        access.isOwner
+          ? 'You can read every conversation in your business, but you can only post in your own.'
+          : 'This conversation is private to the two people in it.',
+      );
+    }
+    return { thread, participants, key, sender };
+  }
+
+  router.post(`${base}/messages/threads/:threadId/voice`, asyncHandler(async (req, res) => {
+    const { access, me } = await ctx(req);
+    await assertNotInGrace(pool(), req.params.bid);
+    const { thread, participants, key, sender } = await messageSenderOr403(req, access, me);
+    const parsed = parseVoiceDataUrl(req.body?.dataUrl);
+    if (!parsed) {
+      throw err(400, 'invalid_value', 'Send a voice recording of a few minutes at most.');
+    }
+    const durationMs = Math.min(
+      Math.max(0, Math.round(Number(req.body?.duration_ms) || 0)),
+      VOICE_MAX_DURATION_MS,
+    );
+    let mp3;
+    try {
+      mp3 = await convertVoiceToMp3(parsed.bytes, parsed.ext);
+    } catch {
+      throw err(400, 'invalid_value', "That recording could not be prepared — please record it again.");
+    }
+    const messageId = crypto.randomUUID();
+    const inserted = await pool().query(
+      `INSERT INTO messages (id, thread_id, business_id, sender_user_id, sender_staff_id, sender_name, body, kind)
+       VALUES ($1, $2, $3, $4, $5, $6, '', 'voice') RETURNING *`,
+      [messageId, thread.id, req.params.bid, req.user.id, sender.staff_id, sender.name],
+    );
+    await pool().query(
+      `INSERT INTO message_voice_notes (message_id, business_id, content_type, size_bytes, duration_ms, data_base64)
+       VALUES ($1, $2, 'audio/mpeg', $3, $4, $5)`,
+      [messageId, req.params.bid, mp3.length, durationMs, mp3.toString('base64')],
+    );
+    await pool().query(
+      'UPDATE message_threads SET last_message_at = NOW(), updated_at = NOW() WHERE id = $1',
+      [thread.id],
+    );
+    const other = participants.find((p) => p.key !== key);
+    await notifyUser(pool(), access.business, {
+      recipientUserId: other.user_id,
+      recipientStaffId: other.staff_id,
+      recipientRole: other.role,
+      actorStaffId: sender.staff_id,
+      actorName: sender.name,
+      event: 'message',
+      detail: `New voice note from ${sender.name}`,
+      refId: thread.id,
+    });
+    return res.status(201).json({
+      message: {
+        ...shapeMessageForViewer(inserted.rows[0], thread, access, req.user.id),
+        voice_duration_ms: durationMs,
+      },
+    });
+  }));
+
+  router.get(`${base}/messages/threads/:threadId/voice/:messageId/file`, asyncHandler(async (req, res) => {
+    const { access, me } = await ctx(req);
+    const thread = await threadOr404(req.params.threadId, req.params.bid);
+    const participants = threadParticipants(thread);
+    const mine = participants.some((p) => p.key === myKey(access, me));
+    if (!mine && !access.isOwner) {
+      throw err(403, 'forbidden', 'This conversation is private to the two people in it.');
+    }
+    const { rows } = await pool().query(
+      `SELECT vn.content_type, vn.data_base64 FROM message_voice_notes vn
+         JOIN messages m ON m.id = vn.message_id
+        WHERE vn.message_id = $1 AND vn.business_id = $2 AND m.thread_id = $3 LIMIT 1`,
+      [req.params.messageId, req.params.bid, thread.id],
+    );
+    const note = rows[0];
+    if (!note) throw err(404, 'not_found', 'Voice note not found.');
+    res.setHeader('Content-Type', note.content_type);
+    res.setHeader('Cache-Control', 'private, no-store');
+    res.setHeader('Content-Disposition', 'inline; filename="voice-note.mp3"');
+    return res.send(Buffer.from(note.data_base64, 'base64'));
   }));
 
   router.patch(`${base}/messages/threads/:threadId/read`, asyncHandler(async (req, res) => {

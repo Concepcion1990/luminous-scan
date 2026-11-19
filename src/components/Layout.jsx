@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { isEmbedVisual } from '@/lib/embedMode';
 import { NavLink, Navigate, Outlet, useLocation, useNavigate, useNavigationType } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { ArrowLeft, ChevronDown, Loader2, Menu, Search } from 'lucide-react';
+import { ArrowLeft, ChevronDown, Loader2, Menu, MessageCircle, Search } from 'lucide-react';
 import AppMark from '@/components/brand/AppMark';
 import LegalFooter from '@/components/LegalFooter';
 import MerchantMark from '@/components/brand/MerchantMark';
@@ -23,6 +23,7 @@ import { NAV_GROUPS } from '@/components/layout/navGroups';
 import useIsDesktop from '@/hooks/useIsDesktop';
 import useDismissOnOutside from '@/hooks/useDismissOnOutside';
 import { dismissActiveModal } from '@/hooks/useModalHistory';
+import { getMessageUnread } from '@/lib/workforce';
 import Dashboard from '@/pages/Dashboard';
 import Scan from '@/pages/Scan';
 import Products from '@/pages/Products';
@@ -154,6 +155,28 @@ export default function Layout() {
   const { can: planAllows, isLoading: entitlementLoading } = useEntitlements();
   const location = useLocation();
   const { pathname } = location;
+  // The header Messages door's unread badge (owner's ruling,
+  // Nov 19, 2026): the person's OWN unread message count, loaded
+  // at sign-in, refreshed on every navigation and on a short
+  // poll, so a waiting message announces itself from any page
+  // without opening the inbox. A failed read (no staff profile
+  // yet, a paused shell) simply leaves the badge hidden.
+  const [messageUnread, setMessageUnread] = useState(0);
+  useEffect(() => {
+    if (!activeId) {
+      setMessageUnread(0);
+      return undefined;
+    }
+    let cancelled = false;
+    const loadUnread = () => {
+      getMessageUnread(activeId)
+        .then((r) => { if (!cancelled) setMessageUnread(r?.unread ?? 0); })
+        .catch(() => {});
+    };
+    loadUnread();
+    const timer = setInterval(loadUnread, 30000);
+    return () => { cancelled = true; clearInterval(timer); };
+  }, [activeId, pathname]);
   const navigate = useNavigate();
   const isDesktop = useIsDesktop();
   const reduceMotion = useReducedMotion();
@@ -402,14 +425,33 @@ export default function Layout() {
             </div>
             <div className="mt-1.5 flex items-center justify-between gap-3">
               <MerchantMark profile={profile} />
-              {can('scan.use') && (
+              <div className="flex shrink-0 items-center gap-2">
+                {/* The Messages door (owner's ruling, Nov 19, 2026):
+                    team messaging is a daily door, so it sits at the
+                    top beside Scan for every role on both plans, with
+                    the person's own unread count in its corner. */}
                 <NavLink
-                  to="/scan"
-                  className="shrink-0 rounded-md bg-accent px-3 py-1.5 text-xs font-semibold text-accent-foreground"
+                  to="/workforce"
+                  state={{ workforceTab: 'inbox' }}
+                  className="relative inline-flex items-center gap-1.5 rounded-md border border-primary-foreground/20 px-3 py-1.5 text-xs font-semibold text-primary-foreground"
                 >
-                  {t('layout.scan')}
+                  <MessageCircle className="h-3.5 w-3.5" aria-hidden="true" />
+                  {t('workforce.messages.title')}
+                  {messageUnread > 0 && (
+                    <span className="absolute -right-1.5 -top-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-bold leading-none text-accent-foreground">
+                      {messageUnread}
+                    </span>
+                  )}
                 </NavLink>
-              )}
+                {can('scan.use') && (
+                  <NavLink
+                    to="/scan"
+                    className="shrink-0 rounded-md bg-accent px-3 py-1.5 text-xs font-semibold text-accent-foreground"
+                  >
+                    {t('layout.scan')}
+                  </NavLink>
+                )}
+              </div>
             </div>
             <div className="mt-2">
               <BusinessSwitcher compact />

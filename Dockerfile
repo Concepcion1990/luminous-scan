@@ -11,6 +11,11 @@ RUN npm run build
 FROM node:20-slim
 WORKDIR /app
 ENV NODE_ENV=production
+# ffmpeg converts voice-note recordings to MP3 server-side
+# (server/voiceNote.js) — the one format every phone plays.
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends ffmpeg \
+  && rm -rf /var/lib/apt/lists/*
 COPY package*.json ./
 RUN npm ci --omit=dev
 COPY server.js ./
