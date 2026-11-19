@@ -3586,7 +3586,7 @@ export const ko = {
   "training.lessons.products-find-edit.step1": "제품을 열면 이름, SKU, 바코드 또는 ISBN으로 매장에서 취급하는 모든 것을 검색할 수 있습니다.",
   "training.lessons.products-find-edit.step2": "제품을 열면 세부 정보, 사진, 가격, 각 위치에 몇 개가 있는지 볼 수 있습니다.",
   "training.lessons.products-find-edit.step3": "역할이 편집을 허용하면 이름, 가격, 세부 정보를 수정할 수 있습니다 — 저장하면 변경 사항이 한 번에 모든 곳에 적용됩니다. 제품을 완전히 삭제하는 것은 행 메뉴에 있으며 소유자의 권한입니다 — 항상 먼저 확인을 요청하고, 제품 수가 줄어드는 유일한 방법입니다.",
-  "training.lessons.products-find-edit.step4": "완전히 새로운 제품입니까? 바코드와 함께 추가해 주십시오. 그러면 스캐너가 이후부터 인식합니다. 양식의 각 코드 칸 — UPC, 바코드, QR 코드 — 에는 자체 스캔 버튼이 있어 입력 대신 카메라를 향할 수 있습니다.",
+  "training.lessons.products-find-edit.step4": "완전히 새로운 제품입니까? '새 제품' 버튼이 보이면 바코드와 함께 추가할 수 있으며, 그러면 스캐너가 이후부터 인식합니다. 양식의 각 코드 칸 — UPC, 바코드, QR 코드 — 에는 자체 스캔 버튼이 있어 입력 대신 카메라를 향할 수 있습니다.",
   'training.lessons.products-find-edit.step5': '제품을 추가하시나요? «보유 수량»에 지금 있는 수를 적으면 바로 재고에 들어가고 입고로 기록됩니다 — 별도의 입고 단계가 없습니다. 비워 두면 제품은 0부터 시작합니다.',
   'training.lessons.products-find-edit.step6': "제품 페이지의 행에서 바로 재고를 바꿀 수 있습니다: 위쪽 화살표로 하나 늘리고 아래쪽 화살표로 하나 줄이세요 — 모든 탭이 이동 기록에 남습니다. 위치가 여러 곳이면 숫자(또는 행 메뉴의 «재고 추가»)를 눌러 재고 시트를 열고 장소를 고르세요. 그 시트에서는 수량 옆의 \"개수를 세는 스캔\" 버튼이 대신 스캔합니다: 도착하는 각 상품에 카메라를 향하면 수량이 저절로 올라갑니다 — 화살표는 손으로도 여전히 작동하고, \"저장\"이 그것을 기록하는 탭으로 남습니다.",
   "training.lessons.products-find-edit.step7": "상품을 편집 중이신가요? 편집 양식에도 같은 «보유 수량» 상자가 있어 선택한 위치의 수량을 보여줍니다. 숫자를 바꾸고 저장하면 그 차이가 재고 이동으로 기록되며, 기록 없이 덮어씌워지지 않습니다.",
@@ -4752,4 +4752,7 @@ export const ko = {
   "returns.waitingApproval": "소유자나 승인된 팀원의 승인을 기다리는 중입니다.",
   "returns.waitingToFinish": "승인됨 — 소유자나 승인된 팀원이 이 반품을 완료합니다.",
   "apiErrors.returnsCompleteReserved": "반품을 승인하고 완료할 수 있는 사람은 소유자, 또는 환불과 교환을 완료하도록 소유자가 허용한 팀원뿐입니다.",
+  "staffLib.perm.productsCreate": "새 제품 추가",
+  "staffLib.area.productsAccess": "제품 추가",
+  "staff.memberDialog.productsAccessHint": "이 표시를 하면 이 사람은 '새 제품' 버튼을 볼 수 있고 카탈로그에 제품을 추가할 수 있습니다. 표시가 없으면 버튼이 그 사람에게 나타나지 않습니다.",
 };
