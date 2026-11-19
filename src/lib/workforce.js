@@ -131,6 +131,20 @@ export function postMessage(businessId, threadId, body) {
   });
 }
 
+export function postVoiceMessage(businessId, threadId, dataUrl, durationMs) {
+  return apiRequest(`${base(businessId)}/messages/threads/${encodeURIComponent(threadId)}/voice`, {
+    method: 'POST',
+    body: { dataUrl, duration_ms: durationMs },
+  });
+}
+
+/** The private file route for one voice note's recording. The
+ * browser's media element carries the session cookie itself
+ * (same-origin); the server re-checks conversation access. */
+export function voiceNoteFileUrl(businessId, threadId, messageId) {
+  return `${base(businessId)}/messages/threads/${encodeURIComponent(threadId)}/voice/${encodeURIComponent(messageId)}/file`;
+}
+
 export function markThreadRead(businessId, threadId) {
   return apiRequest(`${base(businessId)}/messages/threads/${encodeURIComponent(threadId)}/read`, {
     method: 'PATCH',

@@ -11,8 +11,9 @@
  * Clock wording is the owner's: CLOCK IN / CLOCK OUT for the day,
  * CHECK OUT / CHECK IN for breaks.
  */
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ArrowLeft, BellRing, CalendarClock, Check, Clock3, Gift, ListTodo, MessageCircle, Palmtree, Send, X } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
+import { ArrowLeft, BellRing, CalendarClock, Check, Clock3, Gift, ListTodo, MessageCircle, Mic, Palmtree, Send, Trash2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { useBusiness } from '@/hooks/useBusiness';
@@ -52,12 +53,14 @@ import {
   markNotificationRead,
   markThreadRead,
   postMessage,
+  postVoiceMessage,
   requestTimeOff,
   saveSchedule,
   setTaskStatus,
   startMessageThread,
   timeOffStatusLabel,
   updateWorkforceSettings,
+  voiceNoteFileUrl,
   weekdayLabel,
 } from '@/lib/workforce';
 
@@ -74,6 +77,26 @@ function formatDay(value) {
   const date = toLocalDate(value);
   if (!date) return '';
   return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+}
+/** An entry's total span, in the reader's own unit words
+ * (Intl unit formatting follows the device locale, the same
+ * convention formatTime/formatDay above already use). */
+function formatDuration(startValue, endValue) {
+  const start = toLocalDate(startValue);
+  const end = toLocalDate(endValue);
+  if (!start || !end) return '';
+  const totalMinutes = Math.max(0, Math.round((end.getTime() - start.getTime()) / 60000));
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  try {
+    const unit = (value, name) =>
+      new Intl.NumberFormat(undefined, { style: 'unit', unit: name, unitDisplay: 'narrow' }).format(value);
+    if (hours > 0 && minutes > 0) return `${unit(hours, 'hour')} ${unit(minutes, 'minute')}`;
+    if (hours > 0) return unit(hours, 'hour');
+    return unit(minutes, 'minute');
+  } catch {
+    return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+  }
 }
 function formatDateOnly(value) {
   if (!value) return '';
@@ -254,6 +277,11 @@ function ClockTab({ businessId, ctx, peopleById, onEvent }) {
                     <span>
                       {formatDay(entry.clock_in_at)} {formatTime(entry.clock_in_at)} –{' '}
                       {entry.clock_out_at ? formatTime(entry.clock_out_at) : '…'}
+                      {entry.clock_out_at && (
+                        <span className="text-muted-foreground">
+                          {' '}· {formatDuration(entry.clock_in_at, entry.clock_out_at)}
+                        </span>
+                      )}
                     </span>
                     {entry.unscheduled && (
                       <span className="rounded-full bg-muted px-2 py-0.5 text-xs">{t('workforce.entries.unscheduled')}</span>
@@ -658,6 +686,7 @@ function InboxTab({ businessId, ctx, people, onRead }) {
 
   const openThread = async (thread) => {
     try {
+      discardRecording();
       const data = await getMessageThread(businessId, thread.id);
       setActiveThread(data.thread);
       setThreadMessages(data.messages ?? []);
@@ -706,6 +735,114 @@ function InboxTab({ businessId, ctx, people, onRead }) {
       setBusy(false);
     }
   };
+
+  // ---- Voice notes ---------------------------------------------------------
+  // Record with the device's own microphone (the browser asks
+  // permission the first time — that prompt is the browser's,
+  // not ours). Before sending, the sender can listen back, toss
+  // the take, or send it. The server converts the recording to
+  // MP3 so it plays on the other person's phone, whatever kind
+  // it is. 3 minutes is the composer's cap.
+  const VOICE_MAX_MS = 3 * 60 * 1000;
+  const [recPhase, setRecPhase] = useState('idle'); // idle | recording | ready
+  const [recElapsedMs, setRecElapsedMs] = useState(0);
+  const [recPreviewUrl, setRecPreviewUrl] = useState(null);
+  const recRef = useRef({ recorder: null, stream: null, chunks: [], timer: null, startedAt: 0, blob: null, durationMs: 0 });
+
+  const stopRecTracks = useCallback(() => {
+    const rec = recRef.current;
+    if (rec.timer) clearInterval(rec.timer);
+    rec.timer = null;
+    if (rec.stream) rec.stream.getTracks().forEach((track) => track.stop());
+    rec.stream = null;
+  }, []);
+
+  const discardRecording = useCallback(() => {
+    stopRecTracks();
+    recRef.current.blob = null;
+    if (recPreviewUrl) URL.revokeObjectURL(recPreviewUrl);
+    setRecPreviewUrl(null);
+    setRecElapsedMs(0);
+    setRecPhase('idle');
+  }, [recPreviewUrl, stopRecTracks]);
+
+  useEffect(() => () => {
+    stopRecTracks();
+    if (recPreviewUrl) URL.revokeObjectURL(recPreviewUrl);
+  }, [recPreviewUrl, stopRecTracks]);
+
+  const startRecording = async () => {
+    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
+      toast({ title: t('workforce.messages.micDenied'), variant: 'destructive' });
+      return;
+    }
+    let stream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch {
+      toast({ title: t('workforce.messages.micDenied'), variant: 'destructive' });
+      return;
+    }
+    const mimeType = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg;codecs=opus', '']
+      .find((candidate) => candidate === '' || MediaRecorder.isTypeSupported(candidate));
+    const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+    const rec = recRef.current;
+    rec.recorder = recorder;
+    rec.stream = stream;
+    rec.chunks = [];
+    rec.startedAt = Date.now();
+    recorder.ondataavailable = (event) => {
+      if (event.data?.size) rec.chunks.push(event.data);
+    };
+    recorder.onstop = () => {
+      const blob = new Blob(rec.chunks, { type: recorder.mimeType || 'audio/webm' });
+      rec.blob = blob;
+      rec.durationMs = Date.now() - rec.startedAt;
+      stopRecTracks();
+      setRecPreviewUrl(URL.createObjectURL(blob));
+      setRecPhase('ready');
+    };
+    recorder.start();
+    setRecElapsedMs(0);
+    setRecPhase('recording');
+    rec.timer = setInterval(() => {
+      const elapsed = Date.now() - rec.startedAt;
+      setRecElapsedMs(elapsed);
+      if (elapsed >= VOICE_MAX_MS && recRef.current.recorder?.state === 'recording') {
+        recRef.current.recorder.stop();
+      }
+    }, 250);
+  };
+
+  const stopRecording = () => {
+    if (recRef.current.recorder?.state === 'recording') recRef.current.recorder.stop();
+  };
+
+  const sendVoice = async () => {
+    const blob = recRef.current.blob;
+    if (!blob || !activeThread) return;
+    setBusy(true);
+    try {
+      const dataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+      await postVoiceMessage(businessId, activeThread.id, dataUrl, recRef.current.durationMs);
+      discardRecording();
+      const data = await getMessageThread(businessId, activeThread.id);
+      setActiveThread(data.thread);
+      setThreadMessages(data.messages ?? []);
+      await loadThreads();
+    } catch (error) {
+      toast({ title: error.message || t('workforce.messages.voiceFailed'), variant: 'destructive' });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const recClock = `${Math.floor(recElapsedMs / 60000)}:${String(Math.floor((recElapsedMs % 60000) / 1000)).padStart(2, '0')}`;
 
   const pickerPeople = people.filter((p) => p.status === 'active' && p.id !== ctx.my_staff_id);
   const threadTitle = (thread) =>
@@ -796,15 +933,24 @@ function InboxTab({ businessId, ctx, people, onRead }) {
                         )}
                         <span className="block truncate text-xs text-muted-foreground">
                           {thread.last_message
-                            ? `${thread.last_message.sender_name}: ${thread.last_message.body}`
+                            ? `${thread.last_message.sender_name}: ${thread.last_message.kind === 'voice' ? t('workforce.messages.voiceNote') : thread.last_message.body}`
                             : t('workforce.messages.emptyThread')}
                         </span>
                       </span>
-                      {thread.last_message_at && (
-                        <span className="shrink-0 text-xs text-muted-foreground">
-                          {formatDay(thread.last_message_at)} {formatTime(thread.last_message_at)}
-                        </span>
-                      )}
+                      <span className="flex shrink-0 flex-col items-end gap-0.5">
+                        {thread.last_message_at && (
+                          <span className="text-xs text-muted-foreground">
+                            {formatDay(thread.last_message_at)} {formatTime(thread.last_message_at)}
+                          </span>
+                        )}
+                        {thread.is_mine && thread.last_message && (
+                          <span className="text-[11px] font-medium text-muted-foreground">
+                            {thread.last_message.mine
+                              ? t('workforce.messages.sentLabel')
+                              : t('workforce.messages.receivedLabel')}
+                          </span>
+                        )}
+                      </span>
                       {(thread.unread ?? 0) > 0 && (
                         <span className="shrink-0 rounded-full bg-primary px-2 py-0.5 text-xs font-medium text-primary-foreground">
                           {thread.unread}
@@ -847,9 +993,24 @@ function InboxTab({ businessId, ctx, people, onRead }) {
                       {!message.mine && (
                         <span className="mb-0.5 block text-xs font-medium opacity-70">{message.sender_name}</span>
                       )}
-                      <span className="whitespace-pre-wrap">{message.body}</span>
+                      {message.kind === 'voice' ? (
+                        <span className="block">
+                          <span className="mb-1 flex items-center gap-1.5 text-xs font-medium opacity-80">
+                            <Mic className="h-3.5 w-3.5" /> {t('workforce.messages.voiceNote')}
+                          </span>
+                          <audio
+                            controls
+                            preload="metadata"
+                            src={voiceNoteFileUrl(businessId, message.thread_id, message.id)}
+                            className="h-9 max-w-full"
+                          />
+                        </span>
+                      ) : (
+                        <span className="whitespace-pre-wrap">{message.body}</span>
+                      )}
                       <span className="mt-1 block text-[11px] opacity-60">
                         {formatDay(message.created_at)} {formatTime(message.created_at)}
+                        {message.mine && message.read_at ? ` · ${t('workforce.messages.readLabel')}` : ''}
                       </span>
                     </div>
                   </li>
@@ -857,17 +1018,53 @@ function InboxTab({ businessId, ctx, people, onRead }) {
               </ul>
             )}
             {activeThread.can_post && (
-              <div className="mt-5 flex items-end gap-2">
-                <textarea
-                  className={inputCls}
-                  rows={2}
-                  value={draft}
-                  onChange={(e) => setDraft(e.target.value)}
-                  placeholder={t('workforce.messages.placeholder')}
-                />
-                <Button disabled={busy || !draft.trim()} onClick={send}>
-                  <Send className="mr-1.5 h-4 w-4" /> {t('workforce.messages.send')}
-                </Button>
+              <div className="mt-5 space-y-3">
+                {recPhase === 'recording' && (
+                  <div className="flex flex-wrap items-center gap-3 rounded-lg bg-muted/50 px-3 py-2.5">
+                    <span className="flex items-center gap-2 text-sm font-medium">
+                      <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-red-500" />
+                      {t('workforce.messages.recording')} {recClock}
+                    </span>
+                    <Button size="sm" variant="outline" className="ml-auto" onClick={stopRecording}>
+                      {t('workforce.messages.stopRecording')}
+                    </Button>
+                  </div>
+                )}
+                {recPhase === 'ready' && (
+                  <div className="space-y-2 rounded-lg bg-muted/50 px-3 py-2.5">
+                    <p className="text-xs text-muted-foreground">{t('workforce.messages.voiceReady')}</p>
+                    <audio controls src={recPreviewUrl} className="h-9 w-full max-w-sm" />
+                    <div className="flex flex-wrap gap-2">
+                      <Button size="sm" disabled={busy} onClick={sendVoice}>
+                        <Send className="mr-1.5 h-4 w-4" /> {t('workforce.messages.sendVoice')}
+                      </Button>
+                      <Button size="sm" variant="outline" disabled={busy} onClick={discardRecording}>
+                        <Trash2 className="mr-1.5 h-4 w-4" /> {t('workforce.messages.discard')}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+                <div className="flex items-end gap-2">
+                  <textarea
+                    className={inputCls}
+                    rows={2}
+                    value={draft}
+                    onChange={(e) => setDraft(e.target.value)}
+                    placeholder={t('workforce.messages.placeholder')}
+                  />
+                  <Button
+                    variant="outline"
+                    disabled={busy || recPhase !== 'idle'}
+                    onClick={startRecording}
+                    aria-label={t('workforce.messages.voiceNote')}
+                    title={t('workforce.messages.voiceNote')}
+                  >
+                    <Mic className="h-4 w-4" />
+                  </Button>
+                  <Button disabled={busy || !draft.trim()} onClick={send}>
+                    <Send className="mr-1.5 h-4 w-4" /> {t('workforce.messages.send')}
+                  </Button>
+                </div>
               </div>
             )}
           </div>
@@ -1164,7 +1361,15 @@ export default function Workforce() {
   // plans — while entitlements are still loading the plan is unknown,
   // so the tab stays hidden until Business is confirmed.
   const showRewards = !entitlementLoading && can('rewards');
-  const [tab, setTab] = useState('clock');
+  // The header Messages door (owner's ruling, Nov 19, 2026)
+  // arrives here with the inbox asked for by name; honor it on
+  // every arrival, not just the first mount, so tapping the door
+  // while already on this page switches to the inbox too.
+  const location = useLocation();
+  const [tab, setTab] = useState(() => (location.state?.workforceTab === 'inbox' ? 'inbox' : 'clock'));
+  useEffect(() => {
+    if (location.state?.workforceTab === 'inbox') setTab('inbox');
+  }, [location]);
   const [ctx, setCtx] = useState(null);
   const [people, setPeople] = useState([]);
   const [unread, setUnread] = useState(0);

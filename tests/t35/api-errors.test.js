@@ -30,8 +30,10 @@ test('item 1: every apiErrors key exists in all 52 locales', async () => {
   // 419 through release 287; the staff batch (Nov 19, 2026) added
   // 6: the shift-window refusal code, the grace/denied full-reason
   // strings, the neutral stop, the welcome-script length error,
-  // and the plan-neutral limit refusal.
-  assert.equal(new Set(registryKeys).size, 425);
+  // and the plan-neutral limit refusal. The voice-notes build
+  // (Nov 19, 2026) added 3: the voice-note-not-found refusal and
+  // the two recording refusals (too long / could not be prepared).
+  assert.equal(new Set(registryKeys).size, 428);
   for (const code of LOCALES) {
     const dict = await loadLocale(code);
     for (const key of registryKeys) {
