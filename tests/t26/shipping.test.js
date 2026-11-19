@@ -64,9 +64,12 @@ test('shipping: the label is white-label and takes the address at print time', (
 
 test('shipping: plans parity — both plans, Plans page and Welcome, comparison row', () => {
   assert.ok(PLANS.essentials.includes.includes(LINE), 'Essentials PLANS includes names shipping labels');
-  assert.ok(PLANS.business.includes.includes(LINE), 'Business PLANS includes names shipping labels');
   assert.ok(welcomeOf('essentials').includes.includes(LINE), 'Welcome Essentials includes names shipping labels');
-  assert.ok(welcomeOf('business').includes.includes(LINE), 'Welcome Business includes names shipping labels');
+  // Dedupe ruling (Nov 19, 2026): Business has the feature, but
+  // its lists no longer repeat the Essentials line — the
+  // "Everything in Essentials" opener carries it.
+  assert.ok(!PLANS.business.includes.includes(LINE), 'Business PLANS does not repeat the shipping-labels line');
+  assert.ok(!welcomeOf('business').includes.includes(LINE), 'Welcome Business does not repeat the shipping-labels line');
   const row = COMPARISON_ROWS.find((r) => r.label === LINE);
   assert.ok(row, 'comparison row exists');
   assert.equal(row.essentials, true);

@@ -286,9 +286,15 @@ test('restricted recovery session cannot report a problem', async () => {
 test('plans parity: both plans and the comparison table carry in-app problem reporting', () => {
   const plansSrc = fs.readFileSync(path.join(repoRoot, 'src/lib/plans.js'), 'utf8');
   const includesCount = plansSrc.split("t('plansLib.includes.support')").length - 1;
-  assert.ok(
-    includesCount >= 4,
-    `support include expected in PLANS x2 + WELCOME x2, found ${includesCount}`,
+  // Exactly 3 since the dedupe ruling (Nov 19, 2026): the line
+  // is named in the Essentials lists of both families (PLANS +
+  // WELCOME) and in the comparison table. Business has the
+  // feature, but its lists carry it under "Everything in
+  // Essentials" instead of repeating the line.
+  assert.equal(
+    includesCount,
+    3,
+    `support include expected in Essentials PLANS + WELCOME + comparison row, found ${includesCount}`,
   );
   assert.ok(
     plansSrc.includes("get label() { return t('plansLib.includes.support'); }"),

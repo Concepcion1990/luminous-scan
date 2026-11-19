@@ -367,8 +367,13 @@ test('wiring: the form box, the GS1 door, Settings field, plans, training', () =
   // Business, in PLANS and on the Welcome, plus the comparison row);
   // the Mobile scope rulings (Nov 15, 2026) made Mobile the sixth —
   // the generator and the GS1 prefix option are Mobile-only scope too.
-  assert.equal((plans.match(/plansLib\.includes\.codeGenerator/g) || []).length, 6);
-  assert.equal((plans.match(/plansLib\.includes\.gs1Codes/g) || []).length, 6);
+  // The dedupe ruling (Nov 19, 2026) removed the two Business
+  // repeats: Business carries both features under its "Everything
+  // in Essentials" line, so four surfaces name the lines now —
+  // Essentials in PLANS and on the Welcome, Mobile, and the
+  // comparison row.
+  assert.equal((plans.match(/plansLib\.includes\.codeGenerator/g) || []).length, 4);
+  assert.equal((plans.match(/plansLib\.includes\.gs1Codes/g) || []).length, 4);
 
   const clientCatalog = readFileSync('src/lib/trainingCatalog.js', 'utf8');
   const serverCatalog = readFileSync('server/trainingCatalog.js', 'utf8');

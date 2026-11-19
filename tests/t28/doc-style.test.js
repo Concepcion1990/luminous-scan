@@ -98,11 +98,14 @@ test('doc style: the owner saves a style and it reads back resolved', async () =
 test('plans parity: the document-style line shows on Plans and Welcome, both plans', () => {
   const LINE = 'Documents in your own style — logo, color, font, frame and pictures';
   assert.ok(PLANS.essentials.includes.includes(LINE), 'Essentials PLANS');
-  assert.ok(PLANS.business.includes.includes(LINE), 'Business PLANS');
-  for (const key of ['essentials', 'business']) {
-    const opt = WELCOME_OPTIONS.find((o) => o.key === key);
-    assert.ok(opt.includes.includes(LINE), `Welcome ${key}`);
-  }
+  const welcomeEssentials = WELCOME_OPTIONS.find((o) => o.key === 'essentials');
+  assert.ok(welcomeEssentials.includes.includes(LINE), 'Welcome essentials');
+  // Dedupe ruling (Nov 19, 2026): Business has the feature, but
+  // its lists no longer repeat the Essentials line — the
+  // "Everything in Essentials" opener carries it.
+  assert.ok(!PLANS.business.includes.includes(LINE), 'Business PLANS does not repeat the line');
+  const welcomeBusiness = WELCOME_OPTIONS.find((o) => o.key === 'business');
+  assert.ok(!welcomeBusiness.includes.includes(LINE), 'Welcome business does not repeat the line');
   const row = COMPARISON_ROWS.find((r) => r.label === LINE);
   assert.ok(row, 'comparison row exists');
   assert.equal(row.essentials, true);

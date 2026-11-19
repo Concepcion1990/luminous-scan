@@ -8,9 +8,13 @@
  *     in all 52 locales;
  *   - the invite email carries the direct Create-account link
  *     line in all 52 email locales;
- *   - the batch's plan lines are in BOTH website plans' includes
- *     (Plans + Welcome + the in-app plan page all render these
- *     same lists) and in the comparison table for both plans;
+ *   - the batch's plan lines are in the Essentials includes of
+ *     both list families (Plans + Welcome + the in-app plan page
+ *     all render these same lists); since the owner's dedupe
+ *     ruling (Nov 19, 2026) Business' lists no longer repeat
+ *     them — Business opens with "Everything in Essentials" and
+ *     names only its own extras — and the comparison table
+ *     still carries the lines for both plans;
  *   - the welcome page and its editor exist, the permanent line
  *     is app copy, and the Download door ships with its
  *     owner-only note wired to the boss Settings only.
@@ -61,7 +65,7 @@ test('invite email: the direct sign-up link line exists in all 52 email locales'
   assert.ok(mail.text.includes('https://example.test/register?email=newhire%40example.com'), 'the email carries the direct link');
 });
 
-test('plan surfaces agree: the batch lines are in both plans, the welcome options, and the comparison', async () => {
+test('plan surfaces agree: the batch lines are in the Essentials lists, under Business’ everything line, and in the comparison', async () => {
   const { PLANS, WELCOME_OPTIONS, COMPARISON_ROWS } = await import('../../src/lib/plans.js');
   const { en } = await import('../../src/lib/locales/en.js');
   const batchLines = [
@@ -74,16 +78,27 @@ test('plan surfaces agree: the batch lines are in both plans, the welcome option
     en['plansLib.includes.inviteLink'],
   ];
   for (const line of batchLines) assert.ok(typeof line === 'string' && line.length > 0);
-  for (const plan of [PLANS.essentials, PLANS.business]) {
-    for (const line of batchLines) {
-      assert.ok(plan.includes.includes(line), `${plan.key} includes: ${line}`);
-    }
+  // The batch lines live in the Essentials lists of both
+  // families. Business INCLUDES the features — its list says so
+  // once, with the everything line — but since the dedupe ruling
+  // it does not repeat the lines (tests/t6/planDedupe.test.js
+  // guards the composition itself).
+  for (const line of batchLines) {
+    assert.ok(PLANS.essentials.includes.includes(line), `essentials includes: ${line}`);
+    assert.ok(!PLANS.business.includes.includes(line), `business does not repeat: ${line}`);
   }
+  assert.equal(PLANS.business.includes[0], en['plansLib.businessIncludes.everything']);
   for (const option of WELCOME_OPTIONS.filter((o) => o.key !== 'mobile')) {
     for (const line of batchLines) {
-      assert.ok(option.includes.includes(line), `welcome ${option.key} includes: ${line}`);
+      if (option.key === 'essentials') {
+        assert.ok(option.includes.includes(line), `welcome ${option.key} includes: ${line}`);
+      } else {
+        assert.ok(!option.includes.includes(line), `welcome ${option.key} does not repeat: ${line}`);
+      }
     }
   }
+  const welcomeBusiness = WELCOME_OPTIONS.find((o) => o.key === 'business');
+  assert.equal(welcomeBusiness.includes[0], en['plansLib.businessIncludes.everything']);
   const mobile = WELCOME_OPTIONS.find((o) => o.key === 'mobile');
   for (const line of batchLines) {
     assert.ok(!mobile.includes.includes(line), 'mobile (solo) does not carry team lines');

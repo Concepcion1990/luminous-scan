@@ -573,13 +573,17 @@ test('plans copy: Business presents till connections; Essentials and Mobile do n
   assert.equal(row.mobile, false);
 });
 
-// ---- Plans parity (owner's rule, Nov 13, 2026) ---------------------------------------------------
+// ---- Plans parity (owner's rule, Nov 13, 2026; dedupe ruling, Nov 19, 2026) ----------------------
 // Everything the app has appears on the Plans page AND the Welcome
 // page under the plan(s) that include it. The lists below are the
-// code-verified placement: both-plan features in BOTH lists,
-// Business-only features in Business' lists and nowhere else, and
-// a comparison row to match. Welcome and Plans cards render the
-// same WELCOME_OPTIONS source, so pinning the data pins both pages.
+// code-verified placement: both-plan features are NAMED in the
+// Essentials lists of both families; Business-only features are
+// named in Business' lists and nowhere else. Since the dedupe
+// ruling, Business' lists open with "Everything in Essentials"
+// and name ONLY Business' own extras — no Essentials line is
+// repeated — while the comparison table still carries every
+// feature per plan. Welcome and Plans cards render the same
+// sources, so pinning the data pins both pages.
 
 const welcomeOf = (key) => WELCOME_OPTIONS.find((o) => o.key === key);
 const hasLine = (lines, pattern) => lines.some((line) => pattern.test(line));
@@ -616,17 +620,25 @@ const BUSINESS_ONLY_FEATURES = [
   /printable business documents/i,
 ];
 
-test('plans parity: every both-plan feature is presented in BOTH plans, on Plans and Welcome data', () => {
-  const lists = {
+test('plans parity: both-plan features are named in the Essentials lists; Business carries them under its everything line', () => {
+  const essentialsLists = {
     'PLANS.essentials': PLANS.essentials.includes,
-    'PLANS.business': PLANS.business.includes,
     'WELCOME.essentials': welcomeOf('essentials').includes,
+  };
+  const businessLists = {
+    'PLANS.business': PLANS.business.includes,
     'WELCOME.business': welcomeOf('business').includes,
   };
   for (const pattern of BOTH_PLAN_FEATURES) {
-    for (const [name, lines] of Object.entries(lists)) {
+    for (const [name, lines] of Object.entries(essentialsLists)) {
       assert.ok(hasLine(lines, pattern), `${name} presents ${pattern}`);
     }
+    for (const [name, lines] of Object.entries(businessLists)) {
+      assert.ok(!hasLine(lines, pattern), `${name} does not repeat ${pattern} (dedupe ruling, Nov 19, 2026)`);
+    }
+  }
+  for (const [name, lines] of Object.entries(businessLists)) {
+    assert.ok(/everything in essentials/i.test(lines[0]), `${name} opens with the everything line`);
   }
 });
 
@@ -647,7 +659,11 @@ test('plans parity: Essentials limits are stated plainly; the trial rides the We
     assert.ok(hasLine(lines, /3 additional staff|three additional staff/i));
   }
   assert.ok(hasLine(welcomeOf('essentials').includes, /seven-day trial/i));
-  assert.ok(hasLine(welcomeOf('business').includes, /seven-day trial/i));
+  // Dedupe ruling (Nov 19, 2026): the trial line belongs to
+  // Essentials; the Welcome Business card no longer repeats it —
+  // its "Everything in Essentials" opener carries it.
+  assert.ok(!hasLine(welcomeOf('business').includes, /seven-day trial/i));
+  assert.ok(/everything in essentials/i.test(welcomeOf('business').includes[0]));
 });
 
 test('plans parity: comparison rows match the lists, and the Mobile staff row tells the solo truth', () => {

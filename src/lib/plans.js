@@ -68,18 +68,14 @@ export const PLANS = {
     price: 29.99,
     get blurb() { return t('plansLib.businessBlurb'); },
     limits: { businesses: 5, sites: 5, products: null, staff: null, customRoles: true },
+    // Owner's dedupe ruling (Nov 19, 2026): Business' list opens
+    // with "Everything in Essentials" and then names ONLY its own
+    // extras — no Essentials feature is repeated. The comparison
+    // table below still shows every feature per plan; this list is
+    // a description, not the grid.
     get includes() {
       return [
         t('plansLib.businessIncludes.everything'),
-        t('plansLib.essentialsIncludes.scanning'),
-        t('plansLib.essentialsIncludes.imports'),
-        t('plansLib.includes.bulkEdit'),
-        t('plansLib.essentialsIncludes.labels'),
-        t('plansLib.includes.shippingLabels'),
-        t('plansLib.includes.docStyle'),
-        t('plansLib.includes.taxRate'),
-        t('plansLib.includes.codeGenerator'),
-        t('plansLib.includes.gs1Codes'),
         t('plansLib.businessIncludes.unlimited'),
         t('plansLib.businessIncludes.roles'),
         t('plansLib.businessIncludes.businesses'),
@@ -95,24 +91,6 @@ export const PLANS = {
         t('plansLib.includes.pricing'),
         t('plansLib.includes.sendPo'),
         t('plansLib.includes.documents'),
-        t('plansLib.includes.movements'),
-        t('plansLib.includes.workforce'),
-        t('plansLib.includes.payroll'),
-        t('plansLib.includes.training'),
-        t('plansLib.includes.teamSettings'),
-        t('plansLib.includes.shiftWindows'),
-        t('plansLib.includes.ownerOnlyBilling'),
-        t('plansLib.includes.settingsGrants'),
-        t('plansLib.includes.appDownload'),
-        t('plansLib.includes.staffWelcome'),
-        t('plansLib.includes.inviteLink'),
-        t('plansLib.includes.inbox'),
-        t('plansLib.includes.recovery'),
-        t('plansLib.includes.support'),
-        t('plansLib.includes.offline'),
-        t('plansLib.includes.languages'),
-        t('plansLib.includes.branding'),
-        t('plansLib.welcomeEssentialsIncludes.mobile'),
       ];
     },
   },
@@ -326,17 +304,14 @@ export const WELCOME_OPTIONS = [
     price: 29.99,
     get blurb() { return t('plansLib.welcomeBusinessBlurb'); },
     available: true,
+    // Owner's dedupe ruling (Nov 19, 2026): same composition as
+    // the PLANS family — "Everything in Essentials" first, then
+    // only Business' own extras. The Welcome card previously
+    // re-listed nearly the whole Essentials list with no
+    // everything-line at all.
     get includes() {
       return [
-        t('plansLib.essentialsIncludes.scanning'),
-        t('plansLib.essentialsIncludes.imports'),
-        t('plansLib.includes.bulkEdit'),
-        t('plansLib.essentialsIncludes.labels'),
-        t('plansLib.includes.shippingLabels'),
-        t('plansLib.includes.docStyle'),
-        t('plansLib.includes.taxRate'),
-        t('plansLib.includes.codeGenerator'),
-        t('plansLib.includes.gs1Codes'),
+        t('plansLib.businessIncludes.everything'),
         t('plansLib.welcomeBusinessIncludes.businesses'),
         t('plansLib.welcomeBusinessIncludes.sites'),
         t('plansLib.welcomeBusinessIncludes.products'),
@@ -354,25 +329,6 @@ export const WELCOME_OPTIONS = [
         t('plansLib.includes.pricing'),
         t('plansLib.includes.sendPo'),
         t('plansLib.includes.documents'),
-        t('plansLib.includes.movements'),
-        t('plansLib.includes.workforce'),
-        t('plansLib.includes.payroll'),
-        t('plansLib.includes.training'),
-        t('plansLib.includes.teamSettings'),
-        t('plansLib.includes.shiftWindows'),
-        t('plansLib.includes.ownerOnlyBilling'),
-        t('plansLib.includes.settingsGrants'),
-        t('plansLib.includes.appDownload'),
-        t('plansLib.includes.staffWelcome'),
-        t('plansLib.includes.inviteLink'),
-        t('plansLib.includes.inbox'),
-        t('plansLib.includes.recovery'),
-        t('plansLib.includes.support'),
-        t('plansLib.includes.offline'),
-        t('plansLib.includes.languages'),
-        t('plansLib.includes.branding'),
-        t('plansLib.welcomeEssentialsIncludes.mobile'),
-        t('plansLib.welcomeEssentialsIncludes.trial'),
       ];
     },
   },

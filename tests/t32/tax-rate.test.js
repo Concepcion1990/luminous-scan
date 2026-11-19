@@ -84,7 +84,11 @@ test('wiring: Settings field, save payload, order-form pre-fill discipline', () 
 
 test('plans parity and the training lesson, both catalogs', () => {
   const plans = readFileSync('src/lib/plans.js', 'utf8');
-  assert.equal(plans.split("t('plansLib.includes.taxRate')").length - 1, 5, 'four includes lists + the comparison row');
+  // 3 since the dedupe ruling (Nov 19, 2026): the Essentials
+  // lists of both families + the comparison row. Business has
+  // the feature under its "Everything in Essentials" line
+  // instead of a repeated tax-rate line.
+  assert.equal(plans.split("t('plansLib.includes.taxRate')").length - 1, 3, 'Essentials lists x2 + the comparison row');
   for (const catalog of ['src/lib/trainingCatalog.js', 'server/trainingCatalog.js']) {
     const src = readFileSync(catalog, 'utf8');
     assert.match(src, /\{ id: 'owner-tax-rate', track: 'owner', module: 'orders', steps: 3[ ,]/);
