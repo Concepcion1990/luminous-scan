@@ -3656,7 +3656,7 @@ export const esUS = {
   "training.lessons.welcome-basics.title": "Bienvenido: orientarse en la aplicación",
   "training.lessons.your-language.step1": "Abra Ajustes, o toque el menú de idioma en la parte superior de la pantalla de inicio de sesión.",
   "training.lessons.your-language.step2": "Elija su idioma de la lista. Toda la aplicación cambia de inmediato: menús, botones y lecciones como esta.",
-  "training.lessons.your-language.step3": "Puede volver a cambiarlo en cualquier momento. Su elección se queda en este dispositivo.",
+  "training.lessons.your-language.step3": "Puede volver a cambiarlo en cualquier momento. Su elección queda guardada: elíjala en la pantalla de inicio de sesión y la aplicación se abre en su idioma.",
   "training.lessons.your-language.step4": "Las fechas y las horas siguen los ajustes de su tienda, así que su horario siempre muestra la hora local de su tienda.",
   "training.lessons.your-language.title": "Usar la aplicación en su idioma",
   "training.lessonsDoneOf": "{done} de {total} lecciones terminadas",
