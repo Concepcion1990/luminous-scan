@@ -3656,7 +3656,7 @@ export const gu = {
   "training.lessons.welcome-basics.title": "સ્વાગત છે: તમારો રસ્તો શોધવો",
   "training.lessons.your-language.step1": "Settings ખોલો, કે સાઇન-ઇન સ્ક્રીનની ટોચ પર ભાષા મેનૂ પર ટેપ કરો.",
   "training.lessons.your-language.step2": "યાદીમાંથી તમારી ભાષા પસંદ કરો. આખી એપ તરત બદલાય છે — મેનૂ, બટન અને આવા પાઠ.",
-  "training.lessons.your-language.step3": "તમે તેને ગમે ત્યારે પાછી બદલી શકો છો. તમારી પસંદગી આ ઉપકરણ પર રહે છે.",
+  "training.lessons.your-language.step3": "તમે તેને ગમે ત્યારે પાછી બદલી શકો છો. તમારી પસંદગી યાદ રાખવામાં આવે છે — તેને સાઇન-ઇન સ્ક્રીન પર પસંદ કરો અને એપ તમારી ભાષામાં ખુલે છે.",
   "training.lessons.your-language.step4": "તારીખ અને સમય તમારા સ્ટોરની સેટિંગ્સને અનુસરે છે, તેથી તમારું શેડ્યૂલ હંમેશા તમારા સ્ટોરનો સ્થાનિક સમય બતાવે છે.",
   "training.lessons.your-language.title": "એપ તમારી ભાષામાં વાપરો",
   "training.lessonsDoneOf": "{done} / {total} પાઠ પૂરા થયા",
