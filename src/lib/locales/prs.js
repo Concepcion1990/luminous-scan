@@ -3656,7 +3656,7 @@ export const prs = {
   "training.lessons.welcome-basics.title": "خوش آمدید: راه خود را پیدا کنید",
   "training.lessons.your-language.step1": "تنظیمات را باز کنید، یا منوی زبان را در بالای صفحه ورود بزنید.",
   "training.lessons.your-language.step2": "زبان خود را از فهرست انتخاب کنید. تمام برنامه فوراً تغییر می‌کند — منوها، دکمه‌ها و درس‌هایی مانند این یکی.",
-  "training.lessons.your-language.step3": "شما می‌توانید آن را در هر وقت برگردانید. انتخاب شما روی این دستگاه می‌ماند.",
+  "training.lessons.your-language.step3": "شما می‌توانید آن را در هر وقت برگردانید. انتخاب شما ذخیره می‌شود — آن را در صفحه ورود انتخاب کنید تا برنامه به زبان شما باز شود.",
   "training.lessons.your-language.step4": "تاریخ‌ها و وقت‌ها از تنظیمات دکان شما پیروی می‌کنند، پس برنامه شما همیشه وقت محلی دکان شما را نشان می‌دهد.",
   "training.lessons.your-language.title": "استفاده از برنامه به زبان شما",
   "training.lessonsDoneOf": "{done} از {total} درس تمام شد",

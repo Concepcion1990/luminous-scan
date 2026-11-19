@@ -3656,7 +3656,7 @@ export const ptBR = {
   "training.lessons.welcome-basics.title": "Boas-vindas: orientando-se",
   "training.lessons.your-language.step1": "Abra Configurações ou toque no menu de idioma no topo da tela de entrada.",
   "training.lessons.your-language.step2": "Escolha seu idioma na lista. Todo o app muda imediatamente — menus, botões e lições como esta.",
-  "training.lessons.your-language.step3": "Você pode mudar de volta a qualquer momento. Sua escolha fica neste dispositivo.",
+  "training.lessons.your-language.step3": "Você pode mudar de volta a qualquer momento. Sua escolha fica salva — escolha-a na tela de entrada e o aplicativo abre no seu idioma.",
   "training.lessons.your-language.step4": "Datas e horários seguem as configurações da sua loja, então sua escala sempre mostra o horário local da sua loja.",
   "training.lessons.your-language.title": "Usar o app no seu idioma",
   "training.lessonsDoneOf": "{done} de {total} lições concluídas",
