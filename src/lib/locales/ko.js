@@ -3656,7 +3656,7 @@ export const ko = {
   "training.lessons.welcome-basics.title": "환영합니다: 길 찾기",
   "training.lessons.your-language.step1": "설정을 열거나, 로그인 화면 상단의 언어 메뉴를 눌러 주십시오.",
   "training.lessons.your-language.step2": "목록에서 언어를 선택해 주십시오. 메뉴, 버튼, 이런 강의까지 앱 전체가 즉시 변경됩니다.",
-  "training.lessons.your-language.step3": "언제든 다시 변경할 수 있습니다. 선택 사항은 이 기기에 유지됩니다.",
+  "training.lessons.your-language.step3": "언제든 다시 변경할 수 있습니다. 선택 사항은 저장됩니다 — 로그인 화면에서 선택하면 앱이 내 언어로 열립니다.",
   "training.lessons.your-language.step4": "날짜와 시간은 매장 설정을 따르므로, 일정은 항상 매장의 현지 시간을 표시합니다.",
   "training.lessons.your-language.title": "내 언어로 앱 사용하기",
   "training.lessonsDoneOf": "강의 {total}개 중 {done}개 완료",

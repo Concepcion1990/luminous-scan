@@ -3656,7 +3656,7 @@ export const mr = {
   "training.lessons.welcome-basics.title": "स्वागत: तुमचा मार्ग शोधणे",
   "training.lessons.your-language.step1": "Settings उघडा, किंवा साइन-इन पडद्याच्या वरच्या भाषेच्या मेनूवर टॅप करा.",
   "training.lessons.your-language.step2": "यादीतून तुमची भाषा निवडा. संपूर्ण अॅप लगेच बदलते — मेनू, बटणे आणि यासारखे धडे.",
-  "training.lessons.your-language.step3": "तुम्ही ती कधीही परत बदलू शकता. तुमची निवड या उपकरणावरच राहते.",
+  "training.lessons.your-language.step3": "तुम्ही ती कधीही परत बदलू शकता. तुमची निवड लक्षात ठेवली जाते — ती साइन-इन स्क्रीनवर निवडा आणि अ‍ॅप तुमच्या भाषेत उघडते.",
   "training.lessons.your-language.step4": "तारखा आणि वेळा तुमच्या दुकानाच्या सेटिंग्जचे अनुसरण करतात, त्यामुळे तुमचे वेळापत्रक नेहमी तुमच्या दुकानाची स्थानिक वेळ दाखवते.",
   "training.lessons.your-language.title": "अॅप तुमच्या भाषेत वापरा",
   "training.lessonsDoneOf": "{done} / {total} धडे पूर्ण",
