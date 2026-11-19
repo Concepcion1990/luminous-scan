@@ -3656,7 +3656,7 @@ export const ptPT = {
   "training.lessons.welcome-basics.title": "Boas-vindas: orientar-se",
   "training.lessons.your-language.step1": "Abra Definições, ou toque no menu de idioma no topo do ecrã de início de sessão.",
   "training.lessons.your-language.step2": "Escolha o seu idioma na lista. Toda a aplicação muda de imediato — menus, botões e lições como esta.",
-  "training.lessons.your-language.step3": "Pode voltar a mudá-lo a qualquer momento. A sua escolha fica neste dispositivo.",
+  "training.lessons.your-language.step3": "Pode voltar a mudá-lo a qualquer momento. A sua escolha fica guardada — escolha-a no ecrã de início de sessão e a aplicação abre no seu idioma.",
   "training.lessons.your-language.step4": "As datas e as horas seguem as definições da sua loja, por isso o seu horário mostra sempre a hora local da sua loja.",
   "training.lessons.your-language.title": "Usar a aplicação no seu idioma",
   "training.lessonsDoneOf": "{done} de {total} lições concluídas",
