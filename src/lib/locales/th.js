@@ -3656,7 +3656,7 @@ export const th = {
   "training.lessons.welcome-basics.title": "ยินดีต้อนรับ: หาทางของคุณ",
   "training.lessons.your-language.step1": "เปิดการตั้งค่า หรือแตะเมนูภาษาที่ด้านบนของหน้าจอเข้าสู่ระบบ",
   "training.lessons.your-language.step2": "เลือกภาษาของคุณจากรายการ แอปทั้งหมดจะเปลี่ยนทันที — เมนู ปุ่ม และบทเรียนแบบนี้",
-  "training.lessons.your-language.step3": "คุณสามารถเปลี่ยนกลับได้ทุกเมื่อ ตัวเลือกของคุณจะอยู่บนอุปกรณ์เครื่องนี้",
+  "training.lessons.your-language.step3": "คุณสามารถเปลี่ยนกลับได้ทุกเมื่อ ตัวเลือกของคุณจะถูกจดจำไว้ — เลือกบนหน้าจอเข้าสู่ระบบ แล้วแอปจะเปิดเป็นภาษาของคุณ",
   "training.lessons.your-language.step4": "วันที่และเวลาจะอิงตามการตั้งค่าของร้านคุณ ดังนั้นตารางงานของคุณจะแสดงเวลาท้องถิ่นของร้านคุณเสมอ",
   "training.lessons.your-language.title": "ใช้แอปในภาษาของคุณ",
   "training.lessonsDoneOf": "เสร็จแล้ว {done} จาก {total} บทเรียน",
