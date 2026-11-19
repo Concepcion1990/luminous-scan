@@ -7,11 +7,14 @@
  *
  * What is printed here, and for whom:
  *  - Labels: BOTH plans (product codes + scannable code text + SKU).
- *    Barcodes are rendered as code text, not as drawn bars — the
- *    server has no barcode font, and a fake barcode would be worse
- *    than honest text. Real barcode bars come from the Bluetooth /
- *    WebUSB ESC/POS path (client-side GS k commands) and from the
- *    browser-print label templates, which draw Code 128 in SVG.
+ *    The barcode is drawn as REAL bars (owner catch, Nov 18, 2026):
+ *    labels used to render the code as text only — "the server has
+ *    no barcode font" — but jsPDF draws the bars as plain rectangles
+ *    from the encoders in server/barcodeSym.js (the mirror of
+ *    src/lib/barcodeSym.js), in the code's native symbology with
+ *    the digits beneath, exactly as the client labels PDF
+ *    (src/lib/labelsPdf.js) and the browser-print templates do. A
+ *    code that cannot be encoded keeps the honest text rendering.
  *  - Packing slips, purchase orders, supplier docs, reports:
  *    Business-only (enforced on the routes, not here).
  *
@@ -25,6 +28,43 @@
 import { jsPDF } from 'jspdf';
 import { printLabelsFor, fillLabel } from './printLabels.js';
 import { drawPrintText, splitPrintText } from './printFonts.js';
+import { barcodeRects } from './barcodeSym.js';
+
+// Barcode geometry, shared with src/lib/labelsPdf.js so the two
+// PDFs agree bar for bar: 0.25mm per module like the SVG label
+// templates, 10 modules of quiet zone each side, shrunk only when
+// a long code would overflow the label.
+const BAR_MODULE_PT = (0.25 * 72) / 25.4;
+const BAR_QUIET_MODULES = 10;
+const BAR_MAX_WIDTH_PT = 200;
+const BAR_HEIGHT_PT = 24;
+
+/**
+ * Draw the code's barcode bars centred at centerX, tops at topY.
+ * Returns false when the code has no encodable barcode (empty or
+ * outside Code 128 set B) — the caller then falls back to text.
+ */
+function drawLabelBarcode(doc, code, centerX, topY) {
+  const sym = barcodeRects(code);
+  if (!sym) return false;
+  const totalModules = sym.width + BAR_QUIET_MODULES * 2;
+  const modulePt = Math.min(BAR_MODULE_PT, BAR_MAX_WIDTH_PT / totalModules);
+  const x0 = centerX - (totalModules * modulePt) / 2 + BAR_QUIET_MODULES * modulePt;
+  doc.setFillColor(0, 0, 0);
+  for (const rect of sym.rects) {
+    // Guard bars (tall) run 2pt above and 2pt below the rest, as
+    // on real packaging.
+    const tall = rect.tall === true;
+    doc.rect(
+      x0 + rect.x * modulePt,
+      tall ? topY - 2 : topY,
+      rect.w * modulePt,
+      tall ? BAR_HEIGHT_PT + 4 : BAR_HEIGHT_PT,
+      'F',
+    );
+  }
+  return true;
+}
 
 // Every string these builders draw goes through the print-fonts
 // helper: WinAnsi-safe text draws exactly as before in the standard
@@ -140,9 +180,18 @@ export function buildLabelsPdf(items, { copies = 1, businessName = '', language 
     });
     const codeY = Math.max(84, 52 + Math.min(label.lines.length, 3) * 16);
     const code = label.code || '';
-    doc.setFontSize(13);
-    doc.setFont('helvetica', 'bold');
-    text(doc, code || labelsText.noCode, x + 10, y + codeY, { maxWidth: labelW - 20 });
+    if (drawLabelBarcode(doc, code, x + labelW / 2, y + codeY - 12)) {
+      // The digits under the bars — the number stays human-readable
+      // exactly as on the browser-print price tag.
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(30, 30, 30);
+      text(doc, code, x + labelW / 2, y + codeY + 23, { align: 'center' });
+    } else {
+      doc.setFontSize(13);
+      doc.setFont('helvetica', 'bold');
+      text(doc, code || labelsText.noCode, x + 10, y + codeY, { maxWidth: labelW - 20 });
+    }
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
     doc.setTextColor(90, 90, 90);

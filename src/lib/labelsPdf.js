@@ -13,13 +13,56 @@
  * codeType } (src/lib/labelPayload.js) — so a location / bin label
  * flows through exactly the same path as a product label. Layout
  * mirrors server/printPdf.js buildLabelsPdf (same grid, same
- * fields) so the two PDFs agree. Barcodes are rendered as code text
- * + code, as on the server — real barcode bars come from the
- * Bluetooth / USB ESC/POS path and from the browser-print label
- * templates, which draw Code 128 in SVG.
+ * fields) so the two PDFs agree.
+ *
+ * The barcode is drawn as REAL bars (owner catch, Nov 18, 2026):
+ * this PDF used to render the code as text only, so a downloaded
+ * shelf label could not be scanned at all. The bars are the code's
+ * native symbology (src/lib/barcodeSym.js — valid 12-digit UPC-A,
+ * valid 13-digit EAN-13, else Code 128) drawn as plain rectangles
+ * at the browser templates' natural proportions, with the digits
+ * beneath them; a code that cannot be encoded keeps the honest
+ * big-text rendering it always had.
  */
 import { jsPDF } from 'jspdf';
 import { toLabel } from './labelPayload.js';
+import { barcodeRects } from './barcodeSym.js';
+
+// Barcode geometry, shared with server/printPdf.js so the two
+// PDFs agree bar for bar: 0.25mm per module like the SVG label
+// templates (BarcodeSvg), 10 modules of quiet zone each side,
+// shrunk only when a long code would overflow the label.
+const BAR_MODULE_PT = (0.25 * 72) / 25.4;
+const BAR_QUIET_MODULES = 10;
+const BAR_MAX_WIDTH_PT = 200;
+const BAR_HEIGHT_PT = 24;
+
+/**
+ * Draw the code's barcode bars centred at centerX, tops at topY.
+ * Returns false when the code has no encodable barcode (empty or
+ * outside Code 128 set B) — the caller then falls back to text.
+ */
+export function drawLabelBarcode(doc, code, centerX, topY) {
+  const sym = barcodeRects(code);
+  if (!sym) return false;
+  const totalModules = sym.width + BAR_QUIET_MODULES * 2;
+  const modulePt = Math.min(BAR_MODULE_PT, BAR_MAX_WIDTH_PT / totalModules);
+  const x0 = centerX - (totalModules * modulePt) / 2 + BAR_QUIET_MODULES * modulePt;
+  doc.setFillColor(0, 0, 0);
+  for (const rect of sym.rects) {
+    // Guard bars (tall) run 2pt above and 2pt below the rest, as
+    // on real packaging.
+    const tall = rect.tall === true;
+    doc.rect(
+      x0 + rect.x * modulePt,
+      tall ? topY - 2 : topY,
+      rect.w * modulePt,
+      tall ? BAR_HEIGHT_PT + 4 : BAR_HEIGHT_PT,
+      'F',
+    );
+  }
+  return true;
+}
 
 /** Label PDF bytes from already-loaded items — no fetch, no server. */
 export function buildLabelsPdfBytes(items, { copies = 1, businessName = '' } = {}) {
@@ -63,9 +106,18 @@ export function buildLabelsPdfBytes(items, { copies = 1, businessName = '' } = {
     });
     const codeY = Math.max(84, 52 + Math.min(label.lines.length, 3) * 16);
     const code = label.code || '';
-    doc.setFontSize(13);
-    doc.setFont('helvetica', 'bold');
-    doc.text(code || 'NO CODE', x + 10, y + codeY, { maxWidth: labelW - 20 });
+    if (drawLabelBarcode(doc, code, x + labelW / 2, y + codeY - 12)) {
+      // The digits under the bars — the number stays human-readable
+      // exactly as on the browser-print price tag.
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(30, 30, 30);
+      doc.text(code, x + labelW / 2, y + codeY + 23, { align: 'center' });
+    } else {
+      doc.setFontSize(13);
+      doc.setFont('helvetica', 'bold');
+      doc.text(code || 'NO CODE', x + 10, y + codeY, { maxWidth: labelW - 20 });
+    }
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
     doc.setTextColor(90, 90, 90);
