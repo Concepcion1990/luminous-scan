@@ -7,11 +7,14 @@ const ICONS = {
   receive: PackageCheck,
 };
 
-/** The three spreadsheet operations, chosen before a file is picked. */
-export default function ImportModePicker({ mode, onChange }) {
+/** The three spreadsheet operations, chosen before a file is picked.
+ * `modes` optionally narrows the offered operations (no dangling
+ * doors, Nov 19, 2026): omitted, all three show as before. */
+export default function ImportModePicker({ mode, onChange, modes }) {
+  const shown = modes ? IMPORT_MODES.filter((entry) => modes.includes(entry.id)) : IMPORT_MODES;
   return (
     <div className="grid gap-2 sm:grid-cols-3">
-      {IMPORT_MODES.map((entry) => {
+      {shown.map((entry) => {
         const Icon = ICONS[entry.id];
         const active = entry.id === mode;
         return (

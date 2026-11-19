@@ -578,7 +578,17 @@ async function guardCreate(pool, def, name, access, values) {
     throw err(403, 'plan_gated', `This feature is part of the Business plan.`);
   }
   if (name === 'Entitlement') throw err(403, 'entitlement_read_only', 'Entitlements are managed by billing (T4).');
-  if (def.writePerm && !access.can(def.writePerm)) {
+  // Product creation is the one create door the owner can hand to
+  // a member at enrollment (the products.create tick — the owner's
+  // "no dangling doors" ruling, Nov 19, 2026): creating a product
+  // takes products.edit OR that tick, with the same refusal
+  // otherwise. Editing an existing product still takes
+  // products.edit alone (guardUpdate is untouched), the Adjust
+  // door keeps its own products.edit gate, and every other entity
+  // keeps its single writePerm door exactly as before.
+  const mayCreate =
+    access.can(def.writePerm) || (name === 'Product' && access.can('products.create'));
+  if (def.writePerm && !mayCreate) {
     throw err(403, 'forbidden', 'You do not have permission to do that here.');
   }
   for (const field of def.required) {

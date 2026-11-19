@@ -4,6 +4,7 @@ import { apiRequest, base44 } from '@/api/client';
 import { Camera, ImagePlus, Loader2, ScanBarcode, Sparkles, X } from 'lucide-react';
 import { useBusiness } from '@/hooks/useBusiness';
 import useEntitlements from '@/hooks/useEntitlements';
+import useStaffAccess from '@/hooks/useStaffAccess';
 import ProductDetailsFields from './ProductDetailsFields';
 import { useCatalogVocabulary } from '@/hooks/useCatalogVocabulary';
 import { copyGroupKey } from '@/lib/copies';
@@ -93,6 +94,13 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
   // refuses pricing writes off-Business and strips them from reads).
   const { can } = useEntitlements();
   const canPricing = can('pricing');
+  // No dangling doors (owner ruling, Nov 19, 2026): minting a NEW
+  // category from this form is a Category create — the server asks
+  // categories.manage for it. The "+ Add new" row in the category
+  // picker renders only for a person holding it; everyone else
+  // picks from the categories that already exist.
+  const { can: canStaff } = useStaffAccess();
+  const canManageCategories = canStaff('categories.manage');
   // Suppliers are Business-only too (the entity is plan-gated): off
   // Business the field shows the same polite note as sale pricing,
   // and the payload omits supplier_id/supplier_name entirely, so a
@@ -747,7 +755,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
                 placeholder={t('productForm.categoryPlaceholder')}
                 label={t('productForm.categoryLabel')}
                 addNewLabel={t('productForm.addNewCategory')}
-                onAddNewRequest={() => setAddNewField('category')}
+                onAddNewRequest={canManageCategories ? () => setAddNewField('category') : undefined}
               />
             </div>
           </div>

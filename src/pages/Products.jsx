@@ -84,6 +84,12 @@ export default function Products() {
   // products.edit, the permission the product form enforces (owner
   // catch, Nov 19, 2026). Without it the counts are plain numbers.
   const canEditProducts = can('products.edit');
+  // Creating products (owner ruling, Nov 19, 2026 — no dangling
+  // doors): the New product button and the row menu's Duplicate
+  // render only for a person who can actually create — products.edit,
+  // or the owner's per-member products.create tick. Everyone else
+  // never sees them; the server refusal stays as the lock underneath.
+  const canCreateProducts = can('products.edit') || can('products.create');
   const { profile, activeId, record } = useBusiness();
   const { limits, planKey, isLoading: entitlementLoading } = useEntitlements();
   const { toast } = useToast();
@@ -523,9 +529,11 @@ export default function Products() {
         <div className="flex flex-wrap gap-2">
           <LimitBadge label={t('products.limitLabel')} used={activeCount} limit={productLimit} />
           <ExportCsvButton businessName={profile.name} businessId={activeId} />
-          <Button data-tour="product-add" onClick={openNew}>
-            <Plus className="mr-1.5 h-4 w-4" /> {t('products.newProduct')}
-          </Button>
+          {canCreateProducts && (
+            <Button data-tour="product-add" onClick={openNew}>
+              <Plus className="mr-1.5 h-4 w-4" /> {t('products.newProduct')}
+            </Button>
+          )}
         </div>
       </div>
 
@@ -778,7 +786,7 @@ export default function Products() {
                     </Button>
                     <ProductRowMenu
                       product={product}
-                      onDuplicate={duplicate}
+                      onDuplicate={canCreateProducts ? duplicate : undefined}
                       onToggleArchive={toggleArchive}
                       onAddStock={archived || !canEditProducts ? undefined : (p) => setAdjusting(p)}
                       onDelete={isBoss(user, record) ? requestRemove : undefined}

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { base44 } from '@/api/client';
 import { withBusiness } from '@/lib/scoped';
 import { t } from '@/lib/i18n';
+import useStaffAccess from '@/hooks/useStaffAccess';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -19,6 +20,14 @@ export default function AddLocationInline({ businessId, onCreated }) {
   const [name, setName] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  // No dangling doors (owner ruling, Nov 19, 2026): creating a
+  // location is locations.manage work on the server, so the inline
+  // form renders only for a person holding it — in every picker
+  // that embeds it. (A business starts with its store location
+  // already present, so an empty picker is a safety-net case, not
+  // the everyday path.)
+  const { can } = useStaffAccess();
+  if (!can('locations.manage')) return null;
 
   const add = async () => {
     const trimmed = name.trim();

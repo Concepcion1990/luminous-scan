@@ -3,6 +3,7 @@ import { FileUp, ShieldAlert } from 'lucide-react';
 import { t } from '@/lib/i18n';
 import { useBusiness } from '@/hooks/useBusiness';
 import useEntitlements from '@/hooks/useEntitlements';
+import useStaffAccess from '@/hooks/useStaffAccess';
 import ImportModePicker from '@/components/import/ImportModePicker';
 import ImportWorkbench from '@/components/import/ImportWorkbench';
 import UpdateWorkbench from '@/components/import/UpdateWorkbench';
@@ -21,8 +22,17 @@ export default function ImportCenter() {
   // the Essentials wording shows (fail closed on the promise).
   const { isEssentials, isLoading: entitlementLoading } = useEntitlements();
   const allowDownload = !isEssentials && !entitlementLoading;
+  // No dangling doors (owner ruling, Nov 19, 2026): the page door is
+  // exports.use, but the Create and Update modes do products.edit
+  // work on the server — a person holding exports.use without
+  // products.edit (a custom role) is offered only the Receive mode,
+  // whose door matches the page's. Preset roles never split this
+  // way (Manager holds both), so nothing changes for them.
+  const { can } = useStaffAccess();
+  const canEditProducts = can('products.edit');
   const [mode, setMode] = useState('create');
-  const Workbench = MODES[mode];
+  const activeMode = !canEditProducts && mode !== 'receive' ? 'receive' : mode;
+  const Workbench = MODES[activeMode];
 
   return (
     <div className="space-y-5">
@@ -43,7 +53,11 @@ export default function ImportCenter() {
         </p>
       )}
 
-      <ImportModePicker mode={mode} onChange={setMode} />
+      <ImportModePicker
+        mode={activeMode}
+        onChange={setMode}
+        modes={canEditProducts ? undefined : ['receive']}
+      />
 
       <Workbench businessId={activeId} />
 
@@ -51,14 +65,18 @@ export default function ImportCenter() {
         <p className="flex items-center gap-1.5 font-medium text-foreground">
           <FileUp className="h-3.5 w-3.5" /> {t('import.whatEachDoes')}
         </p>
-        <p className="mt-2">
-          <span className="font-medium text-foreground">{t('import.createTitle')}</span>{' '}
-          {t('import.createDesc')}
-        </p>
-        <p className="mt-2">
-          <span className="font-medium text-foreground">{t('import.updateTitle')}</span>{' '}
-          {t('import.updateDesc')}
-        </p>
+        {canEditProducts && (
+          <>
+            <p className="mt-2">
+              <span className="font-medium text-foreground">{t('import.createTitle')}</span>{' '}
+              {t('import.createDesc')}
+            </p>
+            <p className="mt-2">
+              <span className="font-medium text-foreground">{t('import.updateTitle')}</span>{' '}
+              {t('import.updateDesc')}
+            </p>
+          </>
+        )}
         <p className="mt-2">
           <span className="font-medium text-foreground">{t('import.receiveModeTitle')}</span>{' '}
           {t('import.receiveModeDesc')}

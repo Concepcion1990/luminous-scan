@@ -233,9 +233,33 @@ export function isReturnsGrant(key) {
   return RETURNS_GRANT_KEYS.includes(key);
 }
 
-/** Any per-member grant key (Settings sections + returns). */
+/**
+ * Owner-granted product creation (the owner's ruling, Nov 19,
+ * 2026 — no dangling doors). Same pattern as the grants above:
+ * the key lives in the member's own permissions array, is
+ * deliberately NOT part of PERMISSION_GROUPS / ALL_PERMISSIONS /
+ * the preset roles, and is edited in the member dialog as its own
+ * tick, so the permission picker can never wipe it and no role
+ * carries it by default. Holding it lets a member whose role
+ * cannot create products (a Sales clerk, say) see the New product
+ * buttons and create products end to end; editing an existing
+ * product still takes products.edit. Unticked, the buttons do not
+ * appear for that person at all — a door a person cannot walk
+ * through does not hang on their wall.
+ */
+export const PRODUCTS_GRANTS = [
+  { key: 'products.create', get label() { return t('staffLib.perm.productsCreate'); } },
+];
+
+export const PRODUCTS_GRANT_KEYS = PRODUCTS_GRANTS.map((grant) => grant.key);
+
+export function isProductsGrant(key) {
+  return PRODUCTS_GRANT_KEYS.includes(key);
+}
+
+/** Any per-member grant key (Settings sections + returns + products). */
 export function isMemberGrant(key) {
-  return isSettingsGrant(key) || isReturnsGrant(key);
+  return isSettingsGrant(key) || isReturnsGrant(key) || isProductsGrant(key);
 }
 
 /** A member row's level, mirroring the server's personLevel. */

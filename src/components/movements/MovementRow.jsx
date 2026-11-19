@@ -74,7 +74,7 @@ export default function MovementRow({
         {blocker && confirming && (
           <p className="mt-1 text-[11px] text-destructive">{blocker}</p>
         )}
-        {!blocker && !reversed && !movement.reversal_of_id && (
+        {!blocker && !reversed && !movement.reversal_of_id && onAskReverse && (
           <div className="mt-1.5 flex items-center gap-1.5">
             {confirming ? (
               <>

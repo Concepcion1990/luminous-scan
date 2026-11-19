@@ -8,6 +8,7 @@ import { scoped } from '@/lib/scoped';
 import { useBusiness } from '@/hooks/useBusiness';
 import { useDataFresh } from '@/hooks/useDataFresh';
 import useEntitlements from '@/hooks/useEntitlements';
+import useStaffAccess from '@/hooks/useStaffAccess';
 import { format } from 'date-fns';
 import { localTimeZoneName, toLocalDate } from '@/lib/dates';
 import MovementRow from '@/components/movements/MovementRow';
@@ -24,6 +25,11 @@ export default function Movements() {
   // account never briefly offers — or loses — them the way the limits did.
   const { isEssentials, isLoading: entitlementLoading } = useEntitlements();
   const showBundleTypes = !isEssentials && !entitlementLoading;
+  // No dangling doors (owner ruling, Nov 19, 2026): reversing a
+  // movement is movements.reverse work on the server, so the
+  // Reverse door is offered only to a person holding it.
+  const { can } = useStaffAccess();
+  const canReverse = can('movements.reverse');
   const [movements, setMovements] = useState([]);
   // Import activity lines (Nov 15, 2026): committed Create/Update
   // imports interleaved into the unfiltered history. They are
@@ -250,11 +256,11 @@ export default function Movements() {
                   blocker={pendingId === row.id ? reversalBlocker(row) : ''}
                   confirming={pendingId === row.id}
                   busy={busyId === row.id}
-                  onAskReverse={() => {
+                  onAskReverse={canReverse ? () => {
                     setError('');
                     setFlash('');
                     setPendingId(row.id);
-                  }}
+                  } : undefined}
                   onConfirmReverse={() => confirmReverse(row)}
                   onCancelReverse={() => setPendingId('')}
                 />

@@ -16,6 +16,7 @@ import useScannerInput from '@/hooks/useScannerInput';
 import useIsDesktop from '@/hooks/useIsDesktop';
 import useModalHistory from '@/hooks/useModalHistory';
 import useEntitlements from '@/hooks/useEntitlements';
+import useStaffAccess from '@/hooks/useStaffAccess';
 import { useOfflineSync } from '@/hooks/useOfflineSync';
 import {
   findProductsByCode,
@@ -62,6 +63,12 @@ const allActions = [...actions, ...adjustments];
 export default function Scan() {
   const { activeId, profile } = useBusiness();
   const { planKey } = useEntitlements();
+  // No dangling doors (owner ruling, Nov 19, 2026): the not-found
+  // panel's Create product button renders only for a person who
+  // can actually create — products.edit, or the owner's per-member
+  // products.create tick. The Scan next button stays for everyone.
+  const { can } = useStaffAccess();
+  const canCreateProducts = can('products.edit') || can('products.create');
   // T6 offline-first sync: the queue, the visible status, and the
   // convergence check (the manager's view re-reads when the server
   // version moves). Polling with a last-seen version — see
@@ -638,9 +645,11 @@ export default function Scan() {
                 <p className="numeric mt-1 text-xs text-muted-foreground">{notFound}</p>
               </div>
               <div className="flex flex-wrap justify-center gap-2">
-                <Button onClick={() => setCreateOpen(true)}>
-                  <Plus className="mr-1.5 h-4 w-4" /> {t('scan.createProduct')}
-                </Button>
+                {canCreateProducts && (
+                  <Button onClick={() => setCreateOpen(true)}>
+                    <Plus className="mr-1.5 h-4 w-4" /> {t('scan.createProduct')}
+                  </Button>
+                )}
                 <Button variant="ghost" onClick={scanNext}>
                   <RotateCcw className="mr-1.5 h-3.5 w-3.5" /> {t('scan.scanNext')}
                 </Button>

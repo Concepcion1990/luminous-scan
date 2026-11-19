@@ -16,6 +16,7 @@ import { loadOperations } from '@/lib/dashboardOps';
 import { isBoss } from '@/lib/bossAuthority';
 import { useBusiness } from '@/hooks/useBusiness';
 import useEntitlements from '@/hooks/useEntitlements';
+import useStaffAccess from '@/hooks/useStaffAccess';
 import { trialLabel, trialWarningDetails } from '@/lib/entitlements';
 import { trialInAppNotice } from '@/lib/trialNotices';
 import { displayLimit } from '@/lib/plans';
@@ -29,6 +30,12 @@ export default function Dashboard() {
   // see neither — no banner, no chip, no teaser.
   const boss = isBoss(user, record);
   const { record: entitlementRecord, can, limits, isLoading: entitlementLoading } = useEntitlements();
+  // No dangling doors (owner ruling, Nov 19, 2026): the New product
+  // button hangs on this page only for a person who can actually
+  // create products — products.edit, or the owner's per-member
+  // products.create tick. Everyone else never sees it.
+  const { can: canStaff } = useStaffAccess();
+  const canCreateProducts = canStaff('products.edit') || canStaff('products.create');
   // Purchasing cards are Business-only. While the entitlement row is still
   // loading the plan is unknown (a missing row resolves to restricted
   // Essentials), so show nothing rather than flash Business cards to an
@@ -170,15 +177,17 @@ export default function Dashboard() {
               <ScanLine className="h-4 w-4" />
               {t('dashboard.scanItem')}
             </Link>
-            <Link
-              to="/products"
-              className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-medium transition-colors hover:bg-muted"
-            >
-              <Plus className="h-4 w-4" />
-              {t('dashboard.newProduct')}
-            </Link>
+            {canCreateProducts && (
+              <Link
+                to="/products"
+                className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-medium transition-colors hover:bg-muted"
+              >
+                <Plus className="h-4 w-4" />
+                {t('dashboard.newProduct')}
+              </Link>
+            )}
           </div>
-          {atProductLimit && (
+          {atProductLimit && canCreateProducts && (
             <p className="text-xs text-muted-foreground">
               {t('dashboard.productLimit', { count: stats.distinctSkus, limit: productLimit })}{' '}
               <Link to="/upgrade" className="font-medium text-link underline underline-offset-2">

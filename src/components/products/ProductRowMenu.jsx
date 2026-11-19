@@ -26,9 +26,11 @@ export default function ProductRowMenu({ product, onDuplicate, onToggleArchive, 
             <PackagePlus className="mr-2 h-3.5 w-3.5" /> {t('products.addStock')}
           </DropdownMenuItem>
         )}
-        <DropdownMenuItem onSelect={() => onDuplicate(product)}>
-          <CopyPlus className="mr-2 h-3.5 w-3.5" /> {t('products.duplicate')}
-        </DropdownMenuItem>
+        {onDuplicate && (
+          <DropdownMenuItem onSelect={() => onDuplicate(product)}>
+            <CopyPlus className="mr-2 h-3.5 w-3.5" /> {t('products.duplicate')}
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem onSelect={() => onToggleArchive(product)}>
           {archived ? (
             <>

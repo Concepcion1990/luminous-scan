@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/client';
 import { Loader2, TriangleAlert } from 'lucide-react';
-import { allRoles, BUSINESS_ONLY_PERMISSIONS, isMemberGrant, isReturnsGrant, isSettingsGrant, RETURNS_GRANTS, roleById, SETTINGS_GRANTS, STATUS_OPTIONS } from '@/lib/staff';
+import { allRoles, BUSINESS_ONLY_PERMISSIONS, isMemberGrant, isProductsGrant, isReturnsGrant, isSettingsGrant, PRODUCTS_GRANTS, RETURNS_GRANTS, roleById, SETTINGS_GRANTS, STATUS_OPTIONS } from '@/lib/staff';
 import { Checkbox } from '@/components/ui/checkbox';
 import { createStaffMember } from '@/lib/entitlements';
 import { fixStaffEmail } from '@/lib/recovery';
@@ -55,6 +55,11 @@ const emptyForm = (customRoles, stripBusinessOnly = (permissions) => permissions
     // member's returns wait for approval until the owner ticks
     // this for them.
     returns_grants: [],
+    // Owner-granted product creation (Nov 19, 2026): its own
+    // per-member tick, off by default for everyone — the New
+    // product buttons do not appear for a member until the owner
+    // ticks this for them (or their role carries products.edit).
+    products_grants: [],
     status: 'invited',
     location_id: '',
     location_name: '',
@@ -121,10 +126,10 @@ export default function StaffMemberDialog({
             role_id: member.role_id || '',
             role_name: member.role_name || '',
             // The per-member grants (Settings sections + returns
-            // completion) ride the same stored array but are
-            // edited as their own ticks below — split them out so
-            // the permission picker (and its All/None buttons)
-            // can never wipe a grant by accident.
+            // completion + product creation) ride the same stored
+            // array but are edited as their own ticks below —
+            // split them out so the permission picker (and its
+            // All/None buttons) can never wipe a grant by accident.
             permissions: (Array.isArray(member.permissions) ? member.permissions : []).filter(
               (key) => !isMemberGrant(key)
             ),
@@ -133,6 +138,9 @@ export default function StaffMemberDialog({
             ),
             returns_grants: (Array.isArray(member.permissions) ? member.permissions : []).filter(
               (key) => isReturnsGrant(key)
+            ),
+            products_grants: (Array.isArray(member.permissions) ? member.permissions : []).filter(
+              (key) => isProductsGrant(key)
             ),
             status: member.status || 'invited',
             location_id: member.location_id || '',
@@ -236,6 +244,7 @@ export default function StaffMemberDialog({
           ...stripBusinessOnly(form.permissions),
           ...(form.settings_grants || []),
           ...(form.returns_grants || []),
+          ...(form.products_grants || []),
         ],
         status: form.status,
         location_id: form.location_id || '',
@@ -546,6 +555,39 @@ export default function StaffMemberDialog({
             </div>
             <p className="text-[11px] text-muted-foreground">
               {t('staff.memberDialog.returnsAccessHint')}
+            </p>
+          </div>
+
+          {/* Owner-granted product creation (Nov 19, 2026 — no
+              dangling doors): the New product buttons appear for
+              this person only with this tick (or a role carrying
+              products.edit) — unticked, the buttons do not appear
+              at all. Offered for every role, off by default. */}
+          <div className="space-y-1.5">
+            <Label>{t('staffLib.area.productsAccess')}</Label>
+            <div className="rounded-lg border border-border p-2.5">
+              <div className="grid gap-1.5">
+                {PRODUCTS_GRANTS.map((grant) => (
+                  <label key={grant.key} className="flex items-start gap-2 text-xs leading-snug">
+                    <Checkbox
+                      checked={(form.products_grants || []).includes(grant.key)}
+                      onCheckedChange={(on) =>
+                        setForm((c) => ({
+                          ...c,
+                          products_grants: on
+                            ? [...new Set([...(c.products_grants || []), grant.key])]
+                            : (c.products_grants || []).filter((key) => key !== grant.key),
+                        }))
+                      }
+                      className="mt-0.5"
+                    />
+                    <span>{grant.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            <p className="text-[11px] text-muted-foreground">
+              {t('staff.memberDialog.productsAccessHint')}
             </p>
           </div>
 
