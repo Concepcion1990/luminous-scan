@@ -3656,7 +3656,7 @@ export const tr = {
   "training.lessons.welcome-basics.title": "Hoş geldiniz: yolunuzu bulmak",
   "training.lessons.your-language.step1": "Ayarlar'ı açınız veya oturum açma ekranının üstündeki dil menüsüne dokununuz.",
   "training.lessons.your-language.step2": "Listeden dilinizi seçiniz. Tüm uygulama hemen değişir — menüler, düğmeler ve bunun gibi dersler.",
-  "training.lessons.your-language.step3": "İstediğiniz zaman geri değiştirebilirsiniz. Seçiminiz bu cihazda kalır.",
+  "training.lessons.your-language.step3": "İstediğiniz zaman geri değiştirebilirsiniz. Seçiminiz hatırlanır — oturum açma ekranında seçin, uygulama dilinizde açılır.",
   "training.lessons.your-language.step4": "Tarihler ve saatler mağazanızın ayarlarını izler, böylece programınız her zaman mağazanızın yerel saatini gösterir.",
   "training.lessons.your-language.title": "Uygulamayı dilinizde kullanın",
   "training.lessonsDoneOf": "{total} dersten {done} tanesi bitirildi",

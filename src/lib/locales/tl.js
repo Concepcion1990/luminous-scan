@@ -3656,7 +3656,7 @@ export const tl = {
   "training.lessons.welcome-basics.title": "Maligayang pagdating: paghahanap ng iyong daan",
   "training.lessons.your-language.step1": "Buksan ang Mga Setting, o i-tap ang menu ng wika sa itaas ng screen ng pag-sign in.",
   "training.lessons.your-language.step2": "Piliin ang iyong wika mula sa listahan. Agad na magbabago ang buong app — mga menu, button at mga araling tulad nito.",
-  "training.lessons.your-language.step3": "Maaari mo itong ibalik kahit kailan. Mananatili ang iyong pinili sa device na ito.",
+  "training.lessons.your-language.step3": "Maaari mo itong ibalik kahit kailan. Naaalala ang iyong pinili — piliin ito sa screen ng pag-sign in at magbubukas ang app sa iyong wika.",
   "training.lessons.your-language.step4": "Sumusunod ang mga petsa at oras sa mga setting ng iyong tindahan, kaya palaging ipinapakita ng iyong iskedyul ang lokal na oras ng iyong tindahan.",
   "training.lessons.your-language.title": "Gamitin ang app sa iyong wika",
   "training.lessonsDoneOf": "{done} sa {total} aralin ang natapos",
