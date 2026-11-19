@@ -7,13 +7,27 @@
  * Languages keep landing ONE AT A TIME, in ABC order of the list the
  * owner approves. See src/lib/locales/README.md for the how-to.
  *
- * The language has two sources, in order: before sign-in it is the
- * visitor's own choice — the public LanguagePicker (landing, Plans,
- * Subscribe, Register, Login and the policy pages) — persisted in
- * localStorage (`stockhaven.locale`) so it survives navigation and
- * reloads, and carried into the business a registering visitor creates.
- * After sign-in the business record wins (`language` on the business —
- * Settings → Details), applied by Layout. An unknown or missing code
+ * The language has ONE source of truth: the active locale held by
+ * this module, which every surface renders from — shell chrome,
+ * pages and the navigation menu alike. Three doors write it, and
+ * they all write the same place:
+ *
+ *   - The public LanguagePicker (landing, Plans, Subscribe, Register,
+ *     Login and the policy pages) applies the visitor's choice
+ *     immediately and marks it as a door pick (`stockhaven.localePick`).
+ *   - At sign-in, Layout reconciles once: a door pick WINS over the
+ *     business's older stored language and, for the business's
+ *     owner, is written into the business record — the account's one
+ *     server-side language home — so the next sign-in on any device
+ *     opens in it. With no door pick, the business record's language
+ *     (`language` on the business — Settings → Details) applies.
+ *   - Inside the app, Settings' language select applies immediately
+ *     and saves itself with a single-field PATCH (Settings.jsx
+ *     applyPreference), which lands in the same business record.
+ *
+ * The last applied locale is mirrored to localStorage
+ * (`stockhaven.locale`) so a returning visitor never sees an English
+ * flash before their language applies. An unknown or missing code
  * falls back to English, never to a blank screen. A missing key returns
  * the key itself, so an unfinished translation degrades to a visible
  * key instead of crashing the page.
@@ -154,6 +168,49 @@ export const LOCALE_LABEL_KEYS = {
 
 /** localStorage key holding the visitor's chosen locale (public picker). */
 export const LOCALE_STORAGE_KEY = 'stockhaven.locale';
+
+/**
+ * localStorage key marking an explicit door pick: a language the
+ * visitor chose on a public page (the LanguagePicker) that has not
+ * yet been reconciled at sign-in. Layout reads it once when the
+ * workspace first loads (see the reconciliation there); the plain
+ * locale mirror above cannot serve as the marker, because applying
+ * a business's language also writes it — the marker is what tells
+ * "the person at the door chose this" apart from "the app applied
+ * the stored value".
+ */
+export const LOCALE_PICK_STORAGE_KEY = 'stockhaven.localePick';
+
+/** Record an explicit door pick (LanguagePicker only). */
+export function markLocalePick(code) {
+  if (!LOCALES[code]) return;
+  try {
+    globalThis.localStorage?.setItem(LOCALE_PICK_STORAGE_KEY, code);
+  } catch {
+    // Blocked storage: the pick still applies for this session —
+    // the active locale already changed — it just cannot be
+    // carried through the sign-in door.
+  }
+}
+
+/** The pending door pick, or null when there is none (or it is stale). */
+export function readLocalePick() {
+  try {
+    const value = globalThis.localStorage?.getItem(LOCALE_PICK_STORAGE_KEY);
+    return LOCALES[value] ? value : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Spend the door pick (Layout, once it has been reconciled). */
+export function clearLocalePick() {
+  try {
+    globalThis.localStorage?.removeItem(LOCALE_PICK_STORAGE_KEY);
+  } catch {
+    // Nothing to clear against blocked storage.
+  }
+}
 
 let currentLocale = DEFAULT_LOCALE;
 

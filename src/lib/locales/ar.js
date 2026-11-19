@@ -3656,7 +3656,7 @@ export const ar = {
   "training.lessons.welcome-basics.title": "مرحبًا: العثور على طريقك",
   "training.lessons.your-language.step1": "افتح الإعدادات، أو اضغط على قائمة اللغة في أعلى شاشة تسجيل الدخول.",
   "training.lessons.your-language.step2": "اختر لغتك من القائمة. يتغيّر التطبيق بأكمله فورًا — القوائم والأزرار ودروس كهذا.",
-  "training.lessons.your-language.step3": "يمكنك تغييرها في أي وقت. يبقى اختيارك على هذا الجهاز.",
+  "training.lessons.your-language.step3": "يمكنك تغييرها في أي وقت. يبقى اختيارك محفوظًا — اختره في شاشة تسجيل الدخول وسيفتح التطبيق بلغتك.",
   "training.lessons.your-language.step4": "تتبع التواريخ والأوقات إعدادات متجرك، لذا يُظهر جدولك دائمًا التوقيت المحلي لمتجرك.",
   "training.lessons.your-language.title": "استخدم التطبيق بلغتك",
   "training.lessonsDoneOf": "انتهى {done} من {total} درس",

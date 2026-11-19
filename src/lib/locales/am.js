@@ -3656,7 +3656,7 @@ export const am = {
   "training.lessons.welcome-basics.title": "እንኳን ደህና መጡ፦ አካባቢዎን ማወቅ",
   "training.lessons.your-language.step1": "ቅንብሮችን ይክፈቱ፣ ወይም በመግቢያ ማያ ገጽ ላይኛው ክፍል ያለውን የቋንቋ ምናሌ ይንኩ።",
   "training.lessons.your-language.step2": "ቋንቋዎን ከዝርዝሩ ይምረጡ። መላው መተግበሪያ ወዲያውኑ ይቀየራል — ምናሌዎች፣ ቁልፎች እና እንደዚህ ያሉ ትምህርቶች።",
-  "training.lessons.your-language.step3": "በማንኛውም ጊዜ መመለስ ይችላሉ። ምርጫዎ በዚህ መሣሪያ ላይ ይቆያል።",
+  "training.lessons.your-language.step3": "በማንኛውም ጊዜ መመለስ ይችላሉ። ምርጫዎ ይታወሳል — በመግቢያ ማያ ገጹ ላይ ይምረጡት እና መተግበሪያው በቋንቋዎ ይከፈታል።",
   "training.lessons.your-language.step4": "ቀናት እና ጊዜዎች የመደብርዎን ቅንብሮች ይከተላሉ፤ ስለዚህ መርሐ ግብርዎ ሁልጊዜ የመደብርዎን የአካባቢ ጊዜ ያሳያል።",
   "training.lessons.your-language.title": "መተግበሪያውን በቋንቋዎ ይጠቀሙ",
   "training.lessonsDoneOf": "ከ{total} ትምህርቶች {done} ተጠናቅቀዋል",

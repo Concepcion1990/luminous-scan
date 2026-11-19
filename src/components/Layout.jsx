@@ -9,7 +9,8 @@ import MerchantMark from '@/components/brand/MerchantMark';
 import BusinessSwitcher from '@/components/business/BusinessSwitcher';
 import { useBusiness } from '@/hooks/useBusiness';
 import { PUBLISHER } from '@/lib/business';
-import { t, setLocale, getLocale } from '@/lib/i18n';
+import { LOCALES, clearLocalePick, getLocale, readLocalePick, setLocale, t, useLocale } from '@/lib/i18n';
+import { apiRequest } from '@/api/client';
 import { applyBrandColor, clearBrandColor, resolveBrandColor } from '@/lib/brandTheme';
 import useStaffAccess from '@/hooks/useStaffAccess';
 import useEntitlements from '@/hooks/useEntitlements';
@@ -39,12 +40,20 @@ const MOBILE_TAB_SCREENS = {
 
 export default function Layout() {
   const embedVisual = isEmbedVisual();
-  const { profile, activeId } = useBusiness();
+  const { profile, activeId, user, refresh } = useBusiness();
   // T6 white-label + i18n: the store's own branding comes from the
-  // business record — its brand color re-skins the chrome, its
-  // language picks the locale. The app name (AppMark, top of the
-  // sidebar and in the footer) is never touched by either.
-  const [locale, setLocaleState] = useState('en');
+  // business record — its brand color re-skins the chrome. The app
+  // name (AppMark, top of the sidebar and in the footer) is never
+  // touched by either.
+  //
+  // The language renders from the ONE active locale (useLocale),
+  // exactly like every page — the nav groups below included. (This
+  // memo once keyed on a Layout-local locale state that started at
+  // 'en' and only moved when the business's stored language changed
+  // VALUE, so the menu froze in whatever language the first render
+  // happened to use while the pages moved on — the owner's
+  // split-language catches, Nov 18, 2026.)
+  const locale = useLocale();
   useEffect(() => {
     // No branding of the business's own → the app's default cream
     // theme: resolveBrandColor yields the default cream-tan and
@@ -57,11 +66,62 @@ export default function Layout() {
     if (profile?.brand_color) applyBrandColor(resolveBrandColor(profile.brand_color));
     else clearBrandColor();
   }, [profile?.brand_color]);
+  // Language reconciliation — ONE source of truth (owner catches,
+  // Nov 18, 2026). While the workspace is still loading nothing is
+  // applied: the language already active (the visitor's own choice)
+  // keeps rendering, never a guessed English — the old effect read
+  // a missing profile as 'en' and stomped the door pick before the
+  // business even arrived. Once the business is known:
+  //
+  //   - A door pick (a language chosen on the public pages, marked
+  //     by the LanguagePicker) WINS over the business's older stored
+  //     language. It is already the active locale; for the business's
+  //     owner it is also written into the business record — the
+  //     account's one server-side language home — so it persists
+  //     across logout/login and across devices. A member of someone
+  //     else's business cannot rewrite its record, so their pick
+  //     governs this session only and is then spent.
+  //   - With no door pick, the business record governs, as before:
+  //     its language becomes the active locale. Later changes of the
+  //     record (a business switch, the owner saving Settings) apply
+  //     the same way.
+  //
+  // The handled-business guard keeps a failed owner save from
+  // retrying on every render; the pick stays marked, so the next
+  // full load tries the save again.
+  const localeHandledFor = useRef(null);
+  const refreshRef = useRef(refresh);
+  refreshRef.current = refresh;
   useEffect(() => {
-    const code = profile?.language || 'en';
-    if (code !== getLocale()) setLocale(code);
-    setLocaleState(code);
-  }, [profile?.language]);
+    if (!profile || !activeId) return;
+    const businessCode = LOCALES[profile.language] ? profile.language : 'en';
+    const pick = readLocalePick();
+    if (pick && pick !== businessCode) {
+      if (localeHandledFor.current === activeId) return;
+      localeHandledFor.current = activeId;
+      if (getLocale() !== pick) setLocale(pick);
+      if (user && profile.owner_id === user.id) {
+        apiRequest(`/api/businesses/${encodeURIComponent(activeId)}`, {
+          method: 'PATCH',
+          body: { language: pick },
+        })
+          .then(() => {
+            clearLocalePick();
+            refreshRef.current();
+          })
+          .catch(() => {
+            // The session already renders the picked language; the
+            // marked pick makes a later load retry the save.
+          });
+      } else {
+        clearLocalePick();
+      }
+      return;
+    }
+    if (pick) clearLocalePick();
+    if (businessCode !== getLocale()) setLocale(businessCode);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile?.language, profile?.owner_id, activeId, user?.id]);
   // T6 i18n: the nav renders through t() (English until the owner
   // picks the first translation language). The English `label` stays
   // as the fallback for any entry without a key.

@@ -6,7 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { LOCALE_LABEL_KEYS, SUPPORTED_LOCALES, setLocale, t, useLocale } from '@/lib/i18n';
+import { LOCALE_LABEL_KEYS, SUPPORTED_LOCALES, markLocalePick, setLocale, t, useLocale } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 
 /**
@@ -18,7 +18,10 @@ import { cn } from '@/lib/utils';
  * file, so each language always names itself). Choosing applies
  * immediately through setLocale (RTL flip included) and persists in
  * localStorage; a business created afterwards starts in this language
- * (see createBusiness in src/lib/business.js).
+ * (see createBusiness in src/lib/business.js). The choice is also
+ * marked as a door pick (markLocalePick): at sign-in the pick wins
+ * over the business's older stored language and becomes the
+ * account's language (Layout's reconciliation, Nov 18, 2026).
  *
  * tone="onPrimary" styles the trigger for the dark primary headers;
  * the default tone is for light surfaces like AuthLayout.
@@ -26,7 +29,13 @@ import { cn } from '@/lib/utils';
 export default function LanguagePicker({ tone = 'light', className }) {
   const locale = useLocale();
   return (
-    <Select value={locale} onValueChange={(code) => setLocale(code)}>
+    <Select
+      value={locale}
+      onValueChange={(code) => {
+        setLocale(code);
+        markLocalePick(code);
+      }}
+    >
       <SelectTrigger
         aria-label={t('settings.details.language')}
         className={cn(
