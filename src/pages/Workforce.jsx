@@ -16,6 +16,7 @@ import { ArrowLeft, BellRing, CalendarClock, Check, Clock3, Gift, ListTodo, Mess
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { useBusiness } from '@/hooks/useBusiness';
+import { useAuth } from '@/lib/AuthContext';
 import useEntitlements from '@/hooks/useEntitlements';
 import { t } from '@/lib/i18n';
 import {
@@ -107,14 +108,24 @@ function ClockTab({ businessId, ctx, peopleById, onEvent }) {
     load().catch(() => {});
   }, [load]);
 
+  const { checkUserAuth } = useAuth();
   const act = async (fn, okMessage) => {
     setBusy(true);
     try {
-      await fn();
-      toast({ title: okMessage });
+      // fn may return a follow-up line for the toast (the
+      // clock-out grace note); anything else it returns is ignored.
+      const followUp = await fn();
+      toast({
+        title: okMessage,
+        description: typeof followUp === 'string' ? followUp : undefined,
+      });
       setNote('');
       await load();
       onEvent();
+      // Clocking in or out moves the shift-window deadline
+      // (Nov 19, 2026): refresh /auth/me so the client timer
+      // arms on clock-out and clears on clock-in.
+      checkUserAuth().catch(() => {});
     } catch (error) {
       toast({ title: error.message || t('workforce.actionFailed'), variant: 'destructive' });
     } finally {
@@ -205,7 +216,15 @@ function ClockTab({ businessId, ctx, peopleById, onEvent }) {
             <Button
               className="mt-2"
               disabled={busy || selfOff}
-              onClick={() => act(() => clockOut(businessId, note), t('workforce.clockedOutMsg'))}
+              onClick={() =>
+                act(async () => {
+                  const result = await clockOut(businessId, note);
+                  // The grace note (Nov 19, 2026): after clock-out
+                  // they have 10 minutes to check their times
+                  // before the app signs them out on its own.
+                  return result?.auto_logout_at ? t('workforce.autoLogoutNote') : undefined;
+                }, t('workforce.clockedOutMsg'))
+              }
             >
               {t('workforce.clockOut')}
             </Button>

@@ -26,7 +26,7 @@
  *   GET   /api/businesses/:bid/workforce/payroll/config      owner / manager
  *   PUT   /api/businesses/:bid/workforce/payroll/config      owner
  *   GET   /api/businesses/:bid/workforce/payroll/profiles
- *   PUT   /api/businesses/:bid/workforce/payroll/profiles/:staffId  owner
+ *   PUT   /api/businesses/:bid/workforce/payroll/profiles/:staffId  owner / hiring manager
  *   GET   /api/businesses/:bid/workforce/payroll/preview     owner / manager
  *   POST  /api/businesses/:bid/workforce/payroll/runs        owner
  *   GET   /api/businesses/:bid/workforce/payroll/runs        owner / manager
@@ -60,7 +60,8 @@
 import crypto from 'node:crypto';
 import { Router } from 'express';
 import { requireAuth } from './sessions.js';
-import { resolveAccess, staffRowForEmail } from './authz.js';
+import { resolveAccess, staffRowForEmail, parseJsonArray } from './authz.js';
+import { startAutoLogout, cancelAutoLogout } from './staffWindow.js';
 import { assertNotInGrace } from './billing.js';
 
 function err(status, code, message) {
@@ -500,6 +501,14 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
     const access = await accessOr403(pool(), req.user, req.params.bid);
     return { access, level: callerLevel(access), me: access.staffRow };
   }
+  // Who may set pay rates (owner ruling, Nov 19, 2026): the
+  // owner always, or a manager trusted with hiring — i.e. whose
+  // stored permissions carry staff.manage. Everyone else can
+  // only ever see their OWN rate.
+  function canSetPay(access) {
+    if (access.isOwner) return true;
+    return parseJsonArray(access.staffRow?.permissions).includes('staff.manage');
+  }
   function requirePerson(access) {
     if (!access.staffRow) {
       throw err(400, 'no_staff_profile', 'Only team members with a staff profile can do this.');
@@ -702,8 +711,11 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
        VALUES ($1, $2, $3, $4, $5) RETURNING *`,
       [id, businessId, me.id, now.toISOString(), !shift],
     );
+    // Clocking back in cancels the pending auto-logout (the
+    // shift window, Nov 19, 2026 — server/staffWindow.js).
+    await cancelAutoLogout(pool(), businessId, me.id);
     await notifyClockEvent(pool(), access.business, me, 'clock_in', id, now, timeZone);
-    return res.status(201).json({ entry: inserted.rows[0] });
+    return res.status(201).json({ entry: inserted.rows[0], auto_logout_at: null });
   }));
 
   router.post(`${base}/clock/out`, asyncHandler(async (req, res) => {
@@ -741,8 +753,15 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
       'UPDATE time_entries SET clock_out_at = $1, early_departure = $2 WHERE id = $3 RETURNING *',
       [now.toISOString(), earlyDeparture, entry.id],
     );
+    // Clocking out starts the 10-minute grace window; when it
+    // ends, the app signs this member out on its own (the shift
+    // window, Nov 19, 2026 — server/staffWindow.js). Everyone who
+    // can clock is a non-owner member by construction (the clock
+    // gate refuses the owner), so this arms for staff and
+    // managers alike — exactly the bracket the owner ruled.
+    const autoLogoutAt = await startAutoLogout(pool(), businessId, me.id, now);
     await notifyClockEvent(pool(), access.business, me, 'clock_out', entry.id, now, timeZone);
-    return res.json({ entry: updated.rows[0] });
+    return res.json({ entry: updated.rows[0], auto_logout_at: autoLogoutAt.toISOString() });
   }));
 
   const BREAK_TYPES = { break15: 15, lunch30: 30, lunch60: 60 };
@@ -1054,6 +1073,9 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
     const settings = await workforceSettings(pool(), req.params.bid);
     return res.json({
       is_owner: access.isOwner,
+      // Pay rates may also be set by a manager trusted with
+      // hiring (owner ruling, Nov 19, 2026).
+      can_set_pay: canSetPay(access),
       level,
       // The IRS forms box is the owner's alone (owner's spec).
       show_irs_box: access.isOwner,
@@ -1106,7 +1128,9 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
   router.get(`${base}/payroll/profiles`, asyncHandler(async (req, res) => {
     const { access, level, me } = await ctx(req);
     const team = await people(pool(), req.params.bid, { activeOnly: false });
-    const visible = access.isOwner ? team : team.filter((row) => row.id === me?.id);
+    // Those who may set pay (owner, or a hiring manager) see the
+    // whole team's rates; everyone else sees only their own.
+    const visible = canSetPay(access) ? team : team.filter((row) => row.id === me?.id);
     const out = [];
     for (const person of visible) {
       const profile = await profileFor(pool(), req.params.bid, person.id);
@@ -1117,7 +1141,7 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
 
   router.put(`${base}/payroll/profiles/:staffId`, asyncHandler(async (req, res) => {
     const { access } = await ctx(req);
-    if (!access.isOwner) throw err(403, 'forbidden', 'Only the owner sets pay rates.');
+    if (!canSetPay(access)) throw err(403, 'forbidden', 'Only the owner or a manager with hiring permission sets pay rates.');
     await assertNotInGrace(pool(), req.params.bid);
     const target = await personOr404(pool(), req.params.bid, req.params.staffId);
     const payType = String(req.body?.pay_type || 'hourly');

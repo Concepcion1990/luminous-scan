@@ -282,14 +282,30 @@ export function createShopRouter({ getPool: getPoolFn }) {
   }));
 
   // ---- Movements (atomic server path) ---------------------------------
-  router.post('/businesses/:bid/movements', asyncHandler(async (req, res) => {
-    const access = await accessOr403(pool(), req.user, req.params.bid, 'scan.use');
+  // One writer, two doors. The generic movement door is the scanner
+  // workstation's: it asks for scan.use ("Scan and record stock
+  // movements"). The stock-adjustment door serves the catalog lists —
+  // the Adjust sheet on the Products / My inventory rows and the row
+  // stepper — and asks for products.edit, the same permission the
+  // product form enforces (owner catch, Nov 19, 2026: a sales clerk
+  // with products.view + scan.use could move counts through the
+  // Adjust sheet even though the product form refused her save; the
+  // lists are catalog territory, so their stock door carries the
+  // catalog permission, in the UI and here alike).
+  const writeMovement = (permission, allowedTypes) => asyncHandler(async (req, res) => {
+    const access = await accessOr403(pool(), req.user, req.params.bid, permission);
     const body = req.body || {};
     const product = await loadProductInBusiness(pool(), req.params.bid, body.product_id);
     const location = await loadLocationInBusiness(pool(), req.params.bid, body.location_id);
     if (!product) throw err(400, 'invalid_reference', 'The product must belong to this business.');
     if (!location) throw err(400, 'invalid_reference', 'The location must belong to this business.');
     if (!MOVEMENT_TYPES[body.type]) throw err(400, 'invalid_type', `Unknown movement type ${body.type}.`);
+    if (allowedTypes && !allowedTypes.includes(body.type)) {
+      // Door-relative wording, shared with the unknown-type
+      // refusal above (and its ×52 registry pattern): this door
+      // knows only the adjustment types.
+      throw err(400, 'invalid_type', `Unknown movement type ${body.type}.`);
+    }
     let toLocation = null;
     if (body.to_location_id) {
       toLocation = await loadLocationInBusiness(pool(), req.params.bid, body.to_location_id);
@@ -319,7 +335,17 @@ export function createShopRouter({ getPool: getPoolFn }) {
       next: result.next,
       movement: publicRow(entityDef('StockMovement'), result.movement),
     });
-  }));
+  });
+
+  router.post('/businesses/:bid/movements', writeMovement('scan.use', null));
+
+  // The Adjust sheet's whole vocabulary: Add (receive), Remove
+  // (sale), Set exact count (count), and the stepper's one-lower
+  // correction. Nothing else is a stock adjustment.
+  router.post(
+    '/businesses/:bid/stock-adjustments',
+    writeMovement('products.edit', ['receive', 'sale', 'count', 'correction']),
+  );
 
   router.post('/businesses/:bid/movements/:id/reverse', asyncHandler(async (req, res) => {
     const access = await accessOr403(pool(), req.user, req.params.bid, 'movements.reverse');
@@ -419,7 +445,7 @@ export function createShopRouter({ getPool: getPoolFn }) {
         continue;
       }
       if (limits.products != null && activeCount >= limits.products) {
-        problems.push({ index, name, problem: productLimitMessage(limits.products, activeCount) });
+        problems.push({ index, name, problem: productLimitMessage(limits.products, activeCount, { neutral: !access.isOwner }) });
         continue;
       }
       const draft = {
@@ -1109,7 +1135,9 @@ export function createShopRouter({ getPool: getPoolFn }) {
     // missing mailer never blocks the invite itself (T3 sends no real
     // email in tests; the mailer fails closed for auth codes only).
     try {
-      await sendMail(staffInviteEmail({ to: email, businessName: access.business.name, inviterName: req.user.email, lang: access.business.language }));
+      const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'https';
+      const registerUrl = `${protocol}://${req.get('host')}/register?email=${encodeURIComponent(email)}`;
+      await sendMail(staffInviteEmail({ to: email, businessName: access.business.name, inviterName: req.user.email, lang: access.business.language, registerUrl }));
     } catch (error) {
       if (!(error instanceof EmailNotConfigured)) console.error('[twin] staff invite email failed:', error.message);
     }
