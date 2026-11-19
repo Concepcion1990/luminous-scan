@@ -5,8 +5,8 @@ import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 
-const LABEL_MAX_BYTES = 2 * 1024 * 1024;
-const LABEL_TYPES = ['application/pdf', 'image/png', 'image/jpeg'];
+export const LABEL_MAX_BYTES = 2 * 1024 * 1024;
+export const LABEL_TYPES = ['application/pdf', 'image/png', 'image/jpeg'];
 
 /**
  * Carrier shipping-label records (Nov 14, 2026).
@@ -128,7 +128,7 @@ export function useCarrierLabel(businessId, orderId) {
   return { meta, objectUrl, busy, error, upload, remove };
 }
 
-function savedDate(value) {
+export function savedDate(value) {
   if (!value) return '';
   const stamp = new Date(value);
   return Number.isNaN(stamp.getTime())
