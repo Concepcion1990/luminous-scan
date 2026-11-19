@@ -3656,7 +3656,7 @@ export const esCU = {
   "training.lessons.welcome-basics.title": "Te damos la bienvenida: cómo moverte por la aplicación",
   "training.lessons.your-language.step1": "Abre Ajustes, o toca el menú de idioma en la parte superior de la pantalla de inicio de sesión.",
   "training.lessons.your-language.step2": "Elige tu idioma de la lista. Toda la aplicación cambia de inmediato: menús, botones y lecciones como esta.",
-  "training.lessons.your-language.step3": "Puedes cambiarlo de vuelta cuando quieras. Tu elección se queda en este dispositivo.",
+  "training.lessons.your-language.step3": "Puedes cambiarlo de vuelta cuando quieras. Tu elección queda guardada: elígela en la pantalla de inicio de sesión y la aplicación se abre en tu idioma.",
   "training.lessons.your-language.step4": "Las fechas y las horas siguen los ajustes de tu tienda, así que tu horario siempre muestra la hora local de tu tienda.",
   "training.lessons.your-language.title": "Usa la aplicación en tu idioma",
   "training.lessonsDoneOf": "{done} de {total} lecciones terminadas",
