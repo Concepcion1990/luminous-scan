@@ -8,13 +8,23 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import SettingsCard from './SettingsCard';
-import { t } from '@/lib/i18n';
+import { t, useLocale } from '@/lib/i18n';
 import { CURRENCIES, DATE_FORMATS, timezoneOptions } from '@/lib/business';
 import { localTimeZoneName } from '@/lib/dates';
 
 const timezones = timezoneOptions();
 
 export default function DetailsCard({ values, onChange, onPreferenceChange }) {
+  // The language box reads the app's ONE live locale — never the
+  // form's copy of the saved value. The form copy can lag behind
+  // the live language (a door pick applied at sign-in), and a box
+  // showing the stale value also swallows the pick that would fix
+  // it: choosing the displayed value fires no change at all (the
+  // owner's catch, Nov 18, 2026 — the box said "Inglés" while the
+  // app spoke Spanish, and picking English there did nothing).
+  // Writing still rides pickPreference → applyPreference, which
+  // sets this same locale and persists it in one field.
+  const locale = useLocale();
   const set = (key) => (event) => onChange({ ...values, [key]: event.target.value });
   const pick = (key) => (value) => onChange({ ...values, [key]: value });
   // Language and currency apply on selection (the owner's
@@ -170,7 +180,7 @@ export default function DetailsCard({ values, onChange, onPreferenceChange }) {
 
           <div className="space-y-2">
             <Label>{t('settings.details.language')}</Label>
-            <Select value={values.language} onValueChange={pickPreference('language')}>
+            <Select value={locale} onValueChange={pickPreference('language')}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>

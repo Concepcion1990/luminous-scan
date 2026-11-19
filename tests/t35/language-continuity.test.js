@@ -143,3 +143,29 @@ test('the language lesson no longer claims the choice stays on this device', () 
   assert.doesNotMatch(i18n.LOCALES['es-MX']['training.lessons.your-language.step3'], /se queda en este dispositivo/);
   assert.match(i18n.LOCALES.en['training.lessons.your-language.step3'], /sign-in screen/);
 });
+
+test('the Settings language box reads the live locale, never the form copy (owner catch #2)', () => {
+  const card = readSrc('components/business/DetailsCard.jsx');
+  assert.match(card, /const locale = useLocale\(\);/, 'the card subscribes to the one live locale');
+  assert.match(
+    card,
+    /<Select value=\{locale\} onValueChange=\{pickPreference\('language'\)\}>/,
+    'the language box displays the live locale',
+  );
+  assert.doesNotMatch(card, /value=\{values\.language\}/, 'the stale form copy must not drive the box');
+  assert.match(
+    card,
+    /<Select value=\{values\.currency\} onValueChange=\{pickPreference\('currency'\)\}>/,
+    'currency keeps its own behavior, untouched',
+  );
+});
+
+test('Settings: the form language mirror follows the live locale; a failed save restores the live one', () => {
+  const page = readSrc('pages/Settings.jsx');
+  assert.match(page, /current\.language !== liveLocale/, 'the mirror resyncs when the language changes elsewhere');
+  assert.match(
+    page,
+    /const previous = key === 'language' \? getLocale\(\) : values\[key\];/,
+    'applyPreference replaces (and restores) the live locale, not the form copy',
+  );
+});

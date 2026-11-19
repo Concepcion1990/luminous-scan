@@ -37,7 +37,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/components/ui/use-toast';
-import { t, setLocale, deleteConfirmWord, matchesDeleteConfirm } from '@/lib/i18n';
+import { t, setLocale, getLocale, useLocale, deleteConfirmWord, matchesDeleteConfirm } from '@/lib/i18n';
 
 const VERIFIED_STRIPE_STATUS_LABELS = {
   ACTIVE: 'settings.billingStatus.active',
@@ -168,6 +168,19 @@ export default function Settings() {
     setValues((current) => (current.name === syncedName ? { ...current, name: profile.name } : current));
     setSyncedName(profile.name);
   }, [profile.name, syncedName, values]);
+
+  // The form's language field is only a mirror of the app's live
+  // locale (the DetailsCard box reads the live locale directly).
+  // When the language changes anywhere else — a door pick the
+  // shell reconciled at sign-in, above all — the mirror follows,
+  // so a later Save of unrelated edits can never write a stale
+  // language back over the true one (Nov 18, 2026).
+  const liveLocale = useLocale();
+  useEffect(() => {
+    setValues((current) => (current && current.language !== liveLocale
+      ? { ...current, language: liveLocale }
+      : current));
+  }, [liveLocale]);
 
   // Each lookup is scoped to the selected owner-owned business on the server.
   // A failed/unverified lookup is NOT proof that billing has stopped.
@@ -334,7 +347,11 @@ export default function Settings() {
   // The persisted value lands in the workspace profile, so Reset
   // to saved values keeps it too (it IS a saved value now).
   const applyPreference = async (key, value) => {
-    const previous = values[key];
+    // For language, the value being replaced is the app's LIVE
+    // locale, not the form's copy — the copy can lag behind it
+    // (a door pick reconciled at sign-in), and the live locale is
+    // the one a failed save must restore.
+    const previous = key === 'language' ? getLocale() : values[key];
     setValues((current) => ({ ...current, [key]: value }));
     if (key === 'language') setLocale(value);
     try {
