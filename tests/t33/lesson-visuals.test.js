@@ -11,11 +11,11 @@ import { readFileSync } from 'node:fs';
 import { TRAINING_LESSONS } from '../../src/lib/trainingCatalog.js';
 
 const WAVE1 = [
-  'welcome-basics', 'owner-setup',
+  'welcome-basics',
   'scanner-lookup', 'scanner-website-qr', 'scanner-shelf-counts',
   'scanner-receiving', 'scanner-move-stock', 'scanner-name-lookup',
   'scanner-damaged', 'products-find-edit', 'owner-pricing',
-  'orders-basics', 'owner-tax-rate',
+  'orders-basics',
 ];
 const ROUTES = new Set([
   '/', '/scan', '/products', '/orders', '/settings', '/locations',
@@ -33,6 +33,18 @@ test('wave-1 lessons carry exactly one visual slot per step', () => {
       assert.ok(ROUTES.has(visual.route), `${id}: ${visual.route} is a real route`);
       if (visual.target) assert.match(visual.target, /^\[data-tour="|^#/);
     }
+  }
+});
+
+test('owner ruling (Nov 18, 2026): owner-tax-rate and owner-setup carry NO visuals, words intact', () => {
+  // "Go ahead and remove those visuals though from the two
+  // trainings" — the lessons and their steps stay; only the
+  // pictures go. Every other lesson is untouched by the ruling.
+  for (const [id, steps] of [['owner-tax-rate', 3], ['owner-setup', 4]]) {
+    const lesson = TRAINING_LESSONS.find((l) => l.id === id);
+    assert.ok(lesson, `${id} still exists`);
+    assert.equal(lesson.steps, steps, `${id}: step count unchanged`);
+    assert.equal(lesson.visuals, undefined, `${id}: visuals removed completely`);
   }
 });
 

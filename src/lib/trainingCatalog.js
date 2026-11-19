@@ -19,6 +19,12 @@
  * null for a step with no screen action. `door: true` marks a
  * step whose screen exists only mid-flow: the visual shows the
  * page and the button that starts the flow.
+ *
+ * Owner ruling (Nov 18, 2026): the visuals on `owner-tax-rate`
+ * ("Your tax rate, set once") and `owner-setup` ("Setting up
+ * your business") were REMOVED at her word — those two lessons
+ * are words-only now. Do not re-add visuals to them; the other
+ * lessons' visuals are untouched.
  */
 export const TRAINING_TRACKS = ['owner', 'manager', 'staff'];
 
@@ -141,11 +147,7 @@ export const TRAINING_LESSONS = [
       { route: '/orders', target: '[data-tour="order-new"]', door: true },
       { route: '/orders', target: '[data-tour="orders-list"]', door: true },
     ] },
-  { id: 'owner-tax-rate', track: 'owner', module: 'orders', steps: 3 , visuals: [
-      { route: '/settings', target: '#business-tax-rate' },
-      { route: '/orders', target: '[data-tour="order-new"]', door: true },
-      { route: '/orders', target: '[data-tour="order-new"]', door: true },
-    ] },
+  { id: 'owner-tax-rate', track: 'owner', module: 'orders', steps: 3 },
   { id: 'returns-basics', track: 'staff', module: 'returns', steps: 4 },
   { id: 'listings-basics', track: 'staff', module: 'listings', steps: 4 },
   { id: 'import-basics', track: 'staff', module: 'import', steps: 5 },
@@ -177,12 +179,7 @@ export const TRAINING_LESSONS = [
   { id: 'mgr-suppliers-orders', track: 'manager', module: 'purchasing', steps: 4, feature: 'suppliers' },
   { id: 'mgr-send-supplier-order', track: 'manager', module: 'purchasing', steps: 4, feature: 'purchasing' },
   { id: 'mgr-report-problem', track: 'manager', module: 'settings', steps: 4 },
-  { id: 'owner-setup', track: 'owner', module: 'getting-started', steps: 4 , visuals: [
-      { route: '/settings', target: '#business-name' },
-      { route: '/settings', target: '#business-name' },
-      { route: '/locations', target: '[data-tour="location-add"]' },
-      { route: '/staff', target: '[data-tour="staff-add"]', door: true },
-    ] },
+  { id: 'owner-setup', track: 'owner', module: 'getting-started', steps: 4 },
   { id: 'owner-white-label', track: 'owner', module: 'settings', steps: 5 },
   { id: 'owner-report-problem', track: 'owner', module: 'settings', steps: 4 },
   { id: 'owner-delete-account', track: 'owner', module: 'settings', steps: 4 },
