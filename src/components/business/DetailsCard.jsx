@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/select';
 import SettingsCard from './SettingsCard';
 import { t, useLocale } from '@/lib/i18n';
+import { gs1LinksForLocale } from '@/lib/gs1Links';
 import { CURRENCIES, DATE_FORMATS, timezoneOptions } from '@/lib/business';
 import { localTimeZoneName } from '@/lib/dates';
 
@@ -25,6 +26,12 @@ export default function DetailsCard({ values, onChange, onPreferenceChange }) {
   // Writing still rides pickPreference → applyPreference, which
   // sets this same locale and persists it in one field.
   const locale = useLocale();
+  // The GS1 learn-more doors (the owner's commission, Nov 18,
+  // 2026): the GS1 organisation for the reader's own country,
+  // resolved from this same live locale, with GS1 US underneath
+  // for everyone outside the US. Links only — the prefix field's
+  // own behavior is untouched.
+  const gs1Links = gs1LinksForLocale(locale);
   const set = (key) => (event) => onChange({ ...values, [key]: event.target.value });
   const pick = (key) => (value) => onChange({ ...values, [key]: value });
   // Language and currency apply on selection (the owner's
@@ -108,6 +115,27 @@ export default function DetailsCard({ values, onChange, onPreferenceChange }) {
               className="font-mono"
             />
             <p className="text-xs text-muted-foreground">{t('settings.details.gs1PrefixHint')}</p>
+            <p className="text-xs text-muted-foreground">
+              {t(gs1Links.us ? 'settings.details.gs1LearnMore' : 'settings.details.gs1LearnMoreUs')}
+            </p>
+            <a
+              href={gs1Links.own.url}
+              target="_blank"
+              rel="noreferrer"
+              className="block w-fit text-xs font-medium underline underline-offset-2"
+            >
+              {gs1Links.own.global ? t('settings.details.gs1GlobalSite') : gs1Links.own.name}
+            </a>
+            {gs1Links.us && (
+              <a
+                href={gs1Links.us.url}
+                target="_blank"
+                rel="noreferrer"
+                className="block w-fit text-xs font-medium underline underline-offset-2"
+              >
+                {gs1Links.us.name}
+              </a>
+            )}
           </div>
         </div>
       </SettingsCard>
