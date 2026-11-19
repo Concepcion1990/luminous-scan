@@ -3659,7 +3659,7 @@ export const enGB = {
   "training.lessons.welcome-basics.title": "Welcome: finding your way around",
   "training.lessons.your-language.step1": "Open Settings, or tap the language menu at the top of the sign-in screen.",
   "training.lessons.your-language.step2": "Choose your language from the list. The whole app changes right away — menus, buttons and lessons like this one.",
-  "training.lessons.your-language.step3": "You can change it back any time. Your choice stays on this device.",
+  "training.lessons.your-language.step3": "You can change it back any time. Your choice is remembered — pick it on the sign-in screen and the app opens in your language.",
   "training.lessons.your-language.step4": "Dates and times follow your store’s settings, so your schedule always shows your store’s local time.",
   "training.lessons.your-language.title": "Use the app in your language",
   "training.lessonsDoneOf": "{done} of {total} lessons finished",
