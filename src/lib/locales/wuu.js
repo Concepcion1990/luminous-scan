@@ -3586,7 +3586,7 @@ export const wuu = {
   "training.lessons.products-find-edit.step1": "打开“产品”，按名称、SKU、条形码或 ISBN 搜索侬店铺经营个一切商品。",
   "training.lessons.products-find-edit.step2": "打开一个产品，查看伊个详细信息、照片、价格搭每个位置个数量。",
   "training.lessons.products-find-edit.step3": "如果侬个角色允许编辑，侬好修正名称、价格搭详细信息——保存后，更改会立即勒各处生效。 彻底删除产品勒行菜单里，属于店主个权限——伊总归先要求确认，而且是产品数量减少个唯一方法。",
-  "training.lessons.products-find-edit.step4": "全新产品？请连同伊个条形码一起添加，搿能扫描仪从搿个就能识别伊。 表单里每个代码框——UPC、条形码搭二维码——侪有自家个扫描按钮，好对准摄像头勿必输入。",
+  "training.lessons.products-find-edit.step4": "全新产品？若是侬看到“新产品”按钮，好连同伊个条形码一起添加，搿能扫描仪从搿个就能识别伊。 表单里每个代码框——UPC、条形码搭二维码——侪有自家个扫描按钮，好对准摄像头勿必输入。",
   'training.lessons.products-find-edit.step5': '要加产品？辣「现有数量」里填上现在有几许，伊马上入库，记为一次收货 — 弗用再单独走收货步骤。留空个话产品从零开始。',
   'training.lessons.products-find-edit.step6': "就辣产品页面个行上就可以改库存：点向上箭头加一，点向下箭头减一 — 每一下侪会记入移动历史。如果有几个地点，点数字（或者行菜单里个「加库存」）打开库存表，拣个地点。勒迭张表里，数量旁边个「扫码盘点」按钮会代替侬扫描：把摄像头对准每件到个货，数量自家往上走——箭头依然好手工用，「保存」依然是记录伊个一记点击。",
   "training.lessons.products-find-edit.step7": "勒拉编辑产品？编辑表格里向有同样个「现有数量」框，显示选定地点个数量。改脱数字再保存 — 差额会得记录为一次库存变动，永远弗会勒呒没记录个情况下拨覆写脱。",
@@ -4752,4 +4752,7 @@ export const wuu = {
   "returns.waitingApproval": "正等店主或者经批准个团队成员审批。",
   "returns.waitingToFinish": "已批准 — 店主或者经批准个团队成员将完成箇笔退货。",
   "apiErrors.returnsCompleteReserved": "只有店主，或者经店主允许完成退款搭换货个团队成员，才好审批并完成退货。",
+  "staffLib.perm.productsCreate": "添加新产品",
+  "staffLib.area.productsAccess": "添加产品",
+  "staff.memberDialog.productsAccessHint": "勾选搿项之后，搿个人会得看到“新产品”按钮，好往目录里添加产品。勿勾选个辰光，按钮勿会显示拨伊。",
 };
