@@ -3586,7 +3586,7 @@ export const id = {
   "training.lessons.products-find-edit.step1": "Buka Produk untuk mencari semua yang dijual toko Anda, berdasarkan nama, SKU, kode batang, atau ISBN.",
   "training.lessons.products-find-edit.step2": "Buka suatu produk untuk melihat detailnya, fotonya, harganya, dan berapa banyak di setiap lokasi.",
   "training.lessons.products-find-edit.step3": "Jika peran Anda mengizinkan pengeditan, Anda dapat memperbaiki nama, harga, dan detail — simpan, dan perubahan ada di mana-mana sekaligus. Menghapus produk selamanya ada di menu baris dan milik pemilik — selalu meminta konfirmasi dulu, dan itu satu-satunya cara jumlah produk berkurang.",
-  "training.lessons.products-find-edit.step4": "Produk yang benar-benar baru? Tambahkan dengan kode batangnya agar pemindai mengenalinya sejak saat itu. Setiap kotak kode di formulir — UPC, barcode, dan kode QR — punya tombol pindainya sendiri, jadi Anda bisa mengarahkan kamera alih-alih mengetik.",
+  "training.lessons.products-find-edit.step4": "Produk yang benar-benar baru? Jika Anda melihat tombol Produk baru, Anda dapat menambahkannya dengan kode batangnya agar pemindai mengenalinya sejak saat itu. Setiap kotak kode di formulir — UPC, barcode, dan kode QR — punya tombol pindainya sendiri, jadi Anda bisa mengarahkan kamera alih-alih mengetik.",
   'training.lessons.products-find-edit.step5': 'Menambahkan produk? Isi berapa banyak yang Anda miliki di «Jumlah yang ada» dan produk langsung masuk stok, tercatat sebagai penerimaan — tanpa langkah penerimaan terpisah. Kosongkan dan produk dimulai dari nol.',
   'training.lessons.products-find-edit.step6': "Di halaman Produk sendiri Anda dapat mengubah stok pada barisnya: ketuk panah atas untuk menambah satu, panah bawah untuk mengurangi satu — setiap ketukan tercatat dalam riwayat pergerakan. Jika ada beberapa lokasi, ketuk angkanya (atau «Tambah stok» di menu baris) untuk membuka lembar stok dan memilih tempatnya. Di lembar itu, tombol Pindai untuk menghitung di samping jumlah memindai untuk Anda: arahkan kamera ke setiap barang yang tiba dan jumlahnya naik dengan sendirinya — panah tetap bekerja dengan tangan, dan Simpan tetap menjadi ketukan yang mencatatnya.",
   "training.lessons.products-find-edit.step7": "Mengedit produk? Formulir edit memiliki kotak «Jumlah yang ada» yang sama, menampilkan jumlah di lokasi yang dipilih. Ubah angkanya dan simpan — selisihnya dicatat sebagai pergerakan stok, tidak pernah ditimpa tanpa catatan.",
@@ -4752,4 +4752,7 @@ export const id = {
   "returns.waitingApproval": "Menunggu persetujuan dari pemilik atau anggota tim yang disetujui.",
   "returns.waitingToFinish": "Disetujui — pemilik atau anggota tim yang disetujui akan menyelesaikan retur ini.",
   "apiErrors.returnsCompleteReserved": "Hanya pemilik, atau anggota tim yang diizinkan pemilik untuk menyelesaikan pengembalian dana dan penukaran, yang dapat menyetujui dan menyelesaikan retur.",
+  "staffLib.perm.productsCreate": "Tambahkan produk baru",
+  "staffLib.area.productsAccess": "Menambahkan produk",
+  "staff.memberDialog.productsAccessHint": "Dengan centang ini, orang ini melihat tombol Produk baru dan dapat menambahkan produk ke katalog. Tanpa centang ini, tombol-tombol itu tidak muncul untuk mereka.",
 };
