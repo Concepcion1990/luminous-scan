@@ -3586,7 +3586,7 @@ export const it = {
   "training.lessons.products-find-edit.step1": "Apri Prodotti per cercare tutto ciò che il tuo negozio vende, per nome, SKU, codice a barre o ISBN.",
   "training.lessons.products-find-edit.step2": "Apri un prodotto per vedere i suoi dettagli, le foto, i prezzi e quanti ce ne sono in ogni sede.",
   "training.lessons.products-find-edit.step3": "Se il tuo ruolo consente la modifica, puoi correggere nomi, prezzi e dettagli — salva, e la modifica è ovunque in una volta. Eliminare un prodotto per sempre si trova nel menu della riga e appartiene al titolare — chiede sempre conferma prima, ed è l'unico modo in cui il conteggio dei prodotti scende.",
-  "training.lessons.products-find-edit.step4": "Prodotto nuovissimo? Aggiungilo con il suo codice a barre così lo scanner lo riconosce da allora in poi. Ogni casella di codice nel modulo — UPC, codice a barre e codice QR — ha il suo pulsante di scansione, per puntare la fotocamera invece di digitare.",
+  "training.lessons.products-find-edit.step4": "Prodotto nuovissimo? Se vedi il pulsante Nuovo prodotto, puoi aggiungerlo con il suo codice a barre così lo scanner lo riconosce da allora in poi. Ogni casella di codice nel modulo — UPC, codice a barre e codice QR — ha il suo pulsante di scansione, per puntare la fotocamera invece di digitare.",
   'training.lessons.products-find-edit.step5': 'Stai aggiungendo un prodotto? Scrivi quanti ne hai in Quantità disponibile e viene messo in magazzino subito, registrato come ricezione — nessun passaggio di ricezione separato. Lascia vuoto e il prodotto parte da zero.',
   'training.lessons.products-find-edit.step6': "Proprio sulla pagina Prodotti puoi cambiare le scorte sulla riga stessa: tocca la freccia in su per aggiungerne uno, quella in giù per toglierne uno — ogni tocco viene scritto nella cronologia dei movimenti. Con più sedi, tocca il numero (o Aggiungi scorte nel menu della riga) per aprire la scheda scorte e scegliere il posto. In quel foglio, il pulsante Scansiona per conteggiare accanto alla quantità scansiona al posto tuo: punta la fotocamera su ogni articolo in arrivo e la quantità sale da sola — le frecce funzionano ancora a mano, e Salva resta il tocco che lo registra.",
   "training.lessons.products-find-edit.step7": "Stai modificando un prodotto? Il modulo di modifica ha la stessa casella «Quantità disponibile», che mostra la quantità nella sede scelta. Cambia il numero e salva — la differenza viene registrata come movimento di magazzino, mai sovrascritta senza una registrazione.",
@@ -4752,4 +4752,7 @@ export const it = {
   "returns.waitingApproval": "In attesa dell’approvazione del titolare o di un membro del team approvato.",
   "returns.waitingToFinish": "Approvato — il titolare o un membro del team approvato completerà questo reso.",
   "apiErrors.returnsCompleteReserved": "Solo il titolare, o un membro del team che il titolare ha autorizzato a completare rimborsi e cambi, può approvare e completare un reso.",
+  "staffLib.perm.productsCreate": "Aggiungi nuovi prodotti",
+  "staffLib.area.productsAccess": "Aggiunta di prodotti",
+  "staff.memberDialog.productsAccessHint": "Con questa spunta, questa persona vede i pulsanti Nuovo prodotto e può aggiungere prodotti al catalogo. Senza, i pulsanti non le vengono mostrati.",
 };
