@@ -3656,7 +3656,7 @@ export const pcm = {
   "training.lessons.welcome-basics.title": "Welcome: how to find your way around",
   "training.lessons.your-language.step1": "Open Settings, or tap di language menu for di top of di sign-in screen.",
   "training.lessons.your-language.step2": "Choose your language from di list. Di whole app go change right away — menus, buttons and lessons like dis one.",
-  "training.lessons.your-language.step3": "You fit change am back anytime. Your choice dey stay for dis device.",
+  "training.lessons.your-language.step3": "You fit change am back anytime. We go remember your choice — pick am for the sign-in screen and the app go open for your language.",
   "training.lessons.your-language.step4": "Dates and times dey follow your store settings, so your schedule dey always show your store local time.",
   "training.lessons.your-language.title": "Use di app for your language",
   "training.lessonsDoneOf": "{done} out of {total} lesson dem don finish",

@@ -3656,7 +3656,7 @@ export const paGuru = {
   "training.lessons.welcome-basics.title": "ਸਵਾਗਤ ਹੈ: ਆਪਣਾ ਰਸਤਾ ਲੱਭਣਾ",
   "training.lessons.your-language.step1": "ਸੈਟਿੰਗਾਂ ਖੋਲ੍ਹੋ, ਜਾਂ ਸਾਈਨ-ਇਨ ਸਕ੍ਰੀਨ ਦੇ ਸਿਖਰ 'ਤੇ ਭਾਸ਼ਾ ਮੀਨੂ 'ਤੇ ਟੈਪ ਕਰੋ।",
   "training.lessons.your-language.step2": "ਸੂਚੀ ਵਿੱਚੋਂ ਆਪਣੀ ਭਾਸ਼ਾ ਚੁਣੋ। ਪੂਰੀ ਐਪ ਤੁਰੰਤ ਬਦਲ ਜਾਂਦੀ ਹੈ — ਮੀਨੂ, ਬਟਨ ਅਤੇ ਇਸ ਵਰਗੇ ਪਾਠ।",
-  "training.lessons.your-language.step3": "ਤੁਸੀਂ ਇਸਨੂੰ ਕਿਸੇ ਵੀ ਸਮੇਂ ਵਾਪਸ ਬਦਲ ਸਕਦੇ ਹੋ। ਤੁਹਾਡੀ ਪਸੰਦ ਇਸ ਡਿਵਾਈਸ 'ਤੇ ਰਹਿੰਦੀ ਹੈ।",
+  "training.lessons.your-language.step3": "ਤੁਸੀਂ ਇਸਨੂੰ ਕਿਸੇ ਵੀ ਸਮੇਂ ਵਾਪਸ ਬਦਲ ਸਕਦੇ ਹੋ। ਤੁਹਾਡੀ ਪਸੰਦ ਯਾਦ ਰੱਖੀ ਜਾਂਦੀ ਹੈ — ਇਸਨੂੰ ਸਾਈਨ-ਇਨ ਸਕ੍ਰੀਨ 'ਤੇ ਚੁਣੋ ਅਤੇ ਐਪ ਤੁਹਾਡੀ ਭਾਸ਼ਾ ਵਿੱਚ ਖੁੱਲ੍ਹਦੀ ਹੈ।",
   "training.lessons.your-language.step4": "ਮਿਤੀਆਂ ਅਤੇ ਸਮੇਂ ਤੁਹਾਡੇ ਸਟੋਰ ਦੀਆਂ ਸੈਟਿੰਗਾਂ ਦੀ ਪਾਲਣਾ ਕਰਦੇ ਹਨ, ਇਸ ਲਈ ਤੁਹਾਡਾ ਸ਼ਡਿਊਲ ਹਮੇਸ਼ਾ ਤੁਹਾਡੇ ਸਟੋਰ ਦਾ ਸਥਾਨਕ ਸਮਾਂ ਦਿਖਾਉਂਦਾ ਹੈ।",
   "training.lessons.your-language.title": "ਐਪ ਨੂੰ ਆਪਣੀ ਭਾਸ਼ਾ ਵਿੱਚ ਵਰਤੋ",
   "training.lessonsDoneOf": "{total} ਵਿੱਚੋਂ {done} ਪਾਠ ਖਤਮ ਹੋਏ",
