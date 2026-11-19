@@ -3656,7 +3656,7 @@ export const paArab = {
   "training.lessons.welcome-basics.title": "خوش آمدید: اپنا رستہ لبھنا",
   "training.lessons.your-language.step1": "سیٹنگاں کھولو، یا سائن ان سکرین دے اُتّے بولی مینیو تے ٹیپ کرو۔",
   "training.lessons.your-language.step2": "لسٹ توں اپنی بولی چنو۔ پوری ایپ فوری بدل جاندی اے — مینیو، بٹن تے ایہو جئے سبق۔",
-  "training.lessons.your-language.step3": "تسی اوہنوں کدے وی واپس بدل سکدے او۔ تہاڈی پسند ایس ڈیوائس تے رہندی اے۔",
+  "training.lessons.your-language.step3": "تسی اوہنوں کدے وی واپس بدل سکدے او۔ تہاڈی پسند یاد رہندی اے — اوہنوں سائن ان سکرین تے چنو تے ایپ تہاڈی بولی وچ کھلدی اے۔",
   "training.lessons.your-language.step4": "تاریخاں تے ویلے تہاڈے سٹور دیاں سیٹنگاں دے پچھے چلدے نیں، ایس لئی تہاڈا شیڈول ہمیشہ تہاڈے سٹور دا مقامی ویلا دکھاندا اے۔",
   "training.lessons.your-language.title": "ایپ نوں اپنی بولی وچ استعمال کرو",
   "training.lessonsDoneOf": "{total} وچوں {done} سبق مکمل",

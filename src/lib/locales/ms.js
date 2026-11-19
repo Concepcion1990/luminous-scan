@@ -3656,7 +3656,7 @@ export const ms = {
   "training.lessons.welcome-basics.title": "Selamat datang: mencari jalan anda",
   "training.lessons.your-language.step1": "Buka Tetapan, atau ketik menu bahasa di bahagian atas skrin log masuk.",
   "training.lessons.your-language.step2": "Pilih bahasa anda daripada senarai. Seluruh aplikasi berubah dengan segera — menu, butang dan pelajaran seperti ini.",
-  "training.lessons.your-language.step3": "Anda boleh menukarnya kembali pada bila-bila masa. Pilihan anda kekal pada peranti ini.",
+  "training.lessons.your-language.step3": "Anda boleh menukarnya kembali pada bila-bila masa. Pilihan anda diingati — pilihnya pada skrin log masuk dan apl akan dibuka dalam bahasa anda.",
   "training.lessons.your-language.step4": "Tarikh dan masa mengikut tetapan kedai anda, jadi jadual anda sentiasa menunjukkan masa tempatan kedai anda.",
   "training.lessons.your-language.title": "Gunakan aplikasi dalam bahasa anda",
   "training.lessonsDoneOf": "{done} daripada {total} pelajaran selesai",
