@@ -3586,7 +3586,7 @@ export const yo = {
   "training.lessons.products-find-edit.step1": "Ṣí Àwọn Ọjà láti wá gbogbo ohun tí ilé ìtajà rẹ gbé, nípa orúkọ, SKU, barcode tàbí ISBN.",
   "training.lessons.products-find-edit.step2": "Ṣí ọjà kan láti rí kúlẹ̀kúlẹ̀ rẹ̀, àwọn fọ́tò, iye owó àti iye tí ó wà ní ibi kọ̀ọ̀kan.",
   "training.lessons.products-find-edit.step3": "Tí ipa rẹ bá gbà ṣíṣàtúnṣe láàyè, o lè ṣàtúnṣe àwọn orúkọ, iye owó àti kúlẹ̀kúlẹ̀ — fipamọ́, ìyípadà náà sì wà níbi gbogbo lẹ́sẹ̀kẹsẹ̀. Pípa ọjà rẹ́ pátápátá wà nínú mẹ́nú ìlà, ó sì jẹ́ ti ẹni tó ní í — ó máa ń béèrè fún ìjẹ́rìí ní àkọ́kọ́ nígbà gbogbo, òun sì nìkan ni ọ̀nà tí iye ọjà fi lè dínkù.",
-  "training.lessons.products-find-edit.step4": "Ọjà tuntun pátápátá? Fi kún un pẹ̀lú barcode rẹ̀ kí ẹ̀rọ ìṣàyẹ̀wò lè mọ̀ ọ́ láti ìgbà náà lọ. Gbogbo àpótí kóòdù nínú fọ́ọ̀mù — UPC, àmì ìtẹ̀wé àti kóòdù QR — ní bọ́tìnì ìwòran tirẹ̀, nítorí náà o lè tọ́ka kámẹ́rà dípò títẹ̀wé.",
+  "training.lessons.products-find-edit.step4": "Ọjà tuntun pátápátá? Bí o bá rí bọ́tìnì Ọjà tuntun, o lè fi kún un pẹ̀lú barcode rẹ̀ kí ẹ̀rọ ìṣàyẹ̀wò lè mọ̀ ọ́ láti ìgbà náà lọ. Gbogbo àpótí kóòdù nínú fọ́ọ̀mù — UPC, àmì ìtẹ̀wé àti kóòdù QR — ní bọ́tìnì ìwòran tirẹ̀, nítorí náà o lè tọ́ka kámẹ́rà dípò títẹ̀wé.",
   'training.lessons.products-find-edit.step5': 'Ṣé o ń fi ọjà kún un? Kọ iye tí o ní sínú «Iye tí ó wà lọ́wọ́» yóò sì wọ inú ọjà lẹ́sẹ̀kẹsẹ̀, tí a kọ sílẹ̀ gẹ́gẹ́ bí ìgbàwọlé — kò sí ìgbésẹ̀ ìgbàwọlé ọ̀tọ̀. Fi sílẹ̀ ní òfo, ọjà náà yóò bẹ̀rẹ̀ láti ọ̀do.',
   'training.lessons.products-find-edit.step6': "Ní ojú-ìwé Àwọn Ọjà fúnra rẹ̀ o lè yí ọjà padà ní orí ìlà náà: tẹ ọfà òkè láti fi ẹ̀yọ kan kún un, ọfà ìsàlẹ̀ láti yọ ẹ̀yọ kan kúrò — gbogbo ìtẹ̀ ni a kọ sílẹ̀ sínú ìtàn ìṣípòpadà. Bí ibi bá pọ̀, tẹ nọ́mbà náà (tàbí «Fi ọjà kún un» nínú àkójọ ìlà) láti ṣí ìwé ọjà kí o sì yan ibi náà. Nínú ìwé náà, bọ́tìnì Ṣe àyẹ̀wò láti ka tí ó wà lẹ́gbẹ̀ẹ́ iye náà máa ń ṣe àyẹ̀wò dípò rẹ: dojúkọ kámẹ́rà sí ohun kọ̀ọ̀kan tí ó dé, iye náà á sì gòkè fúnra rẹ̀ — àwọn ọfà ṣì máa ń ṣiṣẹ́ pẹ̀lú ọwọ́, Fipamọ́ sì máa ń jẹ́ ìfọwọ́ tí ó ń kọ ọ́ sílẹ̀.",
   "training.lessons.products-find-edit.step7": "Ṣé o ń ṣàtúnṣe ọjà kan? Fọ́ọ̀mù àtúnṣe ní àpótí «Iye tí ó wà lọ́wọ́» kan náà, ó ń fi iye hàn ní ibùdó tí a yàn. Yí nọ́mbà náà padà kí o sì fipamọ́ — ìyàtọ̀ náà á jẹ́ àkọsílẹ̀ gẹ́gẹ́ bí ìṣípòpadà ọjà, a kì í kọ ọ́ lé lórí láìsí àkọsílẹ̀.",
@@ -4752,4 +4752,7 @@ export const yo = {
   "returns.waitingApproval": "Ó ń dúró de ìfọwọ́sí láti ọ̀dọ̀ olówó tàbí ọmọ ẹgbẹ́ tí a fọwọ́ sí.",
   "returns.waitingToFinish": "A ti fọwọ́ sí — olówó tàbí ọmọ ẹgbẹ́ tí a fọwọ́ sí yóò parí ìpadàbọ̀ yìí.",
   "apiErrors.returnsCompleteReserved": "Olówó nìkan, tàbí ọmọ ẹgbẹ́ tí olówó gbà láyè láti parí àwọn ìdápadà owó àti pàṣípààrọ̀, ló lè fọwọ́ sí ìpadàbọ̀ kí ó sì parí i.",
+  "staffLib.perm.productsCreate": "Fi àwọn ọjà tuntun kún un",
+  "staffLib.area.productsAccess": "Fífi ọjà kún un",
+  "staff.memberDialog.productsAccessHint": "Pẹ̀lú àmì yìí, ẹni yìí rí àwọn bọ́tìnì Ọjà tuntun, ó sì lè fi ọjà kún katalogi. Láìsí i, àwọn bọ́tìnì náà kò hàn sí i.",
 };
