@@ -3656,7 +3656,7 @@ export const ur = {
   "training.lessons.welcome-basics.title": "خوش آمدید: اپنا راستہ تلاش کرنا",
   "training.lessons.your-language.step1": "سیٹنگز کھولیں، یا سائن ان اسکرین کے اوپر زبان مینیو پر ٹیپ کریں۔",
   "training.lessons.your-language.step2": "فہرست سے اپنی زبان منتخب کریں۔ پوری ایپ فوراً بدل جاتی ہے — مینیو، بٹن اور اس جیسے اسباق۔",
-  "training.lessons.your-language.step3": "آپ اسے کسی بھی وقت واپس بدل سکتے ہیں۔ آپ کی پسند اس آلے پر رہتی ہے۔",
+  "training.lessons.your-language.step3": "آپ اسے کسی بھی وقت واپس بدل سکتے ہیں۔ آپ کی پسند یاد رکھی جاتی ہے — اسے سائن ان اسکرین پر منتخب کریں اور ایپ آپ کی زبان میں کھلتی ہے۔",
   "training.lessons.your-language.step4": "تاریخیں اور اوقات آپ کے اسٹور کی سیٹنگز کے مطابق ہوتے ہیں، اس لیے آپ کا شیڈول ہمیشہ آپ کے اسٹور کا مقامی وقت دکھاتا ہے۔",
   "training.lessons.your-language.title": "ایپ کو اپنی زبان میں استعمال کریں",
   "training.lessonsDoneOf": "{done} از {total} اسباق مکمل",

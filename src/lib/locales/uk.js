@@ -3656,7 +3656,7 @@ export const uk = {
   "training.lessons.welcome-basics.title": "Ласкаво просимо: як орієнтуватися",
   "training.lessons.your-language.step1": "Відкрийте «Налаштування» або торкніться меню мови вгорі екрана входу.",
   "training.lessons.your-language.step2": "Виберіть свою мову зі списку. Весь застосунок змінюється одразу — меню, кнопки й уроки, як цей.",
-  "training.lessons.your-language.step3": "Ви можете змінити її назад будь-коли. Ваш вибір залишається на цьому пристрої.",
+  "training.lessons.your-language.step3": "Ви можете змінити її назад будь-коли. Ваш вибір запам’ятовується — виберіть його на екрані входу, і застосунок відкриється вашою мовою.",
   "training.lessons.your-language.step4": "Дати й часи відповідають налаштуванням вашого магазину, тож ваш графік завжди показує місцевий час вашого магазину.",
   "training.lessons.your-language.title": "Користуйтеся застосунком своєю мовою",
   "training.lessonsDoneOf": "Завершено уроків: {done} з {total}",
