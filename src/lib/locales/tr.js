@@ -3586,7 +3586,7 @@ export const tr = {
   "training.lessons.products-find-edit.step1": "Mağazanızın taşıdığı her şeyi ada, SKU'ya, barkoda veya ISBN'ye göre aramak için Ürünler'i açınız.",
   "training.lessons.products-find-edit.step2": "Ayrıntılarını, fotoğraflarını, fiyatlarını ve her konumda kaç tane olduğunu görmek için bir ürünü açınız.",
   "training.lessons.products-find-edit.step3": "Rolünüz düzenlemeye izin veriyorsa adları, fiyatları ve ayrıntıları düzeltebilirsiniz — kaydediniz ve değişiklik her yerde aynı anda olur. Bir ürünü kalıcı olarak silmek satır menüsündedir ve sahibe aittir — her zaman önce onay ister ve ürün sayısının azalmasının tek yolu budur.",
-  "training.lessons.products-find-edit.step4": "Yepyeni bir ürün mü? Tarayıcının bundan sonra tanıması için barkoduyla ekleyiniz. Formdaki her kod kutusunun — UPC, barkod ve QR kodu — kendi tarama düğmesi vardır, böylece yazmak yerine kamerayı doğrultabilirsiniz.",
+  "training.lessons.products-find-edit.step4": "Yepyeni bir ürün mü? Yeni ürün düğmesini görürseniz, tarayıcının bundan sonra tanıması için barkoduyla ekleyebilirsiniz. Formdaki her kod kutusunun — UPC, barkod ve QR kodu — kendi tarama düğmesi vardır, böylece yazmak yerine kamerayı doğrultabilirsiniz.",
   'training.lessons.products-find-edit.step5': 'Ürün mü ekliyorsunuz? «Eldeki miktar» alanına kaç tane olduğunu yazın; ürün anında stoğa girer ve bir giriş olarak kaydedilir — ayrı bir giriş adımı yok. Boş bırakırsanız ürün sıfırdan başlar.',
   'training.lessons.products-find-edit.step6': "Ürünler sayfasının kendisinde, satırın üzerinde stoğu değiştirebilirsiniz: yukarı ok bir ekler, aşağı ok bir çıkarır — her dokunuş hareket geçmişine yazılır. Birkaç konum varsa, sayıya (veya satır menüsündeki «Stok ekle»ye) dokunarak stok sayfasını açın ve yeri seçin. O sayfada, miktarın yanındaki Saymak için tara düğmesi sizin yerinize tarar: kamerayı gelen her ürüne doğrultun, miktar kendiliğinden yükselir — oklar elle de çalışmaya devam eder ve Kaydet, onu kaydeden dokunuş olarak kalır.",
   "training.lessons.products-find-edit.step7": "Bir ürünü mü düzenliyorsunuz? Düzenleme formunda da aynı «Eldeki miktar» kutusu bulunur ve seçilen konumdaki sayıyı gösterir. Sayıyı değiştirip kaydedin — fark bir stok hareketi olarak kaydedilir, kayıtsız asla üzerine yazılmaz.",
@@ -4752,4 +4752,7 @@ export const tr = {
   "returns.waitingApproval": "İşletme sahibinden ya da onaylanmış bir ekip üyesinden onay bekleniyor.",
   "returns.waitingToFinish": "Onaylandı — işletme sahibi ya da onaylanmış bir ekip üyesi bu iadeyi tamamlayacak.",
   "apiErrors.returnsCompleteReserved": "Bir iadeyi yalnızca işletme sahibi, ya da para iadelerini ve değişimleri tamamlamasına işletme sahibinin izin verdiği bir ekip üyesi onaylayıp tamamlayabilir.",
+  "staffLib.perm.productsCreate": "Yeni ürünler ekle",
+  "staffLib.area.productsAccess": "Ürün ekleme",
+  "staff.memberDialog.productsAccessHint": "Bu işaretle bu kişi Yeni ürün düğmelerini görür ve kataloğa ürün ekleyebilir. İşaret yoksa düğmeler ona görünmez.",
 };
