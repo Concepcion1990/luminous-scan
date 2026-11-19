@@ -3586,7 +3586,7 @@ export const sw = {
   "training.lessons.products-find-edit.step1": "Fungua Bidhaa kutafuta kila kitu duka lako hubeba, kwa jina, SKU, msimbo pau au ISBN.",
   "training.lessons.products-find-edit.step2": "Fungua bidhaa kuona maelezo yake, picha, bei na vingapi viko katika kila eneo.",
   "training.lessons.products-find-edit.step3": "Ikiwa jukumu lako linaruhusu kuhariri, unaweza kurekebisha majina, bei na maelezo — hifadhi, na mabadiliko yako kila mahali mara moja. Kufuta bidhaa kabisa kuko kwenye menyu ya safu na ni ya mmiliki — daima huomba uthibitisho kwanza, na ndiyo njia pekee ya kupunguza idadi ya bidhaa.",
-  "training.lessons.products-find-edit.step4": "Bidhaa mpya kabisa? Iongeze na msimbo pau wake ili kichanganuzi kiitambue kuanzia hapo. Kila kisanduku cha msimbo katika fomu — UPC, msimbopau na msimbo wa QR — kina kitufe chake cha kuchanganua, hivyo unaweza kuelekeza kamera badala ya kuandika.",
+  "training.lessons.products-find-edit.step4": "Bidhaa mpya kabisa? Ukiona kitufe cha Bidhaa mpya, unaweza kuiongeza na msimbo pau wake ili kichanganuzi kiitambue kuanzia hapo. Kila kisanduku cha msimbo katika fomu — UPC, msimbopau na msimbo wa QR — kina kitufe chake cha kuchanganua, hivyo unaweza kuelekeza kamera badala ya kuandika.",
   'training.lessons.products-find-edit.step5': 'Unaongeza bidhaa? Weka ulichonacho katika «Kiasi kilichopo» na itaingia kwenye stoku mara moja, ikirekodiwa kama upokeaji — hakuna hatua tofauti ya kupokea. Acha wazi na bidhaa itaanza kutoka sifuri.',
   'training.lessons.products-find-edit.step6': "Kwenye ukurasa wa Bidhaa wenyewe unaweza kubadilisha stoku kwenye safu yenyewe: gusa mshale wa juu kuongeza moja, mshale wa chini kupunguza moja — kila gusa huandikwa kwenye historia ya mienendo. Kukiwa na maeneo mengi, gusa nambari (au «Ongeza stoku» kwenye menyu ya safu) kufungua karatasi ya stoku na kuchagua mahali. Katika karatasi hiyo, kitufe cha Changanua kwa kuhesabu kilicho kando ya kiasi huchanganua badala yako: elekeza kamera kwa kila bidhaa inayowasili na kiasi hupanda chenyewe — mishale bado hufanya kazi kwa mkono, na Hifadhi hubaki kuwa mguso unaoiandika.",
   "training.lessons.products-find-edit.step7": "Unahariri bidhaa? Fomu ya kuhariri ina kisanduku kile kile cha «Kiasi kilichopo», kinachoonyesha hesabu katika eneo lililochaguliwa. Badilisha nambari na uhifadhi — tofauti hurekodiwa kama mwendo wa stoku, haibadilishwi kamwe bila rekodi.",
@@ -4752,4 +4752,7 @@ export const sw = {
   "returns.waitingApproval": "Inasubiri idhini kutoka kwa mmiliki au mwanatimu aliyeidhinishwa.",
   "returns.waitingToFinish": "Imeidhinishwa — mmiliki au mwanatimu aliyeidhinishwa atakamilisha rejeo hili.",
   "apiErrors.returnsCompleteReserved": "Mmiliki tu, au mwanatimu aliyeruhusiwa na mmiliki kukamilisha urejeshaji wa pesa na ubadilishaji, ndiye anayeweza kuidhinisha na kukamilisha rejeo.",
+  "staffLib.perm.productsCreate": "Ongeza bidhaa mpya",
+  "staffLib.area.productsAccess": "Kuongeza bidhaa",
+  "staff.memberDialog.productsAccessHint": "Kwa tiki hii, mtu huyu huona vitufe vya Bidhaa mpya na anaweza kuongeza bidhaa kwenye katalogi. Bila tiki hii, vitufe havionekani kwake.",
 };
