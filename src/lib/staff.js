@@ -212,6 +212,32 @@ export function isSettingsGrant(key) {
   return SETTINGS_GRANT_KEYS.includes(key);
 }
 
+/**
+ * Owner-granted returns completion (the owner's ruling, Nov 19,
+ * 2026). Same pattern as the Settings grants above: the key
+ * lives in the member's own permissions array, is deliberately
+ * NOT part of PERMISSION_GROUPS / ALL_PERMISSIONS / the preset
+ * roles, and is edited in the member dialog as its own tick, so
+ * the permission picker can never wipe it and no role carries
+ * it by default — a manager included. Holding returns.manage
+ * lets a person LOG a return; approving it and finishing the
+ * refund or exchange takes this tick, or the owner.
+ */
+export const RETURNS_GRANTS = [
+  { key: 'returns.complete', get label() { return t('staffLib.perm.returnsComplete'); } },
+];
+
+export const RETURNS_GRANT_KEYS = RETURNS_GRANTS.map((grant) => grant.key);
+
+export function isReturnsGrant(key) {
+  return RETURNS_GRANT_KEYS.includes(key);
+}
+
+/** Any per-member grant key (Settings sections + returns). */
+export function isMemberGrant(key) {
+  return isSettingsGrant(key) || isReturnsGrant(key);
+}
+
 /** A member row's level, mirroring the server's personLevel. */
 export function memberLevelOf(member) {
   if (!member) return 'staff';

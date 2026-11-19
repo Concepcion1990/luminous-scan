@@ -559,6 +559,14 @@ function canSeeStaffContact(access) {
   return access.isOwner || access.can('staff.manage');
 }
 
+/** The returns approval gate refusal (owner ruling, Nov 19,
+ * 2026). Factual, subject-only: it says who may approve and
+ * finish a return and nothing else. Registered in the client's
+ * apiErrors map (apiErrors.returnsCompleteReserved) so it
+ * renders in the reader's language. */
+export const RETURNS_COMPLETE_MESSAGE =
+  'Only the owner, or a team member the owner has allowed to complete refunds and exchanges, can approve and finish a return.';
+
 async function guardCreate(pool, def, name, access, values) {
   const { business, planKey } = access;
   // Specific error first: suppliers refuse with their own code,
@@ -607,6 +615,21 @@ async function guardCreate(pool, def, name, access, values) {
   if (name === 'Bom') {
     values.kind = values.kind || 'bundle';
     await validateBom(pool, business, values.product_id, values.kind, values.lines);
+  }
+  if (name === 'Return') {
+    // Returns approval gate (owner ruling, Nov 19, 2026): a
+    // return is BORN waiting. Only the owner, or a member the
+    // owner gave the returns.complete grant, may bring one into
+    // the world already approved or completed — anyone else's
+    // create starts at 'new', whatever the caller sent (the
+    // PurchaseOrder draft force above is the house pattern).
+    if (
+      ['approved', 'completed'].includes(values.status)
+      && !access.isOwner
+      && !access.can('returns.complete')
+    ) {
+      values.status = 'new';
+    }
   }
   if (name === 'Product') {
     if (pricingPayloadActive(values) && !featureAllowed(planKey, 'pricing')) {
@@ -737,6 +760,27 @@ async function guardUpdate(pool, def, name, access, row, patch) {
       patch.kind ?? row.kind,
       patch.lines ?? row.lines,
     );
+  }
+  if (name === 'Return') {
+    // Returns approval gate (owner ruling, Nov 19, 2026):
+    // logging a return is returns.manage work, but APPROVING or
+    // COMPLETING one — the step that finishes a refund or an
+    // exchange — belongs to the owner, or to a member the owner
+    // granted returns.complete at enrollment. The grant follows
+    // the release-314 tick pattern: it lives in the member's
+    // stored permissions array and in NO role, so nobody holds
+    // it by accident — a manager included. Edits, rejection and
+    // deletion stay returns.manage work, exactly as before.
+    const next = patch.status;
+    if (
+      next
+      && next !== row.status
+      && (next === 'approved' || next === 'completed')
+      && !access.isOwner
+      && !access.can('returns.complete')
+    ) {
+      throw err(403, 'returns_complete_not_granted', RETURNS_COMPLETE_MESSAGE);
+    }
   }
   if (name === 'StaffMember') {
     // A staff member may never raise their own permissions; only the

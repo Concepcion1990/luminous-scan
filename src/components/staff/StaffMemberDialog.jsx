@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/client';
 import { Loader2, TriangleAlert } from 'lucide-react';
-import { allRoles, BUSINESS_ONLY_PERMISSIONS, isSettingsGrant, roleById, SETTINGS_GRANTS, STATUS_OPTIONS } from '@/lib/staff';
+import { allRoles, BUSINESS_ONLY_PERMISSIONS, isMemberGrant, isReturnsGrant, isSettingsGrant, RETURNS_GRANTS, roleById, SETTINGS_GRANTS, STATUS_OPTIONS } from '@/lib/staff';
 import { Checkbox } from '@/components/ui/checkbox';
 import { createStaffMember } from '@/lib/entitlements';
 import { fixStaffEmail } from '@/lib/recovery';
@@ -50,6 +50,11 @@ const emptyForm = (customRoles, stripBusinessOnly = (permissions) => permissions
     // none, so their Settings is personal only until the owner
     // ticks a section for them.
     settings_grants: [],
+    // Owner-granted returns completion (Nov 19, 2026): its own
+    // per-member tick, off by default for everyone — a new
+    // member's returns wait for approval until the owner ticks
+    // this for them.
+    returns_grants: [],
     status: 'invited',
     location_id: '',
     location_name: '',
@@ -115,15 +120,19 @@ export default function StaffMemberDialog({
             app_role: member.app_role || 'user',
             role_id: member.role_id || '',
             role_name: member.role_name || '',
-            // The Settings grants ride the same stored array but
-            // are edited as their own ticks below — split them
-            // out so the permission picker (and its All/None
-            // buttons) can never wipe a grant by accident.
+            // The per-member grants (Settings sections + returns
+            // completion) ride the same stored array but are
+            // edited as their own ticks below — split them out so
+            // the permission picker (and its All/None buttons)
+            // can never wipe a grant by accident.
             permissions: (Array.isArray(member.permissions) ? member.permissions : []).filter(
-              (key) => !isSettingsGrant(key)
+              (key) => !isMemberGrant(key)
             ),
             settings_grants: (Array.isArray(member.permissions) ? member.permissions : []).filter(
               (key) => isSettingsGrant(key)
+            ),
+            returns_grants: (Array.isArray(member.permissions) ? member.permissions : []).filter(
+              (key) => isReturnsGrant(key)
             ),
             status: member.status || 'invited',
             location_id: member.location_id || '',
@@ -221,9 +230,13 @@ export default function StaffMemberDialog({
         // Filter at save as well as at preset-apply: the picker preserves
         // keys granted another way, so a legacy Business-only key on an
         // Essentials member would otherwise survive an edit untouched.
-        // The Settings grants rejoin here — they are per-member
-        // ticks, untouched by role picks and the plan strip alike.
-        permissions: [...stripBusinessOnly(form.permissions), ...(form.settings_grants || [])],
+        // The per-member grants rejoin here — they are ticks,
+        // untouched by role picks and the plan strip alike.
+        permissions: [
+          ...stripBusinessOnly(form.permissions),
+          ...(form.settings_grants || []),
+          ...(form.returns_grants || []),
+        ],
         status: form.status,
         location_id: form.location_id || '',
         location_name: form.location_name || '',
@@ -500,6 +513,39 @@ export default function StaffMemberDialog({
             </div>
             <p className="text-[11px] text-muted-foreground">
               {t('staff.memberDialog.settingsAccessHint')}
+            </p>
+          </div>
+
+          {/* Owner-granted returns completion (Nov 19, 2026):
+              anyone who can log a return can start one, but it
+              waits for approval — unless the owner ticks this.
+              The tick is offered for managers and staff alike and
+              starts unticked for everyone. */}
+          <div className="space-y-1.5">
+            <Label>{t('staffLib.area.returnsAccess')}</Label>
+            <div className="rounded-lg border border-border p-2.5">
+              <div className="grid gap-1.5">
+                {RETURNS_GRANTS.map((grant) => (
+                  <label key={grant.key} className="flex items-start gap-2 text-xs leading-snug">
+                    <Checkbox
+                      checked={(form.returns_grants || []).includes(grant.key)}
+                      onCheckedChange={(on) =>
+                        setForm((c) => ({
+                          ...c,
+                          returns_grants: on
+                            ? [...new Set([...(c.returns_grants || []), grant.key])]
+                            : (c.returns_grants || []).filter((key) => key !== grant.key),
+                        }))
+                      }
+                      className="mt-0.5"
+                    />
+                    <span>{grant.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            <p className="text-[11px] text-muted-foreground">
+              {t('staff.memberDialog.returnsAccessHint')}
             </p>
           </div>
 

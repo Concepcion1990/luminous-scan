@@ -11,7 +11,7 @@ const PILL = {
   ok: 'bg-ok/12 text-ok',
 };
 
-export default function ReturnCard({ record, currency, busy, onEdit, onAction }) {
+export default function ReturnCard({ record, currency, canComplete = false, busy, onEdit, onAction }) {
   const status = RETURN_STATUS[record.status] || RETURN_STATUS.new;
   const lines = record.lines || [];
   const replacements = record.exchange_lines || [];
@@ -70,13 +70,25 @@ export default function ReturnCard({ record, currency, busy, onEdit, onAction })
 
       {record.notes && <p className="mt-2 text-xs text-muted-foreground">{record.notes}</p>}
 
+      {/* The approval stop (owner ruling, Nov 19, 2026): Approve
+          and Complete & apply render only for the owner or a
+          member holding the returns.complete grant. Everyone
+          else sees, in plain words, that the return is waiting —
+          no dead end, no blame. */}
+      {record.status === 'new' && !canComplete && (
+        <p className="mt-3 text-xs text-muted-foreground">{t('returns.waitingApproval')}</p>
+      )}
+      {record.status === 'approved' && !canComplete && (
+        <p className="mt-3 text-xs text-muted-foreground">{t('returns.waitingToFinish')}</p>
+      )}
+
       <div className="mt-3 flex flex-wrap gap-1.5">
-        {record.status === 'new' && (
+        {record.status === 'new' && canComplete && (
           <Button size="sm" disabled={busy} onClick={() => onAction('approve')}>
             {t('returns.approve')}
           </Button>
         )}
-        {record.status === 'approved' && (
+        {record.status === 'approved' && canComplete && (
           <Button size="sm" disabled={busy} onClick={() => onAction('complete')}>
             {t('returns.completeApply')}
           </Button>

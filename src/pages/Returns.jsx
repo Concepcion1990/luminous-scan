@@ -6,6 +6,7 @@ import ReturnFormDialog from '@/components/returns/ReturnFormDialog';
 import { Button } from '@/components/ui/button';
 import { useBusiness } from '@/hooks/useBusiness';
 import useDataFresh from '@/hooks/useDataFresh';
+import useStaffAccess from '@/hooks/useStaffAccess';
 import { scoped } from '@/lib/scoped';
 import { t } from '@/lib/i18n';
 import {
@@ -19,6 +20,14 @@ import {
 
 export default function Returns() {
   const { user, profile, activeId } = useBusiness();
+  // Returns approval gate (owner ruling, Nov 19, 2026): anyone
+  // with returns access can log a return, but approving and
+  // completing one belongs to the owner — or to a member the
+  // owner granted returns.complete. The server enforces the
+  // same line; the card simply never offers a door that would
+  // refuse, and says plainly that the return is waiting.
+  const { can, unrestricted } = useStaffAccess();
+  const canComplete = unrestricted || can('returns.complete');
   const currency = profile?.currency || 'USD';
   const [records, setRecords] = useState([]);
   const [orders, setOrders] = useState([]);
@@ -192,6 +201,7 @@ export default function Returns() {
             key={record.id}
             record={record}
             currency={currency}
+            canComplete={canComplete}
             busy={busyId === record.id}
             onEdit={() => {
               setEditing(record);

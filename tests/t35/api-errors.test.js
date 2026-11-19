@@ -33,7 +33,9 @@ test('item 1: every apiErrors key exists in all 52 locales', async () => {
   // and the plan-neutral limit refusal. The voice-notes build
   // (Nov 19, 2026) added 3: the voice-note-not-found refusal and
   // the two recording refusals (too long / could not be prepared).
-  assert.equal(new Set(registryKeys).size, 428);
+  // The returns-approval gate (Nov 19, 2026) added 1: the
+  // returns-complete refusal.
+  assert.equal(new Set(registryKeys).size, 429);
   for (const code of LOCALES) {
     const dict = await loadLocale(code);
     for (const key of registryKeys) {
