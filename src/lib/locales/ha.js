@@ -3656,7 +3656,7 @@ export const ha = {
   "training.lessons.welcome-basics.title": "Barka da zuwa: neman hanyarka",
   "training.lessons.your-language.step1": "Buɗe Saituna, ko danna menu na harshe a saman allon shiga.",
   "training.lessons.your-language.step2": "Zaɓi harshenka daga jerin. Duk manhajar tana canzawa nan take — menu, maɓallai da darussa kamar wannan.",
-  "training.lessons.your-language.step3": "Za ka iya mayar da shi a kowane lokaci. Zaɓinka yana ci gaba a wannan na'ura.",
+  "training.lessons.your-language.step3": "Za ka iya mayar da shi a kowane lokaci. Ana tuna zaɓinka — zaɓe shi a allon shiga kuma manhajar za ta buɗe cikin harshenka.",
   "training.lessons.your-language.step4": "Kwanaki da lokuta suna bin saitunan shagonka, don haka jadawalinka koyaushe yana nuna lokacin gida na shagonka.",
   "training.lessons.your-language.title": "Yi amfani da manhajar a harshenka",
   "training.lessonsDoneOf": "An gama darussa {done} daga cikin {total}",

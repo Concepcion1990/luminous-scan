@@ -3656,7 +3656,7 @@ export const hi = {
   "training.lessons.welcome-basics.title": "स्वागत है: अपना रास्ता खोजना",
   "training.lessons.your-language.step1": "Settings खोलें, या साइन-इन स्क्रीन के शीर्ष पर भाषा मेनू दबाएँ।",
   "training.lessons.your-language.step2": "सूची से अपनी भाषा चुनें। पूरा ऐप तुरंत बदल जाता है — मेनू, बटन और इस जैसे पाठ।",
-  "training.lessons.your-language.step3": "आप इसे किसी भी समय वापस बदल सकते हैं। आपकी पसंद इस डिवाइस पर रहती है।",
+  "training.lessons.your-language.step3": "आप इसे किसी भी समय वापस बदल सकते हैं। आपकी पसंद याद रखी जाती है — इसे साइन-इन स्क्रीन पर चुनें और ऐप आपकी भाषा में खुलता है।",
   "training.lessons.your-language.step4": "तारीखें और समय आपके स्टोर की सेटिंग्स का पालन करते हैं, इसलिए आपका शेड्यूल हमेशा आपके स्टोर का स्थानीय समय दिखाता है।",
   "training.lessons.your-language.title": "ऐप को अपनी भाषा में उपयोग करें",
   "training.lessonsDoneOf": "{done} / {total} पाठ पूरे हुए",
