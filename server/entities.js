@@ -427,13 +427,13 @@ const PO_EDIT_TRANSITIONS = {
 };
 
 /** Guard a product write against the plan's distinct-product cap. */
-export async function assertProductCap(pool, businessId, planKey, additionalDistinct) {
+export async function assertProductCap(pool, businessId, planKey, additionalDistinct, { neutral = false } = {}) {
   const limits = limitsForPlan(planKey);
   if (limits.products == null || additionalDistinct <= 0) return;
   const used = await distinctProductCount(pool, businessId);
   if (used + additionalDistinct > limits.products) {
     throw Object.assign(
-      err(403, 'product_limit', productLimitMessage(limits.products, used)),
+      err(403, 'product_limit', productLimitMessage(limits.products, used, { neutral })),
       { limit: limits.products, used },
     );
   }
@@ -542,6 +542,23 @@ function stripPricing(row) {
   return { ...row, ...PRICING_DEFAULTS };
 }
 
+// Staff personal contact details (owner ruling, Nov 19, 2026):
+// a member's home address and phone live on their staff record
+// but are visible ONLY to the owner and to managers trusted
+// with hiring (staff.manage). Everyone else — the member
+// themselves included — never receives the values at all: the
+// keys are removed, not blanked, so no door can render them.
+function stripStaffContact(row) {
+  const copy = { ...row };
+  delete copy.personal_address;
+  delete copy.personal_phone;
+  return copy;
+}
+
+function canSeeStaffContact(access) {
+  return access.isOwner || access.can('staff.manage');
+}
+
 async function guardCreate(pool, def, name, access, values) {
   const { business, planKey } = access;
   // Specific error first: suppliers refuse with their own code,
@@ -606,13 +623,13 @@ async function guardCreate(pool, def, name, access, values) {
     // its status is irrelevant: an original born archived counts
     // exactly like an active one (owner's counting rule, Nov 14,
     // 2026 — archiving never frees a slot).
-    await assertProductCap(pool, business.id, planKey, isDuplicateProductRow(values) ? 0 : 1);
+    await assertProductCap(pool, business.id, planKey, isDuplicateProductRow(values) ? 0 : 1, { neutral: !access.isOwner });
   }
   if (name === 'Location' && isOperatingSite(values)) {
     const limits = limitsForPlan(planKey);
     if (limits.sites != null) {
       const used = await operatingSiteCount(pool, business.id);
-      if (used >= limits.sites) throw err(403, 'site_limit', siteLimitMessage(limits.sites));
+      if (used >= limits.sites) throw err(403, 'site_limit', siteLimitMessage(limits.sites, { neutral: !access.isOwner }));
     }
   }
   if (name === 'StockLevel') {
@@ -642,7 +659,7 @@ async function guardCreate(pool, def, name, access, values) {
     }
   }
   if (name === 'StaffRole' && planKey !== 'business') {
-    throw err(403, 'custom_roles_business_only', customRolesBusinessOnlyMessage());
+    throw err(403, 'custom_roles_business_only', customRolesBusinessOnlyMessage({ neutral: !access.isOwner }));
   }
 }
 
@@ -659,7 +676,7 @@ async function guardUpdate(pool, def, name, access, row, patch) {
   // over from a downgrade could be edited on Essentials, bypassing
   // the create guard. Custom roles are Business-only, full stop.
   if (name === 'StaffRole' && planKey !== 'business') {
-    throw err(403, 'custom_roles_business_only', customRolesBusinessOnlyMessage());
+    throw err(403, 'custom_roles_business_only', customRolesBusinessOnlyMessage({ neutral: !access.isOwner }));
   }
   if (name === 'Product') {
     if (pricingPayloadActive(patch) && !featureAllowed(planKey, 'pricing')) {
@@ -797,11 +814,11 @@ export async function listEntities(pool, user, name, filter = {}, options = {}) 
     if (name !== 'Entitlement') {
       const gate = await subscriptionAccessFor(pool, user, businessId);
       if (gate.state === 'denied') {
-        if (wantedIds.length) throw subscriptionDeniedError(gate);
+        if (wantedIds.length) throw subscriptionDeniedError(gate, user);
         continue;
       }
       if (gate.state === 'grace' && !GRACE_READABLE_ENTITIES.has(name)) {
-        if (wantedIds.length) throw graceReadOnlyError(gate);
+        if (wantedIds.length) throw graceReadOnlyError(gate, user);
         continue;
       }
     }
@@ -821,6 +838,11 @@ export async function listEntities(pool, user, name, filter = {}, options = {}) 
         if (await isTrustedStaffRow(pool, access.business, row)) trusted.push(row);
       }
       businessRows = trusted;
+    }
+    if (name === 'StaffMember' && !canSeeStaffContact(access)) {
+      // Personal contact details stay behind the hiring gate
+      // (owner ruling, Nov 19, 2026) — see stripStaffContact.
+      businessRows = businessRows.map(stripStaffContact);
     }
     rows.push(...businessRows);
   }
@@ -862,6 +884,9 @@ export async function getEntity(pool, user, name, id) {
     if (!(await isTrustedStaffRow(pool, access.business, publicRow(def, row)))) {
       throw err(403, 'forbidden', 'You can only read your own staff record.');
     }
+  }
+  if (name === 'StaffMember' && !canSeeStaffContact(access)) {
+    return publicRow(def, stripStaffContact(row));
   }
   return publicRow(def, row);
 }
@@ -926,7 +951,7 @@ export async function bulkCreateEntities(pool, user, name, rows) {
     // distinctProductCount): copies never count, archived
     // originals always do.
     const additional = rows.filter((row) => !isDuplicateProductRow(row)).length;
-    await assertProductCap(pool, businessId, access.planKey, additional);
+    await assertProductCap(pool, businessId, access.planKey, additional, { neutral: !access.isOwner });
   }
   const created = [];
   for (const row of rows) {
@@ -1033,7 +1058,7 @@ export async function deleteEntity(pool, user, name, id) {
     throw err(403, 'entitlement_read_only', 'Entitlements are managed by billing (T4).');
   } else if (name === 'StaffRole' && access.planKey !== 'business') {
     // Audit Finding 36: role delete has no plan check either.
-    throw err(403, 'custom_roles_business_only', customRolesBusinessOnlyMessage());
+    throw err(403, 'custom_roles_business_only', customRolesBusinessOnlyMessage({ neutral: !access.isOwner }));
   } else if (def.planGate && !featureAllowed(access.planKey, def.planGate)) {
     throw err(403, 'plan_gated', 'This feature is part of the Business plan.');
   } else if (def.writePerm && !access.can(def.writePerm)) {

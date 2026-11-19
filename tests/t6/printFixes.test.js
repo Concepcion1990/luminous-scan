@@ -74,7 +74,10 @@ test('print CSS: shell height released and label flow taken out of flex on paper
 test('Products page: archived rows render no steppers, no Add stock, no Adjust door', () => {
   const page = read('../../src/pages/Products.jsx');
   assert.match(page, /const archived = product\.status === 'archived';/);
-  assert.match(page, /onAddStock=\{archived \? undefined :/);
+  // Since the Adjust-door fix (Nov 19, 2026), the same withholding
+  // also covers members without products.edit — archived stays the
+  // first condition, so an archived row never offers the door.
+  assert.match(page, /onAddStock=\{archived \|\| !canEditProducts \? undefined :/);
   assert.match(page, /if \(product\.status === 'archived'\) return;/); // stepStock guard
   const funnel = read('../../src/lib/inventory.js');
   assert.match(funnel, /inventoryLib\.archivedFrozen/);

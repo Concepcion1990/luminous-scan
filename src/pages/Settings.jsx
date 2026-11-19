@@ -18,6 +18,9 @@ import { applyBrandColor, resolveBrandColor } from '@/lib/brandTheme';
 import BusinessListCard from '@/components/business/BusinessListCard';
 import IdentityCard from '@/components/business/IdentityCard';
 import DetailsCard from '@/components/business/DetailsCard';
+import PersonalSettings from '@/components/business/PersonalSettings';
+import InstallAppCard from '@/components/business/InstallAppCard';
+import { isBoss } from '@/lib/bossAuthority';
 import SoftwareCard from '@/components/business/SoftwareCard';
 import PlanSummaryCard from '@/components/plans/PlanSummaryCard';
 import SecurityCard from '@/components/business/SecurityCard';
@@ -84,7 +87,34 @@ function CancelBeforeDeleteWarning() {
   );
 }
 
+/**
+ * Settings (Nov 19, 2026): one door, two rooms. The boss gets
+ * the full business Settings below, exactly as it has always
+ * been. A non-owner member gets PERSONAL Settings instead
+ * (components/business/PersonalSettings.jsx) — account, security,
+ * appearance/language, Report a problem, the app-install door,
+ * and any business sections the owner granted them. Money
+ * sections (plan card, subscription, billing, trial lines) exist
+ * only in the boss's room: they never render for a non-owner,
+ * and the boss's room never even mounts for them, so none of its
+ * billing lookups fire either.
+ */
 export default function Settings() {
+  const { user, record, isLoading } = useBusiness();
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <div className="h-8 w-48 animate-pulse rounded bg-muted" />
+        <div className="h-64 animate-pulse rounded-xl border border-border bg-card" />
+        <div className="h-64 animate-pulse rounded-xl border border-border bg-card" />
+      </div>
+    );
+  }
+  if (record && !isBoss(user, record)) return <PersonalSettings />;
+  return <BossSettings />;
+}
+
+function BossSettings() {
   const { user, record, profile, isLoading, activeId } = useBusiness();
   const { plan, status: entitlementStatus, record: entitlementRecord, refetch: refetchEntitlement } = useEntitlements();
   const isOwner = Boolean(user?.id && record?.created_by_id === user.id);
@@ -460,6 +490,8 @@ export default function Settings() {
       <SecurityCard />
 
       <SupportCard />
+
+      <InstallAppCard showOwnerNote />
 
       {canShowPrivateBillingDiagnostics && (
         <EssentialsCheckoutReadinessDiagnostic businessId={activeId} />

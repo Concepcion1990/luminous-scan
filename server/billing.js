@@ -21,6 +21,15 @@ import { consumeTrial } from './trialEligibility.js';
 import { priceForPlan } from './stripeCatalog.js';
 
 export const CANCELLATION_GRACE_DAYS = 15;
+/**
+ * The NEUTRAL STOP message (owner's ruling, Nov 19, 2026): what a
+ * NON-OWNER sees when a billing state stops them mid-action. It
+ * never mentions payment, subscription, cancellation or billing
+ * — the full reason belongs to the owner alone, so the owner can
+ * explain to their own staff in their own words.
+ */
+export const NEUTRAL_STOP_MESSAGE =
+  'Changes are turned off right now. Nothing can be added or changed at the moment — please ask the owner of the business if you need anything.';
 export const REFUND_WINDOW_MS = 3 * 24 * 60 * 60 * 1000; // 72 hours
 export const CANCELLATION_WIPE_SENTENCE =
   'After the 15-day grace period ends, your account and all its information are permanently deleted and cannot be recovered.';
@@ -236,12 +245,21 @@ export async function graceStateFor(pool, businessId, now = new Date()) {
   return { state: 'locked', paidThrough, graceEndsAt };
 }
 
-/** Throw 403 grace_read_only when the business is in grace or locked. */
-export async function assertNotInGrace(pool, businessId) {
+/**
+ * Throw 403 grace_read_only when the business is in grace or locked.
+ * `neutral: true` swaps the message for the NEUTRAL STOP wording —
+ * for surfaces a non-owner member can hit (the reason stays with
+ * the owner; see NEUTRAL_STOP_MESSAGE).
+ */
+export async function assertNotInGrace(pool, businessId, { neutral = false } = {}) {
   const grace = await graceStateFor(pool, businessId);
   if (grace.state === 'grace' || grace.state === 'locked') {
     throw Object.assign(
-      new Error('This workspace is read-only: the subscription ended and the 15-day grace period allows viewing products only. No changes, scanning, importing, or exporting.'),
+      new Error(
+        neutral
+          ? NEUTRAL_STOP_MESSAGE
+          : 'This workspace is read-only: the subscription ended and the 15-day grace period allows viewing products only. No changes, scanning, importing, or exporting.',
+      ),
       { status: 403, code: 'grace_read_only', grace },
     );
   }

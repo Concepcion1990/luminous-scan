@@ -88,23 +88,40 @@ export async function planFor(pool, businessId) {
   return record.plan === 'business' ? 'business' : DEFAULT_PLAN;
 }
 
-export function productLimitMessage(limit, used) {
+/**
+ * The plan-neutral limit refusal (money-surfaces audit + the
+ * neutral-stop ruling, Nov 19, 2026): a plan limit is the owner's
+ * subscription information, so when a NON-owner hits a cap, the
+ * refusal names no plan, no limit number and no upgrade — it
+ * just stops them plainly and points at the owner. The owner
+ * keeps the full wording below. Registered in the client's
+ * apiErrors map (apiErrors.planLimitNeutral) so it renders in
+ * the reader's language like every other error.
+ */
+export const NEUTRAL_LIMIT_MESSAGE =
+  "That can't be added right now — this workspace has reached a limit. Please ask the owner of the business.";
+
+export function productLimitMessage(limit, used, { neutral = false } = {}) {
+  if (neutral) return NEUTRAL_LIMIT_MESSAGE;
   // The doors named here must be the true ones (owner ruling,
   // Nov 14, 2026): archiving frees NOTHING under the counting law —
   // only a true delete lowers the count.
   return `This plan includes ${limit} products and ${used} are already in the catalog. Delete a product you no longer need to free a slot, or move to Business for unlimited products.`;
 }
 
-export function staffLimitMessage(limit) {
+export function staffLimitMessage(limit, { neutral = false } = {}) {
+  if (neutral) return NEUTRAL_LIMIT_MESSAGE;
   return `This plan includes ${limit} additional staff. Free a seat or move to Business for unlimited staff.`;
 }
 
-export function siteLimitMessage(limit) {
+export function siteLimitMessage(limit, { neutral = false } = {}) {
+  if (neutral) return NEUTRAL_LIMIT_MESSAGE;
   const base = `This plan includes ${limit} site${limit === 1 ? '' : 's'}.`;
   return `${base} Shelves, bins and vans inside a site do not count, and you can still add them.${limit < 5 ? ' Move to Business for up to five sites.' : ''}`;
 }
 
-export function customRolesBusinessOnlyMessage() {
+export function customRolesBusinessOnlyMessage({ neutral = false } = {}) {
+  if (neutral) return NEUTRAL_LIMIT_MESSAGE;
   return 'Custom roles are a Business feature. Essentials uses the five built-in roles — Owner, Manager, Stock clerk, Sales clerk, Viewer. Move to Business to create your own roles.';
 }
 

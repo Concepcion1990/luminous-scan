@@ -1,12 +1,22 @@
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { t } from '@/lib/i18n';
+import { useBusiness } from '@/hooks/useBusiness';
+import { isBoss } from '@/lib/bossAuthority';
 
 /**
  * "Products: 38 of 50" — and, when the allowance is used up, what to do next.
  * Unlimited plans render nothing: no artificial ceiling to advertise.
+ *
+ * The badge names a PLAN allowance, so it is money-class
+ * information (money-surfaces audit, Nov 19, 2026): it renders
+ * for the boss only. Staff, managers and viewers never see a
+ * plan limit or the Upgrade door — the cap still refuses their
+ * writes server-side, with a plan-neutral message.
  */
 export default function LimitBadge({ label, used, limit, className }) {
+  const { user, record } = useBusiness();
+  if (!isBoss(user, record)) return null;
   if (limit == null) return null;
   const full = used >= limit;
   return (

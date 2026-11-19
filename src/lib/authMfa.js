@@ -25,6 +25,7 @@
  */
 
 import { apiErrorMessage } from './apiErrors.js';
+import { getLocale, t } from './i18n.js';
 
 const GOOGLE_UNAVAILABLE = new Error(
   'Google sign-in is not available — please log in with your email and password.',
@@ -39,6 +40,31 @@ async function loginRequest(email, password) {
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
+    // The shift window (Nov 19, 2026): a member signing in before
+    // their door opens gets a kind, plain message in their own
+    // language — never a dead end — naming when their next shift
+    // starts when the schedule knows it. Their own schedule,
+    // shown to them, is fine.
+    if (data?.error === 'staff_outside_window') {
+      let message = t('login.staffWindowClosed');
+      if (data.next_shift_start) {
+        const when = new Date(data.next_shift_start);
+        if (!Number.isNaN(when.getTime())) {
+          const formatted = new Intl.DateTimeFormat(getLocale(), {
+            weekday: 'long',
+            month: 'long',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+          }).format(when);
+          message = t('login.staffWindowClosedNext', { when: formatted });
+        }
+      }
+      const error = new Error(message);
+      error.status = response.status;
+      error.data = data;
+      throw error;
+    }
     // Same resolution as src/api/client.js request(): the server's
     // stable code + English message become the reader's language
     // whenever the words are known to the map; the English message

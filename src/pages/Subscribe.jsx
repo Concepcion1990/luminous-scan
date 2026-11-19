@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/lib/AuthContext';
 import { useBusiness } from '@/hooks/useBusiness';
+import { isBoss } from '@/lib/bossAuthority';
 import useEntitlements from '@/hooks/useEntitlements';
 import { PLANS } from '@/lib/plans';
 import { base44 } from '@/api/client';
@@ -57,6 +58,8 @@ export default function Subscribe() {
     canCreate,
     switchTo,
     create: createBusiness,
+    user,
+    record: businessRecord,
   } = useBusiness();
   const [businessName, setBusinessName] = useState('');
   const [workspaceBusy, setWorkspaceBusy] = useState(false);
@@ -139,6 +142,13 @@ export default function Subscribe() {
   const hasExistingAccess =
     ['active', 'trialing', 'past_due'].includes(status) ||
     (status === 'canceled' && Number.isFinite(paidThrough) && paidThrough > Date.now());
+  // The existing-access states below — "this account already has
+  // subscription access", the past-due line — are the OWNER's
+  // subscription information (money-surfaces audit, Nov 19, 2026).
+  // A signed-in member who is not the owner gets a neutral card
+  // instead: no status, no payment words, just the door back
+  // into the app.
+  const boss = isBoss(user, businessRecord);
 
   return (
     <div className="min-h-screen bg-background">
@@ -191,7 +201,7 @@ export default function Subscribe() {
           </div>
         ) : isLoading || workspaceLoading ? (
           <p className="mt-6 text-sm text-muted-foreground">{t('subscribe.loadingWorkspace')}</p>
-        ) : hasExistingAccess ? (
+        ) : hasExistingAccess && boss ? (
           <div className="mt-6 rounded-xl border border-border bg-card p-5">
             {status === 'past_due' ? (
               <p className="text-sm">{t('subscribe.pastDue')}</p>
@@ -199,6 +209,11 @@ export default function Subscribe() {
               <p className="text-sm">{t('subscribe.alreadyHasAccess')}</p>
             )}
             <Button className="mt-4" asChild><Link to="/upgrade">{t('subscribe.reviewPlanOptions')}</Link></Button>
+          </div>
+        ) : hasExistingAccess ? (
+          <div className="mt-6 rounded-xl border border-border bg-card p-5">
+            <p className="text-sm">{t('subscribe.memberNote')}</p>
+            <Button className="mt-4" asChild><Link to="/">{t('subscribe.memberOpenApp')}</Link></Button>
           </div>
         ) : !activeId ? (
           <div className="mt-6 space-y-4 rounded-xl border border-border bg-card p-5">

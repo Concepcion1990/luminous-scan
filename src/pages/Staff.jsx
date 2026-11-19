@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import StaffMemberCard from '@/components/staff/StaffMemberCard';
 import { sendStaffPasswordReset } from '@/lib/recovery';
 import StaffMemberDialog from '@/components/staff/StaffMemberDialog';
+import WelcomeScriptCard from '@/components/staff/WelcomeScriptCard';
 import StaffRoleCard from '@/components/staff/StaffRoleCard';
 import RoleDialog from '@/components/staff/RoleDialog';
 import useEntitlements from '@/hooks/useEntitlements';
@@ -215,6 +216,10 @@ export default function Staff() {
           {t('staff.noBusiness')}
         </p>
       )}
+
+      {/* The owner's welcome script for new hires (boss-only —
+          the card renders nothing for anyone else). */}
+      {activeId && <WelcomeScriptCard />}
 
       {loading ? (
         <div className="flex items-center gap-2 py-8 text-sm text-muted-foreground">

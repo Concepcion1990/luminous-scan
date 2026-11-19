@@ -14,7 +14,10 @@ import {
 } from '../../server/email.js';
 
 test('item 2: email strings exist for all 52 locales, placeholders intact', () => {
-  assert.equal(EMAIL_STRING_KEYS.length, 41);
+  // 41 through release 287; the staff batch (Nov 19, 2026) added
+  // invite.linkLine — the direct Create-account link in the
+  // invitation email — for 42.
+  assert.equal(EMAIL_STRING_KEYS.length, 42);
   assert.equal(Object.keys(EMAIL_STRINGS).length, 52);
   for (const [locale, row] of Object.entries(EMAIL_STRINGS)) {
     assert.deepEqual(Object.keys(row).sort(), [...EMAIL_STRING_KEYS].sort(), locale);

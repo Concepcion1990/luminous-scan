@@ -312,6 +312,10 @@ const TL_COGNATE_KEYS = new Set([
   // Translation sweep (Nov 15, 2026): 'clearance' is the standard
   // retail word in the Philippines — sale signage uses it verbatim.
   'products.bulkTagExampleBusiness',
+  // Staff batch (Nov 19, 2026): 'Address' is the established
+  // Filipino form label, verbatim as already verified above for
+  // 'locations.addressLabel' and 'suppliers.address'.
+  'settings.businessCard.address',
 ]);
 const HA_COGNATE_KEYS = new Set([
   'bomLib.kindBundle', 'bomLib.kindBundleShort', 'businessLib.brandColor.plum',

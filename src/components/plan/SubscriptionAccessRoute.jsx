@@ -41,6 +41,15 @@ export default function SubscriptionAccessRoute() {
     if (grace.state === 'grace') {
       return <Navigate to="/grace" replace state={{ from: location.pathname }} />;
     }
+    // The NEUTRAL STOP (owner's ruling, Nov 19, 2026): a non-owner
+    // member of a business whose access has ended does NOT land
+    // on the pricing page — money is the owner's business alone.
+    // They get the same neutral stop the grace view shows them.
+    // (A signed-in user with no business at all keeps the
+    // historical /plans flow: there is no membership to protect.)
+    if (businessRecord && !isBoss(user, businessRecord)) {
+      return <Navigate to="/grace" replace state={{ from: location.pathname }} />;
+    }
   }
 
   return allowed

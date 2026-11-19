@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { Eye } from 'lucide-react';
+import { Eye, LogOut } from 'lucide-react';
 import { base44 } from '@/api/client';
 import useEntitlements from '@/hooks/useEntitlements';
+import { useBusiness } from '@/hooks/useBusiness';
+import { isBoss } from '@/lib/bossAuthority';
 import { scoped } from '@/lib/scoped';
 import { listProducts } from '@/lib/inventory';
 import { assessCancellationGrace, CANCELLATION_GRACE_DAYS, CANCELLATION_GRACE_PARAGRAPH } from '@/lib/cancellationGrace';
@@ -48,7 +50,18 @@ function formatDate(value) {
  * server-side in server/billing.js graceStateFor.
  */
 export default function GraceInventory() {
-  const { status, record, activeId, isLoading } = useEntitlements();
+  const { status, record: entitlementRecord, activeId, isLoading } = useEntitlements();
+  const { user, record: businessRecord, isLoading: businessLoading } = useBusiness();
+  // The NEUTRAL STOP (owner's ruling, Nov 19, 2026): this page's
+  // owner copy tells the whole billing story — subscription
+  // ended, grace period, deletion ahead. A non-owner member who
+  // lands here sees NONE of that: a plain neutral stop and a
+  // sign-out door, because the reason belongs to the owner, who
+  // explains it to their own staff in their own words. With no
+  // business record at all there is no membership to protect, so
+  // the historical flow below stands.
+  const boss = businessRecord ? isBoss(user, businessRecord) : true;
+  const record = entitlementRecord;
   const [products, setProducts] = useState(null);
   const [totalProducts, setTotalProducts] = useState(null);
   const [levels, setLevels] = useState([]);
@@ -59,7 +72,7 @@ export default function GraceInventory() {
   );
 
   useEffect(() => {
-    if (grace.state !== 'grace' || !activeId) return;
+    if (!boss || grace.state !== 'grace' || !activeId) return;
     let cancelled = false;
     (async () => {
       try {
@@ -87,12 +100,33 @@ export default function GraceInventory() {
       }
     })();
     return () => { cancelled = true; };
-  }, [grace.state, activeId]);
+  }, [boss, grace.state, activeId]);
 
-  if (isLoading) {
+  if (isLoading || businessLoading) {
     return (
       <div className="flex min-h-dvh items-center justify-center bg-background px-4">
         <p className="text-sm text-muted-foreground">{t('grace.loading')}</p>
+      </div>
+    );
+  }
+
+  // The neutral stop for non-owner members: no billing words, no
+  // plans link, no product list — just the plain stop and a way
+  // out. (Full access sends them back into the app as usual.)
+  if (!boss) {
+    if (grace.state === 'full_access') return <Navigate to="/" replace />;
+    return (
+      <div className="flex min-h-dvh items-center justify-center bg-background px-4">
+        <div className="w-full max-w-md space-y-4 text-center">
+          <h1 className="text-xl font-semibold">{t('access.neutralStop.title')}</h1>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            {t('access.neutralStop.body')}
+          </p>
+          <Button variant="outline" onClick={() => base44.auth.logout('/login')}>
+            <LogOut className="mr-1.5 h-4 w-4" aria-hidden="true" />
+            {t('settings.logout')}
+          </Button>
+        </div>
       </div>
     );
   }

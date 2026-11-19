@@ -1,5 +1,7 @@
 import { CalendarClock } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
+import { useBusiness } from '@/hooks/useBusiness';
+import { isBoss } from '@/lib/bossAuthority';
 import useEntitlements from '@/hooks/useEntitlements';
 import { trialDaysLeft } from '@/lib/entitlements';
 import { TRIAL_DAYS } from '@/lib/plans';
@@ -61,5 +63,13 @@ function Running() {
 /** The trial countdown shown on the introduction and the comparison. */
 export default function TrialCountdown() {
   const { isAuthenticated } = useAuth();
-  return isAuthenticated ? <Running /> : <Offer />;
+  const { user, record } = useBusiness();
+  // The RUNNING countdown is the business's live trial — days
+  // left, progress, the recorded end date — which is money-class
+  // information (money-surfaces audit, Nov 19, 2026). Only the
+  // owner sees it. Any other signed-in member sees the generic
+  // offer, exactly what a signed-out visitor sees: their
+  // employer's trial is not theirs to read.
+  const boss = isBoss(user, record);
+  return isAuthenticated && boss ? <Running /> : <Offer />;
 }

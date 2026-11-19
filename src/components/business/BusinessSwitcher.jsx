@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { Building2, Check, Pencil, Plus } from 'lucide-react';
 import { useBusiness } from '@/hooks/useBusiness';
 import { PLANS } from '@/lib/plans';
+import { isBoss } from '@/lib/bossAuthority';
+import { memberLevelOf } from '@/lib/staff';
 import useStaffAccess from '@/hooks/useStaffAccess';
 import RenameBusinessDialog from '@/components/business/RenameBusinessDialog';
 import { Button } from '@/components/ui/button';
@@ -30,12 +32,27 @@ import {
  * Sits on the dark header/sidebar in both layouts.
  */
 export default function BusinessSwitcher({ compact = false }) {
-  const { businesses, activeId, record, switchTo, create, canCreate, limit, isLoading, trialLabelFor } =
+  const { businesses, activeId, record, user, switchTo, create, canCreate, limit, isLoading, trialLabelFor } =
     useBusiness();
   // An owner or administrator opens another business whenever the plan allows it; a
   // staff seat never does, because a seat is not ownership.
   const access = useStaffAccess();
   const mayCreate = !access.loading && access.unrestricted;
+  // Header rules (owner's rulings, Nov 19, 2026):
+  //  - The trial line under the store name is money information:
+  //    the boss sees it exactly as always; a non-owner member
+  //    sees THEIR OWN NAME in that spot instead, on every page.
+  //  - The rename pencil is the boss's, or a MANAGER's only when
+  //    the owner ticked "edit business name" for them. Staff
+  //    never see the pencil at all.
+  const boss = isBoss(user, record);
+  const member = access.member;
+  const memberName = member?.full_name || null;
+  const canRename =
+    boss ||
+    (memberLevelOf(member) === 'manager' &&
+      Array.isArray(member?.permissions) &&
+      member.permissions.includes('settings.editName'));
   const activeTrial = activeId ? trialLabelFor(activeId) : null;
   const activeName = businesses.find((business) => business.id === activeId)?.name || null;
   const [renaming, setRenaming] = useState(false);
@@ -83,7 +100,7 @@ export default function BusinessSwitcher({ compact = false }) {
             </SelectTrigger>
             <SelectContent>
               {businesses.map((business) => {
-                const trial = trialLabelFor(business.id);
+                const trial = boss ? trialLabelFor(business.id) : null;
                 return (
                   <SelectItem key={business.id} value={business.id}>
                     <span className="flex w-full items-center justify-between gap-3">
@@ -99,24 +116,30 @@ export default function BusinessSwitcher({ compact = false }) {
               })}
             </SelectContent>
           </Select>
-          {activeTrial && (
+          {!boss && member ? (
+            memberName ? (
+              <p className="mt-1 truncate text-[11px] text-primary-foreground/70">{memberName}</p>
+            ) : null
+          ) : activeTrial ? (
             <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.12em] text-primary-foreground/60">
               {activeTrial}
             </p>
-          )}
+          ) : null}
         </div>
 
         <div className={compact ? 'flex shrink-0 items-center gap-1' : 'flex items-center justify-between gap-2'}>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => setRenaming(true)}
-            disabled={!record}
-            aria-label={t('settings.switcher.renameAria')}
-            className="h-8 px-2 text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground"
-          >
-            <Pencil className="h-3.5 w-3.5" />
-          </Button>
+          {canRename && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setRenaming(true)}
+              disabled={!record}
+              aria-label={t('settings.switcher.renameAria')}
+              className="h-8 px-2 text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground"
+            >
+              <Pencil className="h-3.5 w-3.5" />
+            </Button>
+          )}
           {mayCreate && (
             <Button
               size="sm"
@@ -131,9 +154,11 @@ export default function BusinessSwitcher({ compact = false }) {
               <Plus className="mr-1 h-3.5 w-3.5" /> {t('settings.switcher.new')}
             </Button>
           )}
-          <span className="font-mono text-[9px] uppercase tracking-wide text-primary-foreground/40">
-            {businesses.length}/{limit ?? '…'}
-          </span>
+          {boss && (
+            <span className="font-mono text-[9px] uppercase tracking-wide text-primary-foreground/40">
+              {businesses.length}/{limit ?? '…'}
+            </span>
+          )}
         </div>
       </div>
 

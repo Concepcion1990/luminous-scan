@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { isEmbedVisual } from '@/lib/embedMode';
-import { NavLink, Outlet, useLocation, useNavigate, useNavigationType } from 'react-router-dom';
+import { NavLink, Navigate, Outlet, useLocation, useNavigate, useNavigationType } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ArrowLeft, ChevronDown, Loader2, Menu, Search } from 'lucide-react';
 import AppMark from '@/components/brand/AppMark';
@@ -8,6 +8,7 @@ import LegalFooter from '@/components/LegalFooter';
 import MerchantMark from '@/components/brand/MerchantMark';
 import BusinessSwitcher from '@/components/business/BusinessSwitcher';
 import { useBusiness } from '@/hooks/useBusiness';
+import { useAuth } from '@/lib/AuthContext';
 import { PUBLISHER } from '@/lib/business';
 import { LOCALES, clearLocalePick, getLocale, readLocalePick, setLocale, t, useLocale } from '@/lib/i18n';
 import { apiRequest } from '@/api/client';
@@ -15,6 +16,7 @@ import { applyBrandColor, clearBrandColor, resolveBrandColor } from '@/lib/brand
 import useStaffAccess from '@/hooks/useStaffAccess';
 import useEntitlements from '@/hooks/useEntitlements';
 import FirstLaunchRedirect from '@/components/plans/FirstLaunchRedirect';
+import { isBoss } from '@/lib/bossAuthority';
 import NoAccess from '@/components/staff/NoAccess';
 import AccessPaused from '@/components/staff/AccessPaused';
 import { NAV_GROUPS } from '@/components/layout/navGroups';
@@ -41,6 +43,7 @@ const MOBILE_TAB_SCREENS = {
 export default function Layout() {
   const embedVisual = isEmbedVisual();
   const { profile, activeId, user, refresh } = useBusiness();
+  const { logout, user: authUser } = useAuth();
   // T6 white-label + i18n: the store's own branding comes from the
   // business record — its brand color re-skins the chrome. The app
   // name (AppMark, top of the sidebar and in the footer) is never
@@ -194,8 +197,15 @@ export default function Layout() {
     extraRefs: [mobileToggleRef],
   });
   // Two doors, both must open: the person's role and the plan's entitlements.
+  // A third, narrower door (Nov 19, 2026): bossOnly items — Plan &
+  // limits, the subscription's home — exist only for the boss.
+  // Money territory is owner-only; a non-owner never sees the entry.
+  const boss = isBoss(user, profile);
   const allowedItems = translatedItems.filter(
-    (item) => (!item.perm || can(item.perm)) && (!item.feature || planAllows(item.feature))
+    (item) =>
+      (!item.perm || can(item.perm)) &&
+      (!item.feature || planAllows(item.feature)) &&
+      (!item.bossOnly || boss)
   );
   // Mobile tabs and the full module menu use the exact same staff/plan filters as desktop.
   const mobileTabPaths = ['/', '/scan', '/products', '/orders', '/settings'];
@@ -250,6 +260,19 @@ export default function Layout() {
   return (
     <div className="min-h-screen bg-background lg:flex">
       <FirstLaunchRedirect />
+      {/* The one-time staff welcome (Nov 19, 2026): a newly hired
+          member — any role — lands on their welcome before
+          anything else at their first sign-in. The flag is
+          server-side (per member), so it fires once, on whichever
+          device they sign in with first, and never again. */}
+      {/* The gate reads the /auth/me user (AuthContext) — the
+          same source the welcome page and its finish flow use.
+          The workspace-query user above lags a beat behind a
+          session refresh, and while it lagged, this gate kept
+          firing after the welcome was already finished and
+          yanked "Start my training" back from /training
+          (harness catch, Nov 19, 2026). */}
+      {authUser?.staff_welcome_pending ? <Navigate to="/staff-welcome" replace /> : null}
       <aside className="hidden w-[264px] shrink-0 flex-col bg-primary text-primary-foreground lg:sticky lg:top-0 lg:flex lg:h-screen">
         <div className="shrink-0 px-5 pb-3 pt-5">
           <AppMark />
@@ -523,6 +546,22 @@ export default function Layout() {
             ) : (
               <NoAccess permission={current?.perm} />
             )}
+          </div>
+
+          {/* The universal sign-out (owner's ruling, Nov 19, 2026):
+              a tiny link at the very bottom of every signed-in
+              page, directly above the © footer, for EVERY role —
+              one tap, the complete logout, no hunting through
+              pages. She asked for it while literally stuck in a
+              staff account that had no sign out anywhere. */}
+          <div className="flex justify-center pt-3">
+            <button
+              type="button"
+              onClick={() => logout()}
+              className="text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+            >
+              {t('layout.signOutLink')}
+            </button>
           </div>
 
           {/* Small, centered copyright line at the bottom of every

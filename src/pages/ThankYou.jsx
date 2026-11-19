@@ -5,6 +5,7 @@ import { CheckCircle2, Clock3, ShieldCheck } from 'lucide-react';
 import LegalFooter from '@/components/LegalFooter';
 import { Button } from '@/components/ui/button';
 import { useBusiness } from '@/hooks/useBusiness';
+import { isBoss } from '@/lib/bossAuthority';
 import { reconcileSubscriptionAccess } from '@/lib/entitlements';
 import {
   nextAutoRecovery,
@@ -45,7 +46,11 @@ const UNVERIFIED_DETAILS = {
 export default function ThankYou() {
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get('session_id');
-  const { activeId } = useBusiness();
+  const { activeId, user, record: businessRecord } = useBusiness();
+  // The granted trial's END DATE is the owner's subscription
+  // information (money-surfaces audit, Nov 19, 2026): a member
+  // who somehow lands on this page sees the no-date line.
+  const boss = isBoss(user, businessRecord);
   const [phase, setPhase] = useState(sessionId ? 'checking' : 'no-session');
   const [detail, setDetail] = useState(null);
   const [result, setResult] = useState(null);
@@ -135,7 +140,7 @@ export default function ThankYou() {
             <h1 className="text-3xl font-semibold">{t('thankYou.grantedTitle')}</h1>
             <p className="text-muted-foreground">
               {result?.status === 'trialing'
-                ? result?.trial_ends_at
+                ? boss && result?.trial_ends_at
                   ? t('thankYou.trialRunning', { date: new Date(result.trial_ends_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) })
                   : t('thankYou.trialRunningNoDate')
                 : t('thankYou.subscriptionActive')}

@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/client';
 import { Loader2, TriangleAlert } from 'lucide-react';
-import { allRoles, BUSINESS_ONLY_PERMISSIONS, roleById, STATUS_OPTIONS } from '@/lib/staff';
+import { allRoles, BUSINESS_ONLY_PERMISSIONS, isSettingsGrant, roleById, SETTINGS_GRANTS, STATUS_OPTIONS } from '@/lib/staff';
+import { Checkbox } from '@/components/ui/checkbox';
 import { createStaffMember } from '@/lib/entitlements';
 import { fixStaffEmail } from '@/lib/recovery';
+import { listPayProfiles, savePayProfile } from '@/lib/workforce';
+import useStaffAccess from '@/hooks/useStaffAccess';
 import useEntitlements from '@/hooks/useEntitlements';
 import { useAuth } from '@/lib/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
@@ -42,10 +45,19 @@ const emptyForm = (customRoles, stripBusinessOnly = (permissions) => permissions
     // strip it on Essentials so a new member never starts out holding a
     // permission for a module the plan cannot open (Finding 7).
     permissions: role ? stripBusinessOnly([...role.permissions]) : [],
+    // Owner-granted Settings sections (Nov 19, 2026): per-member
+    // ticks, never part of any role — a new member starts with
+    // none, so their Settings is personal only until the owner
+    // ticks a section for them.
+    settings_grants: [],
     status: 'invited',
     location_id: '',
     location_name: '',
     notes: '',
+    // Personal contact details (owner ruling, Nov 19, 2026):
+    // shown and saved only behind the hiring gate below.
+    personal_address: '',
+    personal_phone: '',
   };
 };
 
@@ -63,6 +75,18 @@ export default function StaffMemberDialog({
 }) {
   const { toast } = useToast();
   const { user } = useAuth();
+  const { member: myMember } = useStaffAccess();
+  // The hiring gate (owner rulings, Nov 19, 2026): the pay-rate
+  // section and the member's personal contact fields appear only
+  // for the owner, or a manager trusted with hiring — a member
+  // whose own stored permissions carry staff.manage. The server
+  // enforces the same gate on both doors (the pay-profile write
+  // and the staff-record contact fields).
+  const canHire =
+    isAdmin ||
+    (Array.isArray(myMember?.permissions) && myMember.permissions.includes('staff.manage'));
+  const [payForm, setPayForm] = useState({ pay_type: 'hourly', hourly_rate: '', annual_salary: '' });
+  const [payTouched, setPayTouched] = useState(false);
   const { isEssentials, isLoading: entitlementLoading } = useEntitlements();
   // Finding 7: an Essentials member's stored set must equal what the plan
   // offers — the preset roles all carry Business-only keys (Manager 17,
@@ -91,17 +115,54 @@ export default function StaffMemberDialog({
             app_role: member.app_role || 'user',
             role_id: member.role_id || '',
             role_name: member.role_name || '',
-            permissions: Array.isArray(member.permissions) ? member.permissions : [],
+            // The Settings grants ride the same stored array but
+            // are edited as their own ticks below — split them
+            // out so the permission picker (and its All/None
+            // buttons) can never wipe a grant by accident.
+            permissions: (Array.isArray(member.permissions) ? member.permissions : []).filter(
+              (key) => !isSettingsGrant(key)
+            ),
+            settings_grants: (Array.isArray(member.permissions) ? member.permissions : []).filter(
+              (key) => isSettingsGrant(key)
+            ),
             status: member.status || 'invited',
             location_id: member.location_id || '',
             location_name: member.location_name || '',
             notes: member.notes || '',
+            personal_address: member.personal_address || '',
+            personal_phone: member.personal_phone || '',
           }
         : emptyForm(customRoles, stripBusinessOnly)
     );
     setError('');
     setBusy(false);
+    setPayForm({ pay_type: 'hourly', hourly_rate: '', annual_salary: '' });
+    setPayTouched(false);
   }, [open, member, customRoles]);
+
+  // Load the member's current pay rate from the SAME pay-profile
+  // record the Payroll page edits (one source of truth): set in
+  // either door, seen in both.
+  useEffect(() => {
+    if (!open || !canHire || !member?.id || !businessId) return;
+    let cancelled = false;
+    listPayProfiles(businessId)
+      .then((data) => {
+        if (cancelled) return;
+        const row = (data?.profiles || []).find((entry) => entry.person?.id === member.id);
+        if (row?.profile) {
+          setPayForm({
+            pay_type: row.profile.pay_type || 'hourly',
+            hourly_rate: row.profile.hourly_rate ?? '',
+            annual_salary: row.profile.annual_salary ?? '',
+          });
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [open, canHire, member?.id, businessId]);
 
   const roles = allRoles(customRoles);
   const places = orderedLocations(locations);
@@ -160,11 +221,23 @@ export default function StaffMemberDialog({
         // Filter at save as well as at preset-apply: the picker preserves
         // keys granted another way, so a legacy Business-only key on an
         // Essentials member would otherwise survive an edit untouched.
-        permissions: stripBusinessOnly(form.permissions),
+        // The Settings grants rejoin here — they are per-member
+        // ticks, untouched by role picks and the plan strip alike.
+        permissions: [...stripBusinessOnly(form.permissions), ...(form.settings_grants || [])],
         status: form.status,
         location_id: form.location_id || '',
         location_name: form.location_name || '',
         notes: form.notes.trim(),
+        // Personal contact details ride the payload only behind
+        // the hiring gate; without it the fields are never sent,
+        // so an edit can never blank them (and the server strips
+        // them from ungated reads anyway).
+        ...(canHire
+          ? {
+              personal_address: (form.personal_address || '').trim(),
+              personal_phone: (form.personal_phone || '').trim(),
+            }
+          : {}),
         invited_at: member?.invited_at || new Date().toISOString(),
       };
 
@@ -177,8 +250,34 @@ export default function StaffMemberDialog({
         await fixStaffEmail(businessId, member.id, email);
       }
 
+      let savedMemberId = member?.id || null;
       if (member) await base44.entities.StaffMember.update(member.id, payload);
-      else await createStaffMember(businessId, payload);
+      else {
+        const created = await createStaffMember(businessId, payload);
+        savedMemberId = created?.id || null;
+      }
+
+      // Pay rate (owner ruling, Nov 19, 2026): written to the
+      // same pay-profile record the Payroll page edits. For an
+      // existing member it saves when the section was touched;
+      // for a new member only when a rate was actually entered.
+      const payEntered =
+        String(payForm.hourly_rate ?? '').trim() !== '' ||
+        String(payForm.annual_salary ?? '').trim() !== '';
+      if (canHire && savedMemberId && (payTouched || (!member && payEntered))) {
+        try {
+          await savePayProfile(businessId, savedMemberId, {
+            pay_type: payForm.pay_type,
+            hourly_rate: payForm.hourly_rate === '' ? 0 : payForm.hourly_rate,
+            annual_salary: payForm.annual_salary === '' ? 0 : payForm.annual_salary,
+          });
+        } catch (payError) {
+          toast({
+            title: payError?.message || t('workforce.actionFailed'),
+            variant: 'destructive',
+          });
+        }
+      }
 
       if (!member && form.status === 'invited') {
         try {
@@ -357,6 +456,132 @@ export default function StaffMemberDialog({
               </p>
             )}
           </div>
+
+          {/* Owner-granted Settings sections (Nov 19, 2026): the
+              member's own Settings is personal only unless the
+              owner ticks a section here — ticked sections pop up
+              in their Settings as working sections; unticked ones
+              stay invisible. Subscription and billing are never
+              on this list: owner-only, not grantable. */}
+          <div className="space-y-1.5">
+            <Label>{t('staffLib.area.settingsAccess')}</Label>
+            <div className="rounded-lg border border-border p-2.5">
+              <div className="grid gap-1.5">
+                {SETTINGS_GRANTS.map((grant) => (
+                  <label key={grant.key} className="flex items-start gap-2 text-xs leading-snug">
+                    <Checkbox
+                      checked={(form.settings_grants || []).includes(grant.key)}
+                      onCheckedChange={(on) =>
+                        setForm((c) => ({
+                          ...c,
+                          settings_grants: on
+                            ? [...new Set([...(c.settings_grants || []), grant.key])]
+                            : (c.settings_grants || []).filter((key) => key !== grant.key),
+                        }))
+                      }
+                      className="mt-0.5"
+                    />
+                    <span>
+                      {grant.label}
+                      {grant.key === 'settings.editName' && (
+                        <span className="block text-[11px] text-muted-foreground">
+                          {t('staff.memberDialog.editNameHint')}
+                        </span>
+                      )}
+                      {grant.key === 'settings.contactDetails' && (
+                        <span className="block text-[11px] text-muted-foreground">
+                          {t('staff.memberDialog.contactDetailsHint')}
+                        </span>
+                      )}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            <p className="text-[11px] text-muted-foreground">
+              {t('staff.memberDialog.settingsAccessHint')}
+            </p>
+          </div>
+
+          {canHire && (
+            <>
+              <div className="grid gap-1.5">
+                <Label>{t('payroll.people.title')}</Label>
+                <div className="flex flex-wrap items-end gap-3">
+                  <div className="grid gap-1.5">
+                    <Label htmlFor="staff-pay-type" className="text-xs text-muted-foreground">
+                      {t('payroll.payType.hourly')} / {t('payroll.payType.salary')}
+                    </Label>
+                    <select
+                      id="staff-pay-type"
+                      className="flex h-9 rounded-md border border-input bg-background px-2 text-sm"
+                      value={payForm.pay_type}
+                      onChange={(event) => {
+                        setPayForm((c) => ({ ...c, pay_type: event.target.value }));
+                        setPayTouched(true);
+                      }}
+                    >
+                      <option value="hourly">{t('payroll.payType.hourly')}</option>
+                      <option value="salary">{t('payroll.payType.salary')}</option>
+                    </select>
+                  </div>
+                  {payForm.pay_type === 'hourly' ? (
+                    <div className="grid gap-1.5">
+                      <Label htmlFor="staff-pay-hourly" className="text-xs text-muted-foreground">
+                        {t('payroll.hourlyRate')}
+                      </Label>
+                      <Input
+                        id="staff-pay-hourly"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={payForm.hourly_rate}
+                        onChange={(event) => {
+                          setPayForm((c) => ({ ...c, hourly_rate: event.target.value }));
+                          setPayTouched(true);
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <div className="grid gap-1.5">
+                      <Label htmlFor="staff-pay-salary" className="text-xs text-muted-foreground">
+                        {t('payroll.annualSalary')}
+                      </Label>
+                      <Input
+                        id="staff-pay-salary"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={payForm.annual_salary}
+                        onChange={(event) => {
+                          setPayForm((c) => ({ ...c, annual_salary: event.target.value }));
+                          setPayTouched(true);
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid gap-1.5">
+                <Label htmlFor="staff-personal-address">{t('staff.memberDialog.personalAddress')}</Label>
+                <Textarea
+                  id="staff-personal-address"
+                  rows={2}
+                  value={form.personal_address}
+                  onChange={(event) => setForm((c) => ({ ...c, personal_address: event.target.value }))}
+                />
+              </div>
+              <div className="grid gap-1.5">
+                <Label htmlFor="staff-personal-phone">{t('staff.memberDialog.personalPhone')}</Label>
+                <Input
+                  id="staff-personal-phone"
+                  value={form.personal_phone}
+                  onChange={(event) => setForm((c) => ({ ...c, personal_phone: event.target.value }))}
+                />
+              </div>
+            </>
+          )}
 
           <div className="grid gap-1.5">
             <Label htmlFor="staff-notes">{t('staff.memberDialog.notesLabel')}</Label>

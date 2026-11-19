@@ -175,6 +175,50 @@ export const PRESET_ROLES = [
   },
 ];
 
+/**
+ * Owner-granted Settings sections (the owner's ruling, Nov 19,
+ * 2026). A member's Settings is PERSONAL ONLY by default; at
+ * enrollment (and later, on the member's record) the owner may
+ * tick extra business sections, and whatever is ticked pops up
+ * in that person's own Settings as a working section. Unticked
+ * sections stay completely invisible.
+ *
+ * These keys live in the member's own permissions array, but
+ * they are deliberately NOT part of PERMISSION_GROUPS /
+ * ALL_PERMISSIONS / the preset roles: no role carries them, so
+ * nobody holds one by default — each grant is a per-member tick
+ * by the boss's hand. Subscription / billing / trial is NOT here
+ * and never will be: owner-only, not grantable.
+ *
+ * - settings.taxRate        the "My tax rate" field
+ * - settings.businessDetails contact details + tagline
+ * - settings.gs1            the GS1 company prefix field
+ * - settings.editName       the business NAME (header pencil +
+ *                           Settings name field) — managers only:
+ *                           the tick stays inert on a staff row,
+ *                           enforced server-side as well.
+ */
+export const SETTINGS_GRANTS = [
+  { key: 'settings.taxRate', get label() { return t('staffLib.perm.settingsTaxRate'); } },
+  { key: 'settings.businessDetails', get label() { return t('staffLib.perm.settingsBusinessDetails'); } },
+  { key: 'settings.gs1', get label() { return t('staffLib.perm.settingsGs1'); } },
+  { key: 'settings.editName', get label() { return t('staffLib.perm.settingsEditName'); } },
+  { key: 'settings.contactDetails', get label() { return t('staffLib.perm.settingsContactDetails'); } },
+];
+
+export const SETTINGS_GRANT_KEYS = SETTINGS_GRANTS.map((grant) => grant.key);
+
+export function isSettingsGrant(key) {
+  return SETTINGS_GRANT_KEYS.includes(key);
+}
+
+/** A member row's level, mirroring the server's personLevel. */
+export function memberLevelOf(member) {
+  if (!member) return 'staff';
+  const roleName = String(member.role_name || '').trim().toLowerCase();
+  return member.role_id === 'preset-manager' || roleName === 'manager' ? 'manager' : 'staff';
+}
+
 export const STATUS_OPTIONS = [
   { value: 'invited', get label() { return t('staffLib.status.invited'); }, tone: 'border-warn/40 bg-warn/10 text-warn' },
   { value: 'active', get label() { return t('staffLib.status.active'); }, tone: 'border-ok/40 bg-ok/10 text-ok' },

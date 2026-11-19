@@ -29,10 +29,15 @@ test('Settings sits in the Workspace group directly after Payroll', () => {
   const payrollEntryEnd = nav.indexOf('},', payrollAt);
   const between = nav.slice(payrollEntryEnd, settingsAt);
   assert.doesNotMatch(between, /\{ to: '/, 'no other screen sits between Payroll and Settings');
+  // The Settings entry carries NO permission since the staff
+  // batch (Nov 19, 2026): every signed-in person — owner, staff,
+  // viewer — reaches their Settings (personal scope for
+  // non-owners). It previously pinned perm: 'settings.manage',
+  // which is exactly what locked staff out of Settings entirely.
   assert.match(
     nav,
-    /\{ to: '\/settings', label: 'Settings', labelKey: 'nav\.settings', icon: Settings2, perm: 'settings\.manage' \}/,
-    'the Settings entry keeps its label, key, icon and permission',
+    /\{ to: '\/settings', label: 'Settings', labelKey: 'nav\.settings', icon: Settings2 \}/,
+    'the Settings entry keeps its label, key and icon, with no permission gate',
   );
 });
 
@@ -47,6 +52,9 @@ test('every signed-in app screen appears in the nav (menu audit)', () => {
     '*', '/login', '/register', '/verify-email', '/forgot-password',
     '/reset-password', '/account-recovery', '/welcome', '/plans',
     '/subscribe', '/ThankYou', '/thankyou', '/grace', '/about',
+    // The one-time first-login welcome (Nov 19, 2026) is a flow
+    // screen like /grace: shown before the shell, never a menu door.
+    '/staff-welcome',
     '/privacy-policy', '/terms-of-service', '/subscription-policy',
     '/policies/terms', '/policies/subscription',
     '/payroll/direct-deposit-form',

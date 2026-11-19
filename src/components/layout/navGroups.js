@@ -121,8 +121,18 @@ export const NAV_GROUPS = [
       // rendered below the All screens menu's scroll fold next to
       // Plan & limits, so owners could not see it and reported it
       // missing. Same route as the bottom tab bar's Settings tab.
-      { to: '/settings', label: 'Settings', labelKey: 'nav.settings', icon: Settings2, perm: 'settings.manage' },
-      { to: '/upgrade', label: 'Plan & limits', labelKey: 'nav.upgrade', icon: CreditCard },
+      // Settings carries NO permission since Nov 19, 2026: every
+      // signed-in person gets the door — the page itself renders
+      // the boss's full Settings for the owner and a PERSONAL
+      // Settings (account, security, appearance/language, Report
+      // a problem, plus any sections the owner granted) for
+      // everyone else. Business-level sections never render for
+      // a non-owner, so the door is safe to show to all.
+      { to: '/settings', label: 'Settings', labelKey: 'nav.settings', icon: Settings2 },
+      // Plan & limits is the subscription's home — owner-only
+      // money territory (Nov 19, 2026): hidden from non-owners,
+      // and App.jsx bounces a typed URL quietly to Overview.
+      { to: '/upgrade', label: 'Plan & limits', labelKey: 'nav.upgrade', icon: CreditCard, bossOnly: true },
     ],
   },
 ];

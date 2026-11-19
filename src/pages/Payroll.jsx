@@ -87,7 +87,7 @@ function StubBreakdown({ stub }) {
   );
 }
 
-function ProfilesSection({ businessId, profiles, isOwner, reload }) {
+function ProfilesSection({ businessId, profiles, canSetPay, reload }) {
   const { toast } = useToast();
   const [drafts, setDrafts] = useState({});
   const save = async (personId) => {
@@ -118,7 +118,7 @@ function ProfilesSection({ businessId, profiles, isOwner, reload }) {
                   {person.full_name}
                   <span className="block text-xs font-normal text-muted-foreground">{person.role_name}</span>
                 </span>
-                {isOwner ? (
+                {canSetPay ? (
                   <>
                     <div>
                       <label className={labelCls}>{t('payroll.payType.hourly')} / {t('payroll.payType.salary')}</label>
@@ -833,7 +833,7 @@ export default function Payroll() {
       </div>
 
       {profiles.length > 0 && (
-        <ProfilesSection businessId={activeId} profiles={profiles} isOwner={ctx.is_owner} reload={load} />
+        <ProfilesSection businessId={activeId} profiles={profiles} canSetPay={Boolean(ctx.can_set_pay ?? ctx.is_owner)} reload={load} />
       )}
 
       {myStubs.length > 0 && (

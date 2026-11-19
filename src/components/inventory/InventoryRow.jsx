@@ -5,7 +5,7 @@ import ProductThumb from '@/components/products/ProductThumb';
 import { Button } from '@/components/ui/button';
 
 /** One product in the inventory list: what is on hand, where, and how to change it. */
-export default function InventoryRow({ product, levels = [], locations = [], onAdjust }) {
+export default function InventoryRow({ product, levels = [], locations = [], onAdjust, canAdjust = false }) {
   const total = levels.reduce((sum, level) => sum + (level.quantity || 0), 0);
   const held = levels.reduce((sum, level) => sum + (level.reserved || 0), 0);
   const placed = locations
@@ -52,10 +52,16 @@ export default function InventoryRow({ product, levels = [], locations = [], onA
             {atReorder ? t('inventory.reorderAt', { point: product.reorder_point }) : held ? t('inventory.heldCount', { count: held }) : t('inventory.onHand')}
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => onAdjust(product)}>
-          <SlidersHorizontal className="mr-1 h-3.5 w-3.5" />
-          <span className="hidden sm:inline">{t('inventory.adjustButton')}</span>
-        </Button>
+        {/* The Adjust door is catalog stock editing (products.edit,
+            owner catch Nov 19, 2026): without the permission the
+            row is read-only — counts shown, no door. The server
+            enforces the same gate on the stock-adjustments route. */}
+        {canAdjust && (
+          <Button variant="outline" size="sm" onClick={() => onAdjust(product)}>
+            <SlidersHorizontal className="mr-1 h-3.5 w-3.5" />
+            <span className="hidden sm:inline">{t('inventory.adjustButton')}</span>
+          </Button>
+        )}
       </div>
     </div>
   );

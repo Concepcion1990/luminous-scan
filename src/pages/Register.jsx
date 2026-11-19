@@ -55,7 +55,20 @@ export default function Register() {
   // Public page (the picker lives in AuthLayout): re-render in the
   // visitor's language the moment the picker switches it.
   useLocale();
-  const [email, setEmail] = useState("");
+  // The staff invitation email links straight here with the
+  // invited address in the query (?email=…), so a new hire lands
+  // on this page with their email already filled in — no hunting
+  // from the sign-in page (owner's ruling, Nov 19, 2026). The
+  // address stays fully editable; registration + verification +
+  // sign-in connect the account to the pending staff invite by
+  // that email exactly as before.
+  const [email, setEmail] = useState(() => {
+    try {
+      return new URLSearchParams(window.location.search).get("email") || "";
+    } catch {
+      return "";
+    }
+  });
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");

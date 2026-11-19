@@ -57,14 +57,16 @@ test('plan-visible counts: Business whole, Essentials without the Business subje
   const count = (track, isBusiness) => client.visibleLessonsForTrack(track, isBusiness).length;
   // Business: every lesson shows (owner-import is Essentials-only).
   // 37 since the set-once tax-rate lesson joined the owner track
-  // (Nov 15, 2026).
-  assert.equal(count('owner', true), 37);
-  assert.equal(count('manager', true), 16);
-  assert.equal(count('staff', true), 33);
+  // (Nov 15, 2026); +1 per track for the shift-window lessons
+  // (Nov 19, 2026): owner 38, manager 17, staff 34. The owner
+  // confidentiality lesson (owner track only, same day) makes owner 39.
+  assert.equal(count('owner', true), 39);
+  assert.equal(count('manager', true), 17);
+  assert.equal(count('staff', true), 34);
   // Essentials: 19 owner subjects hidden, owner-import in their place.
-  assert.equal(count('owner', false), 19);
-  assert.equal(count('manager', false), 10);
-  assert.equal(count('staff', false), 31);
+  assert.equal(count('owner', false), 21); // +1 confidentiality lesson (Nov 19, 2026)
+  assert.equal(count('manager', false), 11);
+  assert.equal(count('staff', false), 32);
   // Payroll / workforce / direct-deposit lessons stay on Essentials.
   const essentialsStaff = client.visibleLessonsForTrack('staff', false).map((l) => l.id);
   for (const id of ['stub-yours', 'dd-submit', 'clock-basics']) {

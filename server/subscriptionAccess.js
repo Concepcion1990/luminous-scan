@@ -46,7 +46,7 @@
  */
 import { entitlementFor } from './plans.js';
 import { loadBusiness } from './authz.js';
-import { GRANDFATHERED_BUSINESS_ID, CANCELLATION_GRACE_DAYS } from './billing.js';
+import { GRANDFATHERED_BUSINESS_ID, CANCELLATION_GRACE_DAYS, NEUTRAL_STOP_MESSAGE } from './billing.js';
 
 /** The publisher/admin login — mirrors src/lib/publisherAccess.js. */
 export const PUBLISHER_OWNER_EMAIL = 'cperezcarrillo.1990@gmail.com';
@@ -125,14 +125,41 @@ export async function subscriptionAccessFor(pool, user, businessId) {
   return { ...assessSubscriptionAccess(record, { user, business }), business, record };
 }
 
-export function subscriptionDeniedError(gate) {
+/**
+ * The NEUTRAL STOP (owner's ruling, Nov 19, 2026): when a billing
+ * state stops a NON-OWNER mid-action, the message they see must
+ * never say why — no payment, subscription, cancellation or
+ * billing words (NEUTRAL_STOP_MESSAGE, from billing.js). The
+ * full reason belongs to the owner alone, so the owner can
+ * explain to their own staff in their own words. The owner keeps
+ * the full-reason messages below, word for word.
+ */
+function viewerIsOwner(user, gate) {
+  return Boolean(user && gate?.business && gate.business.owner_id === user.id);
+}
+
+export function subscriptionDeniedError(gate, user) {
+  if (user && gate?.business && !viewerIsOwner(user, gate)) {
+    return Object.assign(new Error(NEUTRAL_STOP_MESSAGE), {
+      status: 403,
+      code: 'subscription_required',
+      gate,
+    });
+  }
   return Object.assign(
     new Error('This workspace does not have an active subscription. Subscribe to a plan to use it — access starts only when the trial or payment is confirmed.'),
     { status: 403, code: 'subscription_required', gate },
   );
 }
 
-export function graceReadOnlyError(gate) {
+export function graceReadOnlyError(gate, user) {
+  if (user && gate?.business && !viewerIsOwner(user, gate)) {
+    return Object.assign(new Error(NEUTRAL_STOP_MESSAGE), {
+      status: 403,
+      code: 'grace_read_only',
+      grace: { state: gate?.state || 'grace', paidThrough: gate?.paidThrough ?? null, graceEndsAt: gate?.graceEndsAt ?? null },
+    });
+  }
   return Object.assign(
     new Error('This workspace is read-only: the subscription ended and the 15-day grace period allows viewing products only. No changes, scanning, importing, or exporting.'),
     {
@@ -159,9 +186,9 @@ export async function assertSubscriptionAccess(pool, user, businessId, { write =
   if (gate.state === 'full') return gate;
   if (gate.state === 'grace') {
     if (!write && graceRead) return gate;
-    throw graceReadOnlyError(gate);
+    throw graceReadOnlyError(gate, user);
   }
-  throw subscriptionDeniedError(gate);
+  throw subscriptionDeniedError(gate, user);
 }
 
 /** Webhook/internal callers: is this business fully entitled right now? */

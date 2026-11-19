@@ -17,7 +17,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useBusiness } from '@/hooks/useBusiness';
 import { isBoss } from '@/lib/bossAuthority';
 import { useCatalogVocabulary } from '@/hooks/useCatalogVocabulary';
-import { formatMoney, listProducts, recordMovement } from '@/lib/inventory';
+import { formatMoney, listProducts, recordAdjustment } from '@/lib/inventory';
 import { countDistinctProducts } from '@/lib/productDuplicates';
 import { descendantIds, orderedLocations } from '@/lib/locations';
 import { scoped } from '@/lib/scoped';
@@ -26,6 +26,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
 import useEntitlements from '@/hooks/useEntitlements';
+import useStaffAccess from '@/hooks/useStaffAccess';
 import { displayLimit } from '@/lib/plans';
 import useIsDesktop from '@/hooks/useIsDesktop';
 import useModalHistory from '@/hooks/useModalHistory';
@@ -77,6 +78,12 @@ function InlineStockStepper({ value, onStep, addLabel, removeLabel }) {
 
 export default function Products() {
   const { user } = useAuth();
+  const { can } = useStaffAccess();
+  // The stock doors on this page (stepper, Adjust sheet, the row
+  // menu's Add stock) are catalog stock editing: they open only for
+  // products.edit, the permission the product form enforces (owner
+  // catch, Nov 19, 2026). Without it the counts are plain numbers.
+  const canEditProducts = can('products.edit');
   const { profile, activeId, record } = useBusiness();
   const { limits, planKey, isLoading: entitlementLoading } = useEntitlements();
   const { toast } = useToast();
@@ -305,14 +312,13 @@ export default function Products() {
       queue = createStepQueue({
         send: (d, confirmed) =>
           d > 0
-            ? recordMovement({ product, location, type: 'receive', quantity: 1, businessId: activeId, user })
-            : recordMovement({
+            ? recordAdjustment({ product, location, type: 'receive', quantity: 1, businessId: activeId })
+            : recordAdjustment({
                 product,
                 location,
                 type: 'correction',
                 quantity: confirmed - 1,
                 businessId: activeId,
-                user,
               }),
         onDisplay: (value) => setOptimistic((o) => ({ ...o, [key]: value })),
         onError: (err) =>
@@ -699,7 +705,7 @@ export default function Products() {
                     {product.category || '—'}
                   </span>
                   <span className="hidden text-right md:block">
-                    {archived ? (
+                    {archived || !canEditProducts ? (
                       <span className="numeric text-sm font-semibold">
                         {total}
                         <span className="ml-1 font-mono text-[10px] font-normal uppercase text-muted-foreground">
@@ -741,7 +747,7 @@ export default function Products() {
 
                   <div className="flex items-center justify-end gap-1">
                     <span className="md:hidden">
-                      {archived ? (
+                      {archived || !canEditProducts ? (
                         <span className="numeric text-sm font-semibold">{total}</span>
                       ) : stepperLocation ? (
                         <InlineStockStepper
@@ -774,7 +780,7 @@ export default function Products() {
                       product={product}
                       onDuplicate={duplicate}
                       onToggleArchive={toggleArchive}
-                      onAddStock={archived ? undefined : (p) => setAdjusting(p)}
+                      onAddStock={archived || !canEditProducts ? undefined : (p) => setAdjusting(p)}
                       onDelete={isBoss(user, record) ? requestRemove : undefined}
                     />
                   </div>
@@ -792,7 +798,7 @@ export default function Products() {
                             style={depth ? { marginLeft: `${Math.min(depth, 3) * 12}px` } : undefined}
                           >
                             <span className="truncate">{place.name}</span>
-                            {archived ? (
+                            {archived || !canEditProducts ? (
                               <span className="numeric text-xs font-semibold">{q}</span>
                             ) : (
                               <InlineStockStepper

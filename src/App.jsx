@@ -13,6 +13,8 @@ import PullToRefreshShell from './components/PullToRefreshShell';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Layout from '@/components/Layout';
 import PlanRedirect from '@/components/plan/PlanRedirect';
+import BossRedirect from '@/components/plan/BossRedirect';
+import StaffWelcome from '@/pages/StaffWelcome';
 import SubscriptionAccessRoute from '@/components/plan/SubscriptionAccessRoute';
 import Upgrade from '@/pages/Upgrade';
 import About from '@/pages/About';
@@ -118,6 +120,11 @@ const AuthenticatedApp = () => {
             grace rule and redirects anyone not in grace. */}
         <Route path="/grace" element={<GraceInventory />} />
         <Route element={<SubscriptionAccessRoute />}>
+          {/* The one-time staff welcome (Nov 19, 2026): inside the
+              signed-in, subscription-checked shell but OUTSIDE the
+              Layout — one warm screen, no clutter, before anything
+              else. Layout sends a newly hired member here. */}
+          <Route path="/staff-welcome" element={<StaffWelcome />} />
           <Route element={<Layout />}>
           <Route path="/" element={<Dashboard />} />
           <Route path="/scan" element={<Scan />} />
@@ -213,7 +220,14 @@ const AuthenticatedApp = () => {
             }
           />
           <Route path="/import" element={<ImportCenter />} />
-          <Route path="/upgrade" element={<Upgrade />} />
+          <Route
+            path="/upgrade"
+            element={
+              <BossRedirect>
+                <Upgrade />
+              </BossRedirect>
+            }
+          />
           <Route path="/staff" element={<Staff />} />
           <Route path="/workforce" element={<Workforce />} />
           <Route path="/training" element={<Training />} />

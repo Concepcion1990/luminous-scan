@@ -118,6 +118,28 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // The shift window's client half (Nov 19, 2026): during a
+  // member's clock-out grace window, /auth/me carries the
+  // auto-logout deadline. When it arrives, sign the UI out —
+  // the server enforces the same deadline on every request and
+  // revokes the session row, so both halves land together.
+  // Clocking back in clears the field on the next /auth/me, and
+  // the timer with it.
+  useEffect(() => {
+    const raw = user?.auto_logout_at;
+    if (!raw) return undefined;
+    const deadline = new Date(raw).getTime();
+    if (Number.isNaN(deadline)) return undefined;
+    const remaining = deadline - Date.now();
+    if (remaining <= 0) {
+      logout();
+      return undefined;
+    }
+    const timer = setTimeout(() => logout(), remaining);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.auto_logout_at]);
+
   const navigateToLogin = () => {
     // Pass the RELATIVE path, never window.location.href: the full href
     // carries its own query string, and a ?returnTo= inside it wrapped

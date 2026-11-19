@@ -45,7 +45,7 @@ export async function createStaffMember(pool, { business, planKey, caller, membe
   if (holdsSeat && limits.staff != null) {
     const used = await staffSeatCount(pool, business.id);
     if (used >= limits.staff) {
-      throw Object.assign(new Error(staffLimitMessage(limits.staff)), {
+      throw Object.assign(new Error(staffLimitMessage(limits.staff, { neutral: business.owner_id !== caller.id })), {
         status: 403,
         code: 'staff_limit',
         limit: limits.staff,
@@ -71,8 +71,9 @@ export async function createStaffMember(pool, { business, planKey, caller, membe
   const { rows } = await pool.query(
     `INSERT INTO staff_members
        (id, business_id, full_name, email, app_role, role_id, role_name, permissions,
-        status, location_id, location_name, notes, invited_at, created_by_id, created_by)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
+        status, location_id, location_name, notes, personal_address, personal_phone,
+        invited_at, created_by_id, created_by)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
      RETURNING *`,
     [
       id,
@@ -87,6 +88,11 @@ export async function createStaffMember(pool, { business, planKey, caller, membe
       member.location_id || null,
       member.location_name || '',
       member.notes || '',
+      // Personal contact details (owner ruling, Nov 19, 2026):
+      // stored on the record; the entity reads strip them for
+      // anyone who is not the owner or a hiring manager.
+      member.personal_address || '',
+      member.personal_phone || '',
       now,
       caller.id,
       caller.email,

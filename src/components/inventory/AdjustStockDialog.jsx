@@ -2,8 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Check, ScanLine } from 'lucide-react';
 import { t } from '@/lib/i18n';
 
-import { useAuth } from '@/lib/AuthContext';
-import { findProductsByCode, recordMovement } from '@/lib/inventory';
+import { findProductsByCode, recordAdjustment } from '@/lib/inventory';
 import BarcodeScanner from '@/components/scan/BarcodeScanner';
 import AddLocationInline from '@/components/locations/AddLocationInline';
 import QuantityStepper from '@/components/inventory/QuantityStepper';
@@ -39,7 +38,6 @@ export default function AdjustStockDialog({
   defaultLocationId = '',
   onDone,
 }) {
-  const { user } = useAuth();
   const [mode, setMode] = useState('receive');
   const [locationId, setLocationId] = useState(defaultLocationId);
   const [quantity, setQuantity] = useState('1');
@@ -160,13 +158,12 @@ export default function AdjustStockDialog({
     setBusy(true);
     setError('');
     try {
-      await recordMovement({
+      await recordAdjustment({
         product,
         location,
         type: mode,
         quantity: qty,
         note: note.trim(),
-        user,
         businessId,
       });
       onOpenChange(false);

@@ -1,4 +1,4 @@
-import { base44 } from '@/api/client';
+import { base44, apiRequest } from '@/api/client';
 import { scoped, withBusiness } from '@/lib/scoped';
 import { loadEntitlement, resolveEntitlement } from '@/lib/entitlements';
 import { BUNDLE_MOVEMENT_TYPES, featureAllowed } from '@/lib/plans';
@@ -370,6 +370,40 @@ export async function recordMovement({
  * Holds stock for an order without taking it off the shelf: the reserved
  * number moves, the on-hand quantity does not. Releasing frees it again.
  */
+/**
+ * The catalog doors' stock write: the Adjust sheet (Products / My
+ * inventory rows) and the Products row stepper. Unlike the scanner
+ * funnel above, this goes through the server's stock-adjustments
+ * door, which requires products.edit — the same permission the
+ * product form enforces (owner catch, Nov 19, 2026: the Adjust
+ * sheet previously rode the scan.use funnel, so a view-only sales
+ * clerk could move counts the product form would never let her
+ * touch). The server writes the level and the ledger row atomically
+ * and is the authority on the resulting quantities.
+ */
+export async function recordAdjustment({ product, location, type, quantity, note, businessId = '' }) {
+  // Archived products are frozen (owner ruling, Nov 14, 2026) — the
+  // same early, plain-words door the scanner funnel keeps; the
+  // server refuses too.
+  if ((product.status || 'active') === 'archived') {
+    throw new Error(t('inventoryLib.archivedFrozen', { name: product.name }));
+  }
+  const result = await apiRequest(
+    `/api/businesses/${encodeURIComponent(businessId || product.business_id || '')}/stock-adjustments`,
+    {
+      method: 'POST',
+      body: {
+        product_id: product.id,
+        location_id: location.id,
+        type,
+        quantity: Math.abs(Number(quantity) || 0),
+        note: note || '',
+      },
+    },
+  );
+  return { previous: result.previous, next: result.next };
+}
+
 export async function setReserved({
   product,
   location,

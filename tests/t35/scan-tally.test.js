@@ -55,7 +55,10 @@ test('Add stock sheet: its scanner tallies only its own product, into the same q
   assert.match(dialog, /changeQuantity\(String\(next\)\);/);
   assert.match(dialog, /t\('inventoryLib\.archivedFrozen', \{ name: product\.name \}\)/);
   // The one confirm still writes the movement; the tally never does.
-  assert.match(dialog, /await recordMovement\(\{\s*product,\s*location,\s*type: mode,\s*quantity: qty,/);
+  // Since the Adjust-door fix (owner catch, Nov 19, 2026), the
+  // confirm writes through recordAdjustment — the products.edit
+  // stock-adjustments door — not the scanner's funnel.
+  assert.match(dialog, /await recordAdjustment\(\{\s*product,\s*location,\s*type: mode,\s*quantity: qty,/);
 });
 
 test('Add stock sheet: the first scan claims the default one; hand touches end the fresh state', () => {

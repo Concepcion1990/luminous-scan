@@ -12,6 +12,7 @@
  */
 import crypto from 'node:crypto';
 import { config } from './config.js';
+import { staffWindowState } from './staffWindow.js';
 
 export const SESSION_COOKIE = 'twin_session';
 export const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
@@ -149,6 +150,22 @@ export async function loadSessionUser(pool, signedValue) {
   };
 }
 
+/**
+ * Two doors stay open even outside a member's shift window:
+ * signing out (a member must always be able to leave) and
+ * switching the active business (the escape hatch when the
+ * business in front of them is closed but another one — their
+ * own, or one whose window is open — is not). Recovery-scope
+ * sessions are exempt entirely: they exist to finish one
+ * account-recovery step, not to use the app.
+ */
+function staffWindowExempt(req) {
+  const url = String(req.originalUrl || '').split('?')[0];
+  if (req.method === 'POST' && url.endsWith('/api/auth/logout')) return true;
+  if (req.method === 'PATCH' && url.endsWith('/api/auth/me')) return true;
+  return false;
+}
+
 /** Express middleware: 401 unless a live session exists. Sets req.user. */
 export function requireAuth(pool) {
   return async (req, res, next) => {
@@ -161,6 +178,30 @@ export function requireAuth(pool) {
       req.user = loaded.user;
       req.sessionId = loaded.sessionId;
       req.sessionScope = loaded.scope;
+      // The shift window (owner's ruling, Nov 19, 2026 — see
+      // server/staffWindow.js): a non-owner member's session is
+      // only usable inside the bracket their posted schedule
+      // opens. Outside it, the session row is revoked — the same
+      // complete session end as a manual sign out — and the
+      // client is told when the door next opens. A failure inside
+      // the check itself never locks anyone out: it is logged
+      // and the request proceeds (the check is plain SQL over
+      // the member's own rows; the login door enforces the same
+      // window independently).
+      if (loaded.scope !== 'recovery' && !staffWindowExempt(req)) {
+        try {
+          const state = await staffWindowState(pool, loaded.user);
+          if (state.applies && !state.allowed) {
+            await revokeSession(pool, loaded.sessionId);
+            return res.status(401).json({
+              error: 'staff_outside_window',
+              next_shift_start: state.nextShiftStart ? state.nextShiftStart.toISOString() : null,
+            });
+          }
+        } catch (windowError) {
+          console.error('[twin] staff window check failed:', windowError.message);
+        }
+      }
       return next();
     } catch (error) {
       console.error('[twin] auth check failed:', error.message);

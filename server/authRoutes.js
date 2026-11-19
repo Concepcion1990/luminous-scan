@@ -55,6 +55,37 @@ import {
 } from './sessions.js';
 import { activateStaffRowsForEmail } from './staff.js';
 import { DEFAULT_LOCATION_NAME } from './defaultLocation.js';
+import { staffWindowState, autoLogoutAtFor, staffWelcomePending, markStaffWelcomeSeen, memberLevel } from './staffWindow.js';
+import { staffRowForEmail, parseJsonArray, isTrustedStaffRow } from './authz.js';
+
+/**
+ * Owner-granted Settings sections (Nov 19, 2026): which business
+ * fields each grantable tick covers. A non-owner's Settings PATCH
+ * may touch ONLY fields covered by a tick the owner gave them.
+ * Subscription / billing / trial is NOT in this map and never
+ * will be: it is owner-only and not grantable, ever.
+ */
+const SETTINGS_GRANT_BY_FIELD = {
+  tax_rate: 'settings.taxRate',
+  gs1_prefix: 'settings.gs1',
+  // The business NAME has its own tick (the header ruling,
+  // Nov 19, 2026): "edit business name" governs the name wherever
+  // it lives — the header pencil and the Settings name field
+  // alike — and it only ever takes effect for a MANAGER. Staff
+  // never get the pencil, even if a tick were stored for them.
+  name: 'settings.editName',
+  tagline: 'settings.businessDetails',
+  contact_email: 'settings.businessDetails',
+  website: 'settings.businessDetails',
+  // The business ADDRESS and PHONE have their own tick (owner
+  // ruling, Nov 19, 2026): "business contact details" governs
+  // editing those two fields, and — like the name tick — it only
+  // ever takes effect for a MANAGER. Staff never edit the address
+  // or the phone, even if a tick were stored for them; everyone
+  // still SEES them read-only in their Settings business card.
+  contact_phone: 'settings.contactDetails',
+  address: 'settings.contactDetails',
+};
 
 /** Essentials business cap until T4 (no entitlements yet — see header). */
 export const ESSENTIALS_BUSINESS_LIMIT = 1;
@@ -188,6 +219,10 @@ function publicBusiness(row) {
     // typed digits, '' when unset. Hers from her GS1 license —
     // the app never invents one.
     gs1_prefix: row.gs1_prefix || '',
+    // The owner's welcome script for new hires (migration 029):
+    // her own words for her store, '' = the app's standard
+    // welcome. Read by the welcome page for the member it greets.
+    staff_welcome_script: row.staff_welcome_script || '',
   };
 }
 
@@ -198,6 +233,7 @@ const BUSINESS_UPDATE_FIELDS = [
   'name', 'tagline', 'logo_url', 'brand_color', 'contact_email',
   'contact_phone', 'website', 'address', 'currency', 'timezone',
   'date_format', 'unit_system', 'language', 'doc_style', 'tax_rate', 'gs1_prefix',
+  'staff_welcome_script',
 ];
 const SUPPORTED_LANGUAGES = ['am', 'ar', 'bho', 'bn', 'de', 'en', 'en-AU', 'en-CA', 'en-GB', 'en-IN', 'es-CU', 'es-ES', 'es-MX', 'es-PR', 'es-US', 'es-VE', 'fa', 'fr-CA', 'fr-FR', 'gu', 'ha', 'hi', 'id', 'it', 'ja', 'jv', 'kn', 'ko', 'mr', 'ms', 'pa-Arab', 'pa-Guru', 'pcm', 'prs', 'pt-BR', 'pt-PT', 'ru', 'sw', 'ta', 'te', 'tg', 'th', 'tl', 'tr', 'uk', 'ur', 'vi', 'wuu', 'yo', 'yue', 'zh-Hans', 'zh-Hant'];
 // The language the reader is using right now, when the client sends
@@ -284,6 +320,15 @@ function validateBusinessPatch(patch) {
         return { error: 'Enter a tax rate between 0 and 100, with up to 4 decimal places — or leave it blank.' };
       }
       clean.tax_rate = text;
+    } else if (key === 'staff_welcome_script') {
+      // The owner's welcome script (migration 029): her own
+      // words, stored as written (owner-written text is custom
+      // content, like the business name — it is not translated).
+      // Blank is meaningful: it restores the app's standard
+      // welcome. A sane length cap keeps one field from becoming
+      // a document store.
+      if (text.length > 2000) return { error: 'That welcome message is too long.' };
+      clean.staff_welcome_script = text;
     } else if (key === 'gs1_prefix') {
       // GS1 company prefix: blank unsets it; otherwise digits
       // only, 6–10 of them — the company-prefix range that
@@ -530,6 +575,27 @@ export function createAuthRouter({ getPool }) {
           message: 'Sessions are not configured yet (SESSION_SECRET is not set).',
         });
       }
+      // The shift window (owner's ruling, Nov 19, 2026 — see
+      // server/staffWindow.js): a non-owner member cannot sign in
+      // until 10 minutes before their scheduled shift. The check
+      // runs only AFTER the password has verified, so a refused
+      // sign-in never leaks window state to a wrong password. The
+      // refusal names when their next shift starts — their own
+      // schedule, shown to them, is fine. Owners are never
+      // refused: nobody schedules the owner.
+      try {
+        const windowState = await staffWindowState(pool, user);
+        if (windowState.applies && !windowState.allowed) {
+          return res.status(403).json({
+            error: 'staff_outside_window',
+            next_shift_start: windowState.nextShiftStart
+              ? windowState.nextShiftStart.toISOString()
+              : null,
+          });
+        }
+      } catch (windowError) {
+        console.error('[twin] staff window check at login failed:', windowError.message);
+      }
       const session = await createSession(pool, user.id, {
         userAgent: req.headers['user-agent'],
         ipAddress: ip,
@@ -565,12 +631,44 @@ export function createAuthRouter({ getPool }) {
     return res.json({ ok: true });
   });
 
-  router.get('/auth/me', authed, (req, res) => res.json({
-    ...publicUser(req.user),
-    // Recovery kit (T7): 'recovery' sessions may only change the
-    // account email; the client routes them to that one step.
-    session_scope: req.sessionScope || 'full',
-  }));
+  router.get('/auth/me', authed, async (req, res) => {
+    // The shift-window fields (Nov 19, 2026): auto_logout_at arms
+    // the client's sign-out timer during the clock-out grace
+    // window; staff_welcome_pending routes a new staff member to
+    // their one-time welcome before anything else. Both are null/
+    // false for the owner and for anyone outside the bracket.
+    let autoLogoutAt = null;
+    let welcomePending = false;
+    if ((req.sessionScope || 'full') !== 'recovery') {
+      try {
+        const pool = getPool();
+        autoLogoutAt = await autoLogoutAtFor(pool, req.user);
+        welcomePending = await staffWelcomePending(pool, req.user);
+      } catch (error) {
+        console.error('[twin] /auth/me window fields failed:', error.message);
+      }
+    }
+    return res.json({
+      ...publicUser(req.user),
+      // Recovery kit (T7): 'recovery' sessions may only change the
+      // account email; the client routes them to that one step.
+      session_scope: req.sessionScope || 'full',
+      auto_logout_at: autoLogoutAt,
+      staff_welcome_pending: welcomePending,
+    });
+  });
+
+  // The staff welcome, seen (Nov 19, 2026): the one-time welcome
+  // page records itself seen server-side, per member, so it never
+  // reappears — including on another device.
+  router.post('/auth/staff-welcome/seen', authed, async (req, res) => {
+    try {
+      await markStaffWelcomeSeen(getPool(), req.user);
+    } catch (error) {
+      console.error('[twin] staff welcome seen failed:', error.message);
+    }
+    return res.json({ ok: true });
+  });
 
   router.patch('/auth/me', authed, async (req, res) => {
     const pool = getPool();
@@ -839,11 +937,37 @@ export function createAuthRouter({ getPool }) {
       const { rows } = await pool.query('SELECT * FROM businesses WHERE id = $1 LIMIT 1', [req.params.id]);
       const business = rows[0];
       if (!business) return res.status(404).json({ error: 'not_found', message: 'Business not found.' });
-      if (business.owner_id !== req.user.id) {
-        return res.status(403).json({ error: 'forbidden', message: 'Only the business owner can change these settings.' });
-      }
       const { clean, error } = validateBusinessPatch(req.body || {});
       if (error) return res.status(400).json({ error: 'invalid_value', message: error });
+      if (business.owner_id !== req.user.id) {
+        // Owner-granted Settings sections (Nov 19, 2026): the
+        // owner may tick extra sections (tax rate, business
+        // details, GS1) into a member's own Settings. A non-owner
+        // PATCH is authorized field by field against those ticks —
+        // every field present must be covered by a grant the
+        // member actually holds. Anything else (currency,
+        // timezone, language, logo, brand, document style) keeps
+        // the owner-only refusal. Billing has no field here at
+        // all and is never grantable.
+        const row = await staffRowForEmail(pool, req.params.id, req.user.email);
+        const trusted = row && ['active', 'invited'].includes(row.status || 'active')
+          ? await isTrustedStaffRow(pool, business, row)
+          : false;
+        const grants = new Set(trusted ? parseJsonArray(row.permissions) : []);
+        const uncovered = Object.keys(clean).filter((key) => {
+          const grant = SETTINGS_GRANT_BY_FIELD[key];
+          if (!grant || !grants.has(grant)) return true;
+          // The name tick and the contact-details tick only take
+          // effect for a manager (the header ruling and the
+          // contact-details ruling, Nov 19, 2026): a staff member's
+          // stored tick — if one ever exists — stays inert.
+          if ((key === 'name' || grant === 'settings.contactDetails') && memberLevel(row) !== 'manager') return true;
+          return false;
+        });
+        if (!trusted || uncovered.length) {
+          return res.status(403).json({ error: 'forbidden', message: 'Only the business owner can change these settings.' });
+        }
+      }
       const columns = Object.keys(clean);
       if (!columns.length) return res.json(publicBusiness(business));
       const sets = columns.map((col, i) => `${col} = $${i + 1}`).join(', ');

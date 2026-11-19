@@ -13,6 +13,7 @@ import OrdersToFulfil from '@/components/dashboard/OrdersToFulfil';
 import IncomingStock from '@/components/dashboard/IncomingStock';
 import { formatMoney, loadInventory, summarize } from '@/lib/inventory';
 import { loadOperations } from '@/lib/dashboardOps';
+import { isBoss } from '@/lib/bossAuthority';
 import { useBusiness } from '@/hooks/useBusiness';
 import useEntitlements from '@/hooks/useEntitlements';
 import { trialLabel, trialWarningDetails } from '@/lib/entitlements';
@@ -21,7 +22,12 @@ import { displayLimit } from '@/lib/plans';
 import { t } from '@/lib/i18n';
 
 export default function Dashboard() {
-  const { profile, activeId } = useBusiness();
+  const { profile, activeId, user, record } = useBusiness();
+  // Money information is the owner's alone (Nov 19, 2026): the
+  // trial banner and the trial chip are subscription news, so
+  // they render for the boss only. Staff, managers and viewers
+  // see neither — no banner, no chip, no teaser.
+  const boss = isBoss(user, record);
   const { record: entitlementRecord, can, limits, isLoading: entitlementLoading } = useEntitlements();
   // Purchasing cards are Business-only. While the entitlement row is still
   // loading the plan is unknown (a missing row resolves to restricted
@@ -47,7 +53,7 @@ export default function Dashboard() {
   // FINDING 36: a persistent quiet trial chip — the trial banner only
   // speaks at 5 days, 3 days and the last 24 hours, so on every other
   // trial day the Dashboard said nothing about the trial at all.
-  const trialChip = trialLabel(entitlementRecord);
+  const trialChip = boss ? trialLabel(entitlementRecord) : null;
   // FINDING 36: a customer at 50/50 only discovered the cap on the
   // Products page. The hint below the New product button says so here.
   const productLimit = displayLimit(limits.products, entitlementLoading);
@@ -57,7 +63,7 @@ export default function Dashboard() {
   // Concepcion's three in-app notices (5 days, 3 days, 24 hours) come
   // from trialInAppNotice; the pre-launch preview keeps its own banner.
   const inAppNotice = trialInAppNotice(entitlementRecord);
-  const showTrialBanner = isPrelaunch ? Boolean(trialNoticeStage) : Boolean(inAppNotice);
+  const showTrialBanner = boss && (isPrelaunch ? Boolean(trialNoticeStage) : Boolean(inAppNotice));
   const [data, setData] = useState(null);
   const [ops, setOps] = useState({ orders: [], purchaseOrders: [] });
   const [loading, setLoading] = useState(true);
@@ -126,8 +132,12 @@ export default function Dashboard() {
   // 2026): distinct originals — the same number the server cap
   // enforces and the Active SKUs card shows. A hint counting rows
   // while the gate counts products would be a lie at the boundary.
+  // The at-cap hint names the plan limit and links to the plan
+  // page — money-class information (money-surfaces audit, Nov 19,
+  // 2026), so it renders for the boss only, like the trial chip
+  // and banner above.
   const atProductLimit =
-    productLimit != null && stats != null && stats.distinctSkus >= productLimit;
+    boss && productLimit != null && stats != null && stats.distinctSkus >= productLimit;
 
   return (
     <div className="space-y-6" data-tour="overview">

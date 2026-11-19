@@ -3,6 +3,10 @@ import ReactDOM from 'react-dom/client'
 import { ThemeProvider } from 'next-themes'
 import App from '@/App.jsx'
 import { initLocale } from '@/lib/i18n'
+// Side effect only: captures the browser's install prompt from
+// the first moment the app boots, so the permanent "Download
+// the app" door in Settings can fire it later (Nov 19, 2026).
+import '@/lib/pwaInstall'
 import '@/index.css'
 
 // The visitor's language choice (public LanguagePicker) is restored

@@ -27,7 +27,11 @@ test('item 1: every apiErrors key exists in all 52 locales', async () => {
     ...API_ERROR_PATTERNS.map((p) => p.key),
     ...Object.values(API_ERROR_CODE_KEYS),
   ];
-  assert.equal(new Set(registryKeys).size, 419);
+  // 419 through release 287; the staff batch (Nov 19, 2026) added
+  // 6: the shift-window refusal code, the grace/denied full-reason
+  // strings, the neutral stop, the welcome-script length error,
+  // and the plan-neutral limit refusal.
+  assert.equal(new Set(registryKeys).size, 425);
   for (const code of LOCALES) {
     const dict = await loadLocale(code);
     for (const key of registryKeys) {

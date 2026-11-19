@@ -92,6 +92,11 @@ export const API_ERROR_MESSAGE_KEYS = {
   "Could not create the business.": "apiErrors.createFailed",
   "Only the business owner can change these settings.": "apiErrors.forbidden.businessOwnerChangeThese",
   "You do not have access to this workspace.": "apiErrors.forbidden.accessWorkspace",
+  "This workspace is read-only: the subscription ended and the 15-day grace period allows viewing products only. No changes, scanning, importing, or exporting.": "apiErrors.graceReadOnly",
+  "This workspace does not have an active subscription. Subscribe to a plan to use it — access starts only when the trial or payment is confirmed.": "apiErrors.subscriptionRequired",
+  "Changes are turned off right now. Nothing can be added or changed at the moment — please ask the owner of the business if you need anything.": "apiErrors.neutralStop",
+  "That can't be added right now — this workspace has reached a limit. Please ask the owner of the business.": "apiErrors.planLimitNeutral",
+  "That welcome message is too long.": "apiErrors.welcomeScriptTooLong",
   "You do not have permission to do that here.": "apiErrors.forbidden.permissionHere",
   "You do not have permission to manage staff here.": "apiErrors.forbidden.permissionManageStaffHere",
   "You can only read your own staff record.": "apiErrors.forbidden.readOwnStaffRecord",
@@ -123,7 +128,7 @@ export const API_ERROR_MESSAGE_KEYS = {
   "You can only update your own tasks.": "apiErrors.forbidden.updateOwnTasks",
   "Payroll settings are for the owner and manager.": "apiErrors.forbidden.payrollSettingsOwnerManager",
   "Only the owner sets the tax and deduction settings.": "apiErrors.forbidden.ownerSetsTaxDeduction",
-  "Only the owner sets pay rates.": "apiErrors.forbidden.ownerSetsPayRates",
+  "Only the owner or a manager with hiring permission sets pay rates.": "apiErrors.forbidden.ownerSetsPayRates",
   "Payroll runs are for the owner and manager.": "apiErrors.forbidden.payrollRunsOwnerManager",
   "Only the owner runs payroll.": "apiErrors.forbidden.ownerRunsPayroll",
   "Team members cannot send pay stubs.": "apiErrors.forbidden.teamMembersSendPay",
@@ -449,6 +454,7 @@ export const API_ERROR_PATTERNS = [
 
 export const API_ERROR_CODE_KEYS = {
   "not_signed_in": "apiErrors.code.notSignedIn",
+  "staff_outside_window": "apiErrors.code.staffOutsideWindow",
   "photo_not_found": "apiErrors.code.photoNotFound",
   "invalid_signature": "apiErrors.code.invalidSignature",
   "pos_webhook_error": "apiErrors.code.posWebhookError",

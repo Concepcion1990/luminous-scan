@@ -4,6 +4,7 @@ import { Search } from 'lucide-react';
 import { loadInventory, productMatchesSearch, productTruncationNotice, searchWords } from '@/lib/inventory';
 import { countDistinctProducts, isDuplicateProduct } from '@/lib/productDuplicates';
 import { useBusiness } from '@/hooks/useBusiness';
+import useStaffAccess from '@/hooks/useStaffAccess';
 import useDataFresh from '@/hooks/useDataFresh';
 import { useOfflineSync } from '@/hooks/useOfflineSync';
 import SyncIndicator from '@/components/sync/SyncIndicator';
@@ -22,6 +23,10 @@ import { t } from '@/lib/i18n';
  */
 export default function Inventory() {
   const { activeId, record } = useBusiness();
+  const { can } = useStaffAccess();
+  // The row Adjust door is catalog stock editing (products.edit,
+  // owner catch Nov 19, 2026) — see Products for the same gate.
+  const canEditProducts = can('products.edit');
   // T6: the manager's live view — the convergence check re-reads when
   // the server version moves (a phone's queued work just landed).
   const sync = useOfflineSync(activeId, { onConverged: () => load() });
@@ -165,6 +170,7 @@ export default function Inventory() {
                     levels={own}
                     locations={locations}
                     onAdjust={setAdjusting}
+                    canAdjust={canEditProducts}
                   />
                 ))}
               </div>

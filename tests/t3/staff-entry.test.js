@@ -94,6 +94,22 @@ test('an invited staff member lands inside the workspace at sign-in', async () =
   });
   assert.equal(switched.status, 200, switched.text);
 
+  // The shift window (owner's ruling, Nov 19, 2026): once the
+  // member's active business is this shop, sign-in is bracketed
+  // by their posted schedule — no schedule, no window. The owner
+  // posts a full-week schedule, and only then does the re-login
+  // below exercise the membership invariant.
+  const staffRow = (await pool.query(
+    'SELECT id FROM staff_members WHERE business_id = $1', [owner.business.id],
+  )).rows[0];
+  for (let weekday = 0; weekday < 7; weekday += 1) {
+    await pool.query(
+      `INSERT INTO work_schedules (id, business_id, staff_member_id, weekday, start_time, end_time)
+       VALUES ($1, $2, $3, $4, '00:00', '23:59')`,
+      [crypto.randomUUID(), owner.business.id, staffRow.id, weekday],
+    );
+  }
+
   // Idempotent: further sign-ins never stack a second membership.
   const again = await loginCookie('entry1-staff@example.com');
   const relisted = await listAs(again);

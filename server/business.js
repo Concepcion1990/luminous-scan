@@ -64,7 +64,9 @@ async function businessAccessOr403(pool, user, businessId, permission) {
   if (permission && !access.can(permission)) {
     throw err(403, 'forbidden', 'You do not have permission to do that here.');
   }
-  await assertNotInGrace(pool, businessId);
+  // A non-owner stopped here by a billing state gets the neutral
+  // stop wording, never the reason (owner's ruling, Nov 19, 2026).
+  await assertNotInGrace(pool, businessId, { neutral: !access.isOwner });
   return access;
 }
 

@@ -29,7 +29,10 @@ test('the stepper exists and each direction records the honest movement type', (
   // taps before it (behavior-pinned in stepQueue.test.js).
   assert.ok(page.includes("type: 'correction',"), 'down is a correction');
   assert.ok(page.includes('quantity: confirmed - 1,'), 'set to one lower than the confirmed count');
-  assert.ok(page.includes('recordMovement({ product, location,'), 'taps go through the shared movement funnel');
+  // Since the Adjust-door fix (owner catch, Nov 19, 2026), the
+  // stepper's taps go through recordAdjustment — the products.edit
+  // stock-adjustments door — not the scanner's scan.use funnel.
+  assert.ok(page.includes('recordAdjustment({ product, location,'), 'taps go through the stock-adjustment door');
 });
 
 test('the down tap can never take a count below zero', () => {
