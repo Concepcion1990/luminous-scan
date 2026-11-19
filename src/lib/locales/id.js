@@ -3656,7 +3656,7 @@ export const id = {
   "training.lessons.welcome-basics.title": "Selamat datang: menemukan jalan Anda",
   "training.lessons.your-language.step1": "Buka Pengaturan, atau ketuk menu bahasa di bagian atas layar masuk.",
   "training.lessons.your-language.step2": "Pilih bahasa Anda dari daftar. Seluruh aplikasi berubah segera — menu, tombol, dan pelajaran seperti ini.",
-  "training.lessons.your-language.step3": "Anda dapat mengubahnya kembali kapan saja. Pilihan Anda tetap di perangkat ini.",
+  "training.lessons.your-language.step3": "Anda dapat mengubahnya kembali kapan saja. Pilihan Anda diingat — pilih di layar masuk dan aplikasi akan terbuka dalam bahasa Anda.",
   "training.lessons.your-language.step4": "Tanggal dan waktu mengikuti pengaturan toko Anda, jadi jadwal Anda selalu menunjukkan waktu lokal toko Anda.",
   "training.lessons.your-language.title": "Gunakan aplikasi dalam bahasa Anda",
   "training.lessonsDoneOf": "{done} dari {total} pelajaran selesai",

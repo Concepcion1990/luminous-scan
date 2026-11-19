@@ -3656,7 +3656,7 @@ export const ja = {
   "training.lessons.welcome-basics.title": "ようこそ：アプリの歩き方",
   "training.lessons.your-language.step1": "設定を開くか、サインイン画面の上部にある言語メニューをタップしてください。",
   "training.lessons.your-language.step2": "リストからあなたの言語を選んでください。アプリ全体がすぐに変わります — メニュー、ボタン、このようなレッスンもです。",
-  "training.lessons.your-language.step3": "いつでも元に戻すことができます。あなたの選択はこのデバイスに残ります。",
+  "training.lessons.your-language.step3": "いつでも元に戻すことができます。あなたの選択は保存されます。サインイン画面で選ぶと、アプリはあなたの言語で開きます。",
   "training.lessons.your-language.step4": "日付と時刻は店舗の設定に従うため、スケジュールには常に店舗の現地時刻が表示されます。",
   "training.lessons.your-language.title": "あなたの言語でアプリを使う",
   "training.lessonsDoneOf": "{total} 件のレッスンのうち {done} 件が完了",

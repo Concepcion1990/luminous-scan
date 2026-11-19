@@ -3656,7 +3656,7 @@ export const it = {
   "training.lessons.welcome-basics.title": "Benvenuto: orientarsi",
   "training.lessons.your-language.step1": "Apri Impostazioni, oppure tocca il menu della lingua in cima alla schermata di accesso.",
   "training.lessons.your-language.step2": "Scegli la tua lingua dall'elenco. Tutta l'app cambia subito — menu, pulsanti e lezioni come questa.",
-  "training.lessons.your-language.step3": "Puoi cambiarla di nuovo in qualsiasi momento. La tua scelta resta su questo dispositivo.",
+  "training.lessons.your-language.step3": "Puoi cambiarla di nuovo in qualsiasi momento. La tua scelta viene ricordata — sceglila nella schermata di accesso e l’app si apre nella tua lingua.",
   "training.lessons.your-language.step4": "Date e orari seguono le impostazioni del tuo negozio, quindi i tuoi turni mostrano sempre l'ora locale del tuo negozio.",
   "training.lessons.your-language.title": "Usare l'app nella tua lingua",
   "training.lessonsDoneOf": "{done} di {total} lezioni completate",
