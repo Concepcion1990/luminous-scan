@@ -3656,7 +3656,7 @@ export const bho = {
   "training.lessons.welcome-basics.title": "स्वागत बा: आपन रास्ता खोजल",
   "training.lessons.your-language.step1": "सेटिंग्स खोलीं, भा साइन-इन स्क्रीन के ऊपर भाषा मेनू दबाईं।",
   "training.lessons.your-language.step2": "सूची से आपन भाषा चुनीं। पूरा ऐप तुरंते बदल जाला — मेनू, बटन आ एह जइसन पाठ।",
-  "training.lessons.your-language.step3": "रउआ एकरा के कवनो समय वापस बदल सकत बानी। राउर पसंद एह डिवाइस पर रहेला।",
+  "training.lessons.your-language.step3": "रउआ एकरा के कवनो समय वापस बदल सकत बानी। राउर पसंद याद रहेला — एकरा साइन-इन स्क्रीन पर चुनीं आ ऐप राउर भाषा में खुलेला।",
   "training.lessons.your-language.step4": "तारीख आ समय राउर स्टोर के सेटिंग्स के पालन करेला, एह से राउर शेड्यूल हमेशा राउर स्टोर के स्थानीय समय देखावेला।",
   "training.lessons.your-language.title": "ऐप के आपन भाषा में इस्तेमाल करीं",
   "training.lessonsDoneOf": "{done} / {total} पाठ पूरा भइल",
