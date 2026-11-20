@@ -3452,7 +3452,7 @@ export const sw = {
   "training.lessons.mgr-schedules.step3": "Hifadhi. Mtu hupata kengele kwamba ratiba yake imewekwa au imebadilishwa.",
   "training.lessons.mgr-schedules.step4": "Jenga ratiba kuzunguka likizo iliyoidhinishwa, na uwape watu taarifa — madirisha yao ya kuingia kazini hufuata nyakati hizi.",
   "training.lessons.mgr-schedules.title": "Kuweka ratiba za wafanyakazi",
-  "training.lessons.mgr-staff-permissions.step1": "Fungua Wafanyakazi kuona timu, majukumu yao na kile kila jukumu linaweza kufanya.",
+  "training.lessons.mgr-staff-permissions.step1": "Ikiwa mmiliki amekupa orodha ya wafanyakazi, fungua Wafanyakazi ili kuona timu, majukumu yao na kile kila jukumu linaweza kufanya.",
   "training.lessons.mgr-staff-permissions.step2": "Majukumu ni vifurushi vya ruhusa: kile mtu anachoweza kuona na kubadilisha hufuata jukumu lake na ruhusa zozote zilizowekwa kwenye rekodi yake mwenyewe.",
   "training.lessons.mgr-staff-permissions.step3": "Ikiwa mmiliki amekupa usimamizi wa wafanyakazi, unaweza kurekebisha jukumu la mfanyakazi — kamwe lako mwenyewe, na kamwe la mmiliki.",
   "training.lessons.mgr-staff-permissions.step4": "Kila wakati jukumu linapoKUA, programu humwekea mtu alama ya mafunzo kuhusu sehemu mpya. Tarajia hilo, na uwaambie linakuja.",
@@ -4798,4 +4798,7 @@ export const sw = {
   "training.lessons.welcome-basics.step5": "Sera na masharti ya duka lako huonyeshwa mara moja kwenye ukurasa wako wa karibu, na huishi katika Mipangilio, ambako unaweza kuyasoma wakati wowote.",
   "apiErrors.policyDocNotFound": "Hati hiyo si moja ya mbili hizo.",
   "apiErrors.policyFileNotFound": "Hakuna faili iliyohifadhiwa kwa hati hiyo.",
+  "staffLib.perm.staffRoster": "Tazama orodha kamili ya wafanyakazi",
+  "staffLib.area.staffAccess": "Orodha ya wafanyakazi",
+  "staff.memberDialog.staffAccessHint": "Wasimamizi pekee — kwa alama hii, msimamizi huyu anaona orodha kamili ya wafanyakazi, kwa kusoma tu. Bila hiyo, msimamizi anaona kadi yake mwenyewe tu. Alama hii haifanyi chochote kwa wafanyakazi.",
 };
