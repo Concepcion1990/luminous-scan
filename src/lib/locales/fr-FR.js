@@ -3586,7 +3586,7 @@ export const frFR = {
   "training.lessons.products-find-edit.step1": "Ouvrez Produits pour chercher tout ce que votre boutique propose, par nom, SKU, code-barres ou ISBN.",
   "training.lessons.products-find-edit.step2": "Ouvrez un produit pour voir ses détails, ses photos, ses prix et combien il y en a à chaque emplacement.",
   "training.lessons.products-find-edit.step3": "Si votre rôle permet la modification, vous pouvez corriger les noms, les prix et les détails — enregistrez, et le changement est partout à la fois. Supprimer un produit pour de bon se trouve dans le menu de la ligne et appartient au propriétaire — cela demande toujours une confirmation d'abord, et c'est la seule façon de faire baisser le nombre de produits.",
-  "training.lessons.products-find-edit.step4": "Produit tout nouveau ? Si vous voyez le bouton Nouveau produit, vous pouvez l’ajouter avec son code-barres pour que le scanner le reconnaisse ensuite. Chaque case de code du formulaire — UPC, code-barres et code QR — a son propre bouton de scan, pour pointer l’appareil photo au lieu de taper.",
+  "training.lessons.products-find-edit.step4": "Produit tout nouveau ? Si vous voyez le bouton Nouveau produit, vous pouvez l’ajouter avec son code-barres pour que le scanner le reconnaisse ensuite. Chaque case de code du formulaire — SKU, UPC, code-barres et code QR — a son propre bouton de scan, pour pointer l’appareil photo au lieu de taper. La case ISBN en a un aussi, et il lit le numéro imprimé lui-même — bien pratique quand un code-barres est abîmé — et ne le remplit que lorsque le numéro est juste.",
   'training.lessons.products-find-edit.step5': 'Vous ajoutez un produit ? Indiquez combien vous en avez dans Quantité en stock et il est stocké aussitôt, enregistré comme une réception — aucune étape de réception séparée. Laissez vide et le produit commence à zéro.',
   'training.lessons.products-find-edit.step6': "Sur la page Produits même, vous pouvez changer le stock sur la ligne : touchez la flèche du haut pour en ajouter un, celle du bas pour en retirer un — chaque touche est inscrite dans l'historique des mouvements. Avec plusieurs emplacements, touchez le nombre (ou Ajouter du stock dans le menu de la ligne) pour ouvrir la feuille de stock et choisir l'endroit. Dans cette feuille, le bouton Scanner pour compter, à côté de la quantité, scanne à la place : pointez l'appareil photo sur chaque article qui arrive et la quantité monte toute seule — les flèches fonctionnent toujours à la main, et Enregistrer reste le toucher qui l'inscrit.",
   "training.lessons.products-find-edit.step7": "Vous modifiez un produit ? Le formulaire de modification a la même case « Quantité en stock », qui affiche le nombre à l'emplacement choisi. Changez le nombre et enregistrez — la différence est consignée comme un mouvement de stock, jamais écrasée sans trace.",
@@ -4755,4 +4755,9 @@ export const frFR = {
   "staffLib.perm.productsCreate": "Ajouter de nouveaux produits",
   "staffLib.area.productsAccess": "Ajout de produits",
   "staff.memberDialog.productsAccessHint": "Avec cette case cochée, cette personne voit les boutons Nouveau produit et peut ajouter des produits au catalogue. Sans elle, les boutons ne s’affichent pas pour elle.",
+  "productForm.readIsbnTitle": "Lire l’ISBN imprimé",
+  "productForm.readIsbnHint": "Pointez l’appareil photo vers l’ISBN imprimé sur le livre, puis touchez Lire le numéro. Si le code-barres peut être lu, il remplit aussi le numéro.",
+  "productForm.readIsbnButton": "Lire le numéro",
+  "productForm.readIsbnWorking": "Lecture du numéro…",
+  "productForm.readIsbnFailed": "Ce numéro n’a pas été lu clairement, donc rien n’a été rempli. Réessayez, ou fermez ceci et tapez le numéro.",
 };
