@@ -4760,4 +4760,8 @@ export const ar = {
   "productForm.readIsbnButton": "قراءة الرقم",
   "productForm.readIsbnWorking": "جارٍ قراءة الرقم…",
   "productForm.readIsbnFailed": "لم يُقرأ ذلك الرقم بوضوح، لذا لم يُملأ أي شيء. حاول مرة أخرى، أو أغلق هذا واكتب الرقم.",
+  "staffLib.perm.locationsCreate": "إضافة مواقع جديدة",
+  "staffLib.area.locationsAccess": "إضافة المواقع",
+  "staff.memberDialog.locationsAccessHint": "بهذه العلامة، يمكن لهذا الشخص إضافة مواقع جديدة. وبدونها، يمكن للمالك فقط إضافة موقع، ولا تظهر له أزرار الإضافة.",
+  "apiErrors.locationsCreateReserved": "فقط المالك، أو عضو فريق سمح له المالك بإضافة مواقع، يمكنه إضافة موقع.",
 };

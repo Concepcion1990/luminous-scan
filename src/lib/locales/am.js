@@ -4760,4 +4760,8 @@ export const am = {
   "productForm.readIsbnButton": "ቁጥር አንብብ",
   "productForm.readIsbnWorking": "ቁጥሩ በመነበብ ላይ…",
   "productForm.readIsbnFailed": "ያ ቁጥር በግልጽ አልተነበበም፣ ስለዚህ ምንም አልተሞላም። እንደገና ይሞክሩ፣ ወይም ይህን ዝግተው ቁጥሩን ይተይቡ።",
+  "staffLib.perm.locationsCreate": "አዳዲስ ቦታዎችን ጨምር",
+  "staffLib.area.locationsAccess": "ቦታዎችን መጨመር",
+  "staff.memberDialog.locationsAccessHint": "በዚህ ምልክት፣ ይህ ሰው አዳዲስ ቦታዎችን መጨመር ይችላል። ያለሱ፣ ቦታ መጨመር የሚችለው ባለቤቱ ብቻ ነው፣ እና የመጨመሪያ ቁልፎቹ ለእሱ አይታዩም።",
+  "apiErrors.locationsCreateReserved": "ቦታ መጨመር የሚችለው ባለቤቱ፣ ወይም ባለቤቱ ቦታዎችን ለመጨመር የፈቀደለት የቡድን አባል ብቻ ነው።",
 };
