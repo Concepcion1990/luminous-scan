@@ -4760,4 +4760,8 @@ export const sw = {
   "productForm.readIsbnButton": "Soma nambari",
   "productForm.readIsbnWorking": "Inasoma nambari…",
   "productForm.readIsbnFailed": "Nambari hiyo haikusomeka wazi, kwa hiyo hakuna kilichojazwa. Jaribu tena, au funga hii na uandike nambari.",
+  "staffLib.perm.locationsCreate": "Ongeza maeneo mapya",
+  "staffLib.area.locationsAccess": "Kuongeza maeneo",
+  "staff.memberDialog.locationsAccessHint": "Kwa tiki hii, mtu huyu anaweza kuongeza maeneo mapya. Bila tiki hii, mmiliki pekee ndiye anaweza kuongeza eneo, na vitufe vya kuongeza havionekani kwake.",
+  "apiErrors.locationsCreateReserved": "Mmiliki pekee, au mshiriki wa timu ambaye mmiliki amemruhusu kuongeza maeneo, ndiye anaweza kuongeza eneo.",
 };
