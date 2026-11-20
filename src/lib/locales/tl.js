@@ -3452,7 +3452,7 @@ export const tl = {
   "training.lessons.mgr-schedules.step3": "I-save. Makakatanggap ang tao ng kampana na itinakda o binago ang kanilang iskedyul.",
   "training.lessons.mgr-schedules.step4": "Buuin ang mga iskedyul batay sa naaprubahang pahinga sa trabaho, at bigyan ng abiso ang mga tao — sumusunod ang kanilang mga window ng pag-clock in sa mga oras na ito.",
   "training.lessons.mgr-schedules.title": "Pagtatakda ng mga iskedyul ng staff",
-  "training.lessons.mgr-staff-permissions.step1": "Buksan ang Staff para makita ang team, ang kanilang mga tungkulin at kung ano ang maaaring gawin ng bawat tungkulin.",
+  "training.lessons.mgr-staff-permissions.step1": "Kung ibinigay sa iyo ng may-ari ang listahan ng staff, buksan ang Staff upang makita ang koponan, ang kanilang mga tungkulin at kung ano ang maaaring gawin ng bawat tungkulin.",
   "training.lessons.mgr-staff-permissions.step2": "Ang mga tungkulin ay mga bundle ng mga pahintulot: kung ano ang maaaring makita at baguhin ng isang tao ay sumusunod sa kanilang tungkulin at anumang pahintulot na nakatakda sa sarili nilang rekord.",
   "training.lessons.mgr-staff-permissions.step3": "Kung binigyan ka ng may-ari ng pamamahala ng staff, maaari mong ayusin ang tungkulin ng isang miyembro ng staff — hindi kailanman ang sa iyo, at hindi kailanman ang sa may-ari.",
   "training.lessons.mgr-staff-permissions.step4": "Tuwing LUMALAKI ang isang tungkulin, mina-flag ng app ang tao para sa pagsasanay sa mga bagong bahagi. Asahan ito, at sabihin sa kanila na darating ito.",
@@ -4798,4 +4798,7 @@ export const tl = {
   "training.lessons.welcome-basics.step5": "Ang mga patakaran at tuntunin ng iyong tindahan ay ipinapakita nang isang beses sa iyong welcome page, at tumitira ang mga ito sa Mga Setting, kung saan mababasa mo ang mga ito anumang oras.",
   "apiErrors.policyDocNotFound": "Ang dokumentong iyon ay hindi isa sa dalawa.",
   "apiErrors.policyFileNotFound": "Walang file na naka-save para sa dokumentong iyon.",
+  "staffLib.perm.staffRoster": "Tingnan ang buong listahan ng staff",
+  "staffLib.area.staffAccess": "Listahan ng staff",
+  "staff.memberDialog.staffAccessHint": "Para sa mga manager lamang — sa tsek na ito, makikita ng manager na ito ang buong listahan ng staff, basa lamang. Kung wala ito, ang sarili lang niyang card ang makikita ng isang manager. Walang ginagawa ang tsek na ito para sa staff.",
 };
