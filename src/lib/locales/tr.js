@@ -4760,4 +4760,8 @@ export const tr = {
   "productForm.readIsbnButton": "Numarayı oku",
   "productForm.readIsbnWorking": "Numara okunuyor…",
   "productForm.readIsbnFailed": "O numara net okunamadı, bu yüzden hiçbir şey doldurulmadı. Tekrar deneyin veya bunu kapatıp numarayı yazın.",
+  "staffLib.perm.locationsCreate": "Yeni konumlar ekle",
+  "staffLib.area.locationsAccess": "Konum ekleme",
+  "staff.memberDialog.locationsAccessHint": "Bu işaretle bu kişi yeni konumlar ekleyebilir. İşaret yoksa konumu yalnızca sahibi ekleyebilir ve ekleme düğmeleri ona görünmez.",
+  "apiErrors.locationsCreateReserved": "Konumu yalnızca sahibi veya sahibin konum eklemesine izin verdiği bir ekip üyesi ekleyebilir.",
 };

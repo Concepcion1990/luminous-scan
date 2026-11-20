@@ -4760,4 +4760,8 @@ export const tl = {
   "productForm.readIsbnButton": "Basahin ang numero",
   "productForm.readIsbnWorking": "Binabasa ang numero…",
   "productForm.readIsbnFailed": "Hindi nabasa nang malinaw ang numerong iyon, kaya walang napunan. Subukan muli, o isara ito at i-type ang numero.",
+  "staffLib.perm.locationsCreate": "Magdagdag ng mga bagong lokasyon",
+  "staffLib.area.locationsAccess": "Pagdaragdag ng mga lokasyon",
+  "staff.memberDialog.locationsAccessHint": "Sa tsek na ito, makakapagdagdag ng mga bagong lokasyon ang taong ito. Kung wala ito, ang may-ari lamang ang makakapagdagdag ng lokasyon, at hindi lumalabas ang mga button na magdagdag para sa kanila.",
+  "apiErrors.locationsCreateReserved": "Ang may-ari lamang, o isang miyembro ng koponan na pinayagan ng may-ari na magdagdag ng mga lokasyon, ang makakapagdagdag ng lokasyon.",
 };
