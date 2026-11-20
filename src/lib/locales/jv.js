@@ -4760,4 +4760,8 @@ export const jv = {
   "productForm.readIsbnButton": "Maca nomer",
   "productForm.readIsbnWorking": "Nembé maca nomer…",
   "productForm.readIsbnFailed": "Nomer punika boten kawaos kanthi cetha, pramila boten wonten ingkang kaesi. Cobi malih, utawi tutup punika lan ketik nomeripun.",
+  "staffLib.perm.locationsCreate": "Tambah lokasi anyar",
+  "staffLib.area.locationsAccess": "Nambah lokasi",
+  "staff.memberDialog.locationsAccessHint": "Kanthi tandha iki, wong iki bisa nambah lokasi anyar. Tanpa tandha iki, mung kang duwe sing bisa nambah lokasi, lan tombol tambah ora katon kanggo dheweke.",
+  "apiErrors.locationsCreateReserved": "Mung kang duwe, utawa anggota tim sing diidinake kang duwe kanggo nambah lokasi, sing bisa nambah lokasi.",
 };

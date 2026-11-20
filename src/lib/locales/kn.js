@@ -4760,4 +4760,8 @@ export const kn = {
   "productForm.readIsbnButton": "ಸಂಖ್ಯೆ ಓದಿ",
   "productForm.readIsbnWorking": "ಸಂಖ್ಯೆಯನ್ನು ಓದಲಾಗುತ್ತಿದೆ…",
   "productForm.readIsbnFailed": "ಆ ಸಂಖ್ಯೆ ಸ್ಪಷ್ಟವಾಗಿ ಓದಲಾಗಲಿಲ್ಲ, ಆದ್ದರಿಂದ ಏನನ್ನೂ ತುಂಬಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ, ಅಥವಾ ಇದನ್ನು ಮುಚ್ಚಿ ಸಂಖ್ಯೆಯನ್ನು ಟೈಪ್ ಮಾಡಿ.",
+  "staffLib.perm.locationsCreate": "ಹೊಸ ಸ್ಥಳಗಳನ್ನು ಸೇರಿಸಿ",
+  "staffLib.area.locationsAccess": "ಸ್ಥಳಗಳನ್ನು ಸೇರಿಸುವುದು",
+  "staff.memberDialog.locationsAccessHint": "ಈ ಗುರುತಿನೊಂದಿಗೆ, ಈ ವ್ಯಕ್ತಿಯು ಹೊಸ ಸ್ಥಳಗಳನ್ನು ಸೇರಿಸಬಹುದು. ಅದಿಲ್ಲದೆ, ಮಾಲೀಕರು ಮಾತ್ರ ಸ್ಥಳವನ್ನು ಸೇರಿಸಬಹುದು, ಮತ್ತು ಸೇರಿಸುವ ಗುಂಡಿಗಳು ಅವರಿಗೆ ಕಾಣಿಸುವುದಿಲ್ಲ.",
+  "apiErrors.locationsCreateReserved": "ಮಾಲೀಕರು, ಅಥವಾ ಸ್ಥಳಗಳನ್ನು ಸೇರಿಸಲು ಮಾಲೀಕರು ಅನುಮತಿಸಿದ ತಂಡದ ಸದಸ್ಯರು ಮಾತ್ರ ಸ್ಥಳವನ್ನು ಸೇರಿಸಬಹುದು.",
 };
