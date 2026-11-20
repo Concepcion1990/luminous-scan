@@ -3452,7 +3452,7 @@ export const pcm = {
   "training.lessons.mgr-schedules.step3": "Save. Di person go get one bell say dia schedule don set or change.",
   "training.lessons.mgr-schedules.step4": "Build schedules around approved time off, and give people notice — dia clock-in windows dey follow dis times.",
   "training.lessons.mgr-schedules.title": "How to set staff schedules",
-  "training.lessons.mgr-staff-permissions.step1": "Open Staff to see di team, dia roles and wetin each role fit do.",
+  "training.lessons.mgr-staff-permissions.step1": "If di owner don give you di staff list, open Staff to see di team, dia roles and wetin each role fit do.",
   "training.lessons.mgr-staff-permissions.step2": "Roles na bundles of permissions: wetin one person fit see and change dey follow dia role and any permissions wey dem set for dia own record.",
   "training.lessons.mgr-staff-permissions.step3": "If di owner don give you staff management, you fit adjust one staff member role — never your own, and never di owner own.",
   "training.lessons.mgr-staff-permissions.step4": "Every time one role GROW, di app dey flag di person for training for di new parts. Expect am, and tell dem say e dey come.",
@@ -4798,4 +4798,7 @@ export const pcm = {
   "training.lessons.welcome-basics.step5": "Your store policies and terms dem dey show once for your welcome page, and dem dey live for Settings, where you fit read dem any time.",
   "apiErrors.policyDocNotFound": "Dat document no be one of di two.",
   "apiErrors.policyFileNotFound": "No file dey saved for dat document.",
+  "staffLib.perm.staffRoster": "See di full staff list",
+  "staffLib.area.staffAccess": "Staff list",
+  "staff.memberDialog.staffAccessHint": "Na for managers only — with this tick, this manager fit see di whole staff list, read-only. Without am, a manager go see only dia own card. This tick no dey do anything for staff.",
 };
