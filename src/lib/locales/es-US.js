@@ -4760,4 +4760,8 @@ export const esUS = {
   "productForm.readIsbnButton": "Leer número",
   "productForm.readIsbnWorking": "Leyendo el número…",
   "productForm.readIsbnFailed": "Ese número no se leyó con claridad, así que no se llenó nada. Inténtalo de nuevo, o cierra esto y escribe el número.",
+  "staffLib.perm.locationsCreate": "Agregar ubicaciones nuevas",
+  "staffLib.area.locationsAccess": "Agregar ubicaciones",
+  "staff.memberDialog.locationsAccessHint": "Con esta marca, esta persona puede agregar ubicaciones nuevas. Sin ella, solo el dueño puede agregar una ubicación, y los botones para agregar no le aparecen.",
+  "apiErrors.locationsCreateReserved": "Solo el dueño, o un miembro del equipo al que el dueño haya permitido agregar ubicaciones, puede agregar una ubicación.",
 };
