@@ -3452,7 +3452,7 @@ export const de = {
   "training.lessons.mgr-schedules.step3": "Speichern. Die Person erhält eine Glocke, dass ihr Dienstplan festgelegt oder geändert wurde.",
   "training.lessons.mgr-schedules.step4": "Erstellen Sie Dienstpläne rund um genehmigte freie Tage und geben Sie den Personen Vorlauf — ihre Einstempelfenster folgen diesen Zeiten.",
   "training.lessons.mgr-schedules.title": "Dienstpläne für Mitarbeiter festlegen",
-  "training.lessons.mgr-staff-permissions.step1": "Öffnen Sie Mitarbeiter, um das Team, ihre Rollen und die Möglichkeiten jeder Rolle zu sehen.",
+  "training.lessons.mgr-staff-permissions.step1": "Wenn der Inhaber Ihnen die Mitarbeiterliste gegeben hat, öffnen Sie Mitarbeiter, um das Team, seine Rollen und die Berechtigungen jeder Rolle zu sehen.",
   "training.lessons.mgr-staff-permissions.step2": "Rollen sind Bündel von Berechtigungen: Was eine Person sehen und ändern kann, folgt ihrer Rolle und etwaigen Berechtigungen in ihrem eigenen Datensatz.",
   "training.lessons.mgr-staff-permissions.step3": "Wenn der Inhaber Ihnen die Mitarbeiterverwaltung gegeben hat, können Sie die Rolle eines Mitarbeiters anpassen — niemals Ihre eigene und niemals die des Inhabers.",
   "training.lessons.mgr-staff-permissions.step4": "Jedes Mal, wenn eine Rolle WÄCHST, markiert die App die Person für Schulungen zu den neuen Teilen. Rechnen Sie damit und sagen Sie es ihnen im Voraus.",
@@ -4798,4 +4798,7 @@ export const de = {
   "training.lessons.welcome-basics.step5": "Die Richtlinien und Bedingungen Ihres Geschäfts werden einmal auf Ihrer Willkommensseite gezeigt, und sie leben in den Einstellungen, wo Sie sie jederzeit lesen können.",
   "apiErrors.policyDocNotFound": "Dieses Dokument ist keines der beiden.",
   "apiErrors.policyFileNotFound": "Für dieses Dokument ist keine Datei gespeichert.",
+  "staffLib.perm.staffRoster": "Die vollständige Mitarbeiterliste sehen",
+  "staffLib.area.staffAccess": "Mitarbeiterliste",
+  "staff.memberDialog.staffAccessHint": "Nur für Manager — mit diesem Häkchen sieht dieser Manager die vollständige Mitarbeiterliste, nur zum Ansehen. Ohne das Häkchen sieht ein Manager nur seine eigene Karte. Dieser Haken bewirkt für Mitarbeitende nichts.",
 };
