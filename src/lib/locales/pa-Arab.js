@@ -4760,4 +4760,8 @@ export const paArab = {
   "productForm.readIsbnButton": "نمبر پڑھو",
   "productForm.readIsbnWorking": "نمبر پڑھیا جا رہیا ہے…",
   "productForm.readIsbnFailed": "اوہ نمبر صاف نہیں پڑھیا گیا، اس لئی کچھ نہیں بھریا گیا۔ دوبارہ کوشش کرو، یا ایہنوں بند کر کے نمبر لکھو۔",
+  "staffLib.perm.locationsCreate": "نویں تھاں شامل کرو",
+  "staffLib.area.locationsAccess": "تھاں شامل کرنا",
+  "staff.memberDialog.locationsAccessHint": "ایس نشان نال، ایہہ بندہ نویں تھاں شامل کر سکدا ہے۔ ایس توں بغیر، تھاں صرف مالک شامل کر سکدا ہے، تے شامل کرن دے بٹن اوہنوں نظر نہیں آندے۔",
+  "apiErrors.locationsCreateReserved": "صرف مالک، یا ٹیم دا اوہ بندہ جہنوں مالک نے تھاں شامل کرن دی اجازت دتی ہووے، تھاں شامل کر سکدا ہے۔",
 };
