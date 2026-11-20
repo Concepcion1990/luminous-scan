@@ -3452,7 +3452,7 @@ export const esUS = {
   "training.lessons.mgr-schedules.step3": "Guarde. La persona recibe un aviso en su campana de que su horario fue establecido o cambiado.",
   "training.lessons.mgr-schedules.step4": "Elabore los horarios teniendo en cuenta los días libres aprobados y avise a las personas: sus ventanas de registro de entrada siguen estos horarios.",
   "training.lessons.mgr-schedules.title": "Establecer los horarios del personal",
-  "training.lessons.mgr-staff-permissions.step1": "Abra Personal para ver el equipo, sus roles y qué puede hacer cada rol.",
+  "training.lessons.mgr-staff-permissions.step1": "Si el propietario le ha dado la lista del personal, abra Personal para ver al equipo, sus roles y lo que cada rol puede hacer.",
   "training.lessons.mgr-staff-permissions.step2": "Los roles son paquetes de permisos: lo que una persona puede ver y cambiar depende de su rol y de cualquier permiso establecido en su propio registro.",
   "training.lessons.mgr-staff-permissions.step3": "Si el propietario le ha dado la gestión del personal, puede ajustar el rol de un miembro del personal, nunca el suyo ni el del propietario.",
   "training.lessons.mgr-staff-permissions.step4": "Cada vez que un rol CRECE, la aplicación marca a la persona para capacitación en las partes nuevas. Espérelo y avísele de que viene.",
@@ -4798,4 +4798,7 @@ export const esUS = {
   "training.lessons.welcome-basics.step5": "Las políticas y los términos de tu tienda se muestran una vez en tu página de bienvenida, y viven en Ajustes, donde puedes leerlos cuando quieras.",
   "apiErrors.policyDocNotFound": "Ese documento no es uno de los dos.",
   "apiErrors.policyFileNotFound": "No hay ningún archivo guardado para ese documento.",
+  "staffLib.perm.staffRoster": "Ver la lista completa del personal",
+  "staffLib.area.staffAccess": "Lista del personal",
+  "staff.memberDialog.staffAccessHint": "Solo gerentes — con esta marca, este gerente ve la lista completa del personal, solo para leerla. Sin ella, un gerente solo ve su propia tarjeta. Esta marca no hace nada para el personal.",
 };
