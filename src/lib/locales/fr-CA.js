@@ -3452,7 +3452,7 @@ export const frCA = {
   "training.lessons.mgr-schedules.step3": "Enregistrez. La personne reçoit une cloche disant que son horaire a été établi ou modifié.",
   "training.lessons.mgr-schedules.step4": "Bâtissez les horaires autour des congés approuvés, et donnez un préavis aux gens — leurs fenêtres de pointage d’arrivée suivent ces heures.",
   "training.lessons.mgr-schedules.title": "Établir les horaires du personnel",
-  "training.lessons.mgr-staff-permissions.step1": "Ouvrez Personnel pour voir l’équipe, leurs rôles et ce que chaque rôle peut faire.",
+  "training.lessons.mgr-staff-permissions.step1": "Si le propriétaire vous a donné la liste du personnel, ouvrez Personnel pour voir l’équipe, leurs rôles et ce que chaque rôle peut faire.",
   "training.lessons.mgr-staff-permissions.step2": "Les rôles sont des ensembles d’autorisations : ce qu’une personne peut voir et modifier suit son rôle et toute autorisation réglée sur sa propre fiche.",
   "training.lessons.mgr-staff-permissions.step3": "Si le propriétaire vous a donné la gestion du personnel, vous pouvez ajuster le rôle d’un membre du personnel — jamais le vôtre, et jamais celui du propriétaire.",
   "training.lessons.mgr-staff-permissions.step4": "Chaque fois qu’un rôle GRANDIT, l’application signale la personne pour une formation sur les nouvelles parties. Attendez-vous-y, et dites-leur que ça s’en vient.",
@@ -4798,4 +4798,7 @@ export const frCA = {
   "training.lessons.welcome-basics.step5": "Les politiques et conditions de votre magasin sont montrées une fois sur votre page de bienvenue, et elles vivent dans Paramètres, où vous pouvez les lire à tout moment.",
   "apiErrors.policyDocNotFound": "Ce document n'est pas l'un des deux.",
   "apiErrors.policyFileNotFound": "Aucun fichier n'est enregistré pour ce document.",
+  "staffLib.perm.staffRoster": "Voir la liste complète du personnel",
+  "staffLib.area.staffAccess": "Liste du personnel",
+  "staff.memberDialog.staffAccessHint": "Gestionnaires seulement — avec cette coche, ce gestionnaire voit la liste complète du personnel, en lecture seule. Sans elle, un gestionnaire ne voit que sa propre carte. Cette coche ne fait rien pour le personnel.",
 };
