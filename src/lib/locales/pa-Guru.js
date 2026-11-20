@@ -4760,4 +4760,8 @@ export const paGuru = {
   "productForm.readIsbnButton": "ਨੰਬਰ ਪੜ੍ਹੋ",
   "productForm.readIsbnWorking": "ਨੰਬਰ ਪੜ੍ਹਿਆ ਜਾ ਰਿਹਾ ਹੈ…",
   "productForm.readIsbnFailed": "ਉਹ ਨੰਬਰ ਸਾਫ਼ ਨਹੀਂ ਪੜ੍ਹਿਆ ਗਿਆ, ਇਸ ਲਈ ਕੁਝ ਨਹੀਂ ਭਰਿਆ ਗਿਆ। ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ, ਜਾਂ ਇਸਨੂੰ ਬੰਦ ਕਰਕੇ ਨੰਬਰ ਲਿਖੋ।",
+  "staffLib.perm.locationsCreate": "ਨਵੀਆਂ ਥਾਵਾਂ ਸ਼ਾਮਲ ਕਰੋ",
+  "staffLib.area.locationsAccess": "ਥਾਵਾਂ ਸ਼ਾਮਲ ਕਰਨਾ",
+  "staff.memberDialog.locationsAccessHint": "ਇਸ ਨਿਸ਼ਾਨ ਨਾਲ, ਇਹ ਵਿਅਕਤੀ ਨਵੀਆਂ ਥਾਵਾਂ ਸ਼ਾਮਲ ਕਰ ਸਕਦਾ ਹੈ। ਇਸ ਤੋਂ ਬਿਨਾਂ, ਥਾਂ ਸਿਰਫ਼ ਮਾਲਕ ਸ਼ਾਮਲ ਕਰ ਸਕਦਾ ਹੈ, ਅਤੇ ਸ਼ਾਮਲ ਕਰਨ ਵਾਲੇ ਬਟਨ ਉਸਨੂੰ ਨਹੀਂ ਦਿਸਦੇ।",
+  "apiErrors.locationsCreateReserved": "ਸਿਰਫ਼ ਮਾਲਕ, ਜਾਂ ਟੀਮ ਦਾ ਉਹ ਮੈਂਬਰ ਜਿਸਨੂੰ ਮਾਲਕ ਨੇ ਥਾਵਾਂ ਸ਼ਾਮਲ ਕਰਨ ਦੀ ਇਜਾਜ਼ਤ ਦਿੱਤੀ ਹੋਵੇ, ਥਾਂ ਸ਼ਾਮਲ ਕਰ ਸਕਦਾ ਹੈ।",
 };

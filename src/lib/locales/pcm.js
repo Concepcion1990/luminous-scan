@@ -4760,4 +4760,8 @@ export const pcm = {
   "productForm.readIsbnButton": "Read di number",
   "productForm.readIsbnWorking": "Dey read di number…",
   "productForm.readIsbnFailed": "Dat number no read clear, so notin no fill inside. Try again, or close dis one and type di number.",
+  "staffLib.perm.locationsCreate": "Add location dem",
+  "staffLib.area.locationsAccess": "To add locations",
+  "staff.memberDialog.locationsAccessHint": "With this tick, this person fit add new locations. Without am, na only the owner fit add location, and the add buttons no go show for am.",
+  "apiErrors.locationsCreateReserved": "Na only the owner, or team member wey the owner don allow to add locations, fit add a location.",
 };
