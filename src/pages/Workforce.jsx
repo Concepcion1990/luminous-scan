@@ -30,6 +30,7 @@ import {
   voidReward,
 } from '@/lib/rewards';
 import { toLocalDate } from '@/lib/dates';
+import { buildVoiceWav, createPcmCapture } from '@/lib/voiceCapture';
 import {
   breakIn,
   breakOut,
@@ -743,16 +744,25 @@ function InboxTab({ businessId, ctx, people, onRead }) {
   // the take, or send it. The server converts the recording to
   // MP3 so it plays on the other person's phone, whatever kind
   // it is. 3 minutes is the composer's cap.
+  //
+  // Capture counts samples through WebAudio (src/lib/
+  // voiceCapture.js): a device recorder's container clock
+  // proved able to squeeze and shift a note on Android, so the
+  // note's timing is never read from a container — it is the
+  // sample count. MediaRecorder remains only as the fallback
+  // for browsers where WebAudio capture cannot run.
   const VOICE_MAX_MS = 3 * 60 * 1000;
   const [recPhase, setRecPhase] = useState('idle'); // idle | recording | ready
   const [recElapsedMs, setRecElapsedMs] = useState(0);
   const [recPreviewUrl, setRecPreviewUrl] = useState(null);
-  const recRef = useRef({ recorder: null, stream: null, chunks: [], timer: null, startedAt: 0, blob: null, durationMs: 0 });
+  const recRef = useRef({ recorder: null, capture: null, stream: null, chunks: [], timer: null, startedAt: 0, blob: null, durationMs: 0 });
 
   const stopRecTracks = useCallback(() => {
     const rec = recRef.current;
     if (rec.timer) clearInterval(rec.timer);
     rec.timer = null;
+    if (rec.capture) rec.capture.dispose();
+    rec.capture = null;
     if (rec.stream) rec.stream.getTracks().forEach((track) => track.stop());
     rec.stream = null;
   }, []);
@@ -771,8 +781,24 @@ function InboxTab({ businessId, ctx, people, onRead }) {
     if (recPreviewUrl) URL.revokeObjectURL(recPreviewUrl);
   }, [recPreviewUrl, stopRecTracks]);
 
+  const stopRecording = () => {
+    const rec = recRef.current;
+    if (rec.capture) {
+      const { samples, sampleRate } = rec.capture.finish();
+      rec.capture = null;
+      const wav = buildVoiceWav(samples, sampleRate);
+      rec.blob = new Blob([wav.bytes], { type: 'audio/wav' });
+      rec.durationMs = wav.durationMs;
+      stopRecTracks();
+      setRecPreviewUrl(URL.createObjectURL(rec.blob));
+      setRecPhase('ready');
+      return;
+    }
+    if (rec.recorder?.state === 'recording') rec.recorder.stop();
+  };
+
   const startRecording = async () => {
-    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
+    if (!navigator.mediaDevices?.getUserMedia) {
       toast({ title: t('workforce.messages.micDenied'), variant: 'destructive' });
       return;
     }
@@ -783,14 +809,48 @@ function InboxTab({ businessId, ctx, people, onRead }) {
       toast({ title: t('workforce.messages.micDenied'), variant: 'destructive' });
       return;
     }
+    const rec = recRef.current;
+    rec.stream = stream;
+    rec.startedAt = Date.now();
+
+    // The on-screen clock and the 3-minute cap follow the
+    // recording itself: samples counted for a PCM capture, the
+    // wall clock for the MediaRecorder fallback.
+    const armTimer = () => {
+      setRecElapsedMs(0);
+      setRecPhase('recording');
+      rec.timer = setInterval(() => {
+        const elapsed = rec.capture
+          ? (rec.capture.sampleCount() / rec.capture.sampleRate) * 1000
+          : Date.now() - rec.startedAt;
+        setRecElapsedMs(elapsed);
+        if (elapsed >= VOICE_MAX_MS) stopRecording();
+      }, 250);
+    };
+
+    // First choice: the sample-counted PCM capture.
+    try {
+      const capture = createPcmCapture(stream);
+      await capture.begin();
+      rec.capture = capture;
+      armTimer();
+      return;
+    } catch {
+      rec.capture = null;
+    }
+
+    // Fallback: the device recorder, for browsers where
+    // WebAudio capture cannot run at all.
+    if (typeof MediaRecorder === 'undefined') {
+      stopRecTracks();
+      toast({ title: t('workforce.messages.micDenied'), variant: 'destructive' });
+      return;
+    }
     const mimeType = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg;codecs=opus', '']
       .find((candidate) => candidate === '' || MediaRecorder.isTypeSupported(candidate));
     const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
-    const rec = recRef.current;
     rec.recorder = recorder;
-    rec.stream = stream;
     rec.chunks = [];
-    rec.startedAt = Date.now();
     recorder.ondataavailable = (event) => {
       if (event.data?.size) rec.chunks.push(event.data);
     };
@@ -803,19 +863,7 @@ function InboxTab({ businessId, ctx, people, onRead }) {
       setRecPhase('ready');
     };
     recorder.start();
-    setRecElapsedMs(0);
-    setRecPhase('recording');
-    rec.timer = setInterval(() => {
-      const elapsed = Date.now() - rec.startedAt;
-      setRecElapsedMs(elapsed);
-      if (elapsed >= VOICE_MAX_MS && recRef.current.recorder?.state === 'recording') {
-        recRef.current.recorder.stop();
-      }
-    }, 250);
-  };
-
-  const stopRecording = () => {
-    if (recRef.current.recorder?.state === 'recording') recRef.current.recorder.stop();
+    armTimer();
   };
 
   const sendVoice = async () => {
