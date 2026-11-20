@@ -4760,4 +4760,8 @@ export const vi = {
   "productForm.readIsbnButton": "Đọc số",
   "productForm.readIsbnWorking": "Đang đọc số…",
   "productForm.readIsbnFailed": "Số đó không đọc rõ được, nên chưa điền gì cả. Thử lại, hoặc đóng cái này và gõ số vào.",
+  "staffLib.perm.locationsCreate": "Thêm vị trí mới",
+  "staffLib.area.locationsAccess": "Thêm vị trí",
+  "staff.memberDialog.locationsAccessHint": "Với dấu chọn này, người này có thể thêm vị trí mới. Không có nó, chỉ chủ sở hữu mới có thể thêm vị trí, và các nút thêm không hiện ra với họ.",
+  "apiErrors.locationsCreateReserved": "Chỉ chủ sở hữu, hoặc thành viên nhóm được chủ sở hữu cho phép thêm vị trí, mới có thể thêm vị trí.",
 };

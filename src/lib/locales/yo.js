@@ -4760,4 +4760,8 @@ export const yo = {
   "productForm.readIsbnButton": "Ka nọ́mbà",
   "productForm.readIsbnWorking": "Ń ka nọ́mbà náà…",
   "productForm.readIsbnFailed": "A kò ka nọ́mbà náà dáradára, nítorí náà a kò kún nǹkan kan. Gbìyànjú sí i, tàbí ti èyí kí o sì tẹ nọ́mbà náà.",
+  "staffLib.perm.locationsCreate": "Fi àwọn ibùdó tuntun kún un",
+  "staffLib.area.locationsAccess": "Fífi ibùdó kún un",
+  "staff.memberDialog.locationsAccessHint": "Pẹ̀lú àmì yìí, ẹni yìí lè fi àwọn ibùdó tuntun kún un. Láìsí i, olówó nìkan ló lè fi ibùdó kún un, àwọn bọ́tìnì fífi kún un kò sì hàn sí i.",
+  "apiErrors.locationsCreateReserved": "Olówó nìkan, tàbí ọmọ ẹgbẹ́ tí olówó fún ní àṣẹ láti fi ibùdó kún un, ló lè fi ibùdó kún un.",
 };

@@ -4760,4 +4760,8 @@ export const wuu = {
   "productForm.readIsbnButton": "读号码",
   "productForm.readIsbnWorking": "正在读号码…",
   "productForm.readIsbnFailed": "搿个号码呒没读清爽，所以呒没填任何物事。再试一趟，或者关脱搿个手动输入号码。",
+  "staffLib.perm.locationsCreate": "添加新位置",
+  "staffLib.area.locationsAccess": "添加位置",
+  "staff.memberDialog.locationsAccessHint": "勾选搿项之后，搿个人好添加新位置。勿勾选个辰光，只有店主好添加位置，添加按钮勿会显示拨伊。",
+  "apiErrors.locationsCreateReserved": "只有店主，或者店主允许添加位置个团队成员，才好添加位置。",
 };
