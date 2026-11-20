@@ -3452,7 +3452,7 @@ export const it = {
   "training.lessons.mgr-schedules.step3": "Salva. La persona riceve una campanella che il suo turno è stato impostato o modificato.",
   "training.lessons.mgr-schedules.step4": "Costruisci i turni intorno alle ferie e ai permessi approvati, e avvisa le persone — le loro finestre di timbratura seguono questi orari.",
   "training.lessons.mgr-schedules.title": "Impostare i turni del personale",
-  "training.lessons.mgr-staff-permissions.step1": "Apri Personale per vedere il team, i loro ruoli e cosa può fare ciascun ruolo.",
+  "training.lessons.mgr-staff-permissions.step1": "Se il titolare ti ha dato l’elenco del personale, apri Personale per vedere la squadra, i loro ruoli e ciò che ogni ruolo può fare.",
   "training.lessons.mgr-staff-permissions.step2": "I ruoli sono insiemi di autorizzazioni: ciò che una persona può vedere e modificare dipende dal suo ruolo e da eventuali autorizzazioni impostate sulla sua scheda.",
   "training.lessons.mgr-staff-permissions.step3": "Se il titolare ti ha dato la gestione del personale, puoi modificare il ruolo di un membro del personale — mai il tuo e mai quello del titolare.",
   "training.lessons.mgr-staff-permissions.step4": "Ogni volta che un ruolo CRESCE, l'app segnala la persona per la formazione sulle nuove parti. Aspettatelo e dille che sta arrivando.",
@@ -4798,4 +4798,7 @@ export const it = {
   "training.lessons.welcome-basics.step5": "Le politiche e i termini del tuo negozio vengono mostrati una volta sulla tua pagina di benvenuto, e vivono in Impostazioni, dove puoi leggerli in qualsiasi momento.",
   "apiErrors.policyDocNotFound": "Quel documento non è uno dei due.",
   "apiErrors.policyFileNotFound": "Nessun file è salvato per quel documento.",
+  "staffLib.perm.staffRoster": "Vedi l'elenco completo del personale",
+  "staffLib.area.staffAccess": "Elenco del personale",
+  "staff.memberDialog.staffAccessHint": "Solo manager — con questo segno di spunta, questo manager vede l’elenco completo del personale, in sola lettura. Senza, un manager vede solo la propria scheda. Questo segno di spunta non fa nulla per il personale.",
 };

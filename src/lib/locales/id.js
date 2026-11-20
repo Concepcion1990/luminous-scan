@@ -3452,7 +3452,7 @@ export const id = {
   "training.lessons.mgr-schedules.step3": "Simpan. Orang tersebut mendapat lonceng bahwa jadwalnya telah diatur atau diubah.",
   "training.lessons.mgr-schedules.step4": "Susun jadwal berdasarkan cuti yang disetujui, dan beri tahu orang-orang — jendela absen masuk mereka mengikuti waktu-waktu ini.",
   "training.lessons.mgr-schedules.title": "Mengatur jadwal staf",
-  "training.lessons.mgr-staff-permissions.step1": "Buka Staf untuk melihat tim, peran mereka, dan apa yang boleh dilakukan setiap peran.",
+  "training.lessons.mgr-staff-permissions.step1": "Jika pemilik telah memberi Anda daftar staf, buka Staf untuk melihat tim, peran mereka, dan apa yang dapat dilakukan setiap peran.",
   "training.lessons.mgr-staff-permissions.step2": "Peran adalah kumpulan izin: apa yang dapat dilihat dan diubah seseorang mengikuti perannya dan izin apa pun yang diatur pada catatannya sendiri.",
   "training.lessons.mgr-staff-permissions.step3": "Jika pemilik telah memberi Anda manajemen staf, Anda dapat menyesuaikan peran anggota staf — tidak pernah peran Anda sendiri, dan tidak pernah peran pemilik.",
   "training.lessons.mgr-staff-permissions.step4": "Setiap kali peran BERTUMBUH, aplikasi menandai orang tersebut untuk pelatihan pada bagian-bagian baru. Harapkan itu, dan beri tahu mereka bahwa itu akan datang.",
@@ -4798,4 +4798,7 @@ export const id = {
   "training.lessons.welcome-basics.step5": "Kebijakan dan ketentuan toko Anda ditampilkan sekali di halaman sambutan Anda, dan tinggal di Pengaturan, tempat Anda dapat membacanya kapan saja.",
   "apiErrors.policyDocNotFound": "Dokumen itu bukan salah satu dari keduanya.",
   "apiErrors.policyFileNotFound": "Tidak ada berkas yang disimpan untuk dokumen itu.",
+  "staffLib.perm.staffRoster": "Lihat daftar staf lengkap",
+  "staffLib.area.staffAccess": "Daftar staf",
+  "staff.memberDialog.staffAccessHint": "Khusus manajer — dengan centang ini, manajer ini melihat daftar staf lengkap, hanya untuk dibaca. Tanpa centang ini, seorang manajer hanya melihat kartu mereka sendiri. Centang ini tidak berpengaruh untuk staf.",
 };
