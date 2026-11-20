@@ -45,6 +45,7 @@ import { createTrainingRouter } from './trainingRoutes.js';
 import { createBillingRouter, stripeWebhookHandler } from './billingRoutes.js';
 import { createRecoveryRouter } from './recoveryRoutes.js';
 import { createSupportRouter } from './supportRoutes.js';
+import { createBusinessPolicyRouter } from './businessPolicyRoutes.js';
 import { createDeletionRouter } from './deletionRoutes.js';
 import { assertSubscriptionAccess } from './subscriptionAccess.js';
 import { ocrAssetsHandler } from './ocrAssets.js';
@@ -245,6 +246,9 @@ export function createApp() {
   app.use('/api', createPosRouter({ getPool }));
   // Training: role-scoped lesson tracks, assignments, team progress.
   app.use('/api', createTrainingRouter({ getPool }));
+  // The owner's own store policies + terms (server/businessPolicyRoutes.js):
+  // two per-business documents, owner-written, team-readable.
+  app.use('/api', createBusinessPolicyRouter({ getPool }));
   app.use('/api', createShopRouter({ getPool }));
 
   app.use('/api', (_req, res) => {

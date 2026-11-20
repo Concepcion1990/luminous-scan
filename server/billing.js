@@ -350,6 +350,9 @@ export async function runWipeSweep(pool, { now = new Date(), logger = console } 
         // Carrier label records carry customer addresses and have
         // no FK cascade (migration 025) — they die with the business.
         await client.query('DELETE FROM order_shipping_labels WHERE business_id = $1', [businessId]);
+        // The owner's uploaded policy files likewise carry no FK
+        // cascade (migration 032) — they die with the business.
+        await client.query('DELETE FROM business_policy_files WHERE business_id = $1', [businessId]);
         await client.query('DELETE FROM import_events WHERE business_id = $1', [businessId]);
       }
       await client.query('DELETE FROM users WHERE id = $1', [ownerId]);

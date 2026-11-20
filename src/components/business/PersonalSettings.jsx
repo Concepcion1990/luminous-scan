@@ -8,6 +8,8 @@ import { useAuth } from '@/lib/AuthContext';
 import { memberLevelOf } from '@/lib/staff';
 import { gs1LinksForLocale } from '@/lib/gs1Links';
 import LanguagePicker from '@/components/LanguagePicker';
+import BusinessPoliciesCard from './BusinessPoliciesCard';
+import PlatformPoliciesCard from './PlatformPoliciesCard';
 import SettingsCard from './SettingsCard';
 import SecurityCard from './SecurityCard';
 import SupportCard from './SupportCard';
@@ -41,6 +43,13 @@ const APPEARANCE_OPTIONS = [
  *     governs their session, exactly the release-281 semantics);
  *   - Report a problem (SupportCard — live for any signed-in
  *     role);
+ *   - the business's own Store Policies + Terms & Conditions,
+ *     read-only (BusinessPoliciesCard — the owner's documents,
+ *     shown once at the member's first-start welcome and living
+ *     here; the card renders nothing when the owner has written
+ *     nothing), and Luminous StockHaven's own policies
+ *     (PlatformPoliciesCard — the app's legal pages, pull-up-able
+ *     by every role);
  *   - the permanent Download the app door;
  *   - any business sections the OWNER ticked for this member
  *     (tax rate / business details / GS1 / edit business name),
@@ -141,6 +150,8 @@ export default function PersonalSettings() {
 
       <BusinessCardReadOnly profile={profile} showContact={!canContact} />
 
+      <BusinessPoliciesCard businessId={activeId} editable={false} />
+
       {canName || canDetails || canContact ? (
         <GrantedDetailsCard
           businessId={activeId}
@@ -159,6 +170,8 @@ export default function PersonalSettings() {
       {canGs1 ? <GrantedGs1Card businessId={activeId} profile={profile} onSaved={refresh} /> : null}
 
       <SupportCard />
+
+      <PlatformPoliciesCard />
 
       <InstallAppCard />
 
