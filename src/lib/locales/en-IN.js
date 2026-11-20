@@ -3455,7 +3455,7 @@ export const enIN = {
   "training.lessons.mgr-schedules.step3": "Save. The person gets a bell that their schedule was set or changed.",
   "training.lessons.mgr-schedules.step4": "Build schedules around approved time off, and give people notice — their clock-in windows follow these times.",
   "training.lessons.mgr-schedules.title": "Setting staff schedules",
-  "training.lessons.mgr-staff-permissions.step1": "Open Staff to see the team, their roles and what each role may do.",
+  "training.lessons.mgr-staff-permissions.step1": "If the owner has given you the staff roster, open Staff to see the team, their roles and what each role may do.",
   "training.lessons.mgr-staff-permissions.step2": "Roles are bundles of permissions: what a person can see and change follows their role and any permissions set on their own record.",
   "training.lessons.mgr-staff-permissions.step3": "If the owner has given you staff management, you can adjust a staff member’s role — never your own, and never the owner’s.",
   "training.lessons.mgr-staff-permissions.step4": "Every time a role GROWS, the app flags the person for training on the new parts. Expect it, and tell them it is coming.",
@@ -4801,4 +4801,7 @@ export const enIN = {
   "training.lessons.welcome-basics.step5": "Your store's policies and terms are shown once on your welcome page, and they live in Settings, where you can read them any time.",
   "apiErrors.policyDocNotFound": "That document is not one of the two.",
   "apiErrors.policyFileNotFound": "No file is saved for that document.",
+  "staffLib.perm.staffRoster": "See the full staff roster",
+  "staffLib.area.staffAccess": "Staff roster",
+  "staff.memberDialog.staffAccessHint": "Managers only — with this tick, this manager sees the full staff roster, read-only. Without it, a manager sees only their own card. This tick does nothing for staff.",
 };
