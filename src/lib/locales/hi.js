@@ -4760,4 +4760,8 @@ export const hi = {
   "productForm.readIsbnButton": "नंबर पढ़ें",
   "productForm.readIsbnWorking": "नंबर पढ़ा जा रहा है…",
   "productForm.readIsbnFailed": "वह नंबर स्पष्ट नहीं पढ़ा गया, इसलिए कुछ नहीं भरा गया। फिर से प्रयास करें, या इसे बंद करके नंबर लिखें।",
+  "staffLib.perm.locationsCreate": "नए स्थान जोड़ें",
+  "staffLib.area.locationsAccess": "स्थान जोड़ना",
+  "staff.memberDialog.locationsAccessHint": "इस निशान के साथ, यह व्यक्ति नए स्थान जोड़ सकता है। इसके बिना, स्थान केवल मालिक जोड़ सकता है, और जोड़ने के बटन उसे दिखाई नहीं देते।",
+  "apiErrors.locationsCreateReserved": "केवल मालिक, या टीम का वह सदस्य जिसे मालिक ने स्थान जोड़ने की अनुमति दी हो, स्थान जोड़ सकता है।",
 };

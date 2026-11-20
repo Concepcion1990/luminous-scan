@@ -4760,4 +4760,8 @@ export const ha = {
   "productForm.readIsbnButton": "Karanta lamba",
   "productForm.readIsbnWorking": "Ana karanta lambar…",
   "productForm.readIsbnFailed": "Lambar ba ta karantu sarai ba, don haka ba a cike komai ba. Sake gwadawa, ko rufe wannan ka buga lambar.",
+  "staffLib.perm.locationsCreate": "Ƙara sabbin wurare",
+  "staffLib.area.locationsAccess": "Ƙara wurare",
+  "staff.memberDialog.locationsAccessHint": "Da wannan alamar, wannan mutum zai iya ƙara sabbin wurare. Idan babu shi, mai shi kaɗai zai iya ƙara wuri, kuma maɓallan ƙarawa ba sa bayyana gare shi.",
+  "apiErrors.locationsCreateReserved": "Mai shi kaɗai, ko ɗan ƙungiyar da mai shi ya ba shi izinin ƙara wurare, ne zai iya ƙara wuri.",
 };
