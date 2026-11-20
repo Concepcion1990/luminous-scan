@@ -3586,7 +3586,7 @@ export const ptBR = {
   "training.lessons.products-find-edit.step1": "Abra Produtos para pesquisar tudo o que sua loja vende, por nome, SKU, código de barras ou ISBN.",
   "training.lessons.products-find-edit.step2": "Abra um produto para ver seus detalhes, fotos, preços e quantos há em cada local.",
   "training.lessons.products-find-edit.step3": "Se a sua função permitir editar, você pode corrigir nomes, preços e detalhes — salve, e a mudança aparece em todos os lugares ao mesmo tempo. Eliminar um produto de vez fica no menu da linha e pertence ao dono — pede sempre confirmação primeiro, e é a única forma de o número de produtos descer.",
-  "training.lessons.products-find-edit.step4": "Produto totalmente novo? Se você vir o botão Novo produto, pode adicioná-lo com seu código de barras para que o scanner o reconheça daí em diante. Cada caixa de código do formulário — UPC, código de barras e código QR — tem o seu próprio botão de leitura, para apontar a câmara em vez de escrever.",
+  "training.lessons.products-find-edit.step4": "Produto totalmente novo? Se você vir o botão Novo produto, pode adicioná-lo com seu código de barras para que o scanner o reconheça daí em diante. Cada caixa de código do formulário — SKU, UPC, código de barras e código QR — tem o seu próprio botão de leitura, para apontar a câmara em vez de escrever. A caixa de ISBN também tem um, e ele lê o próprio número impresso — útil quando um código de barras está danificado — e só o preenche quando o número confere.",
   'training.lessons.products-find-edit.step5': 'Adicionando um produto? Informe quantos você tem em Quantidade em estoque e ele entra no estoque na hora, registrado como um recebimento — sem uma etapa separada de recebimento. Deixe em branco e o produto começa do zero.',
   'training.lessons.products-find-edit.step6': "Na própria página de Produtos você muda o estoque na linha: toque na seta para cima para adicionar um, na seta para baixo para retirar um — cada toque é registrado no histórico de movimentações. Com vários locais, toque no número (ou em Adicionar estoque no menu da linha) para abrir a ficha de estoque e escolher o lugar. Nessa folha, o botão Escanear para contar ao lado da quantidade escaneia por você: aponte a câmera para cada item que chega e a quantidade sobe sozinha — as setas continuam funcionando à mão, e Salvar continua sendo o toque que registra.",
   "training.lessons.products-find-edit.step7": "Editando um produto? O formulário de edição tem a mesma caixa «Quantidade em estoque», mostrando a quantidade no local escolhido. Altere o número e salve — a diferença é registrada como uma movimentação de estoque, nunca substituída sem registro.",
@@ -4755,4 +4755,9 @@ export const ptBR = {
   "staffLib.perm.productsCreate": "Adicionar novos produtos",
   "staffLib.area.productsAccess": "Adição de produtos",
   "staff.memberDialog.productsAccessHint": "Com esta marcação, esta pessoa vê os botões Novo produto e pode adicionar produtos ao catálogo. Sem ela, os botões não aparecem para ela.",
+  "productForm.readIsbnTitle": "Ler o ISBN impresso",
+  "productForm.readIsbnHint": "Aponte a câmera para o ISBN impresso no livro e toque em Ler número. Se o código de barras puder ser lido, ele também preenche o número.",
+  "productForm.readIsbnButton": "Ler número",
+  "productForm.readIsbnWorking": "Lendo o número…",
+  "productForm.readIsbnFailed": "Esse número não foi lido com clareza, então nada foi preenchido. Tente de novo ou feche isto e digite o número.",
 };
