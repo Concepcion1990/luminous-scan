@@ -4760,4 +4760,8 @@ export const prs = {
   "productForm.readIsbnButton": "خواندن شماره",
   "productForm.readIsbnWorking": "در حال خواندن شماره…",
   "productForm.readIsbnFailed": "آن شماره به‌روشنی خوانده نشد، پس چیزی پر نشد. دوباره تلاش کنید، یا این را ببندید و شماره را تایپ کنید.",
+  "staffLib.perm.locationsCreate": "افزودن مکان‌های جدید",
+  "staffLib.area.locationsAccess": "افزودن مکان‌ها",
+  "staff.memberDialog.locationsAccessHint": "با این علامت، این شخص می‌تواند مکان‌های جدید اضافه کند. بدون آن، فقط مالک می‌تواند مکان اضافه کند و دکمه‌های افزودن برای او نمایش داده نمی‌شوند.",
+  "apiErrors.locationsCreateReserved": "فقط مالک، یا عضوی از تیم که مالک به او اجازهٔ افزودن مکان‌ها را داده است، می‌تواند مکان اضافه کند.",
 };
