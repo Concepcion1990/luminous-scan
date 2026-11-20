@@ -4760,4 +4760,8 @@ export const te = {
   "productForm.readIsbnButton": "నంబర్ చదవండి",
   "productForm.readIsbnWorking": "నంబర్ చదువుతోంది…",
   "productForm.readIsbnFailed": "ఆ నంబర్ స్పష్టంగా చదవబడలేదు, కాబట్టి ఏదీ నింపబడలేదు. మళ్లీ ప్రయత్నించండి, లేదా దీన్ని మూసివేసి నంబర్‌ను టైప్ చేయండి.",
+  "staffLib.perm.locationsCreate": "కొత్త స్థానాలను జోడించండి",
+  "staffLib.area.locationsAccess": "స్థానాలను జోడించడం",
+  "staff.memberDialog.locationsAccessHint": "ఈ గుర్తుతో, ఈ వ్యక్తి కొత్త స్థానాలను జోడించగలరు. అది లేకుండా, యజమాని మాత్రమే స్థానాన్ని జోడించగలరు, మరియు జోడించే బటన్‌లు వారికి కనిపించవు.",
+  "apiErrors.locationsCreateReserved": "యజమాని, లేదా స్థానాలను జోడించడానికి యజమాని అనుమతించిన బృంద సభ్యుడు మాత్రమే స్థానాన్ని జోడించగలరు.",
 };
