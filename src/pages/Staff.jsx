@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { base44 } from '@/api/client';
 import { Loader2, Plus, ShieldAlert, ShieldCheck, UserPlus } from 'lucide-react';
 import { useBusiness } from '@/hooks/useBusiness';
+import useStaffAccess from '@/hooks/useStaffAccess';
 import { isBoss } from '@/lib/bossAuthority';
 import { useAuth } from '@/lib/AuthContext';
 import { scoped } from '@/lib/scoped';
@@ -29,6 +30,16 @@ export default function Staff() {
   // historical name; its value is the boss check, so the workspace's
   // owner gets the send-reset door and the administrator option.
   const isAdmin = isBoss(user, record);
+  // Managing staff (add / edit / remove members, edit roles) is
+  // the boss's work, or a staff.manage holder's — the two
+  // audiences who have always reached this page. A manager the
+  // owner gave only the staff roster (the staff.roster tick,
+  // Nov 19, 2026) opens the page READ-ONLY: the roster and the
+  // role cards render, the manage furniture does not. The
+  // server refuses their writes regardless; this keeps doors
+  // they cannot walk through off their wall.
+  const { can } = useStaffAccess();
+  const canManageStaff = isAdmin || can('staff.manage');
 
   const [members, setMembers] = useState([]);
   const [roles, setRoles] = useState([]);
@@ -199,14 +210,16 @@ export default function Staff() {
         </div>
         <div className="flex flex-wrap gap-2">
           <LimitBadge label={t('staff.limitBadgeLabel')} used={seatsUsed} limit={staffLimit} />
-          {canCreateRoles && (
+          {canCreateRoles && canManageStaff && (
             <Button variant="outline" onClick={openNewRole}>
               <Plus className="mr-1.5 h-4 w-4" /> {t('staff.newRole')}
             </Button>
           )}
-          <Button data-tour="staff-add" onClick={openAdd} disabled={!activeId}>
-            <UserPlus className="mr-1.5 h-4 w-4" /> {t('staff.addMember')}
-          </Button>
+          {canManageStaff && (
+            <Button data-tour="staff-add" onClick={openAdd} disabled={!activeId}>
+              <UserPlus className="mr-1.5 h-4 w-4" /> {t('staff.addMember')}
+            </Button>
+          )}
         </div>
       </div>
 
@@ -259,9 +272,11 @@ export default function Staff() {
                 <p className="mx-auto mt-1 max-w-md text-xs leading-relaxed text-muted-foreground">
                   {t('staff.emptyBody')}
                 </p>
-                <Button className="mt-3" onClick={openAdd} disabled={!activeId}>
-                  <UserPlus className="mr-1.5 h-4 w-4" /> {t('staff.addFirst')}
-                </Button>
+                {canManageStaff && (
+                  <Button className="mt-3" onClick={openAdd} disabled={!activeId}>
+                    <UserPlus className="mr-1.5 h-4 w-4" /> {t('staff.addFirst')}
+                  </Button>
+                )}
               </div>
             ) : (
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
@@ -272,6 +287,7 @@ export default function Staff() {
                     locations={locations}
                     planKey={cardPlanKey}
                     isOwner={isAdmin}
+                    readOnly={!canManageStaff}
                     onEdit={openEdit}
                     onRemove={removeMember}
                     onSendReset={sendReset}
@@ -304,8 +320,8 @@ export default function Staff() {
                   role={role}
                   planKey={cardPlanKey}
                   memberCount={countOnRole(role.id)}
-                  onEdit={openRole}
-                  onDelete={deleteRole}
+                  onEdit={canManageStaff ? openRole : undefined}
+                  onDelete={canManageStaff ? deleteRole : undefined}
                 />
               ))}
             </div>

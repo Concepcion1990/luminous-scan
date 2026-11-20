@@ -180,7 +180,7 @@ test('PermissionPicker only offers the plan\u2019s permissions', () => {
 test('Staff hides the New role button on Essentials and guards the opener', () => {
   const staff = readFileSync('src/pages/Staff.jsx', 'utf8');
   assert.match(staff, /const canCreateRoles = !entitlementLoading && !isEssentials;/);
-  assert.match(staff, /\{canCreateRoles && \(\s*\n?\s*<Button variant="outline" onClick=\{openNewRole\}>/);
+  assert.match(staff, /\{canCreateRoles && canManageStaff && \(\s*\n?\s*<Button variant="outline" onClick=\{openNewRole\}>/);
   assert.match(staff, /Custom roles are a Business feature/);
   assert.match(staff, /Custom roles are a Business feature: Essentials uses the five built-in roles/);
 });

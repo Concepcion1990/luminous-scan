@@ -111,7 +111,7 @@ test('frontend gates: Staff hides + New role on Essentials; role edit/delete gua
   const staff = src('src/pages/Staff.jsx');
   assert.match(staff, /canCreateRoles/);
   assert.match(staff, /const canCreateRoles = !entitlementLoading && !isEssentials;/);
-  assert.match(staff, /{canCreateRoles && \(/);
+  assert.match(staff, /{canCreateRoles && canManageStaff && \(/);
   // T6.3: the button label is a t() key now — check the wiring and the
   // rendered English string, not the JSX literal.
   assert.match(staff, /t\('staff\.newRole'\)/);

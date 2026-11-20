@@ -280,9 +280,37 @@ export function isLocationsGrant(key) {
   return LOCATIONS_GRANT_KEYS.includes(key);
 }
 
-/** Any per-member grant key (Settings sections + returns + products + locations). */
+/**
+ * Owner-granted staff roster (the owner's ruling, Nov 19,
+ * 2026, answering the release-314 §17 flag). Same pattern as
+ * the grants above: whether a manager sees the whole staff
+ * roster is the OWNER'S choice, made per manager. The key
+ * lives in the member's own permissions array, deliberately
+ * NOT part of PERMISSION_GROUPS / ALL_PERMISSIONS / the
+ * preset roles, and is edited in the member dialog as its own
+ * tick, so the permission picker can never wipe it and no role
+ * carries it by default. Like the Settings name and
+ * contact-details ticks (release 314), it is offered for every
+ * role but takes effect only for a MANAGER-level member — a
+ * staff member's stored tick stays inert, enforced server-side
+ * (server/entities.js canSeeRoster). Holding it lets a manager
+ * READ the full roster on the Staff page; editing members
+ * still takes staff.manage, and the personal contact fields
+ * and pay stay behind the hiring gate, exactly as before.
+ */
+export const ROSTER_GRANTS = [
+  { key: 'staff.roster', get label() { return t('staffLib.perm.staffRoster'); } },
+];
+
+export const ROSTER_GRANT_KEYS = ROSTER_GRANTS.map((grant) => grant.key);
+
+export function isRosterGrant(key) {
+  return ROSTER_GRANT_KEYS.includes(key);
+}
+
+/** Any per-member grant key (Settings sections + returns + products + locations + roster). */
 export function isMemberGrant(key) {
-  return isSettingsGrant(key) || isReturnsGrant(key) || isProductsGrant(key) || isLocationsGrant(key);
+  return isSettingsGrant(key) || isReturnsGrant(key) || isProductsGrant(key) || isLocationsGrant(key) || isRosterGrant(key);
 }
 
 /** A member row's level, mirroring the server's personLevel. */

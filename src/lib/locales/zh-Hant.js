@@ -3452,7 +3452,7 @@ export const zhHant = {
   "training.lessons.mgr-schedules.step3": "儲存。對方會收到鈴鐺通知，告知班表已設定或變更。",
   "training.lessons.mgr-schedules.step4": "請圍繞已核准的休假安排班表，並提前通知大家 — 他們的打卡時段會依照這些時間計算。",
   "training.lessons.mgr-schedules.title": "設定員工班表",
-  "training.lessons.mgr-staff-permissions.step1": "開啟「員工」查看團隊、他們的角色，以及每個角色可以做什麼。",
+  "training.lessons.mgr-staff-permissions.step1": "如果擁有者已將員工名單提供給您，請開啟「員工」，查看團隊、他們的角色以及每個角色可以執行的操作。",
   "training.lessons.mgr-staff-permissions.step2": "角色是權限的組合：一個人可以查看和變更的內容，取決於其角色以及其個人記錄上設定的任何權限。",
   "training.lessons.mgr-staff-permissions.step3": "如果擁有者已授予您員工管理權限，您可以調整員工的角色 — 但絕不能調整您自己的角色，也絕不能調整擁有者的角色。",
   "training.lessons.mgr-staff-permissions.step4": "每當一個角色的權限擴大時，應用程式都會標記該人員需要接受新部分的培訓。請預期這一點，並告知他們即將進行培訓。",
@@ -4798,4 +4798,7 @@ export const zhHant = {
   "training.lessons.welcome-basics.step5": "您商店的政策和條款會在您的歡迎頁面上顯示一次,並保存在設定中,您隨時可以在那裡閱讀。",
   "apiErrors.policyDocNotFound": "該文件不是這兩份文件之一。",
   "apiErrors.policyFileNotFound": "該文件沒有保存任何檔案。",
+  "staffLib.perm.staffRoster": "查看完整員工名單",
+  "staffLib.area.staffAccess": "員工名單",
+  "staff.memberDialog.staffAccessHint": "僅限經理 — 勾選此項後，這位經理可以查看完整員工名單，僅供查看。未勾選時，經理只能看到自己的卡片。此勾選對員工不起任何作用。",
 };
