@@ -3586,7 +3586,7 @@ export const yue = {
   "training.lessons.products-find-edit.step1": "打開「產品」，依名稱、SKU、條碼或 ISBN 搜尋你商店出售嘅所有產品。",
   "training.lessons.products-find-edit.step2": "打開一個產品，睇佢嘅詳細資料、照片、價錢，同埋每個地點嘅數量。",
   "training.lessons.products-find-edit.step3": "如果你嘅角色允許編輯，你可以修正名稱、價錢同詳細資料 — 儲存後，更改會即刻喺所有地方生效。 徹底刪走產品喺行選單入面，係店主嘅權限——佢永遠會先要求確認，而且係產品數量減少嘅唯一方法。",
-  "training.lessons.products-find-edit.step4": "全新產品嗎？如果你見到「新產品」掣，可以新增時附上佢嘅條碼，令掃描器從此以後都能認出佢。 表單入面每個代碼框——UPC、條碼同 QR 碼——都有自己嘅掃描掣，你可以對住鏡頭而唔使打字。",
+  "training.lessons.products-find-edit.step4": "全新產品嗎？如果你見到「新產品」掣，可以新增時附上佢嘅條碼，令掃描器從此以後都能認出佢。 表單入面每個代碼框——SKU、UPC、條碼同 QR 碼——都有自己嘅掃描掣，你可以對住鏡頭而唔使打字。 ISBN 框都有自己嘅掣，佢讀嘅就係印出嚟嘅號碼本身——條碼爛咗嗰陣好方便——而且只有號碼驗證啱咗先會填入去。",
   'training.lessons.products-find-edit.step5': '加緊產品？喺「現有數量」填返你而家有幾多，佢即刻入庫，記為一次收貨 — 唔使再行收貨嗰步。留空嘅話產品由零開始。',
   'training.lessons.products-find-edit.step6': "喺產品頁面嗰行就可以改庫存：撳向上箭嘴加一，撳向下箭嘴減一 — 每一下都會記入移動歷史。如果有幾個地點，撳個數字（或者行選單入面嘅「加庫存」）打開庫存表，揀返個地點。喺嗰張表入面，數量旁邊嘅「掃描盤點」掣會代替你掃描：將鏡頭對準每件到嘅貨，數量自己向上升——箭嘴依然可以人手用，「儲存」依然係記錄佢嗰一下。",
   "training.lessons.products-find-edit.step7": "編輯緊產品？編輯表格有同一個「現有數量」框，顯示所選地點嘅數量。改個數字再儲存 — 差額會記錄為一次庫存變動，永遠唔會喺冇記錄嘅情況下被覆寫。",
@@ -4755,4 +4755,9 @@ export const yue = {
   "staffLib.perm.productsCreate": "新增新產品",
   "staffLib.area.productsAccess": "新增產品",
   "staff.memberDialog.productsAccessHint": "剔咗呢一格，呢個人會見到「新產品」掣，可以將產品加入目錄。冇剔嘅話，啲掣唔會出現畀佢。",
+  "productForm.readIsbnTitle": "讀取印刷嘅 ISBN",
+  "productForm.readIsbnHint": "將鏡頭對準書上面印住嘅 ISBN，然後撳「讀取號碼」。如果條碼讀得到，佢都會填入號碼。",
+  "productForm.readIsbnButton": "讀取號碼",
+  "productForm.readIsbnWorking": "正在讀取號碼…",
+  "productForm.readIsbnFailed": "嗰個號碼讀得唔清楚，所以冇填入任何嘢。請再試一次，或者閂咗呢個視窗再輸入號碼。",
 };
