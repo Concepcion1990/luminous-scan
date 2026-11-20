@@ -3586,7 +3586,7 @@ export const zhHans = {
   "training.lessons.products-find-edit.step1": "打开“产品”，按名称、SKU、条形码或 ISBN 搜索您门店经营的一切商品。",
   "training.lessons.products-find-edit.step2": "打开一个产品，查看其详细信息、照片、价格以及每个位置的数量。",
   "training.lessons.products-find-edit.step3": "如果您的角色允许编辑，您可以修正名称、价格和详细信息——保存后，更改会立即在各处生效。 彻底删除产品位于行菜单中，属于店主的权限——它总是先要求确认，而且这是产品数量减少的唯一方式。",
-  "training.lessons.products-find-edit.step4": "全新产品？如果您看到“新产品”按钮，可以连同其条形码一起添加，这样扫描仪从此就能识别它。 表单中的每个代码框——UPC、条形码和二维码——都有自己的扫描按钮，您可以对准摄像头而不必输入。",
+  "training.lessons.products-find-edit.step4": "全新产品？如果您看到“新产品”按钮，可以连同其条形码一起添加，这样扫描仪从此就能识别它。 表单中的每个代码框——SKU、UPC、条形码和二维码——都有自己的扫描按钮，您可以对准摄像头而不必输入。 ISBN 框也有自己的按钮，它读取的就是印刷的号码本身——条形码损坏时很方便——并且只有在号码校验正确时才会填入。",
   'training.lessons.products-find-edit.step5': '要添加产品吗？在「现有数量」里填上您现在有多少，它会立即入库并记为一次收货 — 不用再单独走收货步骤。留空则产品从零开始。',
   'training.lessons.products-find-edit.step6': "就在产品页面的行上即可更改库存：点向上箭头加一，点向下箭头减一 — 每次点击都会记入移动历史。如果有多个地点，点数字（或行菜单中的「添加库存」）打开库存表并选择地点。在那张表里，数量旁边的「扫码计数」按钮会替你扫描：把摄像头对准每件到的货，数量自己往上走——箭头仍然可以手动用，「保存」仍然是记录它的那一下点击。",
   "training.lessons.products-find-edit.step7": "正在编辑产品？编辑表单中有相同的「现有数量」框，显示所选地点的数量。更改数字并保存 — 差额将被记录为一次库存变动，永远不会在没有记录的情况下被覆盖。",
@@ -4755,4 +4755,9 @@ export const zhHans = {
   "staffLib.perm.productsCreate": "添加新产品",
   "staffLib.area.productsAccess": "添加产品",
   "staff.memberDialog.productsAccessHint": "勾选此项后，此人会看到“新产品”按钮，并可以向目录中添加产品。不勾选时，按钮不会向其显示。",
+  "productForm.readIsbnTitle": "读取印刷的 ISBN",
+  "productForm.readIsbnHint": "将摄像头对准书上印刷的 ISBN，然后点按“读取号码”。如果条形码可以读取，它也会填入号码。",
+  "productForm.readIsbnButton": "读取号码",
+  "productForm.readIsbnWorking": "正在读取号码…",
+  "productForm.readIsbnFailed": "该号码没有读清楚，因此没有填入任何内容。请再试一次，或关闭此窗口并输入号码。",
 };

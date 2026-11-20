@@ -3586,7 +3586,7 @@ export const zhHant = {
   "training.lessons.products-find-edit.step1": "開啟「商品」，依名稱、SKU、條碼或 ISBN 搜尋您商店販售的所有商品。",
   "training.lessons.products-find-edit.step2": "開啟一個商品，查看其詳細資料、照片、價格，以及每個地點的數量。",
   "training.lessons.products-find-edit.step3": "如果您的角色允許編輯，您可以修正名稱、價格和詳細資料 — 儲存後，變更會立即在所有地方生效。 徹底刪除產品位於行選單中，屬於店主的權限——它總是先要求確認，而且這是產品數量減少的唯一方式。",
-  "training.lessons.products-find-edit.step4": "全新商品嗎？如果您看到「新產品」按鈕，可以在新增時附上其條碼，讓掃描器從此以後都能辨識它。 表單中的每個代碼框——UPC、條碼和 QR 碼——都有自己的掃描按鈕，您可以對準相機而不必輸入。",
+  "training.lessons.products-find-edit.step4": "全新商品嗎？如果您看到「新產品」按鈕，可以在新增時附上其條碼，讓掃描器從此以後都能辨識它。 表單中的每個代碼框——SKU、UPC、條碼和 QR 碼——都有自己的掃描按鈕，您可以對準相機而不必輸入。 ISBN 框也有自己的按鈕，它讀取的就是印刷的號碼本身——條碼損壞時很方便——並且只有在號碼校驗正確時才會填入。",
   'training.lessons.products-find-edit.step5': '要新增產品嗎？在「現有數量」裡填上您現在有多少，它會立即入庫並記為一次收貨 — 不用再單獨走收貨步驟。留空則產品從零開始。',
   'training.lessons.products-find-edit.step6': "就在產品頁面的行上即可更改庫存：點向上箭頭加一，點向下箭頭減一 — 每次點擊都會記入移動歷史。如果有多個地點，點數字（或行選單中的「新增庫存」）打開庫存表並選擇地點。在那張表裡，數量旁邊的「掃碼計數」按鈕會替你掃描：把攝像頭對準每件到的貨，數量自己往上走——箭頭仍然可以手動用，「保存」仍然是記錄它的那一下點擊。",
   "training.lessons.products-find-edit.step7": "正在編輯產品？編輯表單中有相同的「現有數量」框，顯示所選地點的數量。更改數字並儲存 — 差額將被記錄為一次庫存變動，永遠不會在沒有記錄的情況下被覆寫。",
@@ -4755,4 +4755,9 @@ export const zhHant = {
   "staffLib.perm.productsCreate": "新增新產品",
   "staffLib.area.productsAccess": "新增產品",
   "staff.memberDialog.productsAccessHint": "勾選此項後，此人會看到「新產品」按鈕，並可將產品新增至目錄。不勾選時，按鈕不會向其顯示。",
+  "productForm.readIsbnTitle": "讀取印刷的 ISBN",
+  "productForm.readIsbnHint": "將相機對準書上印刷的 ISBN，然後點按「讀取號碼」。如果條碼可以讀取，它也會填入號碼。",
+  "productForm.readIsbnButton": "讀取號碼",
+  "productForm.readIsbnWorking": "正在讀取號碼…",
+  "productForm.readIsbnFailed": "該號碼沒有讀清楚，因此沒有填入任何內容。請再試一次，或關閉此視窗並輸入號碼。",
 };
