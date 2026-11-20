@@ -3452,7 +3452,7 @@ export const tr = {
   "training.lessons.mgr-schedules.step3": "Kaydediniz. Kişi, programının ayarlandığına veya değiştirildiğine dair bir zil alır.",
   "training.lessons.mgr-schedules.step4": "Programları onaylanmış izinlere göre oluşturunuz ve insanlara haber veriniz — giriş pencereleri bu saatleri izler.",
   "training.lessons.mgr-schedules.title": "Personel programlarını ayarlamak",
-  "training.lessons.mgr-staff-permissions.step1": "Ekibi, rollerini ve her rolün ne yapabileceğini görmek için Personel'i açınız.",
+  "training.lessons.mgr-staff-permissions.step1": "Sahibi size personel listesini verdiyse ekibi, rollerini ve her rolün neler yapabileceğini görmek için Personeli açın.",
   "training.lessons.mgr-staff-permissions.step2": "Roller izin paketleridir: bir kişinin görebileceği ve değiştirebileceği, rolüne ve kendi kaydına ayarlanmış izinlere bağlıdır.",
   "training.lessons.mgr-staff-permissions.step3": "Sahip size personel yönetimi verdiyse, bir personel üyesinin rolünü ayarlayabilirsiniz — asla kendinizinkini ve asla sahibin rolünü değil.",
   "training.lessons.mgr-staff-permissions.step4": "Bir rol her BÜYÜDÜĞÜNDE, uygulama kişiyi yeni kısımlar için eğitimle işaretler. Bunu bekleyiniz ve geleceğini onlara söyleyiniz.",
@@ -4798,4 +4798,7 @@ export const tr = {
   "training.lessons.welcome-basics.step5": "Mağazanızın politikaları ve şartları karşılama sayfanızda bir kez gösterilir ve Ayarlar’da yaşar; orada bunları dilediğiniz zaman okuyabilirsiniz.",
   "apiErrors.policyDocNotFound": "Bu belge ikisinden biri değil.",
   "apiErrors.policyFileNotFound": "Bu belge için kaydedilmiş bir dosya yok.",
+  "staffLib.perm.staffRoster": "Personel listesinin tamamını gör",
+  "staffLib.area.staffAccess": "Personel listesi",
+  "staff.memberDialog.staffAccessHint": "Yalnızca yöneticiler — bu işaretle bu yönetici, personel listesinin tamamını salt okunur olarak görebilir. İşaret yoksa bir yönetici yalnızca kendi kartını görür. Bu işaret personel için hiçbir şey yapmaz.",
 };
