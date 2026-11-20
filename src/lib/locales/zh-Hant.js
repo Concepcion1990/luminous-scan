@@ -4760,4 +4760,8 @@ export const zhHant = {
   "productForm.readIsbnButton": "讀取號碼",
   "productForm.readIsbnWorking": "正在讀取號碼…",
   "productForm.readIsbnFailed": "該號碼沒有讀清楚，因此沒有填入任何內容。請再試一次，或關閉此視窗並輸入號碼。",
+  "staffLib.perm.locationsCreate": "新增新位置",
+  "staffLib.area.locationsAccess": "新增位置",
+  "staff.memberDialog.locationsAccessHint": "勾選此項後，此人可以新增新位置。不勾選時，只有店主可以新增位置，新增按鈕不會向其顯示。",
+  "apiErrors.locationsCreateReserved": "只有店主，或經店主允許新增位置的團隊成員，才能新增位置。",
 };

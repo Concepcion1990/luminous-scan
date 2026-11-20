@@ -4760,4 +4760,8 @@ export const zhHans = {
   "productForm.readIsbnButton": "读取号码",
   "productForm.readIsbnWorking": "正在读取号码…",
   "productForm.readIsbnFailed": "该号码没有读清楚，因此没有填入任何内容。请再试一次，或关闭此窗口并输入号码。",
+  "staffLib.perm.locationsCreate": "添加新位置",
+  "staffLib.area.locationsAccess": "添加位置",
+  "staff.memberDialog.locationsAccessHint": "勾选此项后，此人可以添加新位置。不勾选时，只有店主可以添加位置，添加按钮不会向其显示。",
+  "apiErrors.locationsCreateReserved": "只有店主，或经店主允许添加位置的团队成员，才能添加位置。",
 };

@@ -4760,4 +4760,8 @@ export const yue = {
   "productForm.readIsbnButton": "讀取號碼",
   "productForm.readIsbnWorking": "正在讀取號碼…",
   "productForm.readIsbnFailed": "嗰個號碼讀得唔清楚，所以冇填入任何嘢。請再試一次，或者閂咗呢個視窗再輸入號碼。",
+  "staffLib.perm.locationsCreate": "新增新位置",
+  "staffLib.area.locationsAccess": "新增位置",
+  "staff.memberDialog.locationsAccessHint": "剔咗呢一格，呢個人可以新增新位置。冇剔嘅話，只有老闆可以新增位置，啲新增掣唔會出現畀佢。",
+  "apiErrors.locationsCreateReserved": "只有老闆，或者老闆允許新增位置嘅團隊成員，先可以新增位置。",
 };
