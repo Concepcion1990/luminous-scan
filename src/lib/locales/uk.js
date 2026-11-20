@@ -4760,4 +4760,8 @@ export const uk = {
   "productForm.readIsbnButton": "Прочитати номер",
   "productForm.readIsbnWorking": "Читаємо номер…",
   "productForm.readIsbnFailed": "Цей номер прочитався нечітко, тому нічого не вписано. Спробуйте ще раз або закрийте це й введіть номер вручну.",
+  "staffLib.perm.locationsCreate": "Додавати нові локації",
+  "staffLib.area.locationsAccess": "Додавання локацій",
+  "staff.memberDialog.locationsAccessHint": "З цією позначкою ця людина може додавати нові локації. Без неї локацію може додати лише власник, а кнопки додавання для неї не відображаються.",
+  "apiErrors.locationsCreateReserved": "Лише власник або учасник команди, якому власник дозволив додавати локації, може додати локацію.",
 };

@@ -4760,4 +4760,8 @@ export const ur = {
   "productForm.readIsbnButton": "نمبر پڑھیں",
   "productForm.readIsbnWorking": "نمبر پڑھا جا رہا ہے…",
   "productForm.readIsbnFailed": "وہ نمبر واضح طور پر نہیں پڑھا گیا، اس لیے کچھ نہیں بھرا گیا۔ دوبارہ کوشش کریں، یا اسے بند کر کے نمبر لکھیں۔",
+  "staffLib.perm.locationsCreate": "نئے مقامات شامل کریں",
+  "staffLib.area.locationsAccess": "مقامات شامل کرنا",
+  "staff.memberDialog.locationsAccessHint": "اس نشان کے ساتھ، یہ شخص نئے مقامات شامل کر سکتا ہے۔ اس کے بغیر، مقام صرف مالک شامل کر سکتا ہے، اور شامل کرنے کے بٹن اسے نظر نہیں آتے۔",
+  "apiErrors.locationsCreateReserved": "صرف مالک، یا ٹیم کا وہ رکن جسے مالک نے مقامات شامل کرنے کی اجازت دی ہو، مقام شامل کر سکتا ہے۔",
 };
