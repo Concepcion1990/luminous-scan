@@ -3452,7 +3452,7 @@ export const wuu = {
   "training.lessons.mgr-schedules.step3": "保存。搿个人员会收到铃铛通知，告知伊个排班已设置或更改。",
   "training.lessons.mgr-schedules.step4": "围绕已批准个休假安排排班，并提前通知大家——伊拉个打卡时间窗口遵循搿眼时间。",
   "training.lessons.mgr-schedules.title": "设置员工排班",
-  "training.lessons.mgr-staff-permissions.step1": "打开“员工”查看团队、伊拉个角色搭每个角色好做啥。",
+  "training.lessons.mgr-staff-permissions.step1": "如果店主已经拿员工名单拨侬，请打开“员工”，查看团队、伊拉个角色搭界每个角色好做个事体。",
   "training.lessons.mgr-staff-permissions.step2": "角色是权限个集合：一个人能查看搭更改啥，取决于伊个角色以搭伊个个人记录上设置个任意权限。",
   "training.lessons.mgr-staff-permissions.step3": "如果店主授予侬员工管理权限，侬好调整员工个角色——但绝勿能调整侬自己个，也勿能调整店主个。",
   "training.lessons.mgr-staff-permissions.step4": "每当角色权限扩大时，应用侪会标记搿个人员接受新部分个培训。请预料到搿一点，并告诉伊拉培训快要到来。",
@@ -4798,4 +4798,7 @@ export const wuu = {
   "training.lessons.welcome-basics.step5": "侬店里个政策搭条款会得勒侬个欢迎页面浪显示一趟,搭仔保留勒设置里,侬啥辰光都好勒该搭看。",
   "apiErrors.policyDocNotFound": "该份文档勿是两份里向个一份。",
   "apiErrors.policyFileNotFound": "该份文档呒没保存任何文件。",
+  "staffLib.perm.staffRoster": "查看完整员工名单",
+  "staffLib.area.staffAccess": "员工名单",
+  "staff.memberDialog.staffAccessHint": "仅限经理 — 勾上搿个，搿位经理就可以查看完整的员工名单，只读。呒没勾，经理只好看到伊自己个卡片。搿个勾选对员工勿起任何作用。",
 };

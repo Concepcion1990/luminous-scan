@@ -3452,7 +3452,7 @@ export const yo = {
   "training.lessons.mgr-schedules.step3": "Fipamọ́. Ẹni náà ń gba aago pé a ti ṣètò tàbí yí ìtòlẹ́sẹẹsẹ rẹ̀ padà.",
   "training.lessons.mgr-schedules.step4": "Kọ́ àwọn ìtòlẹ́sẹẹsẹ yí àwọn ìsinmi tí a ti fọwọ́ sí ká, kí o sì fún àwọn ènìyàn ní ìfitónilétí — àwọn fèrèsé wíwọlé wọn ń tẹ̀lé àwọn àkókò wọ̀nyí.",
   "training.lessons.mgr-schedules.title": "Ṣíṣètò àwọn ìtòlẹ́sẹẹsẹ òṣìṣẹ́",
-  "training.lessons.mgr-staff-permissions.step1": "Ṣí Òṣìṣẹ́ láti rí ẹgbẹ́ náà, àwọn ipa wọn àti ohun tí ipa kọ̀ọ̀kan lè ṣe.",
+  "training.lessons.mgr-staff-permissions.step1": "Tí onílé bá ti fún ọ ní àkójọ òṣìṣẹ́, ṣí Òṣìṣẹ́ láti wo ẹgbẹ́, àwọn ipa wọn àti ohun tí ipa kọ̀ọ̀kan lè ṣe.",
   "training.lessons.mgr-staff-permissions.step2": "Àwọn ipa jẹ́ àdìpọ̀ ìyọ̀ǹda: ohun tí ènìyàn lè rí àti yípadà ń tẹ̀lé ipa rẹ̀ àti ìyọ̀ǹda èyíkéyìí tí a ṣètò lórí ìgbàsílẹ̀ tirẹ̀.",
   "training.lessons.mgr-staff-permissions.step3": "Tí onílé bá ti fún ọ ní ìṣàkóso òṣìṣẹ́, o lè ṣàtúnṣe ipa ọmọ òṣìṣẹ́ kan — kì í ṣe tìrẹ fúnra rẹ̀ láé, kì í sì í ṣe ti onílé.",
   "training.lessons.mgr-staff-permissions.step4": "Nígbàkigbà tí ipa kan bá DÀGBÀ, áppù náà ń sàmì sí ẹni náà fún ìkẹ́kọ̀ọ́ lórí àwọn apá tuntun. Retí i, kí o sì sọ fún wọn pé ó ń bọ̀.",
@@ -4798,4 +4798,7 @@ export const yo = {
   "training.lessons.welcome-basics.step5": "Àwọn ìlànà àti àdéhùn ìsọ̀wọ́ rẹ máa ń hàn lẹ́ẹ̀kan ní ojú-ìwé ìkíni rẹ, wọ́n sì máa ń gbé nínú Àwọn Ètò, níbi tí o ti lè kà wọ́n nígbàkigbà.",
   "apiErrors.policyDocNotFound": "Ìwé náà kì í ṣe ọ̀kan nínú méjèèjì.",
   "apiErrors.policyFileNotFound": "Kò sí fáìlì tí a pamọ́ fún ìwé náà.",
+  "staffLib.perm.staffRoster": "Wo àkójọ òṣìṣẹ́ ní kíkún",
+  "staffLib.area.staffAccess": "Àkójọ òṣìṣẹ́",
+  "staff.memberDialog.staffAccessHint": "Fún àwọn olùdarí nìkan — pẹ̀lú àmì yìí, olùdarí yìí wo àkójọ òṣìṣẹ́ ní kíkún, fún kíkà nìkan. Láìsí i, olùdarí káàdì tirẹ̀ nìkan ni ó rí. Àmì yìí kò ṣe nǹkan fún àwọn òṣìṣẹ́.",
 };

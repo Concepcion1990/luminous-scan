@@ -3452,7 +3452,7 @@ export const yue = {
   "training.lessons.mgr-schedules.step3": "儲存。對方會收到通知，告知更表已設定或更改。",
   "training.lessons.mgr-schedules.step4": "請圍繞已批准嘅放假安排更表，並提前通知大家 — 佢哋嘅打卡時段會依照呢啲時間計算。",
   "training.lessons.mgr-schedules.title": "設定員工更表",
-  "training.lessons.mgr-staff-permissions.step1": "打開「員工」睇團隊、佢哋嘅角色，同埋每個角色可以做乜嘢。",
+  "training.lessons.mgr-staff-permissions.step1": "如果老闆畀咗員工名單你，打開「員工」就可以睇到團隊、佢哋嘅角色同每個角色可以做啲乜。",
   "training.lessons.mgr-staff-permissions.step2": "角色係權限嘅組合：一個人可以睇同更改嘅內容，取決喺佢嘅角色同埋佢嘅個人記錄上設定嘅任何權限。",
   "training.lessons.mgr-staff-permissions.step3": "如果擁有人已授予你員工管理權限，你可以調整員工嘅角色 — 但絕唔可以調整你自己嘅角色，亦絕唔可以調整擁有人嘅角色。",
   "training.lessons.mgr-staff-permissions.step4": "每當一個角色嘅權限擴大時，應用程式都會標記該人員需要接受新部分嘅培訓。請預期呢一點，並告知佢哋即將進行培訓。",
@@ -4798,4 +4798,7 @@ export const yue = {
   "training.lessons.welcome-basics.step5": "你舖頭嘅政策同條款會喺你嘅歡迎頁面顯示一次,並保存喺設定入面,你隨時都可以喺嗰度睇。",
   "apiErrors.policyDocNotFound": "嗰份文件唔係兩份入面嘅一份。",
   "apiErrors.policyFileNotFound": "嗰份文件冇保存任何檔案。",
+  "staffLib.perm.staffRoster": "睇完整員工名單",
+  "staffLib.area.staffAccess": "員工名單",
+  "staff.memberDialog.staffAccessHint": "僅限經理 — 勾咗呢個，呢位經理就可以睇完整員工名單，只可以睇。冇勾，經理就只會睇到自己張卡。呢個勾選對員工唔起任何作用。",
 };
