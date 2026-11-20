@@ -3452,7 +3452,7 @@ export const ko = {
   "training.lessons.mgr-schedules.step3": "저장해 주십시오. 해당 직원은 일정이 설정되거나 변경되었다는 알림을 받습니다.",
   "training.lessons.mgr-schedules.step4": "승인된 휴가를 고려해 일정을 짜고 직원에게 미리 알려 주십시오 — 출근 체크인 가능 시간은 이 시간을 따릅니다.",
   "training.lessons.mgr-schedules.title": "직원 일정 설정하기",
-  "training.lessons.mgr-staff-permissions.step1": "직원을 열면 팀과 각자의 역할, 그리고 각 역할이 할 수 있는 일을 볼 수 있습니다.",
+  "training.lessons.mgr-staff-permissions.step1": "소유자가 직원 명단을 주었다면 직원을 열어 팀, 각자의 역할, 각 역할이 할 수 있는 일을 확인하세요.",
   "training.lessons.mgr-staff-permissions.step2": "역할은 권한의 묶음입니다. 직원이 보고 변경할 수 있는 내용은 역할과 본인 기록에 설정된 권한을 따릅니다.",
   "training.lessons.mgr-staff-permissions.step3": "소유자가 직원 관리 권한을 주었다면 직원의 역할을 조정할 수 있습니다 — 본인의 역할이나 소유자의 역할은 절대 조정할 수 없습니다.",
   "training.lessons.mgr-staff-permissions.step4": "역할이 커질 때마다 앱은 해당 직원을 새 부분에 대한 교육 대상으로 표시합니다. 이를 예상하고 직원에게 미리 알려 주십시오.",
@@ -4798,4 +4798,7 @@ export const ko = {
   "training.lessons.welcome-basics.step5": "내 매장의 정책과 약관은 환영 페이지에 한 번 표시되고, 설정에 보관되어 언제든 읽을 수 있습니다.",
   "apiErrors.policyDocNotFound": "그 문서는 두 문서 중 하나가 아닙니다.",
   "apiErrors.policyFileNotFound": "그 문서에 저장된 파일이 없습니다.",
+  "staffLib.perm.staffRoster": "전체 직원 명단 보기",
+  "staffLib.area.staffAccess": "직원 명단",
+  "staff.memberDialog.staffAccessHint": "관리자 전용 — 이 체크를 하면 이 관리자는 전체 직원 명단을 읽기 전용으로 볼 수 있습니다. 체크하지 않으면 관리자는 본인의 카드만 볼 수 있습니다. 이 체크는 직원에게는 아무 작용도 하지 않습니다.",
 };
