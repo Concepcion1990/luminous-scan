@@ -12,7 +12,7 @@
  * CHECK OUT / CHECK IN for breaks.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, BellRing, CalendarClock, Check, Clock3, Gift, ListTodo, MessageCircle, Mic, Palmtree, Send, Trash2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
@@ -376,6 +376,18 @@ function ScheduleTab({ businessId, ctx, people }) {
           </select>
         </div>
       )}
+      {/* The card always names whose schedule it is (owner's
+          catch, Nov 19, 2026): with exactly one candidate there
+          is no picker to render, so the name stands plainly —
+          the week below is never silently somebody's. */}
+      {candidates.length === 1 && (
+        <div className="mb-3 max-w-xs">
+          <label className={labelCls}>{t('workforce.schedule.person')}</label>
+          <p className="text-sm font-medium">
+            {candidates[0].full_name} {candidates[0].role_name ? `(${candidates[0].role_name})` : ''}
+          </p>
+        </div>
+      )}
       <div className="space-y-2">
         {[0, 1, 2, 3, 4, 5, 6].map((day) => {
           const value = draft[day];
@@ -407,7 +419,7 @@ function ScheduleTab({ businessId, ctx, people }) {
                       size="sm"
                       onClick={() => setDraft((d) => ({ ...d, [day]: undefined }))}
                     >
-                      {t('workforce.schedule.off')}
+                      {t('workforce.schedule.clear')}
                     </Button>
                   )}
                 </>
@@ -661,8 +673,9 @@ function TasksTab({ businessId, ctx, people, peopleById }) {
   );
 }
 
-function InboxTab({ businessId, ctx, people, onRead }) {
+function InboxTab({ businessId, ctx, people, onRead, onGoTab }) {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [items, setItems] = useState([]);
   const [threads, setThreads] = useState([]);
   const [activeThread, setActiveThread] = useState(null);
@@ -702,6 +715,54 @@ function InboxTab({ businessId, ctx, people, onRead }) {
     }
   };
 
+  // Every activity row is a DOOR (owner's ruling, Nov 19, 2026):
+  // there is no "mark read" without going to the thing itself.
+  // Tapping a row marks the notice read BECAUSE the person went
+  // there, then takes them to it. The destination follows the
+  // event the server recorded (entry_id carries the related
+  // record: the thread, the request, the task, the stub, the
+  // time entry). Read receipts are untouched by this: they still
+  // fire only from opening the conversation itself, and the
+  // owner's read state is never exposed to staff (release 315).
+  const openNotification = async (item) => {
+    if (!item.is_read) {
+      await markNotificationRead(businessId, item.id).catch(() => {});
+      await loadNotifications();
+      onRead();
+    }
+    switch (item.event) {
+      case 'message': {
+        const thread = threads.find((th) => th.id === item.entry_id);
+        if (thread) await openThread(thread);
+        break;
+      }
+      case 'schedule_set':
+        onGoTab('schedule');
+        break;
+      case 'time_off_requested':
+      case 'time_off_decided':
+        onGoTab('timeoff');
+        break;
+      case 'task_assigned':
+      case 'task_done':
+        onGoTab('tasks');
+        break;
+      case 'stub_pushed':
+        navigate('/payroll');
+        break;
+      case 'clock_in':
+      case 'break_out':
+      case 'break_in':
+      case 'clock_out':
+        onGoTab('clock');
+        break;
+      default:
+        // A notice type with no home of its own: the tap still
+        // marked it read above; there is nowhere to go.
+        break;
+    }
+  };
+
   const startConversation = async () => {
     if (!pickerTarget) return;
     setBusy(true);
@@ -736,6 +797,15 @@ function InboxTab({ businessId, ctx, people, onRead }) {
       setBusy(false);
     }
   };
+
+  // Text messages cap at 2,000 characters — the server has
+  // always cut them there, silently. The composer now shows
+  // the limit honestly (owner's ruling, Nov 19, 2026): a
+  // counter appears as the person gets close, and the box
+  // itself stops at the limit, so nothing they wrote is ever
+  // silently lost. The server cut stays as the backstop.
+  const MESSAGE_MAX_CHARS = 2000;
+  const MESSAGE_COUNTER_FROM = 1500;
 
   // ---- Voice notes ---------------------------------------------------------
   // Record with the device's own microphone (the browser asks
@@ -906,27 +976,20 @@ function InboxTab({ businessId, ctx, people, onRead }) {
         ) : (
           <ul className="divide-y divide-border">
             {items.map((item) => (
-              <li key={item.id} className={`flex items-center gap-3 py-3 text-sm ${item.is_read ? 'opacity-60' : ''}`}>
-                <BellRing className="h-4 w-4 shrink-0 text-muted-foreground" />
-                <span className="flex-1">
-                  {item.detail}
-                  <span className="block text-xs text-muted-foreground">
-                    {formatDay(item.created_at)} {formatTime(item.created_at)}
+              <li key={item.id} className={item.is_read ? 'opacity-60' : ''}>
+                <button
+                  type="button"
+                  className="flex w-full items-center gap-3 py-3 text-left text-sm"
+                  onClick={() => openNotification(item)}
+                >
+                  <BellRing className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  <span className="flex-1">
+                    {item.detail}
+                    <span className="block text-xs text-muted-foreground">
+                      {formatDay(item.created_at)} {formatTime(item.created_at)}
+                    </span>
                   </span>
-                </span>
-                {!item.is_read && (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={async () => {
-                      await markNotificationRead(businessId, item.id).catch(() => {});
-                      await loadNotifications();
-                      onRead();
-                    }}
-                  >
-                    {t('workforce.inbox.markRead')}
-                  </Button>
-                )}
+                </button>
               </li>
             ))}
           </ul>
@@ -1093,13 +1156,29 @@ function InboxTab({ businessId, ctx, people, onRead }) {
                   </div>
                 )}
                 <div className="flex items-end gap-2">
-                  <textarea
-                    className={inputCls}
-                    rows={2}
-                    value={draft}
-                    onChange={(e) => setDraft(e.target.value)}
-                    placeholder={t('workforce.messages.placeholder')}
-                  />
+                  <div className="min-w-0 flex-1">
+                    <textarea
+                      className={inputCls}
+                      rows={2}
+                      maxLength={MESSAGE_MAX_CHARS}
+                      value={draft}
+                      onChange={(e) => setDraft(e.target.value)}
+                      placeholder={t('workforce.messages.placeholder')}
+                    />
+                    {draft.length >= MESSAGE_COUNTER_FROM && (
+                      <p
+                        className={`mt-1 text-right text-xs ${
+                          draft.length >= MESSAGE_MAX_CHARS
+                            ? 'font-medium text-destructive'
+                            : 'text-muted-foreground'
+                        }`}
+                      >
+                        {draft.length >= MESSAGE_MAX_CHARS
+                          ? t('workforce.messages.charLimit')
+                          : t('workforce.messages.charCount', { count: draft.length, max: MESSAGE_MAX_CHARS })}
+                      </p>
+                    )}
+                  </div>
                   <Button
                     variant="outline"
                     disabled={busy || recPhase !== 'idle'}
@@ -1474,7 +1553,7 @@ export default function Workforce() {
       {tab === 'schedule' && <ScheduleTab businessId={activeId} ctx={ctx} people={people} />}
       {tab === 'timeoff' && <TimeOffTab businessId={activeId} ctx={ctx} peopleById={peopleById} />}
       {tab === 'tasks' && <TasksTab businessId={activeId} ctx={ctx} people={people} peopleById={peopleById} />}
-      {tab === 'inbox' && <InboxTab businessId={activeId} ctx={ctx} people={people} onRead={loadMeta} />}
+      {tab === 'inbox' && <InboxTab businessId={activeId} ctx={ctx} people={people} onRead={loadMeta} onGoTab={setTab} />}
       {tab === 'rewards' && showRewards && (
         <RewardsTab businessId={activeId} ctx={ctx} people={people} businessName={record?.name || ''} />
       )}
