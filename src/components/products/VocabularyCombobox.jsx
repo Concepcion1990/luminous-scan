@@ -25,6 +25,18 @@ import { cn } from '@/lib/utils';
  *
  * Selection happens on pointerdown, before the input's blur, so a
  * tap can never lose the race against the list closing.
+ *
+ * The list opens on INTENT only — a pointer tap into the field,
+ * the chevron, or typing — never on focus alone (Nov 20, 2026,
+ * owner catch): this picker lives inside Radix dialogs, whose
+ * focus machinery lands focus in the first field when the dialog
+ * opens and hands focus back after outside taps. When focus
+ * itself opened the list, Bulk edit appeared with the Category
+ * list already sprung, every outside tap that closed it was
+ * undone an instant later by the returning focus, and the list
+ * could not be kept closed at all. A tap is a person asking for
+ * the list; focus arriving on its own is the dialog talking to
+ * itself, so dismissal now always wins over a focus return.
  */
 export default function VocabularyCombobox({
   id,
@@ -76,7 +88,7 @@ export default function VocabularyCombobox({
             onChange(e.target.value);
             setOpen(true);
           }}
-          onFocus={() => setOpen(true)}
+          onPointerDown={() => setOpen(true)}
           onKeyDown={(e) => {
             if (e.key === 'Escape') setOpen(false);
           }}
@@ -122,6 +134,10 @@ export default function VocabularyCombobox({
                 onPointerDown={(e) => {
                   e.preventDefault();
                   setOpen(false);
+                  // The Add window takes focus next; release this
+                  // field first so nothing here is still holding
+                  // focus when it opens (Nov 20, 2026).
+                  inputRef.current?.blur();
                   onAddNewRequest();
                 }}
               >
