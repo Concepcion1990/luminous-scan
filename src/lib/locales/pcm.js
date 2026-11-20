@@ -3586,7 +3586,7 @@ export const pcm = {
   "training.lessons.products-find-edit.step1": "Open Products to search everything wey your store dey carry, by name, SKU, barcode or ISBN.",
   "training.lessons.products-find-edit.step2": "Open one product to see im details, photos, prices and how many dey for each location.",
   "training.lessons.products-find-edit.step3": "If your role allow editing, you fit fix names, prices and details — save, and di change dey everywhere at once. To delete product forever dey for the row menu and na owner get am — e dey always ask for confirmation first, and na the only way wey product count dey go down.",
-  "training.lessons.products-find-edit.step4": "Brand-new product? If you see the New product button, you fit add am with im barcode so di scanner go recognise am from then on. Every code box for the form — UPC, barcode and QR code — get im own scan button, so you fit point camera instead of to type.",
+  "training.lessons.products-find-edit.step4": "Brand-new product? If you see the New product button, you fit add am with im barcode so di scanner go recognise am from then on. Every code box for the form — SKU, UPC, barcode and QR code — get im own scan button, so you fit point camera instead of to type. Di ISBN box get im own button too, and e dey read di printed number by imself — e good wen barcode don spoil — and e go fill am only wen di number correct.",
   'training.lessons.products-find-edit.step5': 'Yu dey add product? Put how many yu get inside «How many dey hand» and e go enter stock shap-shap, dem go record am as receipt — no separate receiving step. Leave am blank and di product go start from zero.',
   'training.lessons.products-find-edit.step6': "For di Products page yu fit change stock for di row: tap di up arrow to add one, di down arrow to remove one — every tap dey enter movement history. If locations plenty, tap di number (or «Add more stock» for di row menu) to open di stock sheet and choose di place. For dat sheet, di Scan to count am button wey dey near di quantity go scan instead: point di camera for every item wey dey arrive and di amount go climb by imself — di arrows still dey work wit hand, and Save still be di touch wey dey record am.",
   "training.lessons.products-find-edit.step7": "You dey edit product? Di edit form get di same «How many dey hand» box, e dey show di nomba for di place wey you choose. Change di nomba and save am — di difrens go enta record as stock movement, e no dey overwrite witout record.",
@@ -4755,4 +4755,9 @@ export const pcm = {
   "staffLib.perm.productsCreate": "Add new product dem",
   "staffLib.area.productsAccess": "To add products",
   "staff.memberDialog.productsAccessHint": "With this tick, this person go see the New product buttons and e fit add products to the catalog. Without am, the buttons no go show for am.",
+  "productForm.readIsbnTitle": "Read di ISBN wey dem print",
+  "productForm.readIsbnHint": "Point di camera for di ISBN wey dem print for di book, den tap Read number. If di barcode fit read, e go fill di number too.",
+  "productForm.readIsbnButton": "Read di number",
+  "productForm.readIsbnWorking": "Dey read di number…",
+  "productForm.readIsbnFailed": "Dat number no read clear, so notin no fill inside. Try again, or close dis one and type di number.",
 };
