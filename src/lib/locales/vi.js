@@ -3452,7 +3452,7 @@ export const vi = {
   "training.lessons.mgr-schedules.step3": "Lưu lại. Người đó nhận được một tiếng chuông rằng lịch của họ đã được đặt hoặc thay đổi.",
   "training.lessons.mgr-schedules.step4": "Xây dựng lịch xung quanh thời gian nghỉ phép đã duyệt, và thông báo cho mọi người — khung giờ chấm công vào của họ tuân theo những mốc thời gian này.",
   "training.lessons.mgr-schedules.title": "Đặt lịch cho nhân viên",
-  "training.lessons.mgr-staff-permissions.step1": "Mở Nhân viên để xem nhóm, vai trò của họ và mỗi vai trò có thể làm gì.",
+  "training.lessons.mgr-staff-permissions.step1": "Nếu chủ sở hữu đã cấp cho bạn danh sách nhân viên, hãy mở Nhân viên để xem đội ngũ, vai trò của họ và những gì mỗi vai trò có thể làm.",
   "training.lessons.mgr-staff-permissions.step2": "Vai trò là các gói quyền: những gì một người có thể xem và thay đổi tuân theo vai trò của họ và bất kỳ quyền nào được đặt trên hồ sơ riêng của họ.",
   "training.lessons.mgr-staff-permissions.step3": "Nếu chủ sở hữu đã giao cho bạn quản lý nhân viên, bạn có thể điều chỉnh vai trò của một thành viên — không bao giờ là vai trò của chính bạn, và không bao giờ là của chủ sở hữu.",
   "training.lessons.mgr-staff-permissions.step4": "Mỗi khi một vai trò MỞ RỘNG, ứng dụng đánh dấu người đó cần đào tạo về các phần mới. Hãy dự liệu điều đó, và nói với họ rằng nó sắp đến.",
@@ -4798,4 +4798,7 @@ export const vi = {
   "training.lessons.welcome-basics.step5": "Chính sách và điều khoản của cửa hàng bạn được hiển thị một lần trên trang chào mừng của bạn, và chúng sống trong Cài đặt, nơi bạn có thể đọc chúng bất cứ lúc nào.",
   "apiErrors.policyDocNotFound": "Tài liệu đó không phải là một trong hai tài liệu.",
   "apiErrors.policyFileNotFound": "Không có tệp nào được lưu cho tài liệu đó.",
+  "staffLib.perm.staffRoster": "Xem danh sách nhân viên đầy đủ",
+  "staffLib.area.staffAccess": "Danh sách nhân viên",
+  "staff.memberDialog.staffAccessHint": "Chỉ dành cho quản lý — với dấu chọn này, quản lý này xem được danh sách nhân viên đầy đủ, chỉ để đọc. Nếu không có, một quản lý chỉ thấy thẻ của chính mình. Dấu chọn này không có tác dụng với nhân viên.",
 };
