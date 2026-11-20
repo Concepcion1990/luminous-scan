@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { Trash2 } from 'lucide-react';
 import { base44 } from '@/api/client';
 import { Button } from '@/components/ui/button';
@@ -623,66 +624,80 @@ export default function BulkEditDialog({
         )}
       </DialogContent>
 
-      {/* Bulk-delete confirmation — the same fixed-overlay pattern
-          as the Add-new window below: the dialog behind it does not
-          move. It names the exact count, says plainly that this
-          cannot be undone, and its only road forward is the red
-          Yes button; Cancel (or nothing) deletes nothing. */}
+      {/* Bulk-delete confirmation — a real Radix Dialog nested
+          over this one, the same construction as the Add-new
+          window below (Nov 20, 2026). It used to be a hand-rolled
+          fixed overlay mounted here, OUTSIDE the host dialog's
+          content layer: the host's modal machinery switched
+          pointer events off for everything outside its own
+          content and kept focus for itself, so on the owner's
+          phone the window painted but its Cancel/Yes took no taps
+          at all and the dialog behind it still scrolled — the
+          same dead-button freeze as the Add window, reproduced
+          tap-by-tap in the harness before this fix. As a nested
+          dialog the window holds focus, answers taps, and keeps
+          the scroll lock. It names the exact count, says plainly
+          that this cannot be undone, and its only road forward is
+          the red Yes button; Cancel (or Escape, or the backdrop)
+          deletes nothing — and while a delete is running the
+          window cannot be dismissed at all. */}
       {confirmDelete && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 p-4">
-          <div
-            role="alertdialog"
-            aria-modal="true"
-            aria-label={t('products.bulkDeleteConfirmTitle', {
-              count: products.length,
-              plural: products.length === 1 ? '' : 's',
-            })}
-            className="w-full max-w-sm space-y-3 rounded-xl bg-card p-4 shadow-lg"
-          >
-            <p className="text-sm font-semibold text-destructive">
-              {t('products.bulkDeleteConfirmTitle', {
-                count: products.length,
-                plural: products.length === 1 ? '' : 's',
-              })}
-            </p>
-            <p className="text-xs leading-snug text-muted-foreground">
-              {t('products.bulkDeleteConfirmBody', {
-                count: products.length,
-                plural: products.length === 1 ? '' : 's',
-              })}
-            </p>
-            <div className="flex gap-2 pt-1">
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={() => setConfirmDelete(false)}
-                disabled={deleting}
-              >
-                {t('products.cancel')}
-              </Button>
-              <Button
-                variant="destructive"
-                className="flex-1"
-                onClick={deleteSelected}
-                disabled={deleting}
-              >
-                {deleting
-                  ? t('products.bulkDeleting')
-                  : t('products.bulkDeleteConfirmButton', {
-                      count: products.length,
-                      plural: products.length === 1 ? '' : 's',
-                    })}
-              </Button>
-            </div>
-          </div>
-        </div>
+        <DialogPrimitive.Root
+          open
+          onOpenChange={(next) => {
+            if (!next && !deleting) setConfirmDelete(false);
+          }}
+        >
+          <DialogPrimitive.Portal>
+            <DialogPrimitive.Overlay className="fixed inset-0 z-[80] bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+            <DialogPrimitive.Content
+              className="fixed left-[50%] top-[50%] z-[80] w-[calc(100vw-2rem)] max-w-sm translate-x-[-50%] translate-y-[-50%] space-y-3 rounded-xl bg-card p-4 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
+            >
+              <DialogPrimitive.Title className="text-sm font-semibold text-destructive">
+                {t('products.bulkDeleteConfirmTitle', {
+                  count: products.length,
+                  plural: products.length === 1 ? '' : 's',
+                })}
+              </DialogPrimitive.Title>
+              <DialogPrimitive.Description className="text-xs leading-snug text-muted-foreground">
+                {t('products.bulkDeleteConfirmBody', {
+                  count: products.length,
+                  plural: products.length === 1 ? '' : 's',
+                })}
+              </DialogPrimitive.Description>
+              <div className="flex gap-2 pt-1">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setConfirmDelete(false)}
+                  disabled={deleting}
+                >
+                  {t('products.cancel')}
+                </Button>
+                <Button
+                  variant="destructive"
+                  className="flex-1"
+                  onClick={deleteSelected}
+                  disabled={deleting}
+                >
+                  {deleting
+                    ? t('products.bulkDeleting')
+                    : t('products.bulkDeleteConfirmButton', {
+                        count: products.length,
+                        plural: products.length === 1 ? '' : 's',
+                      })}
+                </Button>
+              </div>
+            </DialogPrimitive.Content>
+          </DialogPrimitive.Portal>
+        </DialogPrimitive.Root>
       )}
 
-      {/* Add-new vocabulary window — the same fixed overlay as the
-          product form: the bulk dialog behind it does not move, the
-          name field arrives prefilled with the picker's typed text,
-          Save creates the entry and selects it, Cancel creates
-          nothing. */}
+      {/* Add-new vocabulary window — the same nested Radix dialog
+          as the product form: the bulk dialog behind it does not
+          move, the name field arrives prefilled with the picker's
+          typed text, Save creates the entry and selects it, Cancel
+          creates nothing. */}
       {addNewField && (
         <AddVocabularyDialog
           businessId={businessId}
