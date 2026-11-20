@@ -4760,4 +4760,8 @@ export const th = {
   "productForm.readIsbnButton": "อ่านหมายเลข",
   "productForm.readIsbnWorking": "กำลังอ่านหมายเลข…",
   "productForm.readIsbnFailed": "หมายเลขนั้นอ่านได้ไม่ชัดเจน จึงไม่ได้กรอกอะไรลงไป ลองอีกครั้ง หรือปิดหน้านี้แล้วพิมพ์หมายเลข",
+  "staffLib.perm.locationsCreate": "เพิ่มสถานที่ใหม่",
+  "staffLib.area.locationsAccess": "การเพิ่มสถานที่",
+  "staff.memberDialog.locationsAccessHint": "เมื่อทำเครื่องหมายนี้ บุคคลนี้สามารถเพิ่มสถานที่ใหม่ได้ หากไม่มีเครื่องหมาย มีเพียงเจ้าของเท่านั้นที่เพิ่มสถานที่ได้ และปุ่มเพิ่มจะไม่ปรากฏสำหรับพวกเขา",
+  "apiErrors.locationsCreateReserved": "เฉพาะเจ้าของ หรือสมาชิกทีมที่เจ้าของอนุญาตให้เพิ่มสถานที่เท่านั้น ที่สามารถเพิ่มสถานที่ได้",
 };

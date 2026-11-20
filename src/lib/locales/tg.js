@@ -4760,4 +4760,8 @@ export const tg = {
   "productForm.readIsbnButton": "Рақамро хонед",
   "productForm.readIsbnWorking": "Рақам хонда мешавад…",
   "productForm.readIsbnFailed": "Он рақам возеҳ хонда нашуд, бинобар ин чизе пур карда нашуд. Боз кӯшиш кунед ё инро пӯшед ва рақамро чоп кунед.",
+  "staffLib.perm.locationsCreate": "Илова кардани маконҳои нав",
+  "staffLib.area.locationsAccess": "Илова кардани маконҳо",
+  "staff.memberDialog.locationsAccessHint": "Бо ин нишона, ин шахс метавонад маконҳои нав илова кунад. Бе он, маконро танҳо соҳиб илова карда метавонад ва тугмаҳои илова барои ӯ намоиш дода намешаванд.",
+  "apiErrors.locationsCreateReserved": "Танҳо соҳиб ё узви даста, ки соҳиб ба ӯ илова кардани маконҳоро иҷозат додааст, метавонад макон илова кунад.",
 };
