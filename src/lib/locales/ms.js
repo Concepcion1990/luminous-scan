@@ -3452,7 +3452,7 @@ export const ms = {
   "training.lessons.mgr-schedules.step3": "Simpan. Orang itu mendapat loceng bahawa jadual mereka telah ditetapkan atau diubah.",
   "training.lessons.mgr-schedules.step4": "Bina jadual di sekitar cuti yang diluluskan, dan beri orang notis — tempoh daftar masuk mereka mengikut masa ini.",
   "training.lessons.mgr-schedules.title": "Menetapkan jadual kakitangan",
-  "training.lessons.mgr-staff-permissions.step1": "Buka Kakitangan untuk melihat pasukan, peranan mereka dan apa yang boleh dilakukan oleh setiap peranan.",
+  "training.lessons.mgr-staff-permissions.step1": "Jika pemilik telah memberikan senarai kakitangan kepada anda, buka Kakitangan untuk melihat pasukan, peranan mereka dan apa yang boleh dilakukan oleh setiap peranan.",
   "training.lessons.mgr-staff-permissions.step2": "Peranan ialah himpunan kebenaran: apa yang boleh dilihat dan diubah oleh seseorang mengikut peranan mereka dan sebarang kebenaran yang ditetapkan pada rekod mereka sendiri.",
   "training.lessons.mgr-staff-permissions.step3": "Jika pemilik telah memberi anda pengurusan kakitangan, anda boleh melaraskan peranan ahli kakitangan — tidak pernah peranan anda sendiri, dan tidak pernah peranan pemilik.",
   "training.lessons.mgr-staff-permissions.step4": "Setiap kali peranan BERTUMBUH, aplikasi menandakan orang itu untuk latihan pada bahagian baharu. Jangkakannya, dan beritahu mereka ia akan datang.",
@@ -4798,4 +4798,7 @@ export const ms = {
   "training.lessons.welcome-basics.step5": "Polisi dan terma kedai anda ditunjukkan sekali di halaman alu-aluan anda, dan tinggal dalam Tetapan, tempat anda boleh membacanya pada bila-bila masa.",
   "apiErrors.policyDocNotFound": "Dokumen itu bukan salah satu daripada kedua-duanya.",
   "apiErrors.policyFileNotFound": "Tiada fail disimpan untuk dokumen itu.",
+  "staffLib.perm.staffRoster": "Lihat senarai penuh kakitangan",
+  "staffLib.area.staffAccess": "Senarai kakitangan",
+  "staff.memberDialog.staffAccessHint": "Pengurus sahaja — dengan tanda ini, pengurus ini melihat senarai penuh kakitangan, untuk dibaca sahaja. Tanpanya, seorang pengurus hanya melihat kad mereka sendiri. Tanda ini tidak berbuat apa-apa untuk staf.",
 };
