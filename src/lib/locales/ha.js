@@ -3452,7 +3452,7 @@ export const ha = {
   "training.lessons.mgr-schedules.step3": "Ajiye. Mutumin yana samun saƙo cewa an saita ko an canza jadawalinsa.",
   "training.lessons.mgr-schedules.step4": "Gina jadawali cikin hutun da aka amince, kuma ba mutane sanarwa — tagogin shiga aikinsu suna bin waɗannan lokutan.",
   "training.lessons.mgr-schedules.title": "Saita jadawalin ma'aikata",
-  "training.lessons.mgr-staff-permissions.step1": "Buɗe Ma'aikata don ganin ƙungiyar, matsayinsu da abin da kowane matsayi zai iya yi.",
+  "training.lessons.mgr-staff-permissions.step1": "Idan mai shi ya ba ka jerin ma’aikata, buɗe Ma’aikata don ganin ƙungiyar, matsayinsu da abin da kowane matsayi zai iya yi.",
   "training.lessons.mgr-staff-permissions.step2": "Matsayi tarin izini ne: abin da mutum zai iya gani da canzawa yana bin matsayinsa da duk izinin da aka saita a rikodinsa.",
   "training.lessons.mgr-staff-permissions.step3": "Idan mai shi ya ba ka kula da ma'aikata, za ka iya daidaita matsayin memban ma'aikata — ba naka ba, kuma ba na mai shi ba.",
   "training.lessons.mgr-staff-permissions.step4": "Duk lokacin da matsayi ya ƘARU, manhajar tana yi wa mutumin alama don horo a sabbin sassan. Yi tsammaninsa, ka faɗa musu yana zuwa.",
@@ -4798,4 +4798,7 @@ export const ha = {
   "training.lessons.welcome-basics.step5": "Ana nuna manufofi da sharuɗɗan shagonku sau ɗaya a shafin marabarku, kuma suna rayuwa a cikin Saituna, inda za ku iya karanta su a kowane lokaci.",
   "apiErrors.policyDocNotFound": "Wannan daftari ba ɗaya daga cikin biyun ba ne.",
   "apiErrors.policyFileNotFound": "Ba a ajiye wani fayil na wannan daftari ba.",
+  "staffLib.perm.staffRoster": "Duba cikakken jerin ma'aikata",
+  "staffLib.area.staffAccess": "Jerin ma'aikata",
+  "staff.memberDialog.staffAccessHint": "Manajoji kaɗai — da wannan alama, wannan manaja yana ganin cikakken jerin ma'aikata, don karatu kaɗai. Ba tare da ita ba, manaja katin sa kaɗai yake gani. Wannan alama ba ta yin komai ga ma'aikata.",
 };
