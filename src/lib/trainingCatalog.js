@@ -60,11 +60,12 @@ export const TRAINING_MODULES = [
 ];
 
 export const TRAINING_LESSONS = [
-  { id: 'welcome-basics', track: 'staff', module: 'getting-started', steps: 4 , visuals: [
+  { id: 'welcome-basics', track: 'staff', module: 'getting-started', steps: 5 , visuals: [
       { route: '/', target: '[data-tour="overview"]' },
       { route: '/', target: '[data-tour="all-screens"]', door: true },
       { route: '/', target: '[data-tour="all-screens"]', door: true },
       null,
+      { route: '/settings' },
     ] },
   { id: 'your-language', track: 'staff', module: 'language', steps: 4 },
   { id: 'scanner-lookup', track: 'staff', module: 'scanner', steps: 4 , visuals: [
@@ -184,6 +185,12 @@ export const TRAINING_LESSONS = [
   { id: 'mgr-report-problem', track: 'manager', module: 'settings', steps: 4 },
   { id: 'owner-setup', track: 'owner', module: 'getting-started', steps: 4 },
   { id: 'owner-white-label', track: 'owner', module: 'settings', steps: 5 },
+  { id: 'owner-store-policies', track: 'owner', module: 'settings', steps: 4 , visuals: [
+      { route: '/settings' },
+      { route: '/settings' },
+      null,
+      null,
+    ] },
   { id: 'owner-report-problem', track: 'owner', module: 'settings', steps: 4 },
   { id: 'owner-delete-account', track: 'owner', module: 'settings', steps: 4 },
   { id: 'owner-confidentiality', track: 'owner', module: 'staff', steps: 4 },

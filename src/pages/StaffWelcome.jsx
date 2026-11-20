@@ -7,6 +7,7 @@ import { useBusiness } from '@/hooks/useBusiness';
 import useStaffAccess from '@/hooks/useStaffAccess';
 import AppMark from '@/components/brand/AppMark';
 import LegalFooter from '@/components/LegalFooter';
+import PolicyDocumentView from '@/components/business/PolicyDocumentView';
 import { Button } from '@/components/ui/button';
 import { t } from '@/lib/i18n';
 
@@ -29,7 +30,15 @@ import { t } from '@/lib/i18n';
  *      script, translated like everything else. Owner-written
  *      words render as written — custom content, like the
  *      business name itself.
- *   3. "Start my training" — app copy, the door into Training.
+ *   3. The business's own documents (Nov 19, 2026): the owner's
+ *      Store Policies and Terms & Conditions, when the owner has
+ *      written or uploaded them — shown here ONCE, at this first
+ *      start, and living read-only in the member's Settings from
+ *      then on. A showing, not a signing: no agree-checkbox, no
+ *      attestation, and the continue/skip doors below behave
+ *      exactly as they always have. A business with nothing
+ *      written shows nothing extra.
+ *   4. "Start my training" — app copy, the door into Training.
  */
 // Set the moment a member finishes the welcome (either door),
 // with the destination they chose. Module-level on purpose:
@@ -49,10 +58,28 @@ let welcomeFinishDestination = null;
 
 export default function StaffWelcome() {
   const { user, checkUserAuth } = useAuth();
-  const { profile } = useBusiness();
+  const { profile, activeId } = useBusiness();
   const { member } = useStaffAccess();
   const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
+  const [policies, setPolicies] = useState(null);
+
+  // The business's own documents, shown once here (see the
+  // header note). A failed read simply shows nothing extra —
+  // the welcome is a greeting, not a gate, and the documents
+  // live in the member's Settings either way.
+  useEffect(() => {
+    if (!activeId || !user?.staff_welcome_pending) return;
+    let mounted = true;
+    apiRequest(`/api/businesses/${encodeURIComponent(activeId)}/policies`)
+      .then((state) => {
+        if (mounted) setPolicies(state);
+      })
+      .catch(() => {});
+    return () => {
+      mounted = false;
+    };
+  }, [activeId, user?.staff_welcome_pending]);
 
   // Whichever instance is mounted when the refreshed user lands
   // (pending flipped false) completes the journey — the instance
@@ -138,6 +165,23 @@ export default function StaffWelcome() {
             </p>
           ))}
         </div>
+        {policies && (policies.policies.kind !== 'empty' || policies.terms.kind !== 'empty') ? (
+          <div className="mt-9 w-full space-y-5 rounded-xl border border-border bg-card p-5 text-left">
+            <p className="text-sm font-medium">{t('staffWelcome.policiesIntro')}</p>
+            <PolicyDocumentView
+              businessId={activeId}
+              docKind="policies"
+              doc={policies.policies}
+              headingKey="settings.policies.storePolicies"
+            />
+            <PolicyDocumentView
+              businessId={activeId}
+              docKind="terms"
+              doc={policies.terms}
+              headingKey="settings.policies.termsConditions"
+            />
+          </div>
+        ) : null}
         <Button
           size="lg"
           className="mt-9 min-h-12 px-6"

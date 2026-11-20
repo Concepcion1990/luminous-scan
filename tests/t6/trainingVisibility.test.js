@@ -60,11 +60,13 @@ test('plan-visible counts: Business whole, Essentials without the Business subje
   // (Nov 15, 2026); +1 per track for the shift-window lessons
   // (Nov 19, 2026): owner 38, manager 17, staff 34. The owner
   // confidentiality lesson (owner track only, same day) makes owner 39.
-  assert.equal(count('owner', true), 39);
+  // The owner store-policies lesson (Nov 19, 2026, both plans) makes
+  // owner 40 on Business and 22 on Essentials.
+  assert.equal(count('owner', true), 40);
   assert.equal(count('manager', true), 17);
   assert.equal(count('staff', true), 34);
   // Essentials: 19 owner subjects hidden, owner-import in their place.
-  assert.equal(count('owner', false), 21); // +1 confidentiality lesson (Nov 19, 2026)
+  assert.equal(count('owner', false), 22); // +1 confidentiality lesson (Nov 19, 2026)
   assert.equal(count('manager', false), 11);
   assert.equal(count('staff', false), 32);
   // Payroll / workforce / direct-deposit lessons stay on Essentials.

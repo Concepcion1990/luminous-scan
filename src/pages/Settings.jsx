@@ -19,6 +19,7 @@ import BusinessListCard from '@/components/business/BusinessListCard';
 import IdentityCard from '@/components/business/IdentityCard';
 import DetailsCard from '@/components/business/DetailsCard';
 import PersonalSettings from '@/components/business/PersonalSettings';
+import BusinessPoliciesCard from '@/components/business/BusinessPoliciesCard';
 import InstallAppCard from '@/components/business/InstallAppCard';
 import { isBoss } from '@/lib/bossAuthority';
 import SoftwareCard from '@/components/business/SoftwareCard';
@@ -484,6 +485,8 @@ function BossSettings() {
       />
 
       <DetailsCard values={values} onChange={setValues} onPreferenceChange={applyPreference} />
+
+      <BusinessPoliciesCard businessId={activeId} editable />
 
       <PlanSummaryCard />
 
