@@ -3589,7 +3589,7 @@ export const enIN = {
   "training.lessons.products-find-edit.step1": "Open Products to search everything your store carries, by name, SKU, barcode or ISBN.",
   "training.lessons.products-find-edit.step2": "Open a product to see its details, photos, prices and how many are at each location.",
   "training.lessons.products-find-edit.step3": "If your role allows editing, you can fix names, prices and details — save, and the change is everywhere at once. Deleting a product for good lives in the row menu and belongs to the owner — it always asks you to confirm first, and it is the only way the product count goes down.",
-  "training.lessons.products-find-edit.step4": "Brand-new product? If you see the New product button, you can add it — with its barcode, so the scanner recognises it from then on. Every code box in the form — UPC, barcode and QR code — has its own scan button, so you can point the camera instead of typing.",
+  "training.lessons.products-find-edit.step4": "Brand-new product? If you see the New product button, you can add it — with its barcode, so the scanner recognises it from then on. Every code box in the form — SKU, UPC, barcode and QR code — has its own scan button, so you can point the camera instead of typing. The ISBN box has one too, and it reads the printed number itself — handy when a barcode is damaged — filling it in only when the number checks out.",
   'training.lessons.products-find-edit.step5': 'Adding a product? Enter how many you have in Quantity on hand and it is stocked right away, recorded as a receipt — no separate receiving step. Leave it blank and the product starts at zero.',
   'training.lessons.products-find-edit.step6': "Right on the Products page you can change stock on the row itself: tap the up arrow to add one, the down arrow to take one away — every tap is written into the movement history. With several locations, tap the number (or Add stock in the row menu) to open the stock sheet and choose the place. In that sheet, the Scan to tally button beside the quantity scans instead: point the camera at each arriving item and the amount climbs on its own — the arrows still work by hand, and Save is still the tap that records it.",
   "training.lessons.products-find-edit.step7": "Editing a product? The Edit form has the same «Quantity on hand» box, showing the count at the chosen location. Change the number and save — the difference is recorded as a stock movement, never overwritten without a record.",
@@ -4758,4 +4758,9 @@ export const enIN = {
   "staffLib.perm.productsCreate": "Add new products",
   "staffLib.area.productsAccess": "Adding products",
   "staff.memberDialog.productsAccessHint": "With this tick, this person sees the New product buttons and can add products to the catalog. Without it, the buttons do not appear for them.",
+  "productForm.readIsbnTitle": "Read the printed ISBN",
+  "productForm.readIsbnHint": "Point the camera at the ISBN printed on the book, then tap Read number. If the barcode can be read, it fills the number in too.",
+  "productForm.readIsbnButton": "Read number",
+  "productForm.readIsbnWorking": "Reading the number…",
+  "productForm.readIsbnFailed": "That number didn't read clearly, so nothing was filled in. Try again, or close this and type the number.",
 };
