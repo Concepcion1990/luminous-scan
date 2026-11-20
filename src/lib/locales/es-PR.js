@@ -3452,7 +3452,7 @@ export const esPR = {
   "training.lessons.mgr-schedules.step3": "Guarda. La persona recibe un aviso en su campana de que su horario se definió o cambió.",
   "training.lessons.mgr-schedules.step4": "Crea los horarios tomando en cuenta los días libres aprobados y avisa a la gente con tiempo: sus ventanas para registrar entrada siguen estos horarios.",
   "training.lessons.mgr-schedules.title": "Definir los horarios del personal",
-  "training.lessons.mgr-staff-permissions.step1": "Abre Personal para ver al equipo, sus roles y lo que cada rol puede hacer.",
+  "training.lessons.mgr-staff-permissions.step1": "Si el propietario te dio la lista del personal, abre Personal para ver al equipo, sus roles y lo que cada rol puede hacer.",
   "training.lessons.mgr-staff-permissions.step2": "Los roles son paquetes de permisos: lo que una persona puede ver y cambiar depende de su rol y de cualquier permiso definido en su propio registro.",
   "training.lessons.mgr-staff-permissions.step3": "Si el propietario te dio la administración del personal, puedes ajustar el rol de un integrante del personal, nunca el tuyo y nunca el del propietario.",
   "training.lessons.mgr-staff-permissions.step4": "Cada vez que un rol CRECE, la app marca a la persona para que se capacite en las partes nuevas. Espéralo y avísale que viene.",
@@ -4798,4 +4798,7 @@ export const esPR = {
   "training.lessons.welcome-basics.step5": "Las políticas y los términos de tu tienda se muestran una vez en tu página de bienvenida, y viven en Ajustes, donde puedes leerlos cuando quieras.",
   "apiErrors.policyDocNotFound": "Ese documento no es uno de los dos.",
   "apiErrors.policyFileNotFound": "No hay ningún archivo guardado para ese documento.",
+  "staffLib.perm.staffRoster": "Ver la lista completa del personal",
+  "staffLib.area.staffAccess": "Lista del personal",
+  "staff.memberDialog.staffAccessHint": "Solo gerentes — con esta marca, este gerente ve la lista completa del personal, solo para leerla. Sin ella, un gerente solo ve su propia tarjeta. Esta marca no hace nada para el personal.",
 };
