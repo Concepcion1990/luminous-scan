@@ -50,15 +50,20 @@ export default function LocationTreeCard({
           </div>
         </div>
         <div className="flex shrink-0 items-center">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            aria-label={t('locations.addInsideAria', { name: location.name })}
-            onClick={() => onAddChild(location)}
-          >
-            <Plus className="h-3.5 w-3.5" />
-          </Button>
+          {/* The add-inside door is offered only to a person who
+              may add locations (the page passes no handler
+              otherwise — owner ruling, Nov 19, 2026). */}
+          {onAddChild && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              aria-label={t('locations.addInsideAria', { name: location.name })}
+              onClick={() => onAddChild(location)}
+            >
+              <Plus className="h-3.5 w-3.5" />
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="icon"

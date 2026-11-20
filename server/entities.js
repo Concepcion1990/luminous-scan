@@ -567,6 +567,14 @@ function canSeeStaffContact(access) {
 export const RETURNS_COMPLETE_MESSAGE =
   'Only the owner, or a team member the owner has allowed to complete refunds and exchanges, can approve and finish a return.';
 
+/** The add-a-location refusal (owner ruling, Nov 19, 2026).
+ * Factual, subject-only: it says who may add a location and
+ * nothing else. Registered in the client's apiErrors map
+ * (apiErrors.locationsCreateReserved) so it renders in the
+ * reader's language. */
+export const LOCATIONS_CREATE_MESSAGE =
+  'Only the owner, or a team member the owner has allowed to add locations, can add a location.';
+
 async function guardCreate(pool, def, name, access, values) {
   const { business, planKey } = access;
   // Specific error first: suppliers refuse with their own code,
@@ -578,6 +586,16 @@ async function guardCreate(pool, def, name, access, values) {
     throw err(403, 'plan_gated', `This feature is part of the Business plan.`);
   }
   if (name === 'Entitlement') throw err(403, 'entitlement_read_only', 'Entitlements are managed by billing (T4).');
+  // Adding a location is the owner's job (owner ruling, Nov 19,
+  // 2026): a Location CREATE belongs to the owner, or to a member
+  // the owner gave the locations.create enrollment tick — a
+  // manager included holds it only by that tick, never by role.
+  // locations.manage alone no longer opens this door; it still
+  // governs editing and deleting (guardUpdate / deleteEntity are
+  // untouched), exactly as her ruling covers ADDING only.
+  if (name === 'Location' && !access.isOwner && !access.can('locations.create')) {
+    throw err(403, 'locations_create_not_granted', LOCATIONS_CREATE_MESSAGE);
+  }
   // Product creation is the one create door the owner can hand to
   // a member at enrollment (the products.create tick — the owner's
   // "no dangling doors" ruling, Nov 19, 2026): creating a product
@@ -585,9 +603,13 @@ async function guardCreate(pool, def, name, access, values) {
   // otherwise. Editing an existing product still takes
   // products.edit alone (guardUpdate is untouched), the Adjust
   // door keeps its own products.edit gate, and every other entity
-  // keeps its single writePerm door exactly as before.
+  // keeps its single writePerm door exactly as before. A Location
+  // create that passed the gate above may belong to a tick-holder
+  // without locations.manage, so the tick satisfies this check too.
   const mayCreate =
-    access.can(def.writePerm) || (name === 'Product' && access.can('products.create'));
+    access.can(def.writePerm)
+    || (name === 'Product' && access.can('products.create'))
+    || (name === 'Location' && access.can('locations.create'));
   if (def.writePerm && !mayCreate) {
     throw err(403, 'forbidden', 'You do not have permission to do that here.');
   }

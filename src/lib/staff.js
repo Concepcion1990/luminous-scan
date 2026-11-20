@@ -257,9 +257,32 @@ export function isProductsGrant(key) {
   return PRODUCTS_GRANT_KEYS.includes(key);
 }
 
-/** Any per-member grant key (Settings sections + returns + products). */
+/**
+ * Owner-granted location creation (the owner's ruling, Nov 19,
+ * 2026). Same pattern as the grants above: adding a location is
+ * the OWNER'S job, and the key lives in the member's own
+ * permissions array, deliberately NOT part of PERMISSION_GROUPS /
+ * ALL_PERMISSIONS / the preset roles, edited in the member dialog
+ * as its own tick, so the permission picker can never wipe it and
+ * no role carries it by default — a manager included. Holding it
+ * lets a member the owner chose add locations (the Locations page
+ * door and the inline add-a-location form follow it). Editing and
+ * deleting locations stay locations.manage work, exactly as
+ * before: her ruling covers ADDING only.
+ */
+export const LOCATIONS_GRANTS = [
+  { key: 'locations.create', get label() { return t('staffLib.perm.locationsCreate'); } },
+];
+
+export const LOCATIONS_GRANT_KEYS = LOCATIONS_GRANTS.map((grant) => grant.key);
+
+export function isLocationsGrant(key) {
+  return LOCATIONS_GRANT_KEYS.includes(key);
+}
+
+/** Any per-member grant key (Settings sections + returns + products + locations). */
 export function isMemberGrant(key) {
-  return isSettingsGrant(key) || isReturnsGrant(key) || isProductsGrant(key);
+  return isSettingsGrant(key) || isReturnsGrant(key) || isProductsGrant(key) || isLocationsGrant(key);
 }
 
 /** A member row's level, mirroring the server's personLevel. */

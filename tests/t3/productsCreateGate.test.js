@@ -271,7 +271,11 @@ test('the sibling doors from the sweep render only for the person the server wou
   const form = read('../../src/components/products/ProductFormDialog.jsx');
   assert.match(form, /onAddNewRequest={canManageCategories \?/, 'minting a category from the product form follows categories.manage');
   const inline = read('../../src/components/locations/AddLocationInline.jsx');
-  assert.match(inline, /if \(!can\('locations\.manage'\)\) return null;/, 'the inline location form self-gates on locations.manage');
+  // Release 318 gated this form on locations.manage as an interim
+  // alignment; the owner's add-location ruling later the same day
+  // (Nov 19, 2026) superseded it — the form now self-gates on the
+  // owner or the locations.create tick (pinned in locationsGate).
+  assert.match(inline, /if \(!unrestricted && !can\('locations\.create'\)\) return null;/, 'the inline location form self-gates on the owner or the locations.create tick');
   const movements = read('../../src/pages/Movements.jsx');
   assert.match(movements, /onAskReverse={canReverse \?/, 'the Reverse door follows movements.reverse');
   const row = read('../../src/components/movements/MovementRow.jsx');

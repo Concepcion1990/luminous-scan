@@ -13,11 +13,21 @@ import { useToast } from '@/components/ui/use-toast';
 import useEntitlements from '@/hooks/useEntitlements';
 import { displayLimit } from '@/lib/plans';
 import LimitBadge from '@/components/plan/LimitBadge';
+import useStaffAccess from '@/hooks/useStaffAccess';
 import { t } from '@/lib/i18n';
 
 
 export default function Locations() {
   const { activeId } = useBusiness();
+  // Adding a location is the owner's job (owner ruling, Nov 19,
+  // 2026): the create doors on this page — the header button and
+  // the add-inside buttons on each card — render only for the
+  // owner, or for a member the owner gave the locations.create
+  // enrollment tick. Editing stays locations.manage work (the
+  // page door itself), so a manager without the tick keeps the
+  // page and its edit pencils but sees no add door anywhere.
+  const { can, unrestricted } = useStaffAccess();
+  const canAddLocation = unrestricted || can('locations.create');
   const { limits, isLoading: entitlementLoading } = useEntitlements();
   const { toast } = useToast();
   const [locations, setLocations] = useState([]);
@@ -102,7 +112,7 @@ export default function Locations() {
               other route that reaches the create door at cap, and
               the nested add-inside door on each location card is
               untouched — shelves and bins are not sites. */}
-          {!atSiteLimit && (
+          {!atSiteLimit && canAddLocation && (
             <Button data-tour="location-add" onClick={() => openNew()}>
               <Plus className="mr-1.5 h-4 w-4" /> {t('locations.newLocation')}
             </Button>
@@ -135,7 +145,7 @@ export default function Locations() {
             levels={levels}
             productById={productById}
             onEdit={openEdit}
-            onAddChild={openNew}
+            onAddChild={canAddLocation ? openNew : null}
           />
         ))}
       </div>

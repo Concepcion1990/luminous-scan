@@ -99,6 +99,7 @@ export const API_ERROR_MESSAGE_KEYS = {
   "That can't be added right now — this workspace has reached a limit. Please ask the owner of the business.": "apiErrors.planLimitNeutral",
   "That welcome message is too long.": "apiErrors.welcomeScriptTooLong",
   "Only the owner, or a team member the owner has allowed to complete refunds and exchanges, can approve and finish a return.": "apiErrors.returnsCompleteReserved",
+  "Only the owner, or a team member the owner has allowed to add locations, can add a location.": "apiErrors.locationsCreateReserved",
   "You do not have permission to do that here.": "apiErrors.forbidden.permissionHere",
   "You do not have permission to manage staff here.": "apiErrors.forbidden.permissionManageStaffHere",
   "You can only read your own staff record.": "apiErrors.forbidden.readOwnStaffRecord",

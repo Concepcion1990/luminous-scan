@@ -20,14 +20,15 @@ export default function AddLocationInline({ businessId, onCreated }) {
   const [name, setName] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  // No dangling doors (owner ruling, Nov 19, 2026): creating a
-  // location is locations.manage work on the server, so the inline
-  // form renders only for a person holding it — in every picker
-  // that embeds it. (A business starts with its store location
-  // already present, so an empty picker is a safety-net case, not
-  // the everyday path.)
-  const { can } = useStaffAccess();
-  if (!can('locations.manage')) return null;
+  // Adding a location is the owner's job (owner ruling, Nov 19,
+  // 2026): the inline form renders only for the owner, or for a
+  // member the owner gave the locations.create enrollment tick —
+  // in every picker that embeds it. No tick, no door, managers
+  // included. (A business starts with its store location already
+  // present, so an empty picker is a safety-net case, not the
+  // everyday path.)
+  const { can, unrestricted } = useStaffAccess();
+  if (!unrestricted && !can('locations.create')) return null;
 
   const add = async () => {
     const trimmed = name.trim();

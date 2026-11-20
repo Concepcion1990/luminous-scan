@@ -44,15 +44,19 @@ export default function LocationChildRows({ rootId, locations = [], levels = [],
               {KIND_LABELS[location.kind] || location.kind}
             </span>
             <span className="numeric ml-auto text-xs font-semibold">{units}</span>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7"
-              aria-label={t('locations.addInsideAria', { name: location.name })}
-              onClick={() => onAddChild(location)}
-            >
-              <Plus className="h-3 w-3" />
-            </Button>
+            {/* Offered only to a person who may add locations
+                (no handler is passed otherwise). */}
+            {onAddChild && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                aria-label={t('locations.addInsideAria', { name: location.name })}
+                onClick={() => onAddChild(location)}
+              >
+                <Plus className="h-3 w-3" />
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="icon"
