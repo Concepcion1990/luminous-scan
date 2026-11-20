@@ -3586,7 +3586,7 @@ export const vi = {
   "training.lessons.products-find-edit.step1": "Mở Sản phẩm để tìm kiếm mọi thứ cửa hàng của bạn bán, theo tên, SKU, mã vạch hoặc ISBN.",
   "training.lessons.products-find-edit.step2": "Mở một sản phẩm để xem chi tiết, ảnh, giá và số lượng tại từng địa điểm.",
   "training.lessons.products-find-edit.step3": "Nếu vai trò của bạn cho phép sửa, bạn có thể sửa tên, giá và chi tiết — lưu lại, và thay đổi có mặt ở khắp nơi cùng một lúc. Xóa hẳn một sản phẩm nằm trong menu của hàng và thuộc về chủ sở hữu — luôn yêu cầu xác nhận trước, và đó là cách duy nhất để số lượng sản phẩm giảm xuống.",
-  "training.lessons.products-find-edit.step4": "Sản phẩm hoàn toàn mới? Nếu bạn thấy nút Sản phẩm mới, bạn có thể thêm nó với mã vạch của nó để máy quét nhận ra nó từ đó trở đi. Mỗi ô mã trong biểu mẫu — UPC, mã vạch và mã QR — đều có nút quét riêng, để bạn hướng camera thay vì gõ.",
+  "training.lessons.products-find-edit.step4": "Sản phẩm hoàn toàn mới? Nếu bạn thấy nút Sản phẩm mới, bạn có thể thêm nó với mã vạch của nó để máy quét nhận ra nó từ đó trở đi. Mỗi ô mã trong biểu mẫu — SKU, UPC, mã vạch và mã QR — đều có nút quét riêng, để bạn hướng camera thay vì gõ. Ô ISBN cũng có nút riêng, và nó tự đọc số đã in — hữu ích khi mã vạch bị hỏng — và chỉ điền vào khi số đó đúng.",
   'training.lessons.products-find-edit.step5': 'Đang thêm sản phẩm? Nhập số bạn có vào «Số lượng hiện có» và nó sẽ vào kho ngay, được ghi như một lần nhận hàng — không cần bước nhận hàng riêng. Để trống thì sản phẩm bắt đầu từ 0.',
   'training.lessons.products-find-edit.step6': "Ngay trên trang Sản phẩm, bạn có thể đổi số kho ngay tại hàng: chạm mũi tên lên để thêm một, mũi tên xuống để bớt một — mỗi lần chạm đều được ghi vào lịch sử di chuyển. Nếu có nhiều địa điểm, chạm vào con số (hoặc «Thêm hàng» trong menu của hàng) để mở bảng kho và chọn nơi. Trong tờ đó, nút Quét để đếm bên cạnh số lượng sẽ quét thay bạn: hướng máy ảnh vào từng món hàng đến và số lượng tự tăng lên — các mũi tên vẫn dùng tay được, và Lưu vẫn là cú chạm ghi lại nó.",
   "training.lessons.products-find-edit.step7": "Đang chỉnh sửa sản phẩm? Biểu mẫu chỉnh sửa có cùng ô «Số lượng hiện có», hiển thị số lượng tại vị trí đã chọn. Thay đổi con số và lưu — phần chênh lệch được ghi lại dưới dạng biến động kho, không bao giờ bị ghi đè mà không có bản ghi.",
@@ -4755,4 +4755,9 @@ export const vi = {
   "staffLib.perm.productsCreate": "Thêm sản phẩm mới",
   "staffLib.area.productsAccess": "Thêm sản phẩm",
   "staff.memberDialog.productsAccessHint": "Với dấu chọn này, người này thấy các nút Sản phẩm mới và có thể thêm sản phẩm vào danh mục. Không có nó, các nút không hiện ra với họ.",
+  "productForm.readIsbnTitle": "Đọc ISBN đã in",
+  "productForm.readIsbnHint": "Hướng camera vào ISBN in trên sách, rồi chạm Đọc số. Nếu đọc được mã vạch, mã vạch cũng điền số vào.",
+  "productForm.readIsbnButton": "Đọc số",
+  "productForm.readIsbnWorking": "Đang đọc số…",
+  "productForm.readIsbnFailed": "Số đó không đọc rõ được, nên chưa điền gì cả. Thử lại, hoặc đóng cái này và gõ số vào.",
 };
