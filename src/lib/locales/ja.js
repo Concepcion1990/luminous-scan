@@ -3452,7 +3452,7 @@ export const ja = {
   "training.lessons.mgr-schedules.step3": "保存してください。その人に、スケジュールが設定または変更されたことを知らせるベルが届きます。",
   "training.lessons.mgr-schedules.step4": "承認された休暇を中心にスケジュールを組み、余裕を持って知らせてください — 出勤できる時間帯はこの時刻に従います。",
   "training.lessons.mgr-schedules.title": "スタッフのスケジュールを設定する",
-  "training.lessons.mgr-staff-permissions.step1": "スタッフを開くと、チーム、その役割、各役割ができることが表示されます。",
+  "training.lessons.mgr-staff-permissions.step1": "オーナーからスタッフリストをもらった場合は、「スタッフ」を開いて、チーム、各自の役割、各役割にできることを確認してください。",
   "training.lessons.mgr-staff-permissions.step2": "役割は権限のまとまりです：人が見たり変更したりできることは、その人の役割と、その人自身の記録に設定された権限に従います。",
   "training.lessons.mgr-staff-permissions.step3": "オーナーからスタッフ管理を任されている場合は、スタッフメンバーの役割を調整できます — 自分自身の役割やオーナーの役割は決して変更できません。",
   "training.lessons.mgr-staff-permissions.step4": "役割が拡大するたびに、アプリはその人に新しい部分についてのトレーニングを割り当てます。そのことを予期し、来ることを伝えてください。",
@@ -4798,4 +4798,7 @@ export const ja = {
   "training.lessons.welcome-basics.step5": "あなたのお店のポリシーと規約は、ウェルカムページで一度表示され、設定の中に置かれて、いつでも読めます。",
   "apiErrors.policyDocNotFound": "そのドキュメントは2つのうちの1つではありません。",
   "apiErrors.policyFileNotFound": "そのドキュメントにはファイルが保存されていません。",
+  "staffLib.perm.staffRoster": "スタッフ全員のリストを見る",
+  "staffLib.area.staffAccess": "スタッフリスト",
+  "staff.memberDialog.staffAccessHint": "マネージャー専用 — このチェックを付けると、このマネージャーはスタッフ全員のリストを閲覧のみで見ることができます。付けない場合、マネージャーは自分のカードだけを見ます。このチェックはスタッフには何もしません。",
 };

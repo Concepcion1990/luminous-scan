@@ -3452,7 +3452,7 @@ export const jv = {
   "training.lessons.mgr-schedules.step3": "Simpen. Tiyang punika nampi lonceng bilih jadwalipun sampun dipunatur utawi dipunowahi.",
   "training.lessons.mgr-schedules.step4": "Susun jadwal ngubengi prei ingkang sampun dipunidini, lan maringi pirsa dhateng tiyang — jendela absen mlebetipun ndherek wanci-wanci punika.",
   "training.lessons.mgr-schedules.title": "Ngatur jadwal staf",
-  "training.lessons.mgr-staff-permissions.step1": "Bikak Staf kangge mirsani tim, peranipun, lan punapa ingkang saged dipunlampahi saben peran.",
+  "training.lessons.mgr-staff-permissions.step1": "Menawi pemilik sampun maringi daftar staf dhateng panjenengan, bukak Staf kangge mirsani tim, peranipun, lan menapa ingkang saged dipuntindakaken saben peran.",
   "training.lessons.mgr-staff-permissions.step2": "Peran inggih punika kempalan idin: punapa ingkang saged dipunpirsani lan dipunowahi tiyang ndherek peranipun lan idin punapa kemawon ingkang dipunatur ing cathetanipun piyambak.",
   "training.lessons.mgr-staff-permissions.step3": "Menawi ingkang gadhah sampun maringi manajemen staf dhateng Panjenengan, Panjenengan saged nglarasaken peran anggota staf — mboten nate peran Panjenengan piyambak, lan mboten nate peranipun ingkang gadhah.",
   "training.lessons.mgr-staff-permissions.step4": "Saben peran TUWUH, aplikasi nandhani tiyang punika kangge pelatihan babagan perangan enggal. Ajeng-ajengaken, lan maringi pirsa bilih punika badhé dhateng.",
@@ -4798,4 +4798,7 @@ export const jv = {
   "training.lessons.welcome-basics.step5": "Kawicaksanan lan katentuan toko panjenengan ditampilake sapisan ing kaca sambutan panjenengan, lan manggon ing Setelan, ing ngendi panjenengan bisa maca kapan wae.",
   "apiErrors.policyDocNotFound": "Dokumen kuwi dudu salah siji saka loro.",
   "apiErrors.policyFileNotFound": "Ora ana berkas sing disimpen kanggo dokumen kuwi.",
+  "staffLib.perm.staffRoster": "Mirsani daftar staf ingkang jangkep",
+  "staffLib.area.staffAccess": "Daftar staf",
+  "staff.memberDialog.staffAccessHint": "Mung manajer — kanthi centang iki, manajer iki bisa mirsani daftar staf sing jangkep, mung kanggo diwaca. Tanpa iku, manajer mung mirsani kertune dhewe. Centang iki ora nindakake apa-apa kanggo staf.",
 };
