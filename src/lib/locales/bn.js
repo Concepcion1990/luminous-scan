@@ -4760,4 +4760,8 @@ export const bn = {
   "productForm.readIsbnButton": "নম্বর পড়ুন",
   "productForm.readIsbnWorking": "নম্বর পড়া হচ্ছে…",
   "productForm.readIsbnFailed": "সেই নম্বরটি স্পষ্টভাবে পড়া যায়নি, তাই কিছুই পূরণ হয়নি। আবার চেষ্টা করুন, অথবা এটি বন্ধ করে নম্বরটি লিখুন।",
+  "staffLib.perm.locationsCreate": "নতুন অবস্থান যোগ করুন",
+  "staffLib.area.locationsAccess": "অবস্থান যোগ করা",
+  "staff.memberDialog.locationsAccessHint": "এই টিক দিয়ে, এই ব্যক্তি নতুন অবস্থান যোগ করতে পারেন। এটি ছাড়া, শুধুমাত্র মালিক একটি অবস্থান যোগ করতে পারেন, এবং যোগ করার বোতামগুলি তাঁর কাছে দেখা যায় না।",
+  "apiErrors.locationsCreateReserved": "শুধুমাত্র মালিক, অথবা দলের সেই সদস্য যাকে মালিক অবস্থান যোগ করার অনুমতি দিয়েছেন, একটি অবস্থান যোগ করতে পারেন।",
 };

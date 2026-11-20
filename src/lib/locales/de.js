@@ -4760,4 +4760,8 @@ export const de = {
   "productForm.readIsbnButton": "Nummer lesen",
   "productForm.readIsbnWorking": "Nummer wird gelesen…",
   "productForm.readIsbnFailed": "Diese Nummer war nicht klar zu lesen, also wurde nichts eingetragen. Versuchen Sie es noch einmal oder schließen Sie dies und tippen Sie die Nummer ein.",
+  "staffLib.perm.locationsCreate": "Neue Standorte hinzufügen",
+  "staffLib.area.locationsAccess": "Standorte hinzufügen",
+  "staff.memberDialog.locationsAccessHint": "Mit diesem Häkchen kann diese Person neue Standorte hinzufügen. Ohne das Häkchen kann nur der Geschäftsinhaber einen Standort hinzufügen, und die Schaltflächen zum Hinzufügen werden ihr nicht angezeigt.",
+  "apiErrors.locationsCreateReserved": "Nur der Geschäftsinhaber oder ein Teammitglied, dem der Geschäftsinhaber das Hinzufügen von Standorten erlaubt hat, kann einen Standort hinzufügen.",
 };
