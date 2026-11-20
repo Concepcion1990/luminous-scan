@@ -3452,7 +3452,7 @@ export const ptBR = {
   "training.lessons.mgr-schedules.step3": "Salve. A pessoa recebe um aviso de que sua escala foi definida ou alterada.",
   "training.lessons.mgr-schedules.step4": "Monte as escalas considerando as folgas aprovadas e avise as pessoas com antecedência — as janelas de registro de ponto seguem esses horários.",
   "training.lessons.mgr-schedules.title": "Definir escalas dos funcionários",
-  "training.lessons.mgr-staff-permissions.step1": "Abra Funcionários para ver a equipe, suas funções e o que cada função pode fazer.",
+  "training.lessons.mgr-staff-permissions.step1": "Se o proprietário lhe deu a lista de funcionários, abra Equipe para ver a equipe, suas funções e o que cada função pode fazer.",
   "training.lessons.mgr-staff-permissions.step2": "Funções são conjuntos de permissões: o que uma pessoa pode ver e alterar segue sua função e as permissões definidas no próprio cadastro dela.",
   "training.lessons.mgr-staff-permissions.step3": "Se o proprietário concedeu a você a gestão de funcionários, você pode ajustar a função de um funcionário — nunca a sua própria, e nunca a do proprietário.",
   "training.lessons.mgr-staff-permissions.step4": "Sempre que uma função CRESCE, o app sinaliza a pessoa para treinamento nas partes novas. Espere por isso e avise que está a caminho.",
@@ -4798,4 +4798,7 @@ export const ptBR = {
   "training.lessons.welcome-basics.step5": "As políticas e os termos da sua loja são mostrados uma vez na sua página de boas-vindas, e moram nas Configurações, onde você pode lê-los quando quiser.",
   "apiErrors.policyDocNotFound": "Esse documento não é um dos dois.",
   "apiErrors.policyFileNotFound": "Nenhum arquivo está salvo para esse documento.",
+  "staffLib.perm.staffRoster": "Ver a lista completa de funcionários",
+  "staffLib.area.staffAccess": "Lista de funcionários",
+  "staff.memberDialog.staffAccessHint": "Somente gerentes — com esta marca, este gerente vê a lista completa de funcionários, somente para leitura. Sem ela, um gerente vê apenas o próprio cartão. Esta marca não faz nada para a equipe.",
 };
