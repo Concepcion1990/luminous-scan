@@ -17,7 +17,7 @@ function initials(name = '') {
   );
 }
 
-export default function StaffMemberCard({ member, locations = [], planKey = 'business', isOwner = false, onEdit, onRemove, onSendReset }) {
+export default function StaffMemberCard({ member, locations = [], planKey = 'business', isOwner = false, readOnly = false, onEdit, onRemove, onSendReset }) {
   const { toast } = useToast();
   const [resending, setResending] = useState(false);
   const [sendingReset, setSendingReset] = useState(false);
@@ -119,6 +119,10 @@ export default function StaffMemberCard({ member, locations = [], planKey = 'bus
         </p>
       )}
 
+      {/* The action row is manage furniture: a read-only roster
+          viewer (the owner's staff.roster tick, Nov 19, 2026)
+          sees the card without it — no dangling doors. */}
+      {!readOnly && (
       <div className="mt-3 flex flex-wrap gap-2">
         <Button size="sm" variant="outline" onClick={() => onEdit(member)}>
           <Pencil className="mr-1.5 h-3.5 w-3.5" /> {t('staff.member.edit')}
@@ -142,6 +146,7 @@ export default function StaffMemberCard({ member, locations = [], planKey = 'bus
           <Trash2 className="mr-1.5 h-3.5 w-3.5" /> {t('staff.member.remove')}
         </Button>
       </div>
+      )}
     </div>
   );
 }

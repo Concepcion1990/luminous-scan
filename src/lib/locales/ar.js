@@ -3452,7 +3452,7 @@ export const ar = {
   "training.lessons.mgr-schedules.step3": "احفظ. يحصل الشخص على جرس بأن جدوله قد حُدّد أو تغيّر.",
   "training.lessons.mgr-schedules.step4": "ابنِ الجداول حول الإجازات المعتمدة، وأعطِ الناس إشعارًا — نوافذ تسجيل حضورهم تتبع هذه الأوقات.",
   "training.lessons.mgr-schedules.title": "تعيين جداول الموظفين",
-  "training.lessons.mgr-staff-permissions.step1": "افتح الموظفين لرؤية الفريق وأدوارهم وما قد يفعله كل دور.",
+  "training.lessons.mgr-staff-permissions.step1": "إذا أعطاك المالك قائمة الموظفين، فافتح الموظفين لرؤية الفريق وأدوارهم وما يمكن لكل دور القيام به.",
   "training.lessons.mgr-staff-permissions.step2": "الأدوار حزم من الأذونات: ما يمكن لشخص رؤيته وتغييره يتبع دوره وأي أذونات محددة في سجله الخاص.",
   "training.lessons.mgr-staff-permissions.step3": "إذا منحك المالك إدارة الموظفين، يمكنك تعديل دور موظف — لا دورك أبدًا، ولا دور المالك أبدًا.",
   "training.lessons.mgr-staff-permissions.step4": "في كل مرة ينمو فيها دور، يُعلّم التطبيق الشخص للتدريب على الأجزاء الجديدة. توقّع ذلك، وأخبرهم أنه قادم.",
@@ -4798,4 +4798,7 @@ export const ar = {
   "training.lessons.welcome-basics.step5": "تُعرض سياسات متجرك وشروطه مرة واحدة في صفحة الترحيب الخاصة بك، وتعيش في الإعدادات، حيث يمكنك قراءتها في أي وقت.",
   "apiErrors.policyDocNotFound": "هذا المستند ليس واحدًا من الاثنين.",
   "apiErrors.policyFileNotFound": "لا يوجد ملف محفوظ لهذا المستند.",
+  "staffLib.perm.staffRoster": "عرض قائمة الموظفين الكاملة",
+  "staffLib.area.staffAccess": "قائمة الموظفين",
+  "staff.memberDialog.staffAccessHint": "للمديرين فقط — بهذه العلامة، يرى هذا المدير قائمة الموظفين الكاملة، للاطلاع فقط. بدونها، يرى المدير بطاقته الخاصة فقط. هذه العلامة لا تفعل شيئًا للموظفين.",
 };

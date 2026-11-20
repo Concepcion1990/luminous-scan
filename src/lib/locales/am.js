@@ -3452,7 +3452,7 @@ export const am = {
   "training.lessons.mgr-schedules.step3": "ያስቀምጡ። ሰውዬው መርሐ ግብራቸው እንደተዘጋጀ ወይም እንደተቀየረ የሚገልጽ ደወል ያገኛል።",
   "training.lessons.mgr-schedules.step4": "መርሐ ግብሮችን በጸደቀ የዕረፍት ጊዜ ዙሪያ ይገንቡ፣ እና ለሰዎች ማሳወቂያ ይስጡ — ገብቶ የመመዝገብ መስኮቶቻቸው እነዚህን ጊዜዎች ይከተላሉ።",
   "training.lessons.mgr-schedules.title": "የሰራተኞች መርሐ ግብሮችን ማዘጋጀት",
-  "training.lessons.mgr-staff-permissions.step1": "ቡድኑን፣ ሚናዎቻቸውን እና እያንዳንዱ ሚና ምን ማድረግ እንደሚችል ለማየት ሰራተኞችን ይክፈቱ።",
+  "training.lessons.mgr-staff-permissions.step1": "ባለቤቱ የሰራተኞች ዝርዝርን ከሰጠዎት፣ ቡድኑን፣ ሚናዎቻቸውን እና እያንዳንዱ ሚና ምን ማድረግ እንደሚችል ለማየት ሰራተኞችን ይክፈቱ።",
   "training.lessons.mgr-staff-permissions.step2": "ሚናዎች የፈቃዶች ጥቅል ናቸው፦ አንድ ሰው ምን ማየት እና መቀየር እንደሚችል ሚናውን እና በራሱ መዝገብ ላይ የተዘጋጁ ፈቃዶችን ይከተላል።",
   "training.lessons.mgr-staff-permissions.step3": "ባለቤቱ የሰራተኞች አስተዳደር ከሰጠዎት የአንድ ሰራተኛ ሚና ማስተካከል ይችላሉ — የራስዎን መቼም አይደለም፣ የባለቤቱንም መቼም አይደለም።",
   "training.lessons.mgr-staff-permissions.step4": "ሚና በተስፋፋ ቁጥር መተግበሪያው ሰውዬውን ለአዳዲስ ክፍሎች ስልጠና ምልክት ያደርጋል። ይጠብቁት፣ እና እየመጣ እንደሆነ ይንገሯቸው።",
@@ -4798,4 +4798,7 @@ export const am = {
   "training.lessons.welcome-basics.step5": "የሱቅዎ ፖሊሲዎች እና ውሎች በእንኳን ደህና መጣህ ገጽዎ ላይ አንድ ጊዜ ይታያሉ፣ እና በቅንብሮች ውስጥ ይኖራሉ፣ እዚያም በማንኛውም ጊዜ ሊያነቡዋቸው ይችላሉ።",
   "apiErrors.policyDocNotFound": "ያ ሰነድ ከሁለቱ አንዱ አይደለም።",
   "apiErrors.policyFileNotFound": "ለያ ሰነድ ምንም ፋይል አልተቀመጠም።",
+  "staffLib.perm.staffRoster": "ሙሉ የሰራተኞች ዝርዝርን ይመልከቱ",
+  "staffLib.area.staffAccess": "የሰራተኞች ዝርዝር",
+  "staff.memberDialog.staffAccessHint": "ለሥራ አስኪያጆች ብቻ — በዚህ ምልክት፣ ይህ ሥራ አስኪያጅ ሙሉውን የሰራተኞች ዝርዝር ማየት ይችላል፣ ለማንበብ ብቻ። ያለሱ፣ ሥራ አስኪያጅ የራሱን ካርድ ብቻ ያያል። ይህ ምልክት ለሠራተኞች ምንም አያደርግም።",
 };

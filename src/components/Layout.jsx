@@ -224,9 +224,14 @@ export default function Layout() {
   // limits, the subscription's home — exist only for the boss.
   // Money territory is owner-only; a non-owner never sees the entry.
   const boss = isBoss(user, profile);
+  // A door opens on its own perm — or on any of its anyPerm
+  // grants (the Staff door also follows the owner's staff.roster
+  // tick, Nov 19, 2026).
+  const doorOpens = (item) =>
+    !item.perm || can(item.perm) || (item.anyPerm || []).some((key) => can(key));
   const allowedItems = translatedItems.filter(
     (item) =>
-      (!item.perm || can(item.perm)) &&
+      doorOpens(item) &&
       (!item.feature || planAllows(item.feature)) &&
       (!item.bossOnly || boss)
   );
@@ -238,7 +243,7 @@ export default function Layout() {
     items: group.items.filter((item) => allowedItems.includes(item)),
   })).filter((group) => group.items.length);
   const current = translatedItems.find((item) => item.to === pathname);
-  const allowed = !current?.perm || can(current.perm);
+  const allowed = !current || doorOpens(current);
 
   const lastWorkspaceRef = useRef(activeId);
   const [retainedTabs, setRetainedTabs] = useState({ businessId: activeId, paths: [] });

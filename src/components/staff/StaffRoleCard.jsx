@@ -46,7 +46,10 @@ export default function StaffRoleCard({ role, memberCount = 0, builtIn = false, 
         <span className="numeric">{memberCount}</span>{' '}{memberCount === 1 ? t('staff.roleCard.member') : t('staff.roleCard.members')}
       </p>
 
-      {!builtIn && (
+      {/* Edit/Delete render only when a handler is offered —
+          a read-only roster viewer (the staff.roster tick,
+          Nov 19, 2026) is passed none and sees the bare card. */}
+      {!builtIn && onEdit && onDelete && (
         <div className="mt-3 flex gap-2">
           <Button size="sm" variant="outline" onClick={() => onEdit(role)}>
             <Pencil className="mr-1.5 h-3.5 w-3.5" /> {t('staff.roleCard.edit')}

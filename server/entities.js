@@ -50,6 +50,7 @@ import {
   BUNDLE_MOVEMENT_TYPES,
 } from './plans.js';
 import { createStaffMember, staffSeatCount } from './staff.js';
+import { memberLevel } from './staffWindow.js';
 import { ensureDefaultLocation } from './defaultLocation.js';
 import { rememberOrderAddress } from './customerAddresses.js';
 import { withTx } from './billing.js';
@@ -559,6 +560,25 @@ function canSeeStaffContact(access) {
   return access.isOwner || access.can('staff.manage');
 }
 
+/** The staff roster (owner ruling, Nov 19, 2026, answering the
+ * release-314 §17 flag): the entity reads below scope every
+ * non-owner to their OWN StaffMember row — unless the owner
+ * has ticked the staff.roster grant for a MANAGER on their
+ * member record. Whether a manager sees the whole roster is
+ * the owner's choice, made per manager, and locked by default.
+ * The tick follows the release-314 manager-level composition
+ * (the settings.editName / settings.contactDetails ticks):
+ * offered for every role, stored on any member, in effect only
+ * at manager level — a staff member's stored tick stays inert
+ * here. Reading only: writes keep their staff.manage door
+ * (guardUpdate is untouched), and the contact strip above
+ * still applies to a roster holder who lacks staff.manage. */
+function canSeeRoster(access) {
+  if (access.isOwner) return true;
+  if (!access.can('staff.roster')) return false;
+  return memberLevel(access.staffRow) === 'manager';
+}
+
 /** The returns approval gate refusal (owner ruling, Nov 19,
  * 2026). Factual, subject-only: it says who may approve and
  * finish a return and nothing else. Registered in the client's
@@ -905,9 +925,13 @@ export async function listEntities(pool, user, name, filter = {}, options = {}) 
       // held at defaults (kept in the row, inert — migration 018).
       businessRows = businessRows.map(stripPricing);
     }
-    if (name === 'StaffMember' && !access.isOwner) {
+    if (name === 'StaffMember' && !access.isOwner && !canSeeRoster(access)) {
       // Staff read-by-email: a non-owner sees only their own row, and
       // only when that row is trusted (owner-created or chained).
+      // A manager the owner gave the staff roster (canSeeRoster)
+      // skips this filter and reads the business's full roster —
+      // the same rows the owner sees; the contact strip below
+      // still applies to them.
       businessRows = businessRows.filter((row) => String(row.email || '').toLowerCase() === String(user.email || '').toLowerCase());
       const trusted = [];
       for (const row of businessRows) {
@@ -953,7 +977,7 @@ export async function getEntity(pool, user, name, id) {
   if (name === 'Product' && !featureAllowed(access.planKey, 'pricing')) {
     return publicRow(def, stripPricing(row));
   }
-  if (name === 'StaffMember' && !access.isOwner) {
+  if (name === 'StaffMember' && !access.isOwner && !canSeeRoster(access)) {
     if (String(row.email || '').toLowerCase() !== String(user.email || '').toLowerCase()) {
       throw err(403, 'forbidden', 'You can only read your own staff record.');
     }

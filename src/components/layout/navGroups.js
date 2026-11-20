@@ -107,7 +107,13 @@ export const NAV_GROUPS = [
       // should import. On Essentials the same key is offered, and named, as
       // import-only — see exportPermissionLabel in src/lib/staff.js.
       { to: '/import', label: 'Import', labelKey: 'nav.import', icon: FileUp, perm: 'exports.use' },
-      { to: '/staff', label: 'Staff', labelKey: 'nav.staff', icon: Users, perm: 'staff.manage' },
+      // The Staff door follows staff.manage — plus the owner's
+      // staff.roster tick (Nov 19, 2026): a manager the owner
+      // gave the roster opens the page read-only, so the door
+      // must hang for them too (Layout honors anyPerm beside
+      // perm). The server scopes what they can read; the page
+      // hides its manage furniture for them.
+      { to: '/staff', label: 'Staff', labelKey: 'nav.staff', icon: Users, perm: 'staff.manage', anyPerm: ['staff.roster'] },
       // Workforce + Payroll carry no `perm`: every team member needs
       // the time clock and their own stubs. The server enforces the
       // owner > manager > staff hierarchy on every call.

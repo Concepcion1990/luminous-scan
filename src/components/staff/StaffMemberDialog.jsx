@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/client';
 import { Loader2, TriangleAlert } from 'lucide-react';
-import { allRoles, BUSINESS_ONLY_PERMISSIONS, isLocationsGrant, isMemberGrant, isProductsGrant, isReturnsGrant, isSettingsGrant, LOCATIONS_GRANTS, PRODUCTS_GRANTS, RETURNS_GRANTS, roleById, SETTINGS_GRANTS, STATUS_OPTIONS } from '@/lib/staff';
+import { allRoles, BUSINESS_ONLY_PERMISSIONS, isLocationsGrant, isMemberGrant, isProductsGrant, isReturnsGrant, isRosterGrant, isSettingsGrant, LOCATIONS_GRANTS, PRODUCTS_GRANTS, RETURNS_GRANTS, ROSTER_GRANTS, roleById, SETTINGS_GRANTS, STATUS_OPTIONS } from '@/lib/staff';
 import { Checkbox } from '@/components/ui/checkbox';
 import { createStaffMember } from '@/lib/entitlements';
 import { fixStaffEmail } from '@/lib/recovery';
@@ -66,6 +66,13 @@ const emptyForm = (customRoles, stripBusinessOnly = (permissions) => permissions
     // location doors do not appear for a member until the owner
     // ticks this for them.
     locations_grants: [],
+    // Owner-granted staff roster (Nov 19, 2026): whether a
+    // manager sees the whole staff roster is the owner's
+    // choice — its own per-member tick, off by default for
+    // everyone. Like the Settings name and contact ticks, it
+    // takes effect only for a manager; a staff member's tick
+    // stays inert (the server enforces the same split).
+    roster_grants: [],
     status: 'invited',
     location_id: '',
     location_name: '',
@@ -132,9 +139,9 @@ export default function StaffMemberDialog({
             role_id: member.role_id || '',
             role_name: member.role_name || '',
             // The per-member grants (Settings sections + returns
-            // completion + product creation + location creation)
-            // ride the same stored array but are edited as their
-            // own ticks below —
+            // completion + product creation + location creation +
+            // the staff roster) ride the same stored array but
+            // are edited as their own ticks below —
             // split them out so the permission picker (and its
             // All/None buttons) can never wipe a grant by accident.
             permissions: (Array.isArray(member.permissions) ? member.permissions : []).filter(
@@ -151,6 +158,9 @@ export default function StaffMemberDialog({
             ),
             locations_grants: (Array.isArray(member.permissions) ? member.permissions : []).filter(
               (key) => isLocationsGrant(key)
+            ),
+            roster_grants: (Array.isArray(member.permissions) ? member.permissions : []).filter(
+              (key) => isRosterGrant(key)
             ),
             status: member.status || 'invited',
             location_id: member.location_id || '',
@@ -256,6 +266,7 @@ export default function StaffMemberDialog({
           ...(form.returns_grants || []),
           ...(form.products_grants || []),
           ...(form.locations_grants || []),
+          ...(form.roster_grants || []),
         ],
         status: form.status,
         location_id: form.location_id || '',
@@ -633,6 +644,42 @@ export default function StaffMemberDialog({
             </div>
             <p className="text-[11px] text-muted-foreground">
               {t('staff.memberDialog.locationsAccessHint')}
+            </p>
+          </div>
+
+          {/* Owner-granted staff roster (Nov 19, 2026): whether
+              a manager sees the whole staff roster is the owner's
+              choice — this tick is how the owner hands it to a
+              chosen manager. Unticked, a manager sees only their
+              own card. The tick is offered for every role but
+              takes effect only for a manager, like the Settings
+              name and contact ticks; the server enforces the
+              same split. Off by default. */}
+          <div className="space-y-1.5">
+            <Label>{t('staffLib.area.staffAccess')}</Label>
+            <div className="rounded-lg border border-border p-2.5">
+              <div className="grid gap-1.5">
+                {ROSTER_GRANTS.map((grant) => (
+                  <label key={grant.key} className="flex items-start gap-2 text-xs leading-snug">
+                    <Checkbox
+                      checked={(form.roster_grants || []).includes(grant.key)}
+                      onCheckedChange={(on) =>
+                        setForm((c) => ({
+                          ...c,
+                          roster_grants: on
+                            ? [...new Set([...(c.roster_grants || []), grant.key])]
+                            : (c.roster_grants || []).filter((key) => key !== grant.key),
+                        }))
+                      }
+                      className="mt-0.5"
+                    />
+                    <span>{grant.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            <p className="text-[11px] text-muted-foreground">
+              {t('staff.memberDialog.staffAccessHint')}
             </p>
           </div>
 
