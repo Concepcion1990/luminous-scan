@@ -3452,7 +3452,7 @@ export const ptPT = {
   "training.lessons.mgr-schedules.step3": "Guarde. A pessoa recebe um sino a dizer que o seu horário foi definido ou alterado.",
   "training.lessons.mgr-schedules.step4": "Construa os horários em torno das folgas aprovadas e avise as pessoas com antecedência — as janelas de registo de ponto seguem estes horários.",
   "training.lessons.mgr-schedules.title": "Definir os horários dos funcionários",
-  "training.lessons.mgr-staff-permissions.step1": "Abra Equipa para ver a equipa, as suas funções e o que cada função pode fazer.",
+  "training.lessons.mgr-staff-permissions.step1": "Se o proprietário lhe deu a lista da equipa, abra Equipa para ver a equipa, as suas funções e o que cada função pode fazer.",
   "training.lessons.mgr-staff-permissions.step2": "As funções são conjuntos de permissões: o que uma pessoa pode ver e alterar segue a sua função e quaisquer permissões definidas no seu próprio registo.",
   "training.lessons.mgr-staff-permissions.step3": "Se o proprietário lhe tiver dado a gestão de funcionários, pode ajustar a função de um funcionário — nunca a sua própria, e nunca a do proprietário.",
   "training.lessons.mgr-staff-permissions.step4": "Sempre que uma função CRESCE, a aplicação assinala a pessoa para formação nas partes novas. Conte com isso e avise-a de que está a caminho.",
@@ -4798,4 +4798,7 @@ export const ptPT = {
   "training.lessons.welcome-basics.step5": "As políticas e os termos da sua loja são mostrados uma vez na sua página de boas-vindas, e vivem nas Definições, onde pode lê-los quando quiser.",
   "apiErrors.policyDocNotFound": "Esse documento não é um dos dois.",
   "apiErrors.policyFileNotFound": "Não há nenhum ficheiro guardado para esse documento.",
+  "staffLib.perm.staffRoster": "Ver a lista completa da equipa",
+  "staffLib.area.staffAccess": "Lista da equipa",
+  "staff.memberDialog.staffAccessHint": "Apenas gerentes — com esta marca, este gerente vê a lista completa da equipa, apenas para leitura. Sem ela, um gerente vê apenas o seu próprio cartão. Esta marca não faz nada para a equipa.",
 };
