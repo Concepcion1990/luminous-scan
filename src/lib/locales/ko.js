@@ -4760,4 +4760,8 @@ export const ko = {
   "productForm.readIsbnButton": "번호 읽기",
   "productForm.readIsbnWorking": "번호를 읽는 중…",
   "productForm.readIsbnFailed": "그 번호가 또렷이 읽히지 않아 아무것도 채워지지 않았습니다. 다시 시도하거나, 이것을 닫고 번호를 입력하세요.",
+  "staffLib.perm.locationsCreate": "새 위치 추가",
+  "staffLib.area.locationsAccess": "위치 추가",
+  "staff.memberDialog.locationsAccessHint": "이 표시를 하면 이 사람은 새 위치를 추가할 수 있습니다. 표시가 없으면 소유자만 위치를 추가할 수 있고, 추가 버튼이 그 사람에게 나타나지 않습니다.",
+  "apiErrors.locationsCreateReserved": "소유자, 또는 소유자가 위치 추가를 허용한 팀원만 위치를 추가할 수 있습니다.",
 };

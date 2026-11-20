@@ -4760,4 +4760,8 @@ export const mr = {
   "productForm.readIsbnButton": "नंबर वाचा",
   "productForm.readIsbnWorking": "नंबर वाचला जात आहे…",
   "productForm.readIsbnFailed": "तो नंबर स्पष्ट वाचला गेला नाही, त्यामुळे काहीही भरले नाही. पुन्हा प्रयत्न करा, किंवा हे बंद करून नंबर लिहा.",
+  "staffLib.perm.locationsCreate": "नवीन स्थाने जोडा",
+  "staffLib.area.locationsAccess": "स्थाने जोडणे",
+  "staff.memberDialog.locationsAccessHint": "या खुणेसह, ही व्यक्ती नवीन स्थाने जोडू शकते. त्याशिवाय, स्थान फक्त मालक जोडू शकतो, आणि जोडण्याची बटणे तिला दिसत नाहीत.",
+  "apiErrors.locationsCreateReserved": "फक्त मालक, किंवा संघाचा तो सदस्य ज्याला मालकाने स्थाने जोडण्याची परवानगी दिली आहे, स्थान जोडू शकतो.",
 };
