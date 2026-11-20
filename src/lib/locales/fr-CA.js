@@ -4760,4 +4760,8 @@ export const frCA = {
   "productForm.readIsbnButton": "Lire le numéro",
   "productForm.readIsbnWorking": "Lecture du numéro…",
   "productForm.readIsbnFailed": "Ce numéro n’a pas été lu clairement, donc rien n’a été rempli. Réessayez, ou fermez ceci et tapez le numéro.",
+  "staffLib.perm.locationsCreate": "Ajouter des emplacements",
+  "staffLib.area.locationsAccess": "Ajout d’emplacements",
+  "staff.memberDialog.locationsAccessHint": "Avec cette case cochée, cette personne peut ajouter de nouveaux emplacements. Sans elle, seul le propriétaire peut ajouter un emplacement, et les boutons d’ajout ne s’affichent pas pour elle.",
+  "apiErrors.locationsCreateReserved": "Seul le propriétaire, ou un membre de l’équipe que le propriétaire a autorisé à ajouter des emplacements, peut ajouter un emplacement.",
 };
