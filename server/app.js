@@ -276,7 +276,6 @@ export function createApp() {
   // falling through to the shell. Unknown paths still miss
   // static entirely and reach the SPA fallback below.
   app.use(express.static(DIST_DIR, {
-    extensions: ['html'],
     setHeaders(res, filePath) {
       if (filePath.includes(`${path.sep}assets${path.sep}`)) {
         res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
@@ -288,6 +287,7 @@ export function createApp() {
         res.setHeader('Cache-Control', 'no-cache');
       }
     },
+    extensions: ['html'],
   }));
   // SPA fallback: every non-API GET serves the built app.
   app.get('*', (_req, res) => {
