@@ -4760,4 +4760,8 @@ export const bho = {
   "productForm.readIsbnButton": "नंबर पढ़ीं",
   "productForm.readIsbnWorking": "नंबर पढ़ल जा रहल बा…",
   "productForm.readIsbnFailed": "ऊ नंबर साफ ना पढ़ाइल, एही से कुछ ना भराइल। फिर से कोशिश करीं, भा एकरा बंद करके नंबर लिखीं।",
+  "staffLib.perm.locationsCreate": "नया स्थान जोड़ीं",
+  "staffLib.area.locationsAccess": "स्थान जोड़ल",
+  "staff.memberDialog.locationsAccessHint": "एह निशान के साथ, इ व्यक्ति नया स्थान जोड़ सकेला। एकरा बिना, स्थान खाली मालिक जोड़ सकेला, आ जोड़ के बटन ओकरा ना देखाई देला।",
+  "apiErrors.locationsCreateReserved": "खाली मालिक, या टीम के ऊ सदस्य जेकरा मालिक स्थान जोड़े के अनुमति देले होखे, स्थान जोड़ सकेला।",
 };
