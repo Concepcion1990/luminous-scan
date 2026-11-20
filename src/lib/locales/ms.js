@@ -3586,7 +3586,7 @@ export const ms = {
   "training.lessons.products-find-edit.step1": "Buka Produk untuk mencari semua yang dibawa oleh kedai anda, mengikut nama, SKU, barkod atau ISBN.",
   "training.lessons.products-find-edit.step2": "Buka produk untuk melihat butiran, foto, harga dan berapa banyak yang ada di setiap lokasi.",
   "training.lessons.products-find-edit.step3": "Jika peranan anda membenarkan pengeditan, anda boleh membetulkan nama, harga dan butiran — simpan, dan perubahan itu ada di mana-mana serentak. Memadam produk selama-lamanya berada dalam menu baris dan milik pemilik — ia sentiasa meminta pengesahan dahulu, dan itu satu-satunya cara bilangan produk berkurang.",
-  "training.lessons.products-find-edit.step4": "Produk serba baharu? Jika anda melihat butang Produk baharu, anda boleh menambahkannya dengan barkodnya supaya pengimbas mengenalinya sejak dari itu. Setiap kotak kod dalam borang — UPC, kod bar dan kod QR — mempunyai butang imbasnya sendiri, jadi anda boleh menghalakan kamera dan bukannya menaip.",
+  "training.lessons.products-find-edit.step4": "Produk serba baharu? Jika anda melihat butang Produk baharu, anda boleh menambahkannya dengan barkodnya supaya pengimbas mengenalinya sejak dari itu. Setiap kotak kod dalam borang — SKU, UPC, kod bar dan kod QR — mempunyai butang imbasnya sendiri, jadi anda boleh menghalakan kamera dan bukannya menaip. Kotak ISBN juga mempunyai butangnya sendiri, dan ia membaca nombor yang tercetak itu sendiri — berguna apabila barkod rosak — dan hanya mengisinya apabila nombor itu terbukti betul.",
   'training.lessons.products-find-edit.step5': 'Menambah produk? Isi berapa banyak yang anda ada dalam «Kuantiti yang ada» dan ia terus masuk stok, direkod sebagai penerimaan — tiada langkah penerimaan berasingan. Biarkan kosong dan produk bermula dari sifar.',
   'training.lessons.products-find-edit.step6': "Di halaman Produk sendiri anda boleh mengubah stok pada barisnya: ketik anak panah atas untuk tambah satu, anak panah bawah untuk kurang satu — setiap ketikan direkod dalam sejarah pergerakan. Jika ada beberapa lokasi, ketik nombornya (atau «Tambah stok» dalam menu baris) untuk membuka helaian stok dan memilih tempatnya. Dalam helaian itu, butang Imbas untuk mengira di sebelah kuantiti mengimbas bagi pihak anda: halakan kamera ke setiap item yang tiba dan kuantiti naik dengan sendiri — anak panah masih berfungsi dengan tangan, dan Simpan kekal sebagai ketikan yang merekodkannya.",
   "training.lessons.products-find-edit.step7": "Mengedit produk? Borang edit mempunyai kotak «Kuantiti yang ada» yang sama, menunjukkan bilangan di lokasi yang dipilih. Tukar nombor dan simpan — perbezaannya direkodkan sebagai pergerakan stok, tidak pernah ditulis ganti tanpa rekod.",
@@ -4755,4 +4755,9 @@ export const ms = {
   "staffLib.perm.productsCreate": "Tambah produk baharu",
   "staffLib.area.productsAccess": "Menambah produk",
   "staff.memberDialog.productsAccessHint": "Dengan tanda ini, orang ini melihat butang Produk baharu dan boleh menambah produk ke katalog. Tanpanya, butang-butang itu tidak muncul untuk mereka.",
+  "productForm.readIsbnTitle": "Baca ISBN yang tercetak",
+  "productForm.readIsbnHint": "Halakan kamera ke ISBN yang tercetak pada buku, kemudian ketik Baca nombor. Jika barkod boleh dibaca, ia juga mengisi nombor itu.",
+  "productForm.readIsbnButton": "Baca nombor",
+  "productForm.readIsbnWorking": "Membaca nombor…",
+  "productForm.readIsbnFailed": "Nombor itu tidak dibaca dengan jelas, jadi tiada apa yang diisi. Cuba lagi, atau tutup ini dan taip nombornya.",
 };
