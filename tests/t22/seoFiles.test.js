@@ -20,6 +20,16 @@ import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { base, close } from './helpers.js';
+import {
+  SEO_ROUTES,
+  buildPrerenderedHtml,
+  buildSeoJsonLd,
+  serializeSeoJsonLd,
+  seoCanonicalUrl,
+} from '../../src/lib/seo.js';
+import { PLANS, TRIAL_DAYS, formatPrice } from '../../src/lib/plans.js';
+import { SOCIAL_LINKS } from '../../src/lib/socialLinks.js';
+import { ABOUT_FOUNDER } from '../../src/lib/aboutFounder.js';
 
 after(close);
 
@@ -125,4 +135,118 @@ test('server: the static-before-fallback wiring is what keeps the files real', (
   const fallbackAt = app.indexOf("app.get('*'");
   assert.ok(staticAt > -1 && fallbackAt > -1);
   assert.ok(staticAt < fallbackAt, 'express.static must run before the SPA fallback');
+});
+
+/* ---------------- Prerendered public pages + JSON-LD (Nov 19, 2026) ----------------
+ * Her ruling: the features and subscription fees must be findable
+ * and explained exactly as they are on every search engine. The
+ * public pages are now baked to static HTML at build time from the
+ * same modules the app renders from, and the marketing pages carry
+ * JSON-LD whose prices are READ from plans.js — change a price
+ * there and the schema changes with it. */
+
+test('seo: the prerender route list is exactly the public marketing + legal pages', () => {
+  assert.deepEqual(
+    SEO_ROUTES.map((route) => route.path),
+    ['/', '/welcome', '/plans', '/about', '/terms-of-service', '/subscription-policy', '/privacy-policy'],
+  );
+  // The app flows stay on the plain shell: per-visitor forms, not copy.
+  assert.ok(!SEO_ROUTES.some((route) => ['/login', '/register', '/subscribe'].includes(route.path)));
+});
+
+test('seo: JSON-LD parses, and its offer prices ARE the plans.js prices', () => {
+  const parsed = JSON.parse(serializeSeoJsonLd('/plans'));
+  const app = parsed['@graph'].find((node) => node['@type'] === 'SoftwareApplication');
+  assert.ok(app, 'a SoftwareApplication node exists');
+  assert.equal(app.name, 'Luminous StockHaven');
+  assert.equal(app.applicationCategory, 'BusinessApplication');
+  assert.equal(app.operatingSystem, 'Web');
+  const catalog = app.offers;
+  assert.equal(catalog['@type'], 'OfferCatalog');
+  const offers = catalog.itemListElement;
+  assert.equal(offers.length, 2, 'exactly the two sellable website plans');
+  assert.equal(offers[0].price, PLANS.essentials.price.toFixed(2), 'Essentials price read from plans.js');
+  assert.equal(offers[1].price, PLANS.business.price.toFixed(2), 'Business price read from plans.js');
+  assert.ok(offers.every((offer) => offer.priceCurrency === 'USD'));
+  // The trial is a plain honest sentence, never a fake $0 offer.
+  assert.ok(offers.every((offer) => offer.description.includes(`${TRIAL_DAYS}-day free trial`)));
+  assert.ok(offers.every((offer) => offer.price !== '0.00' && offer.price !== '0'));
+});
+
+test('seo: JSON-LD never advertises the not-yet-sellable Mobile plan', () => {
+  const serialized = serializeSeoJsonLd('/plans');
+  // A bare '4.99' substring check would false-positive on $14.99 —
+  // the pins are the standalone price forms Mobile would take.
+  assert.ok(!serialized.includes('"price":"4.99"'), 'no $4.99 offer price until Mobile can be bought');
+  assert.ok(!serialized.includes('$4.99'), 'no $4.99 price text until Mobile can be bought');
+  const parsed = JSON.parse(serialized);
+  const app = parsed['@graph'].find((node) => node['@type'] === 'SoftwareApplication');
+  assert.ok(!app.offers.itemListElement.some((offer) => /mobile/i.test(offer.name)));
+});
+
+test('seo: JSON-LD feature list and organization come from the app modules', () => {
+  const parsed = buildSeoJsonLd('/');
+  const app = parsed['@graph'].find((node) => node['@type'] === 'SoftwareApplication');
+  for (const line of PLANS.essentials.includes) {
+    assert.ok(app.featureList.includes(line), `feature list carries the Essentials line: ${line}`);
+  }
+  // Business extras ride along; its "Everything in Essentials"
+  // pointer line is not itself a feature.
+  for (const line of PLANS.business.includes.slice(1)) {
+    assert.ok(app.featureList.includes(line), `feature list carries the Business extra: ${line}`);
+  }
+  const org = parsed['@graph'].find((node) => node['@type'] === 'Organization');
+  assert.equal(org.name, 'The Luminous Book Shop, LLC');
+  assert.deepEqual(org.sameAs, SOCIAL_LINKS.map((link) => link.url), 'sameAs is the socialLinks module, verbatim');
+});
+
+test('seo: a prerendered document carries the prices from plans.js, canonical and schema', () => {
+  const route = SEO_ROUTES.find((entry) => entry.path === '/plans');
+  const bodyHtml = `<main>${PLANS.essentials.includes.map((line) => `<p>${line}</p>`).join('')}`
+    + `<p>${formatPrice(PLANS.essentials.price)}</p><p>${formatPrice(PLANS.business.price)}</p></main>`;
+  const html = buildPrerenderedHtml({ template: read('index.html'), route, bodyHtml });
+  assert.ok(html.includes(formatPrice(PLANS.essentials.price)), 'Essentials price in the static output');
+  assert.ok(html.includes(formatPrice(PLANS.business.price)), 'Business price in the static output');
+  assert.ok(html.includes(`<link rel="canonical" href="${seoCanonicalUrl('/plans')}" />`));
+  assert.ok(!html.includes('<div id="root"></div>'), 'the root is filled, not empty');
+  const match = html.match(/<script type="application\/ld\+json">([^<]+)<\/script>/);
+  assert.ok(match, 'the JSON-LD script is in the head');
+  const parsed = JSON.parse(match[1]);
+  assert.equal(parsed['@graph'][0].offers.itemListElement[0].price, PLANS.essentials.price.toFixed(2));
+});
+
+test('seo: the stale pre-StockHaven scanner page is gone from public/', () => {
+  assert.ok(!existsSync(path.join(root, 'public', 'index.html')), 'public/index.html (old Luminous Scan page) must not exist');
+});
+
+test('seo: built static pages hold the real content (run the build)', { skip: !existsSync(path.join(root, 'dist', 'plans.html')) && 'dist/plans.html not built' }, () => {
+  const plans = read('dist/plans.html');
+  assert.ok(plans.includes(formatPrice(PLANS.essentials.price)), 'dist Plans shows the Essentials price as text');
+  assert.ok(plans.includes(formatPrice(PLANS.business.price)), 'dist Plans shows the Business price as text');
+  for (const line of PLANS.essentials.includes.slice(0, 6)) {
+    assert.ok(plans.includes(line), `dist Plans carries the feature line: ${line}`);
+  }
+  assert.match(plans, /<script type="application\/ld\+json">/);
+  const welcome = read('dist/index.html');
+  assert.ok(welcome.includes(formatPrice(PLANS.business.price)), 'dist root shows prices as text');
+  const about = read('dist/about.html');
+  // React's server renderer entity-escapes apostrophes (&#x27;) —
+  // every reader, browser and crawler alike, decodes them back to
+  // her exact words, so the comparison decodes before comparing.
+  const aboutText = about.replaceAll('&#x27;', "'");
+  assert.ok(aboutText.includes(ABOUT_FOUNDER.paragraphs[0]), 'dist About carries the founder story, verbatim');
+});
+
+test('server: /plans is served prerendered and an unknown route still falls back', async () => {
+  const plansRes = await fetch(`${base}/plans`);
+  assert.equal(plansRes.status, 200);
+  const plansBody = await plansRes.text();
+  assert.ok(plansBody.includes(formatPrice(PLANS.essentials.price)), 'served /plans has the price in raw HTML');
+  assert.ok(plansBody.includes('application/ld+json'), 'served /plans carries the JSON-LD');
+  assert.match(plansRes.headers.get('cache-control') || '', /no-cache/);
+
+  const missRes = await fetch(`${base}/no-such-page-here`);
+  assert.equal(missRes.status, 200, 'unknown routes keep the SPA fallback');
+  const missBody = await missRes.text();
+  assert.ok(missBody.includes('<div id="root">'), 'the fallback still serves the app document');
 });

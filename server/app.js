@@ -270,12 +270,18 @@ export function createApp() {
   // the pre-fix build on 2026-11-12. The fingerprinted files under
   // /assets/ are the opposite: their names change with their content,
   // so they may be cached for a year, immutable.
+  // `extensions: ['html']` is the prerendered public pages
+  // (Nov 19, 2026): /plans resolves to dist/plans.html here —
+  // a real file with the page's content baked in — instead of
+  // falling through to the shell. Unknown paths still miss
+  // static entirely and reach the SPA fallback below.
   app.use(express.static(DIST_DIR, {
+    extensions: ['html'],
     setHeaders(res, filePath) {
       if (filePath.includes(`${path.sep}assets${path.sep}`)) {
         res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
       } else if (
-        filePath.endsWith('index.html')
+        filePath.endsWith('.html')
         || filePath.endsWith('sw.js')
         || filePath.endsWith('manifest.webmanifest')
       ) {
