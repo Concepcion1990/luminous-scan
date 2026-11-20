@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { apiRequest, base44 } from '@/api/client';
-import { Camera, ImagePlus, Loader2, ScanBarcode, Sparkles, X } from 'lucide-react';
+import { Camera, ImagePlus, Loader2, ScanBarcode, ScanText, Sparkles, X } from 'lucide-react';
 import { useBusiness } from '@/hooks/useBusiness';
 import useEntitlements from '@/hooks/useEntitlements';
 import useStaffAccess from '@/hooks/useStaffAccess';
@@ -13,6 +13,7 @@ import { createProducts } from '@/lib/entitlements';
 import { findProductsByCode, recordMovement } from '@/lib/inventory';
 import { judgeVocabularyValue } from '@/lib/vocabulary';
 import BarcodeScanner from '@/components/scan/BarcodeScanner';
+import IsbnReader from '@/components/scan/IsbnReader';
 import VocabularyCombobox from './VocabularyCombobox';
 import AddVocabularyDialog from './AddVocabularyDialog';
 import { Image } from '@/components/ui/image';
@@ -150,6 +151,11 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
   const [scanField, setScanField] = useState(null);
   const [codeTaken, setCodeTaken] = useState(null);
   const scanHandledRef = useRef(false);
+  // ISBN digits reader (Nov 19, 2026): the ISBN field's button
+  // opens its own overlay — a camera that reads the PRINTED
+  // digits with OCR (the barcode is a bonus, never the only way)
+  // and fills the field only when the ISBN check digit agrees.
+  const [isbnReaderOpen, setIsbnReaderOpen] = useState(false);
   // Code generator (Nov 15, 2026): handmade and own-brand products
   // have no code on the box, so the form can invent one — the owner
   // picks the kind (UPC, SKU, Code 128, Barcode, EAN, QR — or, with
@@ -328,6 +334,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
       setOpeningStockDone(false);
       setPhotoChooserOpen(false);
       setScanField(null);
+      setIsbnReaderOpen(false);
       setCodeTaken(null);
       setAddNewField(null);
       setAddedNames({ category: [], subcategory: [] });
@@ -389,13 +396,12 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
   // the code already belongs to ANOTHER product in this business,
   // the field says so plainly (one code points to one product)
   // instead of the save quietly making a second record for it.
-  const handleScanDetect = async (raw) => {
-    if (scanHandledRef.current || !scanField) return;
-    scanHandledRef.current = true;
-    const field = scanField;
-    const value = String(raw || '').trim();
-    setScanField(null);
-    if (!value) return;
+  // Land a captured value in its field, focus it, and run the
+  // courtesy check: if the code already belongs to ANOTHER
+  // product in this business, the field says so plainly (one
+  // code points to one product) instead of the save quietly
+  // making a second record for it.
+  const fillCodeField = async (field, value) => {
     set(field)(value);
     requestAnimationFrame(() => document.getElementById(field)?.focus());
     try {
@@ -403,9 +409,29 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
       const other = matches.find((m) => m.id !== product?.id);
       setCodeTaken(other ? { field, name: other.name } : null);
     } catch {
-      // The lookup failing must never eat the scanned code — the
+      // The lookup failing must never eat the captured code — the
       // field already has it; only the courtesy notice is skipped.
     }
+  };
+
+  const handleScanDetect = async (raw) => {
+    if (scanHandledRef.current || !scanField) return;
+    scanHandledRef.current = true;
+    const field = scanField;
+    const value = String(raw || '').trim();
+    setScanField(null);
+    if (!value) return;
+    await fillCodeField(field, value);
+  };
+
+  // A validated ISBN from the digits reader: the overlay closes
+  // and the number lands in the ISBN field exactly like a typed
+  // or scanned one. (The reader only ever calls this with an
+  // ISBN whose check digit passed.)
+  const handleIsbnFill = async (isbn) => {
+    setIsbnReaderOpen(false);
+    if (!isbn) return;
+    await fillCodeField('isbn', isbn);
   };
 
   // The generator's kinds and the field each one fills: UPC and
@@ -743,7 +769,26 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
           <div className="grid grid-cols-2 gap-3">
             <div className="grid gap-2">
               <Label htmlFor="sku">{t('productForm.skuLabel')}</Label>
-              <Input id="sku" value={form.sku} onChange={set('sku')} placeholder="BK-QUIET-01" className="font-mono" />
+              <div className="flex gap-2">
+                <Input
+                  id="sku"
+                  value={form.sku}
+                  onChange={(e) => {
+                    set('sku')(e);
+                    if (codeTaken?.field === 'sku') setCodeTaken(null);
+                  }}
+                  placeholder="BK-QUIET-01"
+                  className="min-w-0 flex-1 font-mono"
+                />
+                <Button type="button" variant="outline" className="shrink-0" onClick={() => openCodeScanner('sku')} aria-label={t('productForm.scanCode')}>
+                  <ScanBarcode className="h-4 w-4" />
+                </Button>
+              </div>
+              {codeTaken?.field === 'sku' && (
+                <p className="text-xs font-medium text-destructive">
+                  {t('productForm.codeTakenNotice', { name: codeTaken.name })}
+                </p>
+              )}
             </div>
             <div className="grid gap-2">
               <Label htmlFor="category">{t('productForm.categoryLabel')}</Label>
@@ -763,13 +808,26 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
           <div className="grid grid-cols-2 gap-3">
             <div className="grid gap-2">
               <Label htmlFor="isbn">{t('productForm.isbnLabel')}</Label>
-              <Input
-                id="isbn"
-                value={form.isbn}
-                onChange={set('isbn')}
-                placeholder="978-3-16-148410-0"
-                className="font-mono"
-              />
+              <div className="flex gap-2">
+                <Input
+                  id="isbn"
+                  value={form.isbn}
+                  onChange={(e) => {
+                    set('isbn')(e);
+                    if (codeTaken?.field === 'isbn') setCodeTaken(null);
+                  }}
+                  placeholder="978-3-16-148410-0"
+                  className="min-w-0 flex-1 font-mono"
+                />
+                <Button type="button" variant="outline" className="shrink-0" onClick={() => setIsbnReaderOpen(true)} aria-label={t('productForm.readIsbnTitle')}>
+                  <ScanText className="h-4 w-4" />
+                </Button>
+              </div>
+              {codeTaken?.field === 'isbn' && (
+                <p className="text-xs font-medium text-destructive">
+                  {t('productForm.codeTakenNotice', { name: codeTaken.name })}
+                </p>
+              )}
             </div>
             <div className="grid gap-2">
               <Label htmlFor="author">{t('productForm.authorLabel')}</Label>
@@ -1297,6 +1355,21 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
             <div className="w-full max-w-sm space-y-3 rounded-xl bg-card p-4 shadow-lg">
               <BarcodeScanner onDetect={handleScanDetect} />
               <Button type="button" variant="outline" className="w-full" onClick={() => setScanField(null)}>
+                {t('productForm.cancel')}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* ISBN digits reader overlay: same shell as the code
+            scanner — the form underneath never unmounts, and a
+            refused read changes nothing in it. */}
+        {isbnReaderOpen && (
+          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 p-4">
+            <div className="w-full max-w-sm space-y-3 rounded-xl bg-card p-4 shadow-lg">
+              <p className="text-sm font-medium">{t('productForm.readIsbnTitle')}</p>
+              <IsbnReader onFill={handleIsbnFill} />
+              <Button type="button" variant="outline" className="w-full" onClick={() => setIsbnReaderOpen(false)}>
                 {t('productForm.cancel')}
               </Button>
             </div>

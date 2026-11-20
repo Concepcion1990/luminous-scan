@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "encoding": "base64",
+  "wrapColumns": 100,
+  "chunkChars": 1200000,
+  "note": "Each payload ships as base64 text chunks (<Base>.b64.000, .001, ...) because the publish route carries UTF-8 text only. Join a payload's chunks, strip whitespace, base64-decode: the result is byte-identical to the original file (sha256 below). server/ocrAssets.js verifies length + sha256 at load; a payload that fails verification is unavailable and the ISBN reader degrades to its plain try-again-or-type message.",
+  "assets": {
+    "core-simd-lstm": {
+      "file": "tesseract-core-simd-lstm.wasm.js",
+      "bytes": 3938657,
+      "sha256": "ce20eda9533cbed1e6c2b4276fbae1e0adc61b6754b5513084be601787b457cf",
+      "chunks": [
+        "core-simd-lstm.b64.000",
+        "core-simd-lstm.b64.001",
+        "core-simd-lstm.b64.002",
+        "core-simd-lstm.b64.003",
+        "core-simd-lstm.b64.004"
+      ]
+    },
+    "core-lstm": {
+      "file": "tesseract-core-lstm.wasm.js",
+      "bytes": 3938277,
+      "sha256": "8f04aa0cc81e7bde33f80e92fa01a7a665f0b4884d098acf5de9c7104a11dfaa",
+      "chunks": [
+        "core-lstm.b64.000",
+        "core-lstm.b64.001",
+        "core-lstm.b64.002",
+        "core-lstm.b64.003",
+        "core-lstm.b64.004"
+      ]
+    },
+    "eng-traineddata": {
+      "file": "eng.traineddata.gz",
+      "bytes": 1976314,
+      "sha256": "dac1ddc737e4d9b95922a85998e5decc0617869e8e5faa674abb239f3e7bf334",
+      "chunks": [
+        "eng-traineddata.b64.000",
+        "eng-traineddata.b64.001",
+        "eng-traineddata.b64.002"
+      ]
+    }
+  },
+  "plain": {
+    "worker.min.js": {
+      "file": "worker.min.js",
+      "bytes": 123724,
+      "sha256": "aca1229639fc9907d86f96e825955a2b7c5716d17f3bc3acd71f9c7ab66181fc"
+    },
+    "tesseract.min.js": {
+      "file": "tesseract.min.js",
+      "bytes": 66695,
+      "sha256": "a8e29918d098b2b06e1012bdaeffb4aec0445c5d5654709023e0bd1f442a80e8"
+    }
+  }
+}

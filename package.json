@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Luminous StockHaven \u2014 Fly.io twin of the Base44 app (T2: auth + businesses). Vite React app served by Express; Postgres + Stripe land in later phases.",
+  "description": "Luminous StockHaven — Fly.io twin of the Base44 app (T2: auth + businesses). Vite React app served by Express; Postgres + Stripe land in later phases.",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -14,7 +14,7 @@
     "test": "npm run test:t1 && npm run test:t2 && npm run test:t3 && npm run test:t4 && npm run test:t5 && npm run test:t6 && npm run test:t7 && npm run test:t8 && npm run test:t9 && npm run test:t10 && npm run test:t11 && npm run test:t12 && npm run test:t13 && npm run test:t14 && npm run test:t15 && npm run test:t16 && npm run test:t17 && npm run test:t18 && npm run test:t19 && npm run test:t20 && npm run test:t21 && npm run test:t22 && npm run test:t23 && npm run test:t24 && npm run test:t25 && npm run test:t26 && npm run test:t27 && npm run test:t28 && npm run test:t29 && npm run test:t30 && npm run test:t31 && npm run test:t32 && npm run test:t33 && npm run test:t34 && npm run test:t35",
     "test:t1": "node --test src/lib/stockhavenSubscriptionPolicy.test.js src/lib/stockhavenTermsOfService.test.js src/lib/stockhavenPrivacyPolicy.test.js src/lib/trademarkNotice.test.js src/lib/aboutFounder.test.js",
     "test:t2": "node --test tests/t2/*.test.js",
-    "test:t3": "node --test tests/t3/*.test.js src/lib/xlsx.test.js",
+    "test:t3": "node --test tests/t3/*.test.js src/lib/xlsx.test.js src/lib/isbn.test.js",
     "test:t4": "node --test tests/t4/*.test.js",
     "test:t5": "node --test tests/t5/*.test.js src/lib/bluetoothPrint.test.js src/lib/usbPrint.test.js",
     "test:t6": "node --test tests/t6/*.test.js src/lib/i18n.test.js src/lib/brandTheme.test.js src/lib/pullToRefresh.test.js src/lib/withAttemptTimeout.test.js src/lib/dataFreshness.test.js",
@@ -135,6 +135,7 @@
     "pg-mem": "^3.0.14",
     "postcss": "^8.5.3",
     "tailwindcss": "^3.4.17",
+    "tesseract.js": "^5.1.1",
     "typescript": "^5.8.2",
     "vite": "^8.3.3"
   }

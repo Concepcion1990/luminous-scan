@@ -47,6 +47,7 @@ import { createRecoveryRouter } from './recoveryRoutes.js';
 import { createSupportRouter } from './supportRoutes.js';
 import { createDeletionRouter } from './deletionRoutes.js';
 import { assertSubscriptionAccess } from './subscriptionAccess.js';
+import { ocrAssetsHandler } from './ocrAssets.js';
 import { issueCsrfToken, requireCsrf } from './csrf.js';
 import { SESSION_COOKIE, loadSessionUser, parseCookies, requireAuth } from './sessions.js';
 
@@ -249,6 +250,13 @@ export function createApp() {
   app.use('/api', (_req, res) => {
     res.status(404).json({ error: 'not_found', detail: 'API route not implemented yet' });
   });
+
+  // OCR assets for the ISBN digits reader (Nov 19, 2026): the
+  // tesseract.js worker, cores and language data, served from
+  // server/ocrassets/ (base64-chunk delivery, sha256-verified at
+  // load — see server/ocrAssets.js). Mounted before the static
+  // dist serving so these names never hit the SPA fallback.
+  app.get('/ocr-assets/:name', ocrAssetsHandler);
 
   // Cache posture for the built app (design-polish pass, 2026-11-13):
   // the shell document, the service worker script and the manifest
