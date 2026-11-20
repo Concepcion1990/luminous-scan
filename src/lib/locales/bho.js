@@ -3452,7 +3452,7 @@ export const bho = {
   "training.lessons.mgr-schedules.step3": "सहेजीं। ओह आदमी के घंटी मिली कि ओकर शेड्यूल तय भइल भा बदलल गइल।",
   "training.lessons.mgr-schedules.step4": "मंजूर छुट्टी के आसपास शेड्यूल बनाईं, आ लोग के सूचना दीं — ओकर क्लॉक-इन खिड़की एही समय के पालन करेला।",
   "training.lessons.mgr-schedules.title": "स्टाफ शेड्यूल तय करल",
-  "training.lessons.mgr-staff-permissions.step1": "स्टाफ खोलीं आ टीम, ओकर भूमिका आ हर भूमिका का कर सकेला, देखीं।",
+  "training.lessons.mgr-staff-permissions.step1": "अगर मालिक रउआ के स्टाफ सूची देले बाड़न, त टीम, ओकर भूमिका आ हर भूमिका का कर सकेला देखे खातिर स्टाफ खोलीं।",
   "training.lessons.mgr-staff-permissions.step2": "भूमिका अनुमति के बंडल ह: कवनो आदमी का देख आ बदल सकेला ऊ ओकर भूमिका आ ओकर आपन रिकॉर्ड पर तय कवनो अनुमति पर निर्भर करेला।",
   "training.lessons.mgr-staff-permissions.step3": "अगर मालिक रउआ के स्टाफ प्रबंधन दिहले बा, त रउआ स्टाफ सदस्य के भूमिका बदल सकत बानी — कबो आपन ना, आ कबो मालिक के ना।",
   "training.lessons.mgr-staff-permissions.step4": "हर बेर जब कवनो भूमिका बढ़ेला, त ऐप ओह आदमी के नया हिस्सा पर प्रशिक्षण खातिर चिन्हित करेला। एकर उम्मीद रखीं, आ ओकरा बताईं कि ई आवत बा।",
@@ -4798,4 +4798,7 @@ export const bho = {
   "training.lessons.welcome-basics.step5": "रउरा स्टोर के नीति अउर शर्त रउरा स्वागत पेज पर एक बेर देखावल जाला, अउर ऊ सेटिंग्स में रहेला, जहाँ रउरा ओके कबहुँ पढ़ सकेनी।",
   "apiErrors.policyDocNotFound": "ऊ दस्तावेज दुनों में से एक नइखे।",
   "apiErrors.policyFileNotFound": "ऊ दस्तावेज खातिर कवनो फाइल सहेजल नइखे गइल।",
+  "staffLib.perm.staffRoster": "पूरा स्टाफ सूची देखीं",
+  "staffLib.area.staffAccess": "स्टाफ सूची",
+  "staff.memberDialog.staffAccessHint": "खाली प्रबंधक लोग खातिर — ई निशान से, ई प्रबंधक पूरा स्टाफ सूची देख सकेला, खाली पढ़े खातिर। एकरा बिना, प्रबंधक खाली आपन कार्ड देख सकेला। ई निशान कर्मचारी लोग खातिर कुछ ना करी।",
 };
