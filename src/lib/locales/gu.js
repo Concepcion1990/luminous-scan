@@ -4760,4 +4760,8 @@ export const gu = {
   "productForm.readIsbnButton": "નંબર વાંચો",
   "productForm.readIsbnWorking": "નંબર વંચાઈ રહ્યો છે…",
   "productForm.readIsbnFailed": "તે નંબર સ્પષ્ટ વંચાયો નહીં, એટલે કંઈ ભરાયું નહીં. ફરી પ્રયાસ કરો, અથવા આ બંધ કરીને નંબર લખો.",
+  "staffLib.perm.locationsCreate": "નવા સ્થાનો ઉમેરો",
+  "staffLib.area.locationsAccess": "સ્થાનો ઉમેરવા",
+  "staff.memberDialog.locationsAccessHint": "આ નિશાની સાથે, આ વ્યક્તિ નવા સ્થાનો ઉમેરી શકે છે. તેના વિના, સ્થાન ફક્ત માલિક ઉમેરી શકે છે, અને ઉમેરવાના બટનો તેને દેખાતા નથી.",
+  "apiErrors.locationsCreateReserved": "ફક્ત માલિક, અથવા ટીમનો તે સભ્ય જેને માલિકે સ્થાનો ઉમેરવાની પરવાનગી આપી હોય, સ્થાન ઉમેરી શકે છે.",
 };
