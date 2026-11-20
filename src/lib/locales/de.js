@@ -3586,7 +3586,7 @@ export const de = {
   "training.lessons.products-find-edit.step1": "Öffnen Sie Produkte, um alles zu durchsuchen, was Ihr Geschäft führt, nach Name, SKU, Barcode oder ISBN.",
   "training.lessons.products-find-edit.step2": "Öffnen Sie ein Produkt, um seine Details, Fotos, Preise und die Anzahl an jedem Standort zu sehen.",
   "training.lessons.products-find-edit.step3": "Wenn Ihre Rolle das Bearbeiten erlaubt, können Sie Namen, Preise und Details korrigieren — speichern, und die Änderung ist überall auf einmal. Ein Produkt endgültig zu löschen liegt im Zeilenmenü und gehört dem Inhaber — es fragt immer zuerst nach einer Bestätigung, und es ist der einzige Weg, wie die Produktzahl sinkt.",
-  "training.lessons.products-find-edit.step4": "Brandneues Produkt? Wenn Sie die Schaltfläche „Neues Produkt\" sehen, können Sie es mit seinem Barcode hinzufügen, damit der Scanner es von da an erkennt. Jedes Codefeld im Formular — UPC, Barcode und QR-Code — hat seine eigene Scan-Schaltfläche, sodass Sie die Kamera darauf richten können, statt zu tippen.",
+  "training.lessons.products-find-edit.step4": "Brandneues Produkt? Wenn Sie die Schaltfläche „Neues Produkt\" sehen, können Sie es mit seinem Barcode hinzufügen, damit der Scanner es von da an erkennt. Jedes Codefeld im Formular — SKU, UPC, Barcode und QR-Code — hat seine eigene Scan-Schaltfläche, sodass Sie die Kamera darauf richten können, statt zu tippen. Auch das ISBN-Feld hat eine, und sie liest die gedruckte Nummer selbst — praktisch, wenn ein Barcode beschädigt ist — und trägt sie nur ein, wenn die Nummer stimmt.",
   'training.lessons.products-find-edit.step5': 'Neues Produkt? Tragen Sie bei „Menge auf Lager“ ein, wie viele Sie haben, und es ist sofort eingebucht, als Wareneingang vermerkt — kein eigener Wareneingang-Schritt. Leer gelassen startet das Produkt bei null.',
   'training.lessons.products-find-edit.step6': "Direkt auf der Seite Produkte ändern Sie den Bestand in der Zeile selbst: Pfeil nach oben fügt eins hinzu, Pfeil nach unten nimmt eins weg — jeder Tipp wird in den Bewegungsverlauf geschrieben. Bei mehreren Standorten tippen Sie auf die Zahl (oder auf „Bestand hinzufügen“ im Zeilenmenü), um das Bestandsblatt zu öffnen und den Ort zu wählen. In diesem Blatt scannt stattdessen die Schaltfläche „Scannen zum Zählen\" neben der Menge: Richten Sie die Kamera auf jeden ankommenden Artikel, und die Menge steigt von selbst — die Pfeile funktionieren weiterhin von Hand, und „Speichern\" bleibt der Tipp, der alles verbucht.",
   "training.lessons.products-find-edit.step7": "Produkt bearbeiten? Das Bearbeitungsformular hat dasselbe Feld „Menge auf Lager“ und zeigt die Anzahl am gewählten Standort. Ändern Sie die Zahl und speichern Sie — die Differenz wird als Lagerbewegung erfasst, nie ohne Beleg überschrieben.",
@@ -4755,4 +4755,9 @@ export const de = {
   "staffLib.perm.productsCreate": "Neue Produkte hinzufügen",
   "staffLib.area.productsAccess": "Produkte hinzufügen",
   "staff.memberDialog.productsAccessHint": "Mit diesem Häkchen sieht diese Person die Schaltflächen „Neues Produkt\" und kann Produkte zum Katalog hinzufügen. Ohne das Häkchen werden ihr die Schaltflächen nicht angezeigt.",
+  "productForm.readIsbnTitle": "Die gedruckte ISBN lesen",
+  "productForm.readIsbnHint": "Richten Sie die Kamera auf die im Buch gedruckte ISBN und tippen Sie dann auf „Nummer lesen“. Lässt sich der Barcode lesen, trägt er die Nummer ebenfalls ein.",
+  "productForm.readIsbnButton": "Nummer lesen",
+  "productForm.readIsbnWorking": "Nummer wird gelesen…",
+  "productForm.readIsbnFailed": "Diese Nummer war nicht klar zu lesen, also wurde nichts eingetragen. Versuchen Sie es noch einmal oder schließen Sie dies und tippen Sie die Nummer ein.",
 };
