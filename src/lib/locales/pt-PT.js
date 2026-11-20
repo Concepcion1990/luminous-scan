@@ -4760,4 +4760,8 @@ export const ptPT = {
   "productForm.readIsbnButton": "Ler número",
   "productForm.readIsbnWorking": "A ler o número…",
   "productForm.readIsbnFailed": "Esse número não foi lido com clareza, por isso nada foi preenchido. Tente de novo ou feche isto e digite o número.",
+  "staffLib.perm.locationsCreate": "Adicionar novos locais",
+  "staffLib.area.locationsAccess": "Adicionar locais",
+  "staff.memberDialog.locationsAccessHint": "Com esta seleção, esta pessoa pode adicionar novos locais. Sem ela, apenas o proprietário pode adicionar um local, e os botões de adicionar não lhe aparecem.",
+  "apiErrors.locationsCreateReserved": "Apenas o proprietário, ou um membro da equipa que o proprietário autorizou a adicionar locais, pode adicionar um local.",
 };
