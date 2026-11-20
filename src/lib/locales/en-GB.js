@@ -4763,4 +4763,8 @@ export const enGB = {
   "productForm.readIsbnButton": "Read number",
   "productForm.readIsbnWorking": "Reading the number…",
   "productForm.readIsbnFailed": "That number didn't read clearly, so nothing was filled in. Try again, or close this and type the number.",
+  "staffLib.perm.locationsCreate": "Add locations",
+  "staffLib.area.locationsAccess": "Adding locations",
+  "staff.memberDialog.locationsAccessHint": "With this tick, this person can add new locations. Without it, only the owner can add a location, and the add buttons do not appear for them.",
+  "apiErrors.locationsCreateReserved": "Only the owner, or a team member the owner has allowed to add locations, can add a location.",
 };
