@@ -4760,4 +4760,8 @@ export const it = {
   "productForm.readIsbnButton": "Leggi numero",
   "productForm.readIsbnWorking": "Lettura del numero…",
   "productForm.readIsbnFailed": "Quel numero non si è letto con chiarezza, quindi non è stato inserito nulla. Riprova, oppure chiudi e digita il numero.",
+  "staffLib.perm.locationsCreate": "Aggiungi nuove sedi",
+  "staffLib.area.locationsAccess": "Aggiunta di sedi",
+  "staff.memberDialog.locationsAccessHint": "Con questa spunta, questa persona può aggiungere nuove sedi. Senza, solo il titolare può aggiungere una sede, e i pulsanti per aggiungere non le vengono mostrati.",
+  "apiErrors.locationsCreateReserved": "Solo il titolare, o un membro del team che il titolare ha autorizzato ad aggiungere sedi, può aggiungere una sede.",
 };

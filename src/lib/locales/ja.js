@@ -4760,4 +4760,8 @@ export const ja = {
   "productForm.readIsbnButton": "番号を読み取る",
   "productForm.readIsbnWorking": "番号を読み取り中…",
   "productForm.readIsbnFailed": "その番号をはっきり読み取れなかったため、何も入力されませんでした。もう一度試すか、これを閉じて番号を入力してください。",
+  "staffLib.perm.locationsCreate": "新しいロケーションを追加",
+  "staffLib.area.locationsAccess": "ロケーションの追加",
+  "staff.memberDialog.locationsAccessHint": "このチェックを入れると、このメンバーは新しいロケーションを追加できます。チェックがない場合、ロケーションを追加できるのはオーナーだけで、追加ボタンは表示されません。",
+  "apiErrors.locationsCreateReserved": "ロケーションを追加できるのは、オーナー、またはオーナーがロケーションの追加を許可したチームメンバーだけです。",
 };

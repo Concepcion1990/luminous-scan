@@ -4760,4 +4760,8 @@ export const id = {
   "productForm.readIsbnButton": "Baca nomor",
   "productForm.readIsbnWorking": "Membaca nomor…",
   "productForm.readIsbnFailed": "Nomor itu tidak terbaca dengan jelas, jadi tidak ada yang terisi. Coba lagi, atau tutup ini dan ketik nomornya.",
+  "staffLib.perm.locationsCreate": "Tambahkan lokasi baru",
+  "staffLib.area.locationsAccess": "Menambahkan lokasi",
+  "staff.memberDialog.locationsAccessHint": "Dengan centang ini, orang ini dapat menambahkan lokasi baru. Tanpa centang ini, hanya pemilik yang dapat menambahkan lokasi, dan tombol tambah tidak muncul untuk mereka.",
+  "apiErrors.locationsCreateReserved": "Hanya pemilik, atau anggota tim yang diizinkan pemilik untuk menambahkan lokasi, yang dapat menambahkan lokasi.",
 };
