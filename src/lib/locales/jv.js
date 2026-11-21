@@ -5010,4 +5010,13 @@ export const jv = {
   "payroll.profile.noName": "Durung ana jeneng sing kacathet.",
   "apiErrors.forbidden.businessOwnerUpdateDetails": "Mung pemilik usaha sing bisa nganyari rincian iki.",
   "apiErrors.invalidValue.homeAddressThousandCharacters": "Alamat omah sampeyan kudu 1000 aksara utawa kurang.",
+  "plans.status.foundingTester": "Penguji pendiri",
+  "plans.priceNoteFoundingTester": "Ora ana biaya — penguji pendiri njaga Business gratis salawase.",
+  "subscribe.foundingTesterNote": "Papan kerja iki nduweni Business minangka penguji pendiri — gratis salawase. Ora ana kertu, ora ana biaya, salawase.",
+  "upgrade.introFoundingTester": " — papan kerja penguji pendiri, gratis salawase lan tanpa biaya apa wae.",
+  "upgrade.foundingTesterNote": "Penguji pendiri njaga Business gratis salawase — ora ana paket sing kudu diganti lan ora ana langganan sing kudu dibatalake.",
+  "apiErrors.foundingTester.alreadyListed": "Email kuwi wis ana ing dhaptar penguji pendiri.",
+  "apiErrors.foundingTester.listFull": "Dhaptar penguji pendiri wis kebak.",
+  "apiErrors.foundingTester.notListed": "Email kuwi ora ana ing dhaptar penguji pendiri.",
+  "apiErrors.foundingTester.capWholeNumber": "Wates kudu wujud angka wutuh 1 utawa luwih.",
 };
