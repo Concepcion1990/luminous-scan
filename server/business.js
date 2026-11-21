@@ -27,6 +27,7 @@ import crypto from 'node:crypto';
 import { resolveAccess } from './authz.js';
 import { featureAllowed } from './plans.js';
 import { entityDef, publicRow } from './entities.js';
+import { ownerPublicName } from './profilePhotos.js';
 import { recordMovementTx, getLevel, withTx } from './movements.js';
 import { assertNotInGrace } from './billing.js';
 import { sendMail, purchaseOrderEmail, EmailNotConfigured } from './email.js';
@@ -301,7 +302,15 @@ export async function receivePurchaseOrder(pool, user, businessId, poId, body = 
         received_date: complete
           ? new Date().toISOString().slice(0, 10)
           : order.received_date || '',
-        received_by: user?.email || order.received_by || '',
+        // The receiver is NAMED, never emailed (owner's
+        // email-exposure rule, Nov 21, 2026): "Received by"
+        // renders to purchasing staff.
+        received_by:
+          (access.isOwner
+            ? await ownerPublicName(pool, access.business)
+            : access.staffRow?.full_name) ||
+          order.received_by ||
+          '',
         location_id: location.id,
         location_name: location.name,
       },

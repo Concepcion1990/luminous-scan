@@ -47,6 +47,7 @@ import { createRecoveryRouter } from './recoveryRoutes.js';
 import { createSupportRouter } from './supportRoutes.js';
 import { createBusinessPolicyRouter } from './businessPolicyRoutes.js';
 import { createPolicyQuizRouter } from './policyQuizRoutes.js';
+import { createProfilePhotoRouter } from './profilePhotoRoutes.js';
 import { createDeletionRouter } from './deletionRoutes.js';
 import { assertSubscriptionAccess } from './subscriptionAccess.js';
 import { ocrAssetsHandler } from './ocrAssets.js';
@@ -252,6 +253,10 @@ export function createApp() {
   app.use('/api', createBusinessPolicyRouter({ getPool }));
   // The owner's quiz on her own policies + terms (server/policyQuizRoutes.js):
   app.use('/api', createPolicyQuizRouter({ getPool }));
+  // Profile photos + the owner's display name
+  // (server/profilePhotoRoutes.js): owner-approved team photos
+  // and the name that replaces "Owner".
+  app.use('/api', createProfilePhotoRouter({ getPool }));
   app.use('/api', createShopRouter({ getPool }));
 
   app.use('/api', (_req, res) => {

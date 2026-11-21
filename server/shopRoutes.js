@@ -54,6 +54,7 @@ import { toCsv, fileSlug, fileStamp } from './csv.js';
 import { buildWorkbookBuffer } from './xlsxExport.js';
 import { EXPORTS, buildValuation, truncatedFilename, EXPORT_ROW_CAP } from './exportData.js';
 import { createStaffMember } from './staff.js';
+import { ownerPublicName, attributionNameMap, attributionName } from './profilePhotos.js';
 import { assertNotInGrace } from './billing.js';
 import { assertSubscriptionAccess } from './subscriptionAccess.js';
 import {
@@ -105,6 +106,30 @@ async function accessOr403(pool, user, businessId, permission) {
     throw err(403, 'forbidden', 'You do not have permission to do that here.');
   }
   return access;
+}
+
+/** Attribution name for server-side writes (owner's
+ *  email-exposure rule, Nov 21, 2026): the actor's display name —
+ *  the owner's set name or "Owner", a member's staff name —
+ *  never their email, which is what movement user_name and its
+ *  siblings used to be stamped with. */
+async function movementActorName(pool, access) {
+  return access.isOwner ? ownerPublicName(pool, access.business) : access.staffRow?.full_name || '';
+}
+
+/** Reports read shape (same rule): a non-owner's report source
+ *  resolves movement user_name emails to names before grouping,
+ *  so the "By" breakdown labels people, not addresses. The
+ *  owner's own report is built from the rows exactly as stored. */
+async function shapeReportSource(pool, access, source) {
+  if (access.isOwner || !Array.isArray(source?.movements)) return source;
+  const map = await attributionNameMap(pool, access.business);
+  for (const movement of source.movements) {
+    if (typeof movement.user_name === 'string' && movement.user_name.includes('@')) {
+      movement.user_name = attributionName(map, movement.user_name);
+    }
+  }
+  return source;
 }
 
 function escapeRegex(value) {
@@ -313,6 +338,7 @@ export function createShopRouter({ getPool: getPoolFn }) {
       if (!toLocation) throw err(400, 'invalid_reference', 'The destination location must belong to this business.');
       if (body.type !== 'transfer') throw err(400, 'invalid_type', 'A destination location only applies to transfers.');
     }
+    const actorName = await movementActorName(pool(), access);
     const result = await withTx(pool(), (client) =>
       recordMovementTx(client, {
         businessId: req.params.bid,
@@ -323,7 +349,7 @@ export function createShopRouter({ getPool: getPoolFn }) {
         note: body.note,
         scannedCode: body.scanned_code,
         toLocation,
-        userName: req.user.email,
+        userName: actorName,
         reference: body.reference,
         supplierName: body.supplier_name,
         unitCost: body.unit_cost,
@@ -356,8 +382,9 @@ export function createShopRouter({ getPool: getPoolFn }) {
     );
     const movement = rows[0];
     if (!movement) throw err(404, 'not_found', 'Movement not found.');
+    const actorName = await movementActorName(pool(), access);
     const result = await withTx(pool(), (client) =>
-      reverseMovementTx(client, { businessId: req.params.bid, movement, userName: req.user.email, caller: req.user }),
+      reverseMovementTx(client, { businessId: req.params.bid, movement, userName: actorName, caller: req.user }),
     );
     return res.json({
       previous: result.previous,
@@ -372,6 +399,7 @@ export function createShopRouter({ getPool: getPoolFn }) {
     const product = await loadProductInBusiness(pool(), req.params.bid, body.product_id);
     const location = await loadLocationInBusiness(pool(), req.params.bid, body.location_id);
     if (!product || !location) throw err(400, 'invalid_reference', 'The product and location must belong to this business.');
+    const actorName = await movementActorName(pool(), access);
     const result = await withTx(pool(), (client) =>
       setReservedTx(client, {
         businessId: req.params.bid,
@@ -381,7 +409,7 @@ export function createShopRouter({ getPool: getPoolFn }) {
         quantity: body.quantity,
         note: body.note,
         reference: body.reference,
-        userName: req.user.email,
+        userName: actorName,
         caller: req.user,
       }),
     );
@@ -533,11 +561,15 @@ export function createShopRouter({ getPool: getPoolFn }) {
     }
     const format = req.query.format === 'xlsx' ? 'xlsx' : 'csv';
     const dataset = req.params.dataset;
+    // A non-owner's export resolves attribution emails to names
+    // (the movements "By" and PO "Received by" columns); the
+    // owner's own export is unchanged (Nov 21, 2026).
+    const exportNameMap = access.isOwner ? null : await attributionNameMap(pool(), access.business);
     if (dataset === 'inventory-workbook') {
       if (format !== 'xlsx') throw err(400, 'invalid_format', 'The full inventory workbook is Excel-only.');
       const sheets = [];
       for (const id of ['products', 'valuation', 'stock-by-location', 'movements']) {
-        const built = await EXPORTS[id].build(pool(), req.params.bid);
+        const built = await EXPORTS[id].build(pool(), req.params.bid, exportNameMap);
         sheets.push({ name: EXPORTS[id].title, columns: built.columns, rows: built.rows });
       }
       const buffer = await buildWorkbookBuffer(sheets);
@@ -552,7 +584,7 @@ export function createShopRouter({ getPool: getPoolFn }) {
     }
     const def = EXPORTS[dataset];
     if (!def) throw err(404, 'unknown_dataset', `Unknown export ${dataset}.`);
-    const built = await def.build(pool(), req.params.bid);
+    const built = await def.build(pool(), req.params.bid, exportNameMap);
     const base = `${fileSlug(access.business.name)}-${dataset}-${fileStamp()}`;
     const filename = `${truncatedFilename(base, built.truncated)}.${format}`;
     res.setHeader('X-Export-Rows', String(built.rows.length));
@@ -771,7 +803,7 @@ export function createShopRouter({ getPool: getPoolFn }) {
     if (!featureAllowed(access.planKey, 'reports')) {
       throw err(403, 'plan_gated', 'Advanced reports are part of the Business plan.');
     }
-    const source = await loadReportSource(pool(), req.params.bid);
+    const source = await shapeReportSource(pool(), access, await loadReportSource(pool(), req.params.bid));
     const report = buildServerReport({
       reportId: String(req.query.type || 'stock'),
       groupBy: String(req.query.groupBy || ''),
@@ -902,7 +934,7 @@ export function createShopRouter({ getPool: getPoolFn }) {
     if (!featureAllowed(access.planKey, 'reports')) {
       throw err(403, 'plan_gated', 'Reports are part of the Business plan.');
     }
-    const source = await loadReportSource(pool(), req.params.bid);
+    const source = await shapeReportSource(pool(), access, await loadReportSource(pool(), req.params.bid));
     const report = buildServerReport({
       reportId: String(req.query.type || 'stock'),
       groupBy: String(req.query.groupBy || ''),
@@ -951,6 +983,9 @@ export function createShopRouter({ getPool: getPoolFn }) {
     await assertSubscriptionAccess(pool(), req.user, target.id, { write: true });
     const items = Array.isArray(req.body?.items) ? req.body.items : [];
     if (!items.length) throw err(400, 'invalid_value', 'Choose at least one product to move.');
+    // Owner-only door (checked above): both movement rows carry
+    // the owner's display name, never their email (Nov 21, 2026).
+    const actorName = await ownerPublicName(pool(), source);
     const moved = await withTx(pool(), async (client) => {
       const results = [];
       const targetPlan = await planFor(client, target.id);
@@ -1030,7 +1065,7 @@ export function createShopRouter({ getPool: getPoolFn }) {
           to_location_name: `${target.name} · ${toLocation.name}`,
           reference: 'cross-business-move',
           note: `Moved to ${target.name}`,
-          user_name: req.user.email,
+          user_name: actorName,
         }, req.user);
         const targetLevel = await getLevel(client, target.id, targetProduct.id, toLocation.id);
         const targetOnHand = Number(targetLevel?.quantity ?? 0);
@@ -1048,7 +1083,7 @@ export function createShopRouter({ getPool: getPoolFn }) {
           new_qty: targetOnHand + quantity,
           reference: 'cross-business-move',
           note: `Received from ${source.name}`,
-          user_name: req.user.email,
+          user_name: actorName,
         }, req.user);
         results.push({
           product_id: product.id,
@@ -1077,7 +1112,7 @@ export function createShopRouter({ getPool: getPoolFn }) {
       actor: {
         userId: req.user.id,
         staffId: access.staffRow?.id ?? null,
-        name: access.isOwner ? 'Owner' : access.staffRow?.full_name || req.user.email,
+        name: access.isOwner ? await ownerPublicName(pool(), access.business) : access.staffRow?.full_name || req.user.email,
       },
     });
     return res.status(201).json({ member: publicRow(entityDef('StaffMember'), row) });

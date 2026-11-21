@@ -220,6 +220,34 @@ async function linesOfEvent(client, eventId) {
  * retryHeldLines() applies it, exactly once, once the business
  * is on Business again.
  */
+/** A signed-in POS caller's movement name (owner's
+ *  email-exposure rule, Nov 21, 2026): the person's display name
+ *  — the owner's set name or "Owner", a member's staff name —
+ *  never their email. No caller (a webhook delivery) resolves
+ *  to null and the caller site keeps the provider label. */
+async function posCallerName(queryable, businessId, caller) {
+  if (!caller) return null;
+  const { rows: biz } = await queryable.query(
+    'SELECT owner_id FROM businesses WHERE id = $1 LIMIT 1',
+    [businessId],
+  );
+  if (biz[0]?.owner_id && biz[0].owner_id === caller.id) {
+    const { rows: u } = await queryable.query(
+      'SELECT display_name FROM users WHERE id = $1 LIMIT 1',
+      [caller.id],
+    );
+    return u[0]?.display_name?.trim() || 'Owner';
+  }
+  if (caller.email) {
+    const { rows: s } = await queryable.query(
+      'SELECT full_name FROM staff_members WHERE business_id = $1 AND LOWER(email) = LOWER($2) LIMIT 1',
+      [businessId, caller.email],
+    );
+    if (s[0]?.full_name) return s[0].full_name;
+  }
+  return null;
+}
+
 export async function applyPosSale(pool, {
   businessId,
   connection = null,
@@ -232,7 +260,7 @@ export async function applyPosSale(pool, {
 }) {
   const externalSaleId = String(sale?.externalSaleId || '').trim();
   if (!externalSaleId) throw err(400, 'invalid_value', 'A sale needs its provider sale id.');
-  const userName = caller?.email || `${POS_PROVIDER_LABELS[provider] || provider} POS`;
+  const userName = (await posCallerName(pool, businessId, caller)) || `${POS_PROVIDER_LABELS[provider] || provider} POS`;
   const reference = `POS-${provider}-${externalSaleId}`.slice(0, 120);
 
   // The recorded outcome for an already-seen sale — the replay
@@ -352,7 +380,7 @@ export async function retryHeldLines(pool, { businessId, provider = null, provid
         locationId: connection?.location_id || null,
         locationLabel: event.location_label,
       });
-      const userName = caller?.email || `${POS_PROVIDER_LABELS[event.provider] || event.provider} POS`;
+      const userName = (await posCallerName(client, businessId, caller)) || `${POS_PROVIDER_LABELS[event.provider] || event.provider} POS`;
       const result = await applyLineTx(client, {
         businessId,
         provider: event.provider,

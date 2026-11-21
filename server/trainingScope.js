@@ -41,6 +41,7 @@ export const CORE_LESSON_IDS = new Set([
   'spare-keys-setup',
   'lost-email-recovery',
   'report-problem',
+  'your-profile-photo',
   'clock-basics',
   'staff-shift-windows',
   'schedule-yours',

@@ -38,6 +38,7 @@ import crypto from 'node:crypto';
 import { Router } from 'express';
 import { requireAuth } from './sessions.js';
 import { resolveAccess, loadBusiness, loadBusinessesForUser } from './authz.js';
+import { ownerPublicName, attributionNameMap, attributionName } from './profilePhotos.js';
 import { planFor, featureAllowed } from './plans.js';
 import { assertNotInGrace } from './billing.js';
 import { hasFullSubscriptionAccess } from './subscriptionAccess.js';
@@ -360,7 +361,12 @@ export function createT6Router({ getPool: getPoolFn }) {
       `INSERT INTO cross_store_requests
          (id, business_id, target_business_id, product_id, product_name, sku, mode, message, status, requested_by_id, requested_by)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'open', $9, $10) RETURNING *`,
-      [id, req.params.bid, targetId, product.id, product.name, product.sku || '', mode, message, req.user.id, req.user.email],
+      [
+        id, req.params.bid, targetId, product.id, product.name, product.sku || '', mode, message, req.user.id,
+        // "Asked by" names the asker, never their email (owner's
+        // email-exposure rule, Nov 21, 2026).
+        access.isOwner ? await ownerPublicName(pool(), access.business) : access.staffRow?.full_name || '',
+      ],
     );
     return res.status(201).json({ request: inserted.rows[0], target_stock: targetHas.total, business_name: access.business.name });
   }));
@@ -370,7 +376,7 @@ export function createT6Router({ getPool: getPoolFn }) {
   // asked) without a second round trip per row; the request rows
   // themselves carry no business names.
   router.get('/businesses/:bid/cross-store/requests', asyncHandler(async (req, res) => {
-    await accessOr403(pool(), req.user, req.params.bid);
+    const access = await accessOr403(pool(), req.user, req.params.bid);
     const { rows } = await pool().query(
       `SELECT r.*,
               src.name AS business_name,
@@ -382,6 +388,22 @@ export function createT6Router({ getPool: getPoolFn }) {
         ORDER BY r.created_at DESC LIMIT 100`,
       [req.params.bid],
     );
+    if (!access.isOwner) {
+      // Legacy rows stored the asker's email in requested_by;
+      // a non-owner's inbox resolves it to the asker's name —
+      // resolved against the ASKING store, whose people they are.
+      const maps = new Map();
+      for (const row of rows) {
+        if (typeof row.requested_by !== 'string' || !row.requested_by.includes('@')) continue;
+        if (!maps.has(row.business_id)) {
+          const asking = row.business_id === access.business.id
+            ? access.business
+            : await loadBusiness(pool(), row.business_id);
+          maps.set(row.business_id, asking ? await attributionNameMap(pool(), asking) : new Map());
+        }
+        row.requested_by = attributionName(maps.get(row.business_id), row.requested_by);
+      }
+    }
     return res.json({
       incoming: rows.filter((row) => row.target_business_id === req.params.bid),
       outgoing: rows.filter((row) => row.business_id === req.params.bid),

@@ -8,6 +8,7 @@
  * figures. Cap: 20,000 rows per entity, with a "truncated" flag.
  */
 import { publicRow, entityDef } from './entities.js';
+import { attributionName } from './profilePhotos.js';
 
 export const EXPORT_ROW_CAP = 20000;
 
@@ -169,7 +170,7 @@ export const EXPORTS = {
 
   movements: {
     title: 'Movements',
-    async build(pool, businessId) {
+    async build(pool, businessId, nameMap = null) {
       const { rows, truncated } = await allRows(pool, 'StockMovement', businessId);
       const columns = [
         { label: 'Date', value: (m) => iso(m.created_date) },
@@ -184,7 +185,11 @@ export const EXPORTS = {
         code('Scanned code', (m) => m.scanned_code),
         { label: 'Reference', value: (m) => m.reference || '' },
         { label: 'Note', value: (m) => m.note || '' },
-        { label: 'By', value: (m) => m.user_name || '' },
+        // Attribution prints a NAME, never an email: when the
+        // exporter is a non-owner the route passes the business's
+        // name map and stored emails resolve through it (owner's
+        // email-exposure rule, Nov 21, 2026).
+        { label: 'By', value: (m) => (nameMap ? attributionName(nameMap, m.user_name || '') : m.user_name || '') },
       ];
       return { columns, rows, truncated };
     },
@@ -209,7 +214,7 @@ export const EXPORTS = {
 
   'purchase-orders': {
     title: 'Purchase orders',
-    async build(pool, businessId) {
+    async build(pool, businessId, nameMap = null) {
       const { rows: orders, truncated } = await allRows(pool, 'PurchaseOrder', businessId);
       const rows = orders.flatMap((order) => {
         const lines = order.lines?.length ? order.lines : [null];
@@ -239,7 +244,7 @@ export const EXPORTS = {
         { label: 'Tax', value: (r) => r.order.tax ?? '' },
         { label: 'Order total', value: (r) => r.order.total ?? '' },
         { label: 'Note', value: (r) => r.order.note || '' },
-        { label: 'Received by', value: (r) => r.order.received_by || '' },
+        { label: 'Received by', value: (r) => (nameMap ? attributionName(nameMap, r.order.received_by || '') : r.order.received_by || '') },
         { label: 'Created', value: (r) => iso(r.order.created_date) },
       ];
       return { columns, rows, truncated };

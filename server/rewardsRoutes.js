@@ -41,6 +41,7 @@ import { requireAuth } from './sessions.js';
 import { resolveAccess } from './authz.js';
 import { assertNotInGrace } from './billing.js';
 import { personLevel } from './workforceRoutes.js';
+import { ownerPublicName } from './profilePhotos.js';
 
 function err(status, code, message) {
   return Object.assign(new Error(message), { status, code });
@@ -73,12 +74,18 @@ export function normalizeRewardCode(value) {
   return String(value || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
 }
 
-function publicReward(row) {
-  return {
+function publicReward(row, { keepRecipientEmail = false } = {}) {
+  const out = {
     ...row,
     percent_value: row.percent_value == null ? null : Number(row.percent_value),
     amount: row.amount == null ? null : Number(row.amount),
   };
+  // The recipient's email is not a display field: only the
+  // owner's payloads carry it (audit B5, Nov 21, 2026). A
+  // manager who gave the reward, and the recipient reading
+  // their own, both work from the recipient's NAME.
+  if (!keepRecipientEmail) delete out.recipient_email;
+  return out;
 }
 
 export function createRewardsRouter({ getPool: getPoolFn }) {
@@ -103,7 +110,7 @@ export function createRewardsRouter({ getPool: getPoolFn }) {
     return { access, level, me: access.staffRow };
   }
 
-  async function scopedRewards(req, { level, me }) {
+  async function scopedRewards(req, { level, me, access }) {
     // Owner: everything. Manager: gave it OR received it. Staff: own only.
     let query = 'SELECT * FROM rewards WHERE business_id = $1';
     const values = [req.params.bid];
@@ -116,7 +123,7 @@ export function createRewardsRouter({ getPool: getPoolFn }) {
     }
     query += ' ORDER BY issued_at DESC, created_at DESC LIMIT 500';
     const { rows } = await pool().query(query, values);
-    return rows.map(publicReward);
+    return rows.map((row) => publicReward(row, { keepRecipientEmail: Boolean(access?.isOwner) }));
   }
 
   async function rewardOr404(businessId, id) {
@@ -189,7 +196,7 @@ export function createRewardsRouter({ getPool: getPoolFn }) {
       if (!detail) throw err(400, 'invalid_value', 'Describe the reward in your own words.');
     }
 
-    const giverName = access.isOwner ? 'Owner' : me?.full_name || req.user.email;
+    const giverName = access.isOwner ? await ownerPublicName(pool(), access.business) : me?.full_name || req.user.email;
     let reward = null;
     // Codes are unique per business (UNIQUE (business_id, code));
     // a collision simply draws a new code.
@@ -234,7 +241,7 @@ export function createRewardsRouter({ getPool: getPoolFn }) {
         ],
       );
     }
-    return res.status(201).json({ reward: publicReward(reward) });
+    return res.status(201).json({ reward: publicReward(reward, { keepRecipientEmail: access.isOwner }) });
   }));
 
   // ---- Redeem by code (at the till) ----------------------------------------
@@ -270,10 +277,10 @@ export function createRewardsRouter({ getPool: getPoolFn }) {
         WHERE id = $5 RETURNING *`,
       [
         req.user.id, access.isOwner ? null : me?.id || null,
-        access.isOwner ? 'Owner' : me?.full_name || req.user.email, level, reward.id,
+        access.isOwner ? await ownerPublicName(pool(), access.business) : me?.full_name || req.user.email, level, reward.id,
       ],
     );
-    return res.json({ reward: publicReward(updated.rows[0]) });
+    return res.json({ reward: publicReward(updated.rows[0], { keepRecipientEmail: access.isOwner }) });
   }));
 
   // ---- Void ------------------------------------------------------------------
@@ -300,10 +307,10 @@ export function createRewardsRouter({ getPool: getPoolFn }) {
         WHERE id = $5 RETURNING *`,
       [
         req.user.id, access.isOwner ? null : me?.id || null,
-        access.isOwner ? 'Owner' : me?.full_name || req.user.email, level, reward.id,
+        access.isOwner ? await ownerPublicName(pool(), access.business) : me?.full_name || req.user.email, level, reward.id,
       ],
     );
-    return res.json({ reward: publicReward(updated.rows[0]) });
+    return res.json({ reward: publicReward(updated.rows[0], { keepRecipientEmail: access.isOwner }) });
   }));
 
   return router;

@@ -54,6 +54,7 @@ import { requireAuth } from './sessions.js';
 import { resolveAccess } from './authz.js';
 import { assertNotInGrace } from './billing.js';
 import { businessTimezone, localParts, personLevel } from './workforceRoutes.js';
+import { ownerPublicName } from './profilePhotos.js';
 import {
   MODULE_LABELS,
   TRAINING_LESSONS,
@@ -229,7 +230,7 @@ export function createTrainingRouter({ getPool: getPoolFn }) {
       is_owner: access.isOwner,
       level,
       my_key: myKey(access),
-      my_name: access.isOwner ? 'Owner' : access.staffRow?.full_name || req.user.email,
+      my_name: access.isOwner ? await ownerPublicName(pool(), access.business) : access.staffRow?.full_name || req.user.email,
       plan: access.planKey,
       today,
       tracks: visibleTracksForLevel(level),
@@ -291,7 +292,10 @@ export function createTrainingRouter({ getPool: getPoolFn }) {
       await recordLessonCompletion(pool(), access.business, {
         personKey: key,
         personUserId: req.user.id,
-        personName: 'Owner',
+        // The owner's display name (Nov 21, 2026): their team
+        // record names the person, not the bare label, once a
+        // name is set.
+        personName: await ownerPublicName(pool(), access.business),
         lessonId: lesson.id,
       });
     }
@@ -463,7 +467,10 @@ export function createTrainingRouter({ getPool: getPoolFn }) {
       peopleOut.push({
         staff_id: row.id,
         full_name: row.full_name,
-        email: row.email,
+        // Progress travels by name: a manager's team payload
+        // carries no staff email addresses (audit B4, Nov 21,
+        // 2026); the owner's view keeps them.
+        ...(access.isOwner ? { email: row.email } : {}),
         role_name: row.role_name || '',
         level: personLvl,
         lessons_total: total,
@@ -508,7 +515,7 @@ export function createTrainingRouter({ getPool: getPoolFn }) {
     }
     const dueDate = dueDateFromBody(body, access.business);
     const targetUser = await userForStaffRow(pool(), target);
-    const actorName = access.isOwner ? 'Owner' : me?.full_name || req.user.email;
+    const actorName = access.isOwner ? await ownerPublicName(pool(), access.business) : me?.full_name || req.user.email;
     const label = MODULE_LABELS[module] || module;
     const { assignment } = await createOrExtendAssignment(pool(), access.business, {
       assigneeRow: target,
@@ -578,7 +585,7 @@ export function createTrainingRouter({ getPool: getPoolFn }) {
       [assignment.id],
     );
     assignment.warning_sent_at = new Date().toISOString();
-    const actorName = access.isOwner ? 'Owner' : me?.full_name || req.user.email;
+    const actorName = access.isOwner ? await ownerPublicName(pool(), access.business) : me?.full_name || req.user.email;
     await ringBell(pool(), access.business, {
       recipientUserId: assignment.assignee_user_id,
       recipientStaffId: assignment.assignee_staff_id,

@@ -39,6 +39,7 @@ import {
   isTrustedStaffRow,
   parseJsonArray,
 } from './authz.js';
+import { ownerPublicName, attributionNameMap, attributionName } from './profilePhotos.js';
 import {
   limitsForPlan,
   planFor,
@@ -266,6 +267,86 @@ export function toDbValues(def, values, { isCreate = false } = {}) {
     out[key] = value === undefined ? null : value;
   }
   return out;
+}
+
+/**
+ * Attribution shaping (owner's rider + email-exposure audit,
+ * Nov 21, 2026): the counts board is shared with every staff
+ * member (release 333), and its "Started by" / "Applied by"
+ * lines carried the person's EMAIL whenever the client had no
+ * name for them — the owner's own email included, visible to
+ * all staff. The audit found the same stored-email shape in
+ * every "…by" field in the app. Attribution is a NAME, never
+ * an address:
+ *   - writes are stamped server-side with the actor's display
+ *     name (the owner's set name or "Owner"; a member's staff
+ *     name) — see createEntity / updateEntity below;
+ *   - reads for a NON-OWNER viewer resolve any legacy email
+ *     value to that person's name (owner → their display name,
+ *     member → their staff name); an email that matches nobody
+ *     in the business becomes blank, so the line simply drops.
+ * The owner's own view is never shaped: her payload is the row
+ * exactly as stored.
+ */
+const ATTRIBUTION_FIELDS = {
+  CountSession: ['started_by', 'applied_by'],
+  PurchaseOrder: ['received_by'],
+  Order: ['reserved_by', 'shipped_by'],
+  Return: ['approved_by', 'completed_by'],
+  StockMovement: ['user_name'],
+  ImportEvent: ['user_name'],
+};
+
+async function shapeAttribution(pool, access, entityName, rows) {
+  const fields = ATTRIBUTION_FIELDS[entityName];
+  if (!fields || !rows.length) return rows;
+  const hasEmail = (value) => typeof value === 'string' && value.includes('@');
+  if (!rows.some((row) => fields.some((field) => hasEmail(row[field])))) return rows;
+  const byEmail = await attributionNameMap(pool, access.business);
+  for (const row of rows) {
+    for (const field of fields) {
+      if (hasEmail(row[field])) row[field] = attributionName(byEmail, row[field]);
+    }
+  }
+  return rows;
+}
+
+/** The display name an attribution write is stamped with: the
+ *  owner's set name (or "Owner"), else the member's staff name —
+ *  never an email address. */
+async function countActorName(pool, access) {
+  if (access.isOwner) return ownerPublicName(pool, access.business);
+  return access.staffRow?.full_name || '';
+}
+
+/** Stamp every attribution field PRESENT in a write with the
+ *  actor's display name (see ATTRIBUTION_FIELDS). The client's
+ *  value is never trusted for a "…by" field. */
+async function stampAttribution(pool, access, entityName, values) {
+  const fields = ATTRIBUTION_FIELDS[entityName];
+  if (!fields || !values) return values;
+  const present = fields.filter((field) => field in values);
+  if (!present.length) return values;
+  const name = await countActorName(pool, access);
+  const out = { ...values };
+  for (const field of present) out[field] = name;
+  return out;
+}
+
+/**
+ * The creator stamp is an audit key, not a display field: every
+ * row stores created_by = the creator's login email (insertRow),
+ * and a NON-OWNER never receives it (or the creator's user id)
+ * in a payload (owner's email-exposure rule, Nov 21, 2026 — the
+ * audit's finding B1). The owner's payloads keep both, exactly
+ * as stored.
+ */
+function stripCreatedBy(row) {
+  if (!row) return row;
+  const copy = { ...row };
+  delete copy.created_by;
+  delete copy.created_by_id;
+  return copy;
 }
 
 async function fetchBusinessRows(pool, def, businessId) {
@@ -549,10 +630,11 @@ function stripPricing(row) {
 // with hiring (staff.manage). Everyone else — the member
 // themselves included — never receives the values at all: the
 // keys are removed, not blanked, so no door can render them.
-function stripStaffContact(row) {
+function stripStaffContact(row, { stripEmail = false } = {}) {
   const copy = { ...row };
   delete copy.personal_address;
   delete copy.personal_phone;
+  if (stripEmail) delete copy.email;
   return copy;
 }
 
@@ -1045,7 +1127,24 @@ export async function listEntities(pool, user, name, filter = {}, options = {}) 
     if (name === 'StaffMember' && !canSeeStaffContact(access)) {
       // Personal contact details stay behind the hiring gate
       // (owner ruling, Nov 19, 2026) — see stripStaffContact.
-      businessRows = businessRows.map(stripStaffContact);
+      // Roster-only viewers (the release-322 roster tick, no
+      // staff.manage) also lose each OTHER member's email: the
+      // roster is a names-and-roles view for them (audit A6/B9,
+      // Nov 21, 2026). A member's own row keeps their own email.
+      businessRows = businessRows.map((row) =>
+        stripStaffContact(row, {
+          stripEmail:
+            canSeeRoster(access) &&
+            String(row.email || '').toLowerCase() !== String(user.email || '').toLowerCase(),
+        }),
+      );
+    }
+    if (!access.isOwner) {
+      // Attribution fields carry names, never emails, to a
+      // non-owner (rider + audit, Nov 21, 2026); the creator
+      // stamp is never served to a non-owner at all.
+      businessRows = await shapeAttribution(pool, access, name, businessRows);
+      businessRows = businessRows.map(stripCreatedBy);
     }
     rows.push(...businessRows);
   }
@@ -1078,7 +1177,8 @@ export async function getEntity(pool, user, name, id) {
     throw err(403, 'plan_gated', 'This feature is part of the Business plan.');
   }
   if (name === 'Product' && !featureAllowed(access.planKey, 'pricing')) {
-    return publicRow(def, stripPricing(row));
+    const shaped = publicRow(def, stripPricing(row));
+    return access.isOwner ? shaped : stripCreatedBy(shaped);
   }
   if (name === 'StaffMember' && !access.isOwner && !canSeeRoster(access)) {
     if (String(row.email || '').toLowerCase() !== String(user.email || '').toLowerCase()) {
@@ -1089,7 +1189,24 @@ export async function getEntity(pool, user, name, id) {
     }
   }
   if (name === 'StaffMember' && !canSeeStaffContact(access)) {
-    return publicRow(def, stripStaffContact(row));
+    // This branch is non-owner by construction (canSeeStaffContact
+    // covers the owner and staff.manage), so the creator stamp is
+    // stripped here too.
+    return stripCreatedBy(
+      publicRow(
+        def,
+        stripStaffContact(row, {
+          stripEmail:
+            canSeeRoster(access) &&
+            String(row.email || '').toLowerCase() !== String(user.email || '').toLowerCase(),
+        }),
+      ),
+    );
+  }
+  if (!access.isOwner) {
+    const shaped = publicRow(def, row);
+    await shapeAttribution(pool, access, name, [shaped]);
+    return stripCreatedBy(shaped);
   }
   return publicRow(def, row);
 }
@@ -1114,12 +1231,20 @@ export async function createEntity(pool, user, name, values) {
       actor: {
         userId: user.id,
         staffId: access.staffRow?.id ?? null,
-        name: access.isOwner ? 'Owner' : access.staffRow?.full_name || user.email,
+        name: access.isOwner ? await ownerPublicName(pool, access.business) : access.staffRow?.full_name || user.email,
       },
     });
     return publicRow(def, row);
   }
   await guardCreate(pool, def, name, access, values);
+  if (name === 'CountSession') {
+    // Attribution is stamped by the server, never taken from
+    // the client (rider, Nov 21, 2026): the starter's display
+    // name, so the shared board can never show an email.
+    values = { ...values, started_by: await countActorName(pool, access) };
+  } else {
+    values = await stampAttribution(pool, access, name, values);
+  }
   const createdRow = await insertRow(pool, def, businessId, user, values);
   // The 90-day customer address book: an order save remembers /
   // refreshes the customer's reusable ship-to address. Never
@@ -1159,7 +1284,10 @@ export async function bulkCreateEntities(pool, user, name, rows) {
   const created = [];
   for (const row of rows) {
     await guardCreate(pool, def, name, access, row);
-    created.push(await insertRow(pool, def, businessId, user, row));
+    const stamped = name === 'CountSession'
+      ? { ...row, started_by: await countActorName(pool, access) }
+      : await stampAttribution(pool, access, name, row);
+    created.push(await insertRow(pool, def, businessId, user, stamped));
   }
   return created;
 }
@@ -1175,6 +1303,10 @@ export async function updateEntity(pool, user, name, id, patch) {
   await assertSubscriptionAccess(pool, user, row.business_id, { write: true });
   const publicExisting = publicRow(def, row);
   await guardUpdate(pool, def, name, access, publicExisting, patch);
+  // Attribution fields in any patch are stamped with the
+  // patcher's display name (rider + audit, Nov 21, 2026): a
+  // "…by" field names the person who did it, never their email.
+  patch = await stampAttribution(pool, access, name, patch);
   // No cap check on a status change: an archived original never
   // left the count (owner's counting rule, Nov 14, 2026 — archive
   // is a shelf, not a shredder), so restoring it can never breach
@@ -1197,7 +1329,7 @@ export async function updateEntity(pool, user, name, id, patch) {
     const actor = {
       userId: user.id,
       staffId: access.staffRow?.id ?? null,
-      name: access.isOwner ? 'Owner' : access.staffRow?.full_name || user.email,
+      name: access.isOwner ? await ownerPublicName(pool, access.business) : access.staffRow?.full_name || user.email,
     };
     const hookArgs = { business: access.business, planKey: access.planKey, before: publicExisting, after: result, actor };
     if (name === 'StaffMember') await trainingFlagForMemberChange(pool, hookArgs);
@@ -1209,6 +1341,12 @@ export async function updateEntity(pool, user, name, id, patch) {
     } catch {
       /* the address book is a convenience, never a blocker */
     }
+  }
+  if (!access.isOwner) {
+    // The update response obeys the same read rule: attribution
+    // resolved to names, creator stamp withheld (Nov 21, 2026).
+    await shapeAttribution(pool, access, name, [result]);
+    return stripCreatedBy(result);
   }
   return result;
 }
@@ -1238,6 +1376,13 @@ export async function deleteEntity(pool, user, name, id) {
     await withTx(pool, async (client) => {
       await client.query(
         'DELETE FROM direct_deposit_details WHERE business_id = $1 AND staff_member_id = $2',
+        [row.business_id, id],
+      );
+      // Their profile photo goes with them (Nov 21, 2026): the
+      // approved and pending bytes alike — a removed member's
+      // face is not kept on file.
+      await client.query(
+        'DELETE FROM profile_photos WHERE business_id = $1 AND person_key = $2',
         [row.business_id, id],
       );
       // The workspace-list link goes too (Nov 15, 2026): the member's

@@ -40,6 +40,7 @@ import { requireAuth } from './sessions.js';
 import { resolveAccess } from './authz.js';
 import { assertNotInGrace } from './billing.js';
 import { maybeRingAllTrainingDone, ringBell, userForStaffRow } from './trainingCore.js';
+import { ownerPublicName } from './profilePhotos.js';
 
 function err(status, code, message) {
   return Object.assign(new Error(message), { status, code });
@@ -410,7 +411,7 @@ export function createPolicyQuizRouter({ getPool: getPoolFn }) {
           recipientStaffId: member.id,
           recipientRole: 'staff',
           actorStaffId: null,
-          actorName: 'Owner',
+          actorName: await ownerPublicName(pool(), access.business),
           event: 'training_sent_back',
           detail: `Your ${DOC_LABEL[attempt.doc_kind]} training was sent back — please take it again.${note ? ` Note from the owner: ${note}` : ''}`,
           refId: attempt.id,

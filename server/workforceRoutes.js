@@ -66,6 +66,7 @@ import { resolveAccess, staffRowForEmail, parseJsonArray } from './authz.js';
 import { startAutoLogout, cancelAutoLogout } from './staffWindow.js';
 import { assertNotInGrace } from './billing.js';
 import { parseVoiceDataUrl, convertVoiceToMp3, VOICE_MAX_DURATION_MS } from './voiceNote.js';
+import { approvedPhotoKeys, ownerDisplayName, ownerPublicName } from './profilePhotos.js';
 import { trainingCompleteForPerson } from './trainingCore.js';
 
 function err(status, code, message) {
@@ -530,6 +531,10 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
       level,
       my_staff_id: me?.id || null,
       my_name: me?.full_name || req.user.email,
+      // The owner's display name (Nov 21, 2026): the name the
+      // owner set for themselves, or null — surfaces fall back
+      // to the word "Owner" only while it is null.
+      owner_name: await ownerDisplayName(pool(), access.business),
       self_clock_enabled: settings.self_clock_enabled !== false,
       dd_enabled: settings.dd_enabled === true,
       plan: access.planKey,
@@ -537,9 +542,18 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
   }));
 
   router.get(`${base}/people`, asyncHandler(async (req, res) => {
-    await ctx(req);
+    const { access } = await ctx(req);
     const team = await people(pool(), req.params.bid, { activeOnly: false });
-    return res.json({ people: team.map(publicPerson) });
+    // The people list feeds name pickers (schedule, tasks,
+    // messages): a non-owner never receives the team's email
+    // addresses in the payload (audit B2, Nov 21, 2026). The
+    // owner's payload is unchanged.
+    const shaped = team.map((row) => {
+      const person = publicPerson(row);
+      if (!access.isOwner) delete person.email;
+      return person;
+    });
+    return res.json({ people: shaped });
   }));
 
   router.get(`${base}/settings`, asyncHandler(async (req, res) => {
@@ -1201,8 +1215,13 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
       const math = profile
         ? computeStubMath({ profile, hours, config, periodStart: start, periodEnd: end })
         : null;
+      // The preview math needs names and hours, not addresses:
+      // a manager's payload drops each person's email (audit B3,
+      // Nov 21, 2026); the owner's payload is unchanged.
+      const personView = publicPerson(person);
+      if (!access.isOwner) delete personView.email;
       rows.push({
-        person: publicPerson(person),
+        person: personView,
         profile,
         regular_hours: hours.regularHours,
         overtime_hours: hours.overtimeHours,
@@ -1561,7 +1580,11 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
 
   async function participantForKey(business, key) {
     if (key === OWNER_KEY) {
-      return { key, user_id: business.owner_id, staff_id: null, name: 'Owner', role: 'owner' };
+      // The owner's display name (Nov 21, 2026): once the owner
+      // sets a real name it replaces the word "Owner" here, and
+      // publicThread below re-resolves it live for threads that
+      // were created before the name was set.
+      return { key, user_id: business.owner_id, staff_id: null, name: await ownerPublicName(pool(), business), role: 'owner' };
     }
     const row = await personOr404(pool(), business.id, key);
     if (row.status !== 'active') {
@@ -1601,19 +1624,39 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
   // learn whether the owner read theirs, under any code path.
   // This shaper is the single choke point: every message that
   // leaves these routes passes through it.
-  function shapeMessageForViewer(message, thread, access, viewerUserId) {
+  function shapeMessageForViewer(message, thread, access, viewerUserId, ownerName = null) {
     const participants = threadParticipants(thread);
     const reader = participants.find((p) => p.user_id !== message.sender_user_id);
     const hideRead = Boolean(reader) && reader.key === OWNER_KEY && !access.isOwner;
+    // The owner's name is resolved live (Nov 21, 2026): a message
+    // the owner sent before setting their display name still
+    // shows the name they go by now, never a stale "Owner".
+    const ownerParticipant = participants.find((p) => p.key === OWNER_KEY);
+    const senderName =
+      ownerName && ownerParticipant && message.sender_user_id === ownerParticipant.user_id
+        ? ownerName
+        : message.sender_name;
     return {
       ...message,
+      sender_name: senderName,
       read_at: hideRead ? null : message.read_at,
       mine: message.sender_user_id === viewerUserId,
     };
   }
 
-  async function publicThread(thread, access, me, userId) {
-    const participants = threadParticipants(thread);
+  async function publicThread(thread, access, me, userId, extras = null) {
+    // Faces + the owner's name (Nov 21, 2026): participants carry
+    // `photo` — true only when that person holds an APPROVED
+    // profile photo (a pending one is invisible by law) — and the
+    // owner's participant name is the live display name, so a
+    // thread opened before the name was set still shows it.
+    const photoKeys = extras?.photoKeys ?? (await approvedPhotoKeys(pool(), thread.business_id));
+    const ownerName = extras?.ownerName ?? (await ownerPublicName(pool(), access.business));
+    const participants = threadParticipants(thread).map((p) => ({
+      ...p,
+      name: p.key === OWNER_KEY ? ownerName : p.name,
+      photo: photoKeys.has(p.key),
+    }));
     const key = myKey(access, me);
     const mine = participants.some((p) => p.key === key);
     const { rows: lastRows } = await pool().query(
@@ -1621,6 +1664,7 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
       [thread.id],
     );
     const last = lastRows[0] ?? null;
+    const ownerParticipant = participants.find((p) => p.key === OWNER_KEY);
     return {
       id: thread.id,
       business_id: thread.business_id,
@@ -1629,10 +1673,28 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
       is_mine: mine,
       can_post: mine,
       oversight: !mine && access.isOwner,
-      last_message: last ? { ...last, mine: last.sender_user_id === userId } : null,
+      last_message: last
+        ? {
+            ...last,
+            sender_name:
+              ownerParticipant && last.sender_user_id === ownerParticipant.user_id
+                ? ownerName
+                : last.sender_name,
+            mine: last.sender_user_id === userId,
+          }
+        : null,
       last_message_at: thread.last_message_at,
       unread: mine ? await threadUnread(thread.id, userId) : null,
       created_at: thread.created_at,
+    };
+  }
+
+  /** One photo/name read per request, shared by every thread the
+   *  request shapes (the list route shapes up to 200). */
+  async function threadExtras(businessId, business) {
+    return {
+      photoKeys: await approvedPhotoKeys(pool(), businessId),
+      ownerName: await ownerPublicName(pool(), business),
     };
   }
 
@@ -1656,10 +1718,11 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
         [req.params.bid, key],
       ));
     }
+    const extras = await threadExtras(req.params.bid, access.business);
     const threads = [];
     let unreadTotal = 0;
     for (const thread of rows) {
-      const pub = await publicThread(thread, access, me, req.user.id);
+      const pub = await publicThread(thread, access, me, req.user.id, extras);
       unreadTotal += pub.unread || 0;
       threads.push(pub);
     }
@@ -1714,9 +1777,10 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
         WHERE m.thread_id = $1 ORDER BY m.created_at ASC LIMIT 500`,
       [thread.id],
     );
+    const extras = await threadExtras(req.params.bid, access.business);
     return res.json({
-      thread: await publicThread(thread, access, me, req.user.id),
-      messages: rows.map((m) => shapeMessageForViewer(m, thread, access, req.user.id)),
+      thread: await publicThread(thread, access, me, req.user.id, extras),
+      messages: rows.map((m) => shapeMessageForViewer(m, thread, access, req.user.id, extras.ownerName)),
     });
   }));
 
@@ -1727,6 +1791,12 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
     const participants = threadParticipants(thread);
     const key = myKey(access, me);
     const sender = participants.find((p) => p.key === key);
+    // The owner's stored participant name is a snapshot from the
+    // thread's creation; new messages carry the name they go by
+    // now (Nov 21, 2026).
+    if (sender && sender.key === OWNER_KEY) {
+      sender.name = await ownerPublicName(pool(), access.business);
+    }
     if (!sender) {
       throw err(
         403,
@@ -1782,6 +1852,12 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
     const participants = threadParticipants(thread);
     const key = myKey(access, me);
     const sender = participants.find((p) => p.key === key);
+    // The owner's stored participant name is a snapshot from the
+    // thread's creation; new messages carry the name they go by
+    // now (Nov 21, 2026).
+    if (sender && sender.key === OWNER_KEY) {
+      sender.name = await ownerPublicName(pool(), access.business);
+    }
     if (!sender) {
       throw err(
         403,

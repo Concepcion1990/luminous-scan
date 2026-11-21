@@ -644,17 +644,35 @@ export function createAuthRouter({ getPool }) {
     // false for the owner and for anyone outside the bracket.
     let autoLogoutAt = null;
     let welcomePending = false;
+    // The caller's display name (Nov 21, 2026): the owner's set
+    // name, else their staff name in the active business. Client
+    // attribution writes read user.full_name — until now /me
+    // carried none, so every "…by" write fell back to the user's
+    // EMAIL (the audit's mechanism M2). With a real name here,
+    // the fallback never fires; server stamps remain the
+    // authority regardless.
+    let fullName = '';
     if ((req.sessionScope || 'full') !== 'recovery') {
       try {
         const pool = getPool();
         autoLogoutAt = await autoLogoutAtFor(pool, req.user);
         welcomePending = await staffWelcomePending(pool, req.user);
+        const nameRow = await pool.query('SELECT display_name FROM users WHERE id = $1', [req.user.id]);
+        fullName = nameRow.rows[0]?.display_name?.trim() || '';
+        if (!fullName && req.user.active_business_id) {
+          const { rows } = await pool.query(
+            'SELECT full_name FROM staff_members WHERE business_id = $1 AND LOWER(email) = LOWER($2) LIMIT 1',
+            [req.user.active_business_id, req.user.email],
+          );
+          fullName = rows[0]?.full_name || '';
+        }
       } catch (error) {
         console.error('[twin] /auth/me window fields failed:', error.message);
       }
     }
     return res.json({
       ...publicUser(req.user),
+      full_name: fullName,
       // Recovery kit (T7): 'recovery' sessions may only change the
       // account email; the client routes them to that one step.
       session_scope: req.sessionScope || 'full',
