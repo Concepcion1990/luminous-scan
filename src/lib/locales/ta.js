@@ -5010,4 +5010,13 @@ export const ta = {
   "payroll.profile.noName": "இன்னும் பெயர் எதுவும் பதிவு செய்யப்படவில்லை.",
   "apiErrors.forbidden.businessOwnerUpdateDetails": "வணிக உரிமையாளர் மட்டுமே இந்த விவரங்களைப் புதுப்பிக்க முடியும்.",
   "apiErrors.invalidValue.homeAddressThousandCharacters": "உங்கள் வீட்டு முகவரியை 1000 எழுத்துகள் அல்லது அதற்குக் குறைவாக வைத்திருக்கவும்.",
+  "plans.status.foundingTester": "நிறுவன சோதனையாளர்",
+  "plans.priceNoteFoundingTester": "கட்டணம் இல்லை — நிறுவன சோதனையாளர்கள் Business ஐ என்றென்றும் இலவசமாக வைத்திருக்கிறார்கள்.",
+  "subscribe.foundingTesterNote": "இந்த பணியிடத்தில் நிறுவன சோதனையாளராக Business உள்ளது — என்றென்றும் இலவசம். கார்டு இல்லை, கட்டணம் இல்லை, எப்போதும் இல்லை.",
+  "upgrade.introFoundingTester": " — ஒரு நிறுவன சோதனையாளர் பணியிடம், என்றென்றும் இலவசம் மற்றும் கட்டணம் இல்லாமல்.",
+  "upgrade.foundingTesterNote": "நிறுவன சோதனையாளர்கள் Business ஐ என்றென்றும் இலவசமாக வைத்திருக்கிறார்கள் — இங்கே மாற்றுவதற்கு திட்டம் இல்லை, ரத்து செய்வதற்கு சந்தாவும் இல்லை.",
+  "apiErrors.foundingTester.alreadyListed": "அந்த மின்னஞ்சல் ஏற்கனவே நிறுவன சோதனையாளர்கள் பட்டியலில் உள்ளது.",
+  "apiErrors.foundingTester.listFull": "நிறுவன சோதனையாளர்கள் பட்டியல் நிரம்பியுள்ளது.",
+  "apiErrors.foundingTester.notListed": "அந்த மின்னஞ்சல் நிறுவன சோதனையாளர்கள் பட்டியலில் இல்லை.",
+  "apiErrors.foundingTester.capWholeNumber": "வரம்பு 1 அல்லது அதற்கு மேற்பட்ட முழு எண்ணாக இருக்க வேண்டும்.",
 };
