@@ -5010,4 +5010,13 @@ export const frFR = {
   "payroll.profile.noName": "Aucun nom enregistré pour le moment.",
   "apiErrors.forbidden.businessOwnerUpdateDetails": "Seul le propriétaire de l'entreprise peut mettre à jour ces coordonnées.",
   "apiErrors.invalidValue.homeAddressThousandCharacters": "Limitez votre adresse de domicile à 1000 caractères ou moins.",
+  "plans.status.foundingTester": "Testeur fondateur",
+  "plans.priceNoteFoundingTester": "Aucuns frais — les testeurs fondateurs gardent Business gratuitement à vie.",
+  "subscribe.foundingTesterNote": "Cet espace de travail a Business comme testeur fondateur — gratuit à vie. Aucune carte, aucuns frais, jamais.",
+  "upgrade.introFoundingTester": " — un espace de travail de testeur fondateur, gratuit à vie et sans frais.",
+  "upgrade.foundingTesterNote": "Les testeurs fondateurs gardent Business gratuitement à vie — il n'y a aucun forfait à changer et aucun abonnement à annuler.",
+  "apiErrors.foundingTester.alreadyListed": "Cette adresse e-mail est déjà sur la liste des testeurs fondateurs.",
+  "apiErrors.foundingTester.listFull": "La liste des testeurs fondateurs est pleine.",
+  "apiErrors.foundingTester.notListed": "Cette adresse e-mail n'est pas sur la liste des testeurs fondateurs.",
+  "apiErrors.foundingTester.capWholeNumber": "Le plafond doit être un nombre entier de 1 ou plus.",
 };
