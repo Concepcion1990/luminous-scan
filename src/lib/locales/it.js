@@ -4713,7 +4713,7 @@ export const it = {
   "plansLib.includes.inviteLink": "Inviti al personale con un link di registrazione a un tocco",
   "subscribe.memberNote": "Hai effettuato l’accesso come membro di questo spazio di lavoro. Questa pagina è del proprietario dell’attività — se ti serve qualcosa qui, chiedi a lui.",
   "subscribe.memberOpenApp": "Apri l’app",
-  "apiErrors.planLimitNeutral": "Non può essere aggiunto ora — questo spazio di lavoro ha raggiunto un limite. Chiedi al proprietario dell’attività.",
+  "apiErrors.planLimitNeutral": "Non può essere aggiunto ora — chiedi al proprietario dell’attività.",
   "training.lessons.owner-confidentiality.title": "Le tue informazioni restano riservate",
   "training.lessons.owner-confidentiality.step1": "Luminous StockHaven mantiene le tue informazioni riservate rispetto al tuo personale. I tuoi pagamenti, la tua prova, il tuo abbonamento e lo stato della tua fatturazione — e qualsiasi cosa riguardi le tue informazioni personali — sono solo tuoi: il personale e i responsabili non li vedono mai, in nessun punto dell’app.",
   "training.lessons.owner-confidentiality.step2": "Questo include i posti discreti: nessun conto alla rovescia della prova sulle loro pagine, nessuna sezione di piano o fatturazione nelle loro Impostazioni, nessun avviso di pagamento. Le loro Impostazioni sono personali — il loro account, sicurezza, aspetto e lingua — più solo le sezioni extra che decidi di spuntare per loro. La fatturazione non è mai una delle spunte.",

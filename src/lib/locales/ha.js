@@ -4713,7 +4713,7 @@ export const ha = {
   "plansLib.includes.inviteLink": "Gayyatar ma’aikata tare da hanyar rajista ta taɓawa ɗaya",
   "subscribe.memberNote": "Kun shiga a matsayin ɗan wannan wurin aiki. Wannan shafi na mai kasuwancin ne — idan kuna buƙatar wani abu a nan, tambaye shi.",
   "subscribe.memberOpenApp": "Buɗe aikace-aikacen",
-  "apiErrors.planLimitNeutral": "Ba za a iya ƙara wannan yanzu ba — wannan wurin aiki ya kai iyaka. Tambayi mai kasuwancin.",
+  "apiErrors.planLimitNeutral": "Ba za a iya ƙara wannan yanzu ba — tambayi mai kasuwancin.",
   "training.lessons.owner-confidentiality.title": "Bayanan ku sun kasance sirri",
   "training.lessons.owner-confidentiality.step1": "Luminous StockHaven yana kiyaye bayanan ku a ɓoye daga ma’aikatan ku. Kuɗin da kuke biya, gwajin ku, rajistar ku da halin lissafin ku — da duk wani abu game da bayanan ku na sirri — naku ne kawai: ma’aikata da manajoji ba su taɓa ganin su, a ko’ina cikin manhajar.",
   "training.lessons.owner-confidentiality.step2": "Hakan ya haɗa da wurare masu natsuwa: babu ƙididdige lokacin gwaji a saman shafukan su, babu sassan tsari ko lissafi a cikin Saitunan su, babu gargaɗin biyan kuɗi. Saitunan su na sirri ne — asusun su, tsaro, bayyanar da harshe — tare da ƙarin sassan da kuka zaɓa musu kawai. Lissafi ba ya taɓa kasancewa ɗaya daga cikin zaɓuɓɓuka.",
