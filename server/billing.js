@@ -353,6 +353,15 @@ export async function runWipeSweep(pool, { now = new Date(), logger = console } 
         // The owner's uploaded policy files likewise carry no FK
         // cascade (migration 032) — they die with the business.
         await client.query('DELETE FROM business_policy_files WHERE business_id = $1', [businessId]);
+        // The training builds' rows (migration 033) carry no FK
+        // cascade either — quiz results, lesson comments, the
+        // owner's questions and the quiz attempts die with the
+        // business.
+        await client.query('DELETE FROM training_quiz_results WHERE business_id = $1', [businessId]);
+        await client.query('DELETE FROM training_lesson_comments WHERE business_id = $1', [businessId]);
+        await client.query('DELETE FROM policy_questions WHERE business_id = $1', [businessId]);
+        await client.query('DELETE FROM policy_quiz_settings WHERE business_id = $1', [businessId]);
+        await client.query('DELETE FROM policy_quiz_attempts WHERE business_id = $1', [businessId]);
         await client.query('DELETE FROM import_events WHERE business_id = $1', [businessId]);
       }
       await client.query('DELETE FROM users WHERE id = $1', [ownerId]);

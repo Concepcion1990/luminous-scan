@@ -69,9 +69,16 @@ import {
   completedLessons,
   createOrExtendAssignment,
   publicAssignment,
+  recordLessonCompletion,
   ringBell,
   userForStaffRow,
 } from './trainingCore.js';
+import {
+  buildQuiz,
+  publicQuiz,
+  scopedLessonIds,
+  visibleStepNumbers,
+} from './trainingScope.js';
 
 function err(status, code, message) {
   return Object.assign(new Error(message), { status, code });
@@ -188,6 +195,36 @@ export function createTrainingRouter({ getPool: getPoolFn }) {
     const { access, level } = await ctx(req);
     const today = todayLocal(access.business);
     const completions = await completedLessons(pool(), access.business.id, myKey(access));
+    const assignments = await myAssignments(access, today);
+    // Scoping (Nov 20, 2026): the page shows a person only the
+    // lessons their real doors open — their door scope, plus
+    // anything ever assigned to them, plus anything already
+    // finished (history is never ripped out). The owner sees
+    // everything. Step scope rides along per lesson.
+    const isBusiness = access.planKey === 'business';
+    const mine = new Set(
+      access.isOwner
+        ? TRAINING_LESSONS.filter((l) => lessonVisibleOnPlan(l, isBusiness)).map((l) => l.id)
+        : scopedLessonIds({ level, permissions: access.permissions || [], isBusiness }),
+    );
+    for (const assignment of assignments) {
+      for (const id of assignment.lesson_ids || []) mine.add(id);
+    }
+    for (const row of completions) mine.add(row.lesson_id);
+    const stepScope = {};
+    for (const id of mine) {
+      const lesson = lessonById(id);
+      if (!lesson) continue;
+      stepScope[id] = visibleStepNumbers(lesson, {
+        permissions: access.permissions || [],
+        isOwner: access.isOwner,
+      });
+    }
+    const { rows: myComments } = await pool().query(
+      `SELECT lesson_id, body, created_at FROM training_lesson_comments
+        WHERE business_id = $1 AND person_key = $2 ORDER BY created_at DESC`,
+      [access.business.id, myKey(access)],
+    );
     return res.json({
       is_owner: access.isOwner,
       level,
@@ -198,39 +235,65 @@ export function createTrainingRouter({ getPool: getPoolFn }) {
       tracks: visibleTracksForLevel(level),
       completed_lesson_ids: completions.map((row) => row.lesson_id),
       completions,
-      assignments: await myAssignments(access, today),
+      assignments,
+      my_lesson_ids: [...mine],
+      step_scope: stepScope,
+      my_comments: myComments,
     });
   }));
+
+  /** The door check shared by completion and the quiz: a lesson
+   *  is the caller's to finish when it was ASSIGNED to them (owner
+   *  ruling, Nov 15, 2026: the assignment is the permission), or
+   *  when it sits in their own tracks AND their real doors scope
+   *  it to them (Nov 20, 2026). The owner walks through every
+   *  door. */
+  async function requireLessonDoor(access, level, lesson) {
+    if (access.isOwner) return;
+    const mine = await assignmentsForPerson(pool(), access.business.id, myKey(access));
+    if (mine.some((a) => (a.lesson_ids || []).includes(lesson.id))) return;
+    if (!visibleTracksForLevel(level).includes(lesson.track)) {
+      throw err(403, 'forbidden', 'That lesson is not part of your training.');
+    }
+    const scoped = scopedLessonIds({
+      level,
+      permissions: access.permissions || [],
+      isBusiness: access.planKey === 'business',
+    });
+    if (!scoped.includes(lesson.id)) {
+      throw err(403, 'forbidden', 'That lesson is not part of your training.');
+    }
+  }
+
+  function myVisibleSteps(access, lesson) {
+    return visibleStepNumbers(lesson, {
+      permissions: access.permissions || [],
+      isOwner: access.isOwner,
+    });
+  }
 
   router.post(`${base}/lessons/:lessonId/complete`, asyncHandler(async (req, res) => {
     const { access, level } = await ctx(req);
     await assertNotInGrace(pool(), req.params.bid);
     const lesson = lessonById(req.params.lessonId);
     if (!lesson) throw err(404, 'not_found', 'That lesson does not exist.');
-    if (!visibleTracksForLevel(level).includes(lesson.track)) {
-      // Outside the caller's own tracks, a lesson is finishable
-      // only when it was ASSIGNED to them (owner ruling,
-      // Nov 15, 2026: assign everything — the assignment is the
-      // permission). Unassigned cross-track lessons stay refused.
-      const mine = await assignmentsForPerson(pool(), access.business.id, myKey(access));
-      if (!mine.some((a) => (a.lesson_ids || []).includes(lesson.id))) {
-        throw err(403, 'forbidden', 'That lesson is not part of your training.');
-      }
-    }
     const key = myKey(access);
-    const existing = await pool().query(
-      'SELECT id FROM training_progress WHERE business_id = $1 AND person_key = $2 AND lesson_id = $3 LIMIT 1',
-      [access.business.id, key, lesson.id],
-    );
-    if (!existing.rows[0]) {
-      await pool().query(
-        `INSERT INTO training_progress (id, business_id, person_key, person_user_id, person_name, lesson_id)
-         VALUES ($1, $2, $3, $4, $5, $6)`,
-        [
-          crypto.randomUUID(), access.business.id, key, req.user.id,
-          access.isOwner ? 'Owner' : access.staffRow?.full_name || '', lesson.id,
-        ],
-      );
+    const already = await completedLessonIds(pool(), access.business.id, key);
+    if (!already.has(lesson.id)) {
+      await requireLessonDoor(access, level, lesson);
+      // Integrity (Nov 20, 2026): a lesson counts complete only
+      // when its quiz is answered correctly. The OWNER is exempt
+      // — "don't torture the owner" — everyone else goes through
+      // the quiz door below.
+      if (!access.isOwner) {
+        throw err(400, 'quiz_required', 'This lesson finishes with a short quiz — answer it correctly to complete the lesson.');
+      }
+      await recordLessonCompletion(pool(), access.business, {
+        personKey: key,
+        personUserId: req.user.id,
+        personName: 'Owner',
+        lessonId: lesson.id,
+      });
     }
     const today = todayLocal(access.business);
     const completed = await completedLessonIds(pool(), access.business.id, key);
@@ -238,6 +301,134 @@ export function createTrainingRouter({ getPool: getPoolFn }) {
       ok: true,
       completed_lesson_ids: [...completed],
       assignments: await myAssignments(access, today),
+    });
+  }));
+
+  // ---- The per-lesson quiz -------------------------------------------------
+
+  router.get(`${base}/lessons/:lessonId/quiz`, asyncHandler(async (req, res) => {
+    const { access, level } = await ctx(req);
+    const lesson = lessonById(req.params.lessonId);
+    if (!lesson) throw err(404, 'not_found', 'That lesson does not exist.');
+    if (access.isOwner) return res.json({ owner_exempt: true, questions: [] });
+    await requireLessonDoor(access, level, lesson);
+    const quiz = buildQuiz(lesson, myVisibleSteps(access, lesson), {
+      personKey: myKey(access),
+      isBusiness: access.planKey === 'business',
+    });
+    return res.json(publicQuiz(quiz));
+  }));
+
+  router.post(`${base}/lessons/:lessonId/quiz`, asyncHandler(async (req, res) => {
+    const { access, level } = await ctx(req);
+    await assertNotInGrace(pool(), req.params.bid);
+    const lesson = lessonById(req.params.lessonId);
+    if (!lesson) throw err(404, 'not_found', 'That lesson does not exist.');
+    if (access.isOwner) {
+      throw err(400, 'owner_exempt', 'The owner does not take quizzes.');
+    }
+    await requireLessonDoor(access, level, lesson);
+    const key = myKey(access);
+    const quiz = buildQuiz(lesson, myVisibleSteps(access, lesson), {
+      personKey: key,
+      isBusiness: access.planKey === 'business',
+    });
+    const answers = Array.isArray(req.body?.answers) ? req.body.answers : [];
+    if (answers.length !== quiz.questions.length) {
+      throw err(400, 'quiz_changed', 'That quiz has changed — open it again and answer the questions shown.');
+    }
+    let correct = 0;
+    quiz.questions.forEach((question, i) => {
+      if (Number(answers[i]) === question.answer_index) correct += 1;
+    });
+    const total = quiz.questions.length;
+    const passed = correct === total;
+    const personName = access.staffRow?.full_name || '';
+    await pool().query(
+      `INSERT INTO training_quiz_results (id, business_id, person_key, person_name, lesson_id, total, correct, passed)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      [crypto.randomUUID(), access.business.id, key, personName, lesson.id, total, correct, passed],
+    );
+    if (passed) {
+      await recordLessonCompletion(pool(), access.business, {
+        personKey: key,
+        personUserId: req.user.id,
+        personName,
+        lessonId: lesson.id,
+        memberRow: access.staffRow,
+        planKey: access.planKey,
+      });
+    }
+    const today = todayLocal(access.business);
+    const completed = await completedLessonIds(pool(), access.business.id, key);
+    return res.json({
+      passed,
+      correct,
+      total,
+      completed_lesson_ids: [...completed],
+      assignments: await myAssignments(access, today),
+    });
+  }));
+
+  // ---- Per-lesson comments to the owner -------------------------------------
+
+  router.post(`${base}/lessons/:lessonId/comments`, asyncHandler(async (req, res) => {
+    const { access } = await ctx(req);
+    await assertNotInGrace(pool(), req.params.bid);
+    const lesson = lessonById(req.params.lessonId);
+    if (!lesson) throw err(404, 'not_found', 'That lesson does not exist.');
+    if (access.isOwner) {
+      throw err(403, 'forbidden', 'Comments on a lesson go to the owner — you are the owner.');
+    }
+    const body = String(req.body?.body || '').trim().slice(0, 1000);
+    if (!body) throw err(400, 'invalid_value', 'Write the comment first.');
+    const id = crypto.randomUUID();
+    const personName = access.staffRow?.full_name || '';
+    await pool().query(
+      `INSERT INTO training_lesson_comments (id, business_id, person_key, person_name, lesson_id, body)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [id, access.business.id, myKey(access), personName, lesson.id, body],
+    );
+    // Filed quietly into the person's record (owner ruling,
+    // Nov 20, 2026): no bell rings for a comment.
+    return res.status(201).json({ comment: { id, lesson_id: lesson.id, body, person_name: personName } });
+  }));
+
+  // ---- One person's filed record (quiz results + comments) ------------------
+
+  router.get(`${base}/team/:staffId/results`, asyncHandler(async (req, res) => {
+    const { access, level } = await ctx(req);
+    if (level === 'staff') throw err(403, 'forbidden', 'Team records are for the owner and managers.');
+    const { rows } = await pool().query(
+      'SELECT * FROM staff_members WHERE id = $1 AND business_id = $2 LIMIT 1',
+      [req.params.staffId, access.business.id],
+    );
+    const target = rows[0];
+    if (!target) throw err(404, 'not_found', 'That team member is not in this business.');
+    if (level === 'manager' && personLevel(target) !== 'staff') {
+      throw err(403, 'forbidden', 'You cannot read this person\u2019s training record.');
+    }
+    const { rows: quizResults } = await pool().query(
+      `SELECT lesson_id, total, correct, passed, created_at FROM training_quiz_results
+        WHERE business_id = $1 AND person_key = $2 ORDER BY created_at DESC LIMIT 200`,
+      [access.business.id, target.id],
+    );
+    const { rows: comments } = await pool().query(
+      `SELECT lesson_id, body, created_at FROM training_lesson_comments
+        WHERE business_id = $1 AND person_key = $2 ORDER BY created_at DESC LIMIT 200`,
+      [access.business.id, target.id],
+    );
+    const { rows: policyAttempts } = await pool().query(
+      `SELECT id, doc_kind, mc_total, mc_correct, score_percent, status, needs_review, review_note, answers, created_at
+         FROM policy_quiz_attempts
+        WHERE business_id = $1 AND person_key = $2 ORDER BY created_at DESC LIMIT 50`,
+      [access.business.id, target.id],
+    );
+    return res.json({
+      staff_id: target.id,
+      quiz_results: quizResults,
+      comments,
+      policy_attempts: policyAttempts,
     });
   }));
 

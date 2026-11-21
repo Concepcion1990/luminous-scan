@@ -46,6 +46,7 @@ import { createBillingRouter, stripeWebhookHandler } from './billingRoutes.js';
 import { createRecoveryRouter } from './recoveryRoutes.js';
 import { createSupportRouter } from './supportRoutes.js';
 import { createBusinessPolicyRouter } from './businessPolicyRoutes.js';
+import { createPolicyQuizRouter } from './policyQuizRoutes.js';
 import { createDeletionRouter } from './deletionRoutes.js';
 import { assertSubscriptionAccess } from './subscriptionAccess.js';
 import { ocrAssetsHandler } from './ocrAssets.js';
@@ -249,6 +250,8 @@ export function createApp() {
   // The owner's own store policies + terms (server/businessPolicyRoutes.js):
   // two per-business documents, owner-written, team-readable.
   app.use('/api', createBusinessPolicyRouter({ getPool }));
+  // The owner's quiz on her own policies + terms (server/policyQuizRoutes.js):
+  app.use('/api', createPolicyQuizRouter({ getPool }));
   app.use('/api', createShopRouter({ getPool }));
 
   app.use('/api', (_req, res) => {

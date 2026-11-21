@@ -66,6 +66,7 @@ import { resolveAccess, staffRowForEmail, parseJsonArray } from './authz.js';
 import { startAutoLogout, cancelAutoLogout } from './staffWindow.js';
 import { assertNotInGrace } from './billing.js';
 import { parseVoiceDataUrl, convertVoiceToMp3, VOICE_MAX_DURATION_MS } from './voiceNote.js';
+import { trainingCompleteForPerson } from './trainingCore.js';
 
 function err(status, code, message) {
   return Object.assign(new Error(message), { status, code });
@@ -990,13 +991,20 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
     if (!title) throw err(400, 'invalid_value', 'Give the task a title.');
     const due = req.body?.due_date ? String(req.body.due_date) : null;
     if (due !== null && !isDateStr(due)) throw err(400, 'invalid_value', 'Due date must be a date.');
+    // A task may be a TRAINING task (owner ruling, Nov 20, 2026):
+    // its Done button checks the person's real training before it
+    // strikes. The title alone also marks it — her task is named
+    // "First training" — so the two doors agree.
+    const kind = req.body?.kind === 'training' || title.trim().toLowerCase() === 'first training'
+      ? 'training'
+      : 'task';
     const inserted = await pool().query(
-      `INSERT INTO work_tasks (id, business_id, staff_member_id, title, notes, due_date, created_by_id, created_by_name)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+      `INSERT INTO work_tasks (id, business_id, staff_member_id, title, notes, due_date, created_by_id, created_by_name, kind)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
       [
         crypto.randomUUID(), req.params.bid, target.id, title.slice(0, 200),
         String(req.body?.notes || '').trim().slice(0, 1000), due, req.user.id,
-        access.isOwner ? 'Owner' : me?.full_name || req.user.email,
+        access.isOwner ? 'Owner' : me?.full_name || req.user.email, kind,
       ],
     );
     const task = inserted.rows[0];
@@ -1033,6 +1041,19 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
     }
     const status = String(req.body?.status || '');
     if (!['open', 'done'].includes(status)) throw err(400, 'invalid_value', 'Status is open or done.');
+    // THE TRAINING GATE (owner ruling, Nov 20, 2026): a training
+    // task's Done CHECKS the person's real training first. If any
+    // of it is unfinished, Done refuses — the task does not
+    // strike — and the caller shows the stop dialog with a door
+    // back to the training. Only genuine completion lets it
+    // strike. (Reopening is never gated.)
+    if (status === 'done' && task.status !== 'done' && task.kind === 'training') {
+      const assignee = await personOr404(pool(), req.params.bid, task.staff_member_id);
+      const complete = await trainingCompleteForPerson(pool(), access.business, assignee, access.planKey);
+      if (!complete) {
+        throw err(409, 'training_incomplete', 'Not yet — this person still has training to finish.');
+      }
+    }
     const updated = await pool().query(
       `UPDATE work_tasks SET status = $1, done_at = CASE WHEN $1 = 'done' THEN NOW() ELSE NULL END
        WHERE id = $2 RETURNING *`,

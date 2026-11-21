@@ -35,11 +35,13 @@ import { permissionsForPlan } from './plans.js';
 import {
   MODULE_BY_PERMISSION,
   MODULE_LABELS,
+  TRAINING_LESSONS,
   TRAINING_MODULES,
   lessonsForModuleAtLevel,
   lessonVisibleOnPlan,
 } from './trainingCatalog.js';
 import { personLevel } from './workforceRoutes.js';
+import { lessonInScope, scopedLessonIds } from './trainingScope.js';
 
 export const OWNER_PERSON_KEY = 'owner';
 
@@ -323,6 +325,13 @@ async function assignForAddedPermissions(pool, business, memberRow, addedPerms, 
   const modules = [...new Set(addedPerms.flatMap((perm) => MODULE_BY_PERMISSION[perm] || []))];
   if (!modules.length) return;
   const isBusiness = planKey === 'business';
+  // Scoping (Nov 20, 2026): a growth assigns the module's lessons
+  // only where the person's doors AFTER the change actually open
+  // them — a tick brings its training, and nothing else rides
+  // along. Core lessons of the module ride too (they are the
+  // person's already; merging is idempotent).
+  const customRoles = await customRolesFor(pool, business.id);
+  const permissions = effectivePermissions(memberRow, customRoles, planKey);
   const user = await userForStaffRow(pool, memberRow);
   const assignedBy = {
     userId: actor?.userId ?? null,
@@ -331,7 +340,8 @@ async function assignForAddedPermissions(pool, business, memberRow, addedPerms, 
   };
   for (const module of modules) {
     const lessons = lessonsForModuleAtLevel(module, level)
-      .filter((lesson) => lessonVisibleOnPlan(lesson, isBusiness));
+      .filter((lesson) => lessonVisibleOnPlan(lesson, isBusiness))
+      .filter((lesson) => lessonInScope(lesson, { level, permissions }));
     if (!lessons.length) continue;
     await createOrExtendAssignment(pool, business, {
       assigneeRow: memberRow,
@@ -348,20 +358,154 @@ async function assignForAddedPermissions(pool, business, memberRow, addedPerms, 
   }
 }
 
+// ---- Completion, the assigned union, and the ONE all-done bell -----------
+
+/** Every lesson id ever assigned to this person (any source),
+ *  plan-visible only — history on a hidden plan lesson stays
+ *  stored and simply never enters the count. */
+export async function assignedLessonUnion(pool, businessId, personKey, isBusiness) {
+  const { rows } = await pool.query(
+    'SELECT lesson_ids FROM training_assignments WHERE business_id = $1 AND assignee_key = $2',
+    [businessId, personKey],
+  );
+  const out = new Set();
+  for (const row of rows) {
+    for (const id of parseLessonIds(row.lesson_ids)) {
+      const lesson = TRAINING_LESSONS.find((l) => l.id === id);
+      if (lesson && lessonVisibleOnPlan(lesson, isBusiness)) out.add(id);
+    }
+  }
+  return out;
+}
+
+/** The person's full training obligation: everything assigned to
+ *  them plus everything their doors scope to them. */
+export async function trainingObligation(pool, business, memberRow, planKey) {
+  const isBusiness = planKey === 'business';
+  const assigned = await assignedLessonUnion(pool, business.id, memberRow.id, isBusiness);
+  const customRoles = await customRolesFor(pool, business.id);
+  const permissions = effectivePermissions(memberRow, customRoles, planKey);
+  const level = personLevel(memberRow);
+  const scoped = scopedLessonIds({ level, permissions, isBusiness });
+  return new Set([...assigned, ...scoped]);
+}
+
+/**
+ * Is this person's training genuinely finished? Used by the
+ * Workforce "First training" task's Done gate and by the
+ * all-done bell. An owner-ticked policy/terms quiz training with
+ * questions written counts too: it is finished when the person's
+ * latest attempt stands passed (an attempt awaiting the owner's
+ * review of a typed answer stands passed — the training closed;
+ * only a send-back reopens it).
+ */
+export async function trainingCompleteForPerson(pool, business, memberRow, planKey) {
+  const obligation = await trainingObligation(pool, business, memberRow, planKey);
+  const completed = await completedLessonIds(pool, business.id, memberRow.id);
+  for (const id of obligation) {
+    if (!completed.has(id)) return false;
+  }
+  const permissions = parseJsonArray(memberRow.permissions);
+  const ticks = [
+    ['training.policiesQuiz', 'policies'],
+    ['training.termsQuiz', 'terms'],
+  ];
+  for (const [tick, docKind] of ticks) {
+    if (!permissions.includes(tick)) continue;
+    const { rows: questions } = await pool.query(
+      'SELECT COUNT(*)::int AS n FROM policy_questions WHERE business_id = $1 AND doc_kind = $2',
+      [business.id, docKind],
+    );
+    if (!questions[0]?.n) continue; // no questions written = the reading is the training
+    const { rows: attempts } = await pool.query(
+      `SELECT status FROM policy_quiz_attempts
+        WHERE business_id = $1 AND person_key = $2 AND doc_kind = $3
+        ORDER BY created_at DESC LIMIT 1`,
+      [business.id, memberRow.id, docKind],
+    );
+    if (!attempts[0] || attempts[0].status !== 'passed') return false;
+  }
+  return true;
+}
+
+/**
+ * The ONE notification (owner ruling, Nov 20, 2026): when a
+ * member finishes ALL of their training, the owner's bell rings
+ * exactly once — never per lesson. Exactly-once is an existence
+ * check on the bell row itself (event 'training_all_done',
+ * entry_id = the person's key), so re-fires, retries and later
+ * top-up assignments never ring it twice. Never throws.
+ */
+export async function maybeRingAllTrainingDone(pool, business, memberRow, planKey) {
+  try {
+    if (!memberRow || !business?.owner_id) return false;
+    const { rows: existing } = await pool.query(
+      `SELECT id FROM workforce_notifications
+        WHERE business_id = $1 AND event = 'training_all_done' AND entry_id = $2 LIMIT 1`,
+      [business.id, memberRow.id],
+    );
+    if (existing.length) return false;
+    const obligation = await trainingObligation(pool, business, memberRow, planKey);
+    if (!obligation.size) return false;
+    if (!(await trainingCompleteForPerson(pool, business, memberRow, planKey))) return false;
+    await ringBell(pool, business, {
+      recipientUserId: business.owner_id,
+      recipientStaffId: null,
+      recipientRole: 'owner',
+      actorStaffId: memberRow.id,
+      actorName: memberRow.full_name || '',
+      event: 'training_all_done',
+      detail: `${memberRow.full_name || 'A team member'} has finished all of their training.`,
+      refId: memberRow.id,
+    });
+    return true;
+  } catch (error) {
+    console.error('[twin] training all-done bell failed:', error);
+    return false;
+  }
+}
+
+/** Record a lesson completion (idempotent), then check the
+ *  all-done bell for staff-row people. Returns true when a new
+ *  progress row was written. */
+export async function recordLessonCompletion(pool, business, {
+  personKey, personUserId = null, personName = '', lessonId, memberRow = null, planKey = 'essentials',
+}) {
+  const existing = await pool.query(
+    'SELECT id FROM training_progress WHERE business_id = $1 AND person_key = $2 AND lesson_id = $3 LIMIT 1',
+    [business.id, personKey, lessonId],
+  );
+  let created = false;
+  if (!existing.rows[0]) {
+    await pool.query(
+      `INSERT INTO training_progress (id, business_id, person_key, person_user_id, person_name, lesson_id)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [crypto.randomUUID(), business.id, personKey, personUserId, personName, lessonId],
+    );
+    created = true;
+  }
+  if (memberRow) await maybeRingAllTrainingDone(pool, business, memberRow, planKey);
+  return created;
+}
+
 // ---- The join seed --------------------------------------------------------
 
 /**
  * Set a member's own-role training in place: one assignment per
- * module that has lessons at the member's level, plan-filtered —
- * the complete set their track holds on this business's plan,
- * nothing above their level and nothing from the other plan.
- * Fired when a StaffMember row is created, again when an invited
- * row is accepted at sign-in, and when a promotion lifts the
- * member's level. Idempotent by construction: assignments merge
- * through createOrExtendAssignment under the shared 'role_grant'
- * source, so a re-fire adds no rows, stacks no duplicates, and
- * never resurrects a module the member already finished. Like
- * the hooks above, it NEVER throws into its caller.
+ * module, holding the lessons at the member's level that their
+ * REAL doors open (owner ruling, Nov 20, 2026 — "nobody trains
+ * on what they don't have"): the core lessons everyone carries,
+ * plus every lesson whose permission door the person's role or
+ * the owner's ticks actually give them, plan-filtered. Nothing
+ * above their level, nothing from the other plan, nothing behind
+ * a door they do not hold. Fired when a StaffMember row is
+ * created, again when an invited row is accepted at sign-in, and
+ * when a promotion lifts the member's level. Idempotent by
+ * construction: assignments merge through
+ * createOrExtendAssignment under the shared 'role_grant' source,
+ * so a re-fire adds no rows, stacks no duplicates, and never
+ * resurrects a module the member already finished. Like the
+ * hooks above, it NEVER throws into its caller.
  */
 export async function seedRoleTrainingForMember(pool, business, memberRow, { actor = null, planKey } = {}) {
   const summary = { created: 0, extended: 0 };
@@ -370,6 +514,8 @@ export async function seedRoleTrainingForMember(pool, business, memberRow, { act
     if (!['active', 'invited'].includes(memberRow.status || 'active')) return summary;
     const level = personLevel(memberRow);
     const isBusiness = planKey === 'business';
+    const customRoles = await customRolesFor(pool, business.id);
+    const permissions = effectivePermissions(memberRow, customRoles, planKey);
     const user = await userForStaffRow(pool, memberRow);
     const assignedBy = {
       userId: actor?.userId ?? null,
@@ -378,7 +524,8 @@ export async function seedRoleTrainingForMember(pool, business, memberRow, { act
     };
     for (const module of TRAINING_MODULES) {
       const lessons = lessonsForModuleAtLevel(module, level)
-        .filter((lesson) => lessonVisibleOnPlan(lesson, isBusiness));
+        .filter((lesson) => lessonVisibleOnPlan(lesson, isBusiness))
+        .filter((lesson) => lessonInScope(lesson, { level, permissions }));
       if (!lessons.length) continue;
       const result = await createOrExtendAssignment(pool, business, {
         assigneeRow: memberRow,
