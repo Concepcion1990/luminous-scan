@@ -31,9 +31,11 @@ export default function Inventory() {
   // Low stock is a Business surface (owner ruling, Nov 20, 2026):
   // the Low stat card and the rows' reorder captions render only
   // when the plan carries alerts. Stored reorder points are never
-  // touched — they stay saved, unseen here.
+  // touched — they stay saved, unseen here. The per-person layer
+  // (same day): a member sees them only with the owner's
+  // alerts.view enrollment tick — the owner always does.
   const { can: canPlan, isLoading: entitlementLoading } = useEntitlements();
-  const showAlerts = !entitlementLoading && canPlan('alerts');
+  const showAlerts = !entitlementLoading && canPlan('alerts') && can('alerts.view');
   // T6: the manager's live view — the convergence check re-reads when
   // the server version moves (a phone's queued work just landed).
   const sync = useOfflineSync(activeId, { onConverged: () => load() });

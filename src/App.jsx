@@ -170,7 +170,7 @@ const AuthenticatedApp = () => {
           <Route
             path="/alerts"
             element={
-              <PlanRedirect feature="alerts">
+              <PlanRedirect feature="alerts" perm="alerts.view">
                 <Alerts />
               </PlanRedirect>
             }
@@ -178,7 +178,7 @@ const AuthenticatedApp = () => {
           <Route
             path="/low-stock"
             element={
-              <PlanRedirect feature="alerts">
+              <PlanRedirect feature="alerts" perm="alerts.view">
                 <LowStock />
               </PlanRedirect>
             }

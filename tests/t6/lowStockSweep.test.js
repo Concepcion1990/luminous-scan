@@ -38,13 +38,18 @@ test('Overview: the Needs-attention box and per-location low counts are Business
   assert.match(panel, /\{showLow && row\.low > 0 &&/);
 });
 
-test('Products: LOW badge, reorder value, expanded line and reorder sort are Business-only', () => {
+test('Products: LOW badge follows the alert tick; reorder values stay plan-gated and visible', () => {
   const page = src('src/pages/Products.jsx');
-  assert.match(page, /const showAlerts = !entitlementLoading && canPlan\('alerts'\);/);
+  // Since the low-stock ticks (Nov 20, 2026): the reorder VALUES
+  // (column, sort, expanded line) follow the plan alone and stay
+  // visible to everyone on Business; only the LOW badge is an
+  // alert surface, so it alone takes the per-person tick.
+  assert.match(page, /const showReorderValues = !entitlementLoading && canPlan\('alerts'\);/);
+  assert.match(page, /const showAlerts = showReorderValues && can\('alerts\.view'\);/);
   assert.match(page, /\{showAlerts && isLow && <span[^>]*>\{t\('products\.lowBadge'\)\}<\/span>\}/);
-  assert.match(page, /\{showAlerts && \(\s*<span className="numeric hidden text-right text-xs text-muted-foreground xl:block">\s*\{product\.reorder_point \|\| 0\}/);
-  assert.match(page, /\.\.\.\(showAlerts \? \[\{ value: 'reorder', label: t\('products\.sortReorder'\) \}\] : \[\]\),/);
-  assert.match(page, /\{showAlerts && \(\s*<SortHeader\s+label=\{t\('products\.colReorder'\)\}/);
+  assert.match(page, /\{showReorderValues && \(\s*<span className="numeric hidden text-right text-xs text-muted-foreground xl:block">\s*\{product\.reorder_point \|\| 0\}/);
+  assert.match(page, /\.\.\.\(showReorderValues \? \[\{ value: 'reorder', label: t\('products\.sortReorder'\) \}\] : \[\]\),/);
+  assert.match(page, /\{showReorderValues && \(\s*<SortHeader\s+label=\{t\('products\.colReorder'\)\}/);
   // The expanded-row line itself survives (Business renders it) —
   // it is the render that is gated, not the string.
   assert.match(page, /t\('products\.reorderLine', \{/);
@@ -52,7 +57,7 @@ test('Products: LOW badge, reorder value, expanded line and reorder sort are Bus
 
 test('Inventory: the Low stat card (with the reorder-point phrase) is Business-only', () => {
   const page = src('src/pages/Inventory.jsx');
-  assert.match(page, /const showAlerts = !entitlementLoading && canPlan\('alerts'\);/);
+  assert.match(page, /const showAlerts = !entitlementLoading && canPlan\('alerts'\) && can\('alerts\.view'\);/);
   assert.match(page, /\{showAlerts && \(\s*<StatCard label=\{t\('inventory\.statLow'\)\} value=\{low\} tone=\{low \? 'warn' : 'default'\} hint=\{t\('inventory\.lowHint'\)\} \/>/);
   assert.match(page, /showReorder=\{showAlerts\}/);
   const row = src('src/components/inventory/InventoryRow.jsx');
@@ -62,11 +67,11 @@ test('Inventory: the Low stat card (with the reorder-point phrase) is Business-o
 
 test('Categories and Locations: low counts and the LOW stat are Business-only', () => {
   const categories = src('src/pages/InventoryCategories.jsx');
-  assert.match(categories, /const showLow = !entitlementLoading && can\('alerts'\);/);
+  assert.match(categories, /const showLow = !entitlementLoading && can\('alerts'\) && canStaff\('alerts\.view'\);/);
   assert.match(categories, /\{showLow && group\.low \? t\('inventory\.groupLowSuffix'/);
   assert.match(categories, /\{showLow && low \? t\('inventory\.reorderLabel'/);
   const locations = src('src/pages/Locations.jsx');
-  assert.match(locations, /const showAlerts = !entitlementLoading && canPlan\('alerts'\);/);
+  assert.match(locations, /const showAlerts = !entitlementLoading && canPlan\('alerts'\) && can\('alerts\.view'\);/);
   assert.match(locations, /showLow=\{showAlerts\}/);
   const card = src('src/components/locations/LocationTreeCard.jsx');
   assert.match(card, /showLow = false/);
@@ -75,7 +80,7 @@ test('Categories and Locations: low counts and the LOW stat are Business-only', 
 
 test('Scan: the amber at/below-reorder coloring is Business-only', () => {
   const scan = src('src/pages/Scan.jsx');
-  assert.match(scan, /const showLow = !entitlementLoading && canPlan\('alerts'\);/);
+  assert.match(scan, /const showLow = !entitlementLoading && canPlan\('alerts'\) && can\('alerts\.view'\);/);
   assert.match(scan, /const isLow = showLow && product\.reorder_point > 0 && q <= product\.reorder_point;/);
 });
 
