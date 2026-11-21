@@ -5010,4 +5010,13 @@ export const te = {
   "payroll.profile.noName": "ఇంకా ఏ పేరు నమోదు కాలేదు.",
   "apiErrors.forbidden.businessOwnerUpdateDetails": "వ్యాపార యజమాని మాత్రమే ఈ వివరాలను నవీకరించగలరు.",
   "apiErrors.invalidValue.homeAddressThousandCharacters": "మీ ఇంటి చిరునామాను 1000 అక్షరాలు లేదా అంతకంటే తక్కువగా ఉంచండి.",
+  "plans.status.foundingTester": "వ్యవస్థాపక పరీక్షకుడు",
+  "plans.priceNoteFoundingTester": "ఎటువంటి ఛార్జీ లేదు — వ్యవస్థాపక పరీక్షకులు Business ను ఎప్పటికీ ఉచితంగా ఉంచుకుంటారు.",
+  "subscribe.foundingTesterNote": "ఈ వర్క్‌స్పేస్‌కు వ్యవస్థాపక పరీక్షకుడిగా Business ఉంది — ఎప్పటికీ ఉచితం. కార్డు లేదు, ఛార్జీ లేదు, ఎప్పుడూ లేదు.",
+  "upgrade.introFoundingTester": " — ఒక వ్యవస్థాపక పరీక్షకుడి వర్క్‌స్పేస్, ఎప్పటికీ ఉచితం మరియు ఎటువంటి ఛార్జీ లేకుండా.",
+  "upgrade.foundingTesterNote": "వ్యవస్థాపక పరీక్షకులు Business ను ఎప్పటికీ ఉచితంగా ఉంచుకుంటారు — ఇక్కడ మార్చడానికి ప్లాన్ లేదు మరియు రద్దు చేయడానికి సబ్‌స్క్రిప్షన్ లేదు.",
+  "apiErrors.foundingTester.alreadyListed": "ఆ ఇమెయిల్ ఇప్పటికే వ్యవస్థాపక పరీక్షకుల జాబితాలో ఉంది.",
+  "apiErrors.foundingTester.listFull": "వ్యవస్థాపక పరీక్షకుల జాబితా నిండిపోయింది.",
+  "apiErrors.foundingTester.notListed": "ఆ ఇమెయిల్ వ్యవస్థాపక పరీక్షకుల జాబితాలో లేదు.",
+  "apiErrors.foundingTester.capWholeNumber": "పరిమితి 1 లేదా అంతకంటే ఎక్కువ పూర్ణ సంఖ్య అయి ఉండాలి.",
 };
