@@ -4461,7 +4461,7 @@ export const pcm = {
   "apiErrors.invalidValue.eachShiftNeedsWeekday": "Every shift need weekday (0-6) and HH:MM start and end times.",
   "apiErrors.invalidValue.emailRequired": "Email dey required.",
   "apiErrors.invalidValue.enterBankName": "Make you enter your bank name.",
-  "apiErrors.invalidValue.enterGS1CompanyPrefix": "Enter your GS1 company prefix — 6 to 10 digits, exactly as GS1 issue am — or leave am blank.",
+  "apiErrors.invalidValue.enterGS1CompanyPrefix": "Enter your GS1 company prefix — 6 to 11 digits, exactly as GS1 issue am — or leave am blank.",
   "apiErrors.invalidValue.enterHowManyArrived": "Enter how many arrive for at least one line.",
   "apiErrors.invalidValue.enterLightspeedDomainPrefix": "Enter your Lightspeed domain prefix — de part before .retail.lightspeed.app.",
   "apiErrors.invalidValue.enterStoreDomainLike": "Make you enter your store domain, like your-store.myshopify.com.",

@@ -4461,7 +4461,7 @@ export const prs = {
   "apiErrors.invalidValue.eachShiftNeedsWeekday": "هر شیفت به یک روز هفته (0-6) و وقت‌های شروع و ختم HH:MM نیاز دارد.",
   "apiErrors.invalidValue.emailRequired": "ایمیل لازم است.",
   "apiErrors.invalidValue.enterBankName": "نام بانک خود را وارد کنید.",
-  "apiErrors.invalidValue.enterGS1CompanyPrefix": "پیش‌شمارهٔ شرکت GS1 خود را وارد کنید — 6 تا 10 رقم، دقیقاً همان گونه که GS1 صادر کرده است — یا آن را خالی بگذارید.",
+  "apiErrors.invalidValue.enterGS1CompanyPrefix": "پیش‌شمارهٔ شرکت GS1 خود را وارد کنید — 6 تا 11 رقم، دقیقاً همان گونه که GS1 صادر کرده است — یا آن را خالی بگذارید.",
   "apiErrors.invalidValue.enterHowManyArrived": "وارد کنید چند تا رسیده است، حداقل در یک سطر.",
   "apiErrors.invalidValue.enterLightspeedDomainPrefix": "پیش‌شمارهٔ دامنهٔ Lightspeed خود را وارد کنید — بخش قبل از .retail.lightspeed.app.",
   "apiErrors.invalidValue.enterStoreDomainLike": "دامنهٔ دکان خود را وارد کنید، مانند your-store.myshopify.com.",

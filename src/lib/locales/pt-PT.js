@@ -4461,7 +4461,7 @@ export const ptPT = {
   "apiErrors.invalidValue.eachShiftNeedsWeekday": "Cada turno precisa de um dia da semana (0-6) e horários de início e fim em HH:MM.",
   "apiErrors.invalidValue.emailRequired": "Um e-mail é obrigatório.",
   "apiErrors.invalidValue.enterBankName": "Digite o nome do seu banco.",
-  "apiErrors.invalidValue.enterGS1CompanyPrefix": "Digite o prefixo da sua empresa GS1 — 6 a 10 dígitos, exatamente como o GS1 emitiu — ou deixe em branco.",
+  "apiErrors.invalidValue.enterGS1CompanyPrefix": "Digite o prefixo da sua empresa GS1 — 6 a 11 dígitos, exatamente como o GS1 emitiu — ou deixe em branco.",
   "apiErrors.invalidValue.enterHowManyArrived": "Digite quantos chegaram em pelo menos uma linha.",
   "apiErrors.invalidValue.enterLightspeedDomainPrefix": "Digite o prefixo do seu domínio Lightspeed — a parte antes de .retail.lightspeed.app.",
   "apiErrors.invalidValue.enterStoreDomainLike": "Digite o domínio da sua loja, como your-store.myshopify.com.",
