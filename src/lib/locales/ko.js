@@ -5004,4 +5004,10 @@ export const ko = {
   "apiErrors.invalidValue.chooseSignatureStyle": "서명 스타일을 선택하세요.",
   "apiErrors.invalidValue.noDdDetailsYet": "해당 팀 구성원은 아직 정보를 보내지 않았습니다.",
   "training.lessons.owner-dd-setup.step5": "도착하는 것은 봉인된 서명 양식입니다: 급여의 해당 구성원 행에서 열어 전체 번호를 읽거나, 인쇄하거나, 사본을 저장할 수 있습니다 — 절대로 편집할 수는 없습니다. 번호가 잘못되어 보이면 양식을 반송하세요: 본인이 직접 수정하고 다시 서명하며, 수정된 양식이 이전 양식을 대체하고, 이전 양식은 대체 날짜와 함께 기록에 남습니다.",
+  "payroll.profile.ownerNote": "이것은 회원님의 계정에 기록된 본인의 정보예요. 여기서 볼 수 있는 사람은 회원님뿐이에요 — 그리고 본인의 정보이니, 바뀔 때마다 여기서 바로 수정할 수 있어요.",
+  "payroll.profile.edit": "내 정보 수정",
+  "payroll.profile.cancel": "취소",
+  "payroll.profile.noName": "아직 기록된 이름이 없습니다.",
+  "apiErrors.forbidden.businessOwnerUpdateDetails": "이 정보를 수정할 수 있는 사람은 비즈니스 소유자뿐이에요.",
+  "apiErrors.invalidValue.homeAddressThousandCharacters": "집 주소는 1000자 이내로 입력해 주세요.",
 };
