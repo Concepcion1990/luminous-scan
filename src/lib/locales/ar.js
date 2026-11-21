@@ -5010,4 +5010,13 @@ export const ar = {
   "payroll.profile.noName": "لا يوجد اسم مسجل بعد.",
   "apiErrors.forbidden.businessOwnerUpdateDetails": "يمكن لمالك النشاط التجاري فقط تحديث هذه البيانات.",
   "apiErrors.invalidValue.homeAddressThousandCharacters": "اجعل عنوان منزلك 1000 حرف أو أقل.",
+  "plans.status.foundingTester": "مُختبِر مؤسِّس",
+  "plans.priceNoteFoundingTester": "بدون رسوم — يحتفظ المُختبِرون المؤسِّسون بـ Business مجانًا مدى الحياة.",
+  "subscribe.foundingTesterNote": "مساحة العمل هذه لديها Business كمُختبِر مؤسِّس — مجانًا مدى الحياة. بدون بطاقة، بدون رسوم، أبدًا.",
+  "upgrade.introFoundingTester": " — مساحة عمل لمُختبِر مؤسِّس، مجانية مدى الحياة وبدون رسوم.",
+  "upgrade.foundingTesterNote": "يحتفظ المُختبِرون المؤسِّسون بـ Business مجانًا مدى الحياة — لا توجد خطة لتغييرها ولا اشتراك لإلغائه.",
+  "apiErrors.foundingTester.alreadyListed": "هذا البريد الإلكتروني موجود بالفعل في قائمة المُختبِرين المؤسِّسين.",
+  "apiErrors.foundingTester.listFull": "قائمة المُختبِرين المؤسِّسين ممتلئة.",
+  "apiErrors.foundingTester.notListed": "هذا البريد الإلكتروني ليس في قائمة المُختبِرين المؤسِّسين.",
+  "apiErrors.foundingTester.capWholeNumber": "يجب أن يكون الحد الأقصى عددًا صحيحًا قدره 1 أو أكثر.",
 };

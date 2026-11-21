@@ -5010,4 +5010,13 @@ export const am = {
   "payroll.profile.noName": "እስካሁን ምንም ስም አልተመዘገበም።",
   "apiErrors.forbidden.businessOwnerUpdateDetails": "የንግድ ባለቤት ብቻ እነዚህን ዝርዝሮች ማዘመን ይችላል።",
   "apiErrors.invalidValue.homeAddressThousandCharacters": "የቤት አድራሻዎን በ1000 ቁምፊዎች ወይም ከዚያ ባነሰ ይወስኑት።",
+  "plans.status.foundingTester": "መስራች ሞካሪ",
+  "plans.priceNoteFoundingTester": "ምንም ክፍያ የለም — መስራች ሞካሪዎች Business ን ለዘላለም በነጻ ይይዛሉ።",
+  "subscribe.foundingTesterNote": "ይህ የስራ ቦታ እንደ መስራች ሞካሪ Business አለው — ለዘላለም በነጻ። ምንም ካርድ የለም፣ ምንም ክፍያ የለም፣ በጭራሽ።",
+  "upgrade.introFoundingTester": " — የመስራች ሞካሪ የስራ ቦታ፣ ለዘላለም በነጻ እና ያለ ምንም ክፍያ።",
+  "upgrade.foundingTesterNote": "መስራች ሞካሪዎች Business ን ለዘላለም በነጻ ይይዛሉ — እዚህ የሚቀየር እቅድ የለም እና የሚሰረዝ ምዝገባ የለም።",
+  "apiErrors.foundingTester.alreadyListed": "ያ ኢሜይል አስቀድሞ በመስራች ሞካሪዎች ዝርዝር ውስጥ አለ።",
+  "apiErrors.foundingTester.listFull": "የመስራች ሞካሪዎች ዝርዝር ሞልቷል።",
+  "apiErrors.foundingTester.notListed": "ያ ኢሜይል በመስራች ሞካሪዎች ዝርዝር ውስጥ የለም።",
+  "apiErrors.foundingTester.capWholeNumber": "ገደቡ 1 ወይም ከዚያ በላይ የሆነ ሙሉ ቁጥር መሆን አለበት።",
 };
