@@ -4379,7 +4379,7 @@ export const ha = {
   "apiErrors.invalidValue.eachShiftNeedsWeekday": "Kowane juyi yana buƙatar ranar mako (0-6) da lokutan farawa da ƙarewa HH:MM.",
   "apiErrors.invalidValue.emailRequired": "Ana buƙatar imel.",
   "apiErrors.invalidValue.enterBankName": "Shigar da sunan bankinka.",
-  "apiErrors.invalidValue.enterGS1CompanyPrefix": "Shigar da prefix na kamfanin GS1 naka — lambobi 6 zuwa 10, daidai yadda GS1 ta ba shi — ko bar shi a banza.",
+  "apiErrors.invalidValue.enterGS1CompanyPrefix": "Shigar da prefix na kamfanin GS1 naka — lambobi 6 zuwa 11, daidai yadda GS1 ta ba shi — ko bar shi a banza.",
   "apiErrors.invalidValue.enterHowManyArrived": "Shigar da nawa suka iso a aƙalla layi guda.",
   "apiErrors.invalidValue.enterLightspeedDomainPrefix": "Shigar da prefix na yankin Lightspeed naka — ɓangaren da ke gaban .retail.lightspeed.app.",
   "apiErrors.invalidValue.enterStoreDomainLike": "Shigar da yankin shagonka, kamar your-store.myshopify.com.",

@@ -4461,7 +4461,7 @@ export const id = {
   "apiErrors.invalidValue.eachShiftNeedsWeekday": "Setiap shift membutuhkan hari kerja (0-6) dan waktu mulai dan selesai HH:MM.",
   "apiErrors.invalidValue.emailRequired": "Email diperlukan.",
   "apiErrors.invalidValue.enterBankName": "Masukkan nama bank Anda.",
-  "apiErrors.invalidValue.enterGS1CompanyPrefix": "Masukkan awalan perusahaan GS1 Anda — 6 hingga 10 digit, persis seperti yang dikeluarkan GS1 — atau biarkan kosong.",
+  "apiErrors.invalidValue.enterGS1CompanyPrefix": "Masukkan awalan perusahaan GS1 Anda — 6 hingga 11 digit, persis seperti yang dikeluarkan GS1 — atau biarkan kosong.",
   "apiErrors.invalidValue.enterHowManyArrived": "Masukkan berapa banyak yang tiba pada setidaknya satu baris.",
   "apiErrors.invalidValue.enterLightspeedDomainPrefix": "Masukkan awalan domain Lightspeed Anda — bagian sebelum .retail.lightspeed.app.",
   "apiErrors.invalidValue.enterStoreDomainLike": "Masukkan domain toko Anda, seperti your-store.myshopify.com.",

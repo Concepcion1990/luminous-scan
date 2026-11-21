@@ -4461,7 +4461,7 @@ export const it = {
   "apiErrors.invalidValue.eachShiftNeedsWeekday": "Ogni turno ha bisogno di un giorno della settimana (0-6) e di orari di inizio e fine HH:MM.",
   "apiErrors.invalidValue.emailRequired": "È richiesta un'email.",
   "apiErrors.invalidValue.enterBankName": "Inserisci il nome della tua banca.",
-  "apiErrors.invalidValue.enterGS1CompanyPrefix": "Inserisci il prefisso aziendale GS1 — da 6 a 10 cifre, esattamente come GS1 lo ha rilasciato — o lascia vuoto.",
+  "apiErrors.invalidValue.enterGS1CompanyPrefix": "Inserisci il prefisso aziendale GS1 — da 6 a 11 cifre, esattamente come GS1 lo ha rilasciato — o lascia vuoto.",
   "apiErrors.invalidValue.enterHowManyArrived": "Inserisci quanti sono arrivati in almeno una riga.",
   "apiErrors.invalidValue.enterLightspeedDomainPrefix": "Inserisci il prefisso del tuo dominio Lightspeed — la parte prima di .retail.lightspeed.app.",
   "apiErrors.invalidValue.enterStoreDomainLike": "Inserisci il dominio del tuo negozio, come your-store.myshopify.com.",
