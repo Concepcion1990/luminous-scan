@@ -5010,4 +5010,13 @@ export const sw = {
   "payroll.profile.noName": "Hakuna jina lililorekodiwa bado.",
   "apiErrors.forbidden.businessOwnerUpdateDetails": "Mmiliki wa biashara tu ndiye anayeweza kusasisha maelezo haya.",
   "apiErrors.invalidValue.homeAddressThousandCharacters": "Weka anwani yako ya nyumbani iwe herufi 1000 au chache zaidi.",
+  "plans.status.foundingTester": "Mjaribu mwanzilishi",
+  "plans.priceNoteFoundingTester": "Hakuna malipo — wajaribu waanzilishi huhifadhi Business bure milele.",
+  "subscribe.foundingTesterNote": "Eneo hili la kazi lina Business kama mjaribu mwanzilishi — bure milele. Hakuna kadi, hakuna malipo, kamwe.",
+  "upgrade.introFoundingTester": " — eneo la kazi la mjaribu mwanzilishi, bure milele na bila malipo yoyote.",
+  "upgrade.foundingTesterNote": "Wajaribu waanzilishi huhifadhi Business bure milele — hakuna mpango wa kubadilisha na hakuna usajili wa kughairi.",
+  "apiErrors.foundingTester.alreadyListed": "Barua pepe hiyo tayari iko kwenye orodha ya wajaribu waanzilishi.",
+  "apiErrors.foundingTester.listFull": "Orodha ya wajaribu waanzilishi imejaa.",
+  "apiErrors.foundingTester.notListed": "Barua pepe hiyo haiko kwenye orodha ya wajaribu waanzilishi.",
+  "apiErrors.foundingTester.capWholeNumber": "Kikomo lazima kiwe nambari nzima ya 1 au zaidi.",
 };
