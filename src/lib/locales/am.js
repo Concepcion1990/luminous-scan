@@ -5004,4 +5004,10 @@ export const am = {
   "apiErrors.invalidValue.chooseSignatureStyle": "የፊርማ ቅጥ ይምረጡ።",
   "apiErrors.invalidValue.noDdDetailsYet": "ያ የቡድን አባል እስካሁን ዝርዝሮቹን አልላከም።",
   "training.lessons.owner-dd-setup.step5": "የሚደርሰው የታሸገ፣ የተፈረመ ቅጽ ነው፦ በደመወዝ ክፍያ ውስጥ ከዚያ ሰው ረድፍ ሙሉ ቁጥሮቹን ለማንበብ መክፈት፣ ማተም ወይም ቅጂ ማስቀመጥ ይችላሉ — በፍጹም ማርትዕ አይችሉም። ቁጥር ስህተት ሆኖ ከታየ ቅጹን መልሰው ይላኩ፦ ሰውዬው ራሱ ያስተካክላል እና እንደገና ይፈርማል፣ የተስተካከለው ቅጹ የድሮውን ይተካዋል፣ እና ቀዳሚው ቅጽ በተተካበት ቀን ጋር በመዝገቡ ውስጥ ይቆያል።",
+  "payroll.profile.ownerNote": "እነዚህ የራስዎ ዝርዝሮች ናቸው — ከመለያዎ በፋይል ላይ ያሉ። እርስዎ ብቻ እዚህ ማየት ይችላሉ — እና የእርስዎ ስለሆኑ፣ ሲቀየሩ እዚህው ማዘመን ይችላሉ።",
+  "payroll.profile.edit": "ዝርዝሮችዎን ያርትዑ",
+  "payroll.profile.cancel": "አቋርጥ",
+  "payroll.profile.noName": "እስካሁን ምንም ስም አልተመዘገበም።",
+  "apiErrors.forbidden.businessOwnerUpdateDetails": "የንግድ ባለቤት ብቻ እነዚህን ዝርዝሮች ማዘመን ይችላል።",
+  "apiErrors.invalidValue.homeAddressThousandCharacters": "የቤት አድራሻዎን በ1000 ቁምፊዎች ወይም ከዚያ ባነሰ ይወስኑት።",
 };

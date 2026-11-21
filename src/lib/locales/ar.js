@@ -5004,4 +5004,10 @@ export const ar = {
   "apiErrors.invalidValue.chooseSignatureStyle": "اختر أسلوب توقيع.",
   "apiErrors.invalidValue.noDdDetailsYet": "لم يرسل عضو الفريق هذا تفاصيله بعد.",
   "training.lessons.owner-dd-setup.step5": "ما يصلك هو نموذج مختوم وموقَّع: من صف الشخص في كشوف المرتبات يمكنك فتحه لقراءة الأرقام الكاملة أو طباعته أو حفظ نسخة منه — ولا يمكنك تحريره أبدًا. إذا بدا أحد الأرقام خاطئًا، أعِد النموذج: يصحّحه الشخص ويوقّعه من جديد بنفسه، ويحل نموذجه المصحَّح محل القديم، ويبقى النموذج السابق في السجل مع تاريخ استبداله.",
+  "payroll.profile.ownerNote": "هذه هي بياناتك الخاصة المسجلة، من حسابك. أنت وحدك من يمكنه رؤيتها هنا — ولأنها بياناتك، يمكنك تحديثها هنا مباشرة متى تغيرت.",
+  "payroll.profile.edit": "تعديل بياناتك",
+  "payroll.profile.cancel": "إلغاء",
+  "payroll.profile.noName": "لا يوجد اسم مسجل بعد.",
+  "apiErrors.forbidden.businessOwnerUpdateDetails": "يمكن لمالك النشاط التجاري فقط تحديث هذه البيانات.",
+  "apiErrors.invalidValue.homeAddressThousandCharacters": "اجعل عنوان منزلك 1000 حرف أو أقل.",
 };
