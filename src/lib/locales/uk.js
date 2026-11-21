@@ -5010,4 +5010,13 @@ export const uk = {
   "payroll.profile.noName": "Ім’я ще не вказано.",
   "apiErrors.forbidden.businessOwnerUpdateDetails": "Лише власник підприємства може оновлювати ці дані.",
   "apiErrors.invalidValue.homeAddressThousandCharacters": "Домашня адреса має містити не більше 1000 символів.",
+  "plans.status.foundingTester": "Тестувальник-засновник",
+  "plans.priceNoteFoundingTester": "Без оплати — тестувальники-засновники зберігають Business безкоштовно назавжди.",
+  "subscribe.foundingTesterNote": "Цей робочий простір має Business як тестувальник-засновник — безкоштовно назавжди. Без картки, без оплати, ніколи.",
+  "upgrade.introFoundingTester": " — робочий простір тестувальника-засновника, безкоштовно назавжди й без оплати.",
+  "upgrade.foundingTesterNote": "Тестувальники-засновники зберігають Business безкоштовно назавжди — тут немає тарифу для зміни й немає підписки для скасування.",
+  "apiErrors.foundingTester.alreadyListed": "Ця адреса вже є у списку тестувальників-засновників.",
+  "apiErrors.foundingTester.listFull": "Список тестувальників-засновників повний.",
+  "apiErrors.foundingTester.notListed": "Цієї адреси немає у списку тестувальників-засновників.",
+  "apiErrors.foundingTester.capWholeNumber": "Ліміт має бути цілим числом не менше 1.",
 };

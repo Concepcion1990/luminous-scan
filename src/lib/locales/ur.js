@@ -5010,4 +5010,13 @@ export const ur = {
   "payroll.profile.noName": "ابھی تک کوئی نام درج نہیں ہے۔",
   "apiErrors.forbidden.businessOwnerUpdateDetails": "صرف کاروبار کا مالک ان تفصیلات کو اپ ڈیٹ کر سکتا ہے۔",
   "apiErrors.invalidValue.homeAddressThousandCharacters": "اپنے گھر کے پتے کو 1000 حروف یا اس سے کم تک محدود رکھیں۔",
+  "plans.status.foundingTester": "بانی آزمائش کار",
+  "plans.priceNoteFoundingTester": "کوئی چارج نہیں — بانی آزمائش کار Business کو ہمیشہ کے لیے مفت رکھتے ہیں۔",
+  "subscribe.foundingTesterNote": "اس ورک اسپیس کے پاس بانی آزمائش کار کے طور پر Business ہے — ہمیشہ کے لیے مفت۔ کوئی کارڈ نہیں، کوئی چارج نہیں، کبھی نہیں۔",
+  "upgrade.introFoundingTester": " — ایک بانی آزمائش کار ورک اسپیس، ہمیشہ کے لیے مفت اور بغیر کسی چارج کے۔",
+  "upgrade.foundingTesterNote": "بانی آزمائش کار Business کو ہمیشہ کے لیے مفت رکھتے ہیں — نہ کوئی پلان بدلنا ہے اور نہ کوئی سبسکرپشن منسوخ کرنی ہے۔",
+  "apiErrors.foundingTester.alreadyListed": "وہ ای میل پہلے ہی بانی آزمائش کاروں کی فہرست میں ہے۔",
+  "apiErrors.foundingTester.listFull": "بانی آزمائش کاروں کی فہرست پُر ہے۔",
+  "apiErrors.foundingTester.notListed": "وہ ای میل بانی آزمائش کاروں کی فہرست میں نہیں ہے۔",
+  "apiErrors.foundingTester.capWholeNumber": "حد ایک مکمل عدد 1 یا اس سے زیادہ ہونی چاہیے۔",
 };
