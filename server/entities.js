@@ -1378,6 +1378,14 @@ export async function deleteEntity(pool, user, name, id) {
         'DELETE FROM direct_deposit_details WHERE business_id = $1 AND staff_member_id = $2',
         [row.business_id, id],
       );
+      // Their sealed direct-deposit forms go too (Nov 21, 2026):
+      // a sealed form carries the same bank numbers as the details
+      // row, so it shares the details' fate — purged in the same
+      // transaction, never kept as a souvenir.
+      await client.query(
+        'DELETE FROM direct_deposit_submissions WHERE business_id = $1 AND staff_member_id = $2',
+        [row.business_id, id],
+      );
       // Their profile photo goes with them (Nov 21, 2026): the
       // approved and pending bytes alike — a removed member's
       // face is not kept on file.

@@ -38,6 +38,7 @@
  *   GET   /api/businesses/:bid/workforce/dd
  *   POST  /api/businesses/:bid/workforce/dd/invite           owner
  *   POST  /api/businesses/:bid/workforce/dd/submit
+ *   POST  /api/businesses/:bid/workforce/dd/send-back        owner
  *   GET   /api/businesses/:bid/workforce/dd/details/:staffId owner
  *   GET   /api/businesses/:bid/workforce/messages/threads
  *   POST  /api/businesses/:bid/workforce/messages/threads    get-or-create
@@ -64,7 +65,7 @@ import { Router } from 'express';
 import { requireAuth } from './sessions.js';
 import { resolveAccess, staffRowForEmail, parseJsonArray } from './authz.js';
 import { startAutoLogout, cancelAutoLogout } from './staffWindow.js';
-import { assertNotInGrace } from './billing.js';
+import { assertNotInGrace, withTx } from './billing.js';
 import { parseVoiceDataUrl, convertVoiceToMp3, VOICE_MAX_DURATION_MS } from './voiceNote.js';
 import { approvedPhotoKeys, ownerDisplayName, ownerPublicName } from './profilePhotos.js';
 import { trainingCompleteForPerson } from './trainingCore.js';
@@ -1107,7 +1108,7 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
   // ---- Payroll ----------------------------------------------------------------
 
   router.get(`${base}/payroll/context`, asyncHandler(async (req, res) => {
-    const { access, level } = await ctx(req);
+    const { access, level, me } = await ctx(req);
     const settings = await workforceSettings(pool(), req.params.bid);
     return res.json({
       is_owner: access.isOwner,
@@ -1119,6 +1120,14 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
       show_irs_box: access.isOwner,
       dd_enabled: settings.dd_enabled === true,
       plan: access.planKey,
+      // The member's OWN details on file (Nov 21, 2026): their
+      // full name + home address, read-only on their own Payroll
+      // page — the view migration 030 promised. This is the
+      // caller's own staff row and nothing else's: nobody's
+      // payload ever carries another member's address from here.
+      me_profile: me
+        ? { full_name: me.full_name, personal_address: me.personal_address || '' }
+        : null,
     });
   }));
 
@@ -1446,31 +1455,50 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
       );
       if (rows[0]) {
         mine = {
-          status: rows[0].status,
+          // A submitted form the owner sent back presents as
+          // 'correction_requested' (the flag on the details row).
+          status: rows[0].status === 'submitted' && rows[0].correction_requested
+            ? 'correction_requested'
+            : rows[0].status,
+          full_name: me.full_name,
           bank_name: rows[0].bank_name,
           account_type: rows[0].account_type,
           routing_masked: maskNumber(rows[0].routing_number),
           account_masked: maskNumber(rows[0].account_number),
+          signature_name: rows[0].signature_name || '',
+          signature_style: rows[0].signature_style || '',
+          signed_at: rows[0].signed_at || null,
         };
       }
     }
     let team = null;
     if (access.isOwner) {
       const { rows } = await pool().query(
-        `SELECT d.*, m.full_name FROM direct_deposit_details d
+        `SELECT d.*, m.full_name
+           FROM direct_deposit_details d
            JOIN staff_members m ON m.id = d.staff_member_id
           WHERE d.business_id = $1 ORDER BY m.full_name ASC`,
         [req.params.bid],
       );
+      const counts = await pool().query(
+        `SELECT staff_member_id, COUNT(*)::int AS n FROM direct_deposit_submissions
+          WHERE business_id = $1 GROUP BY staff_member_id`,
+        [req.params.bid],
+      );
+      const countByMember = new Map(counts.rows.map((r) => [r.staff_member_id, r.n]));
       team = rows.map((row) => ({
         staff_member_id: row.staff_member_id,
         full_name: row.full_name,
-        status: row.status,
+        status: row.status === 'submitted' && row.correction_requested
+          ? 'correction_requested'
+          : row.status,
         bank_name: row.bank_name,
         account_type: row.account_type,
         routing_masked: maskNumber(row.routing_number),
         account_masked: maskNumber(row.account_number),
         submitted_at: row.submitted_at,
+        signed_at: row.signed_at || null,
+        submission_count: countByMember.get(row.staff_member_id) || 0,
       }));
     }
     return res.json({ enabled: settings.dd_enabled === true, mine, team });
@@ -1487,6 +1515,22 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
        ON CONFLICT (business_id, staff_member_id) DO UPDATE SET requested_at = NOW(), updated_at = NOW()`,
       [req.params.bid, target.id],
     );
+    // The request rings the member's bell (Nov 21, 2026): sending
+    // the ask should feel like sending — the member learns of it
+    // where they already look, not only by opening Payroll.
+    const targetUser = await userForStaffRow(pool(), target);
+    if (targetUser) {
+      await notifyUser(pool(), access.business, {
+        recipientUserId: targetUser.id,
+        recipientStaffId: target.id,
+        recipientRole: personLevel(target),
+        actorStaffId: null,
+        actorName: await ownerPublicName(pool(), access.business),
+        event: 'dd_invited',
+        detail: 'The owner asked you to add your direct deposit details — open Payroll to fill in and sign your form.',
+        refId: target.id,
+      });
+    }
     return res.status(201).json({ invited: target.id });
   }));
 
@@ -1515,20 +1559,116 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
     }
     if (!/^\d{9}$/.test(routing)) throw err(400, 'invalid_value', 'The routing number is 9 digits.');
     if (!/^\d{4,17}$/.test(account)) throw err(400, 'invalid_value', 'Check the account number and try again.');
-    await pool().query(
-      `UPDATE direct_deposit_details
-          SET status = 'submitted', bank_name = $1, account_type = $2, routing_number = $3,
-              account_number = $4, submitted_at = NOW(), updated_at = NOW()
-        WHERE business_id = $5 AND staff_member_id = $6`,
-      [bankName.slice(0, 120), accountType, routing, account, req.params.bid, me.id],
-    );
+    // The signature step (owner's flow, Nov 19, 2026): the member
+    // types their name and chooses a style — that IS their
+    // electronic signature on the form. No signature, no submit:
+    // an unsigned form is not the completed form she ruled on.
+    const signatureName = String(req.body?.signature_name || '').trim().slice(0, 80);
+    const signatureStyle = String(req.body?.signature_style || '');
+    if (!signatureName) {
+      throw err(400, 'invalid_value', 'Type your name to sign your direct deposit form.');
+    }
+    if (!['script', 'italic', 'simple'].includes(signatureStyle)) {
+      throw err(400, 'invalid_value', 'Choose a signature style.');
+    }
+    // A re-submit while a form already stands (the member fixing
+    // their own typo, or answering a send-back) is a CORRECTION:
+    // it writes a new sealed record and supersedes the old one —
+    // the sealed record itself is never edited (Nov 21, 2026).
+    const isCorrection = rows[0].status === 'submitted';
+    const cleanBankName = bankName.slice(0, 120);
+    await withTx(pool(), async (client) => {
+      await client.query(
+        `UPDATE direct_deposit_details
+            SET status = 'submitted', correction_requested = FALSE, bank_name = $1, account_type = $2, routing_number = $3,
+                account_number = $4, signature_name = $5, signature_style = $6,
+                signed_at = NOW(), submitted_at = NOW(), updated_at = NOW()
+          WHERE business_id = $7 AND staff_member_id = $8`,
+        [cleanBankName, accountType, routing, account, signatureName, signatureStyle, req.params.bid, me.id],
+      );
+      await client.query(
+        `UPDATE direct_deposit_submissions SET superseded_at = NOW()
+          WHERE business_id = $1 AND staff_member_id = $2 AND superseded_at IS NULL`,
+        [req.params.bid, me.id],
+      );
+      await client.query(
+        `INSERT INTO direct_deposit_submissions
+           (id, business_id, staff_member_id, bank_name, account_type, routing_number,
+            account_number, signature_name, signature_style, signed_at, submitted_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW())`,
+        [
+          crypto.randomUUID(), req.params.bid, me.id, cleanBankName, accountType, routing,
+          account, signatureName, signatureStyle,
+        ],
+      );
+    });
+    // Arrival (owner's ruling): the owner's bell rings when a
+    // form lands — and again when a corrected form replaces it.
+    await notifyUser(pool(), access.business, {
+      recipientUserId: access.business.owner_id,
+      recipientStaffId: null,
+      recipientRole: 'owner',
+      actorStaffId: me.id,
+      actorName: me.full_name,
+      event: isCorrection ? 'dd_corrected' : 'dd_submitted',
+      detail: isCorrection
+        ? `${me.full_name} sent a corrected direct deposit form.`
+        : `${me.full_name} sent their direct deposit form.`,
+      refId: me.id,
+    });
     return res.json({
       submitted: true,
+      corrected: isCorrection,
       routing_masked: maskNumber(routing),
       account_masked: maskNumber(account),
     });
   }));
 
+  // The owner's half of the correction path: send a submitted form
+  // back so the member can fix it. The sealed record is NOT
+  // touched — it stands until the member's corrected form
+  // supersedes it. The member's bell rings with the ask.
+  router.post(`${base}/dd/send-back`, asyncHandler(async (req, res) => {
+    const { access } = await ctx(req);
+    if (!access.isOwner) throw err(403, 'forbidden', 'Only the owner manages direct deposit.');
+    await assertNotInGrace(pool(), req.params.bid);
+    const target = await personOr404(pool(), req.params.bid, String(req.body?.staff_member_id || ''));
+    const { rows } = await pool().query(
+      'SELECT * FROM direct_deposit_details WHERE business_id = $1 AND staff_member_id = $2 LIMIT 1',
+      [req.params.bid, target.id],
+    );
+    if (!rows[0] || rows[0].status !== 'submitted') {
+      throw err(400, 'invalid_value', 'That team member has not sent their details yet.');
+    }
+    await pool().query(
+      `UPDATE direct_deposit_details
+          SET correction_requested = TRUE, updated_at = NOW()
+        WHERE business_id = $1 AND staff_member_id = $2`,
+      [req.params.bid, target.id],
+    );
+    const targetUser = await userForStaffRow(pool(), target);
+    if (targetUser) {
+      await notifyUser(pool(), access.business, {
+        recipientUserId: targetUser.id,
+        recipientStaffId: target.id,
+        recipientRole: personLevel(target),
+        actorStaffId: null,
+        actorName: await ownerPublicName(pool(), access.business),
+        event: 'dd_correction_requested',
+        detail: 'The owner sent your direct deposit form back so you can fix it — open Payroll to check your details, sign, and send it again.',
+        refId: target.id,
+      });
+    }
+    return res.json({ sent_back: target.id });
+  }));
+
+  // The owner's form read — the screen behind Payroll's "View
+  // signed form" (Nov 21, 2026; this endpoint existed owner-only
+  // since the Workforce phase but no screen called it). It returns
+  // the current details, the CURRENT sealed submission in full
+  // (the operative signed form, full numbers — owner only), and
+  // the superseded history MASKED: the chain stays honest without
+  // spreading old numbers around.
   router.get(`${base}/dd/details/:staffId`, asyncHandler(async (req, res) => {
     const { access } = await ctx(req);
     if (!access.isOwner) {
@@ -1539,7 +1679,44 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
       [req.params.bid, req.params.staffId],
     );
     if (!rows[0]) throw err(404, 'not_found', 'No direct deposit details for that team member.');
-    return res.json({ details: rows[0] });
+    const member = await personOr404(pool(), req.params.bid, req.params.staffId);
+    const { rows: submissions } = await pool().query(
+      `SELECT * FROM direct_deposit_submissions
+        WHERE business_id = $1 AND staff_member_id = $2
+        ORDER BY submitted_at DESC, created_at DESC`,
+      [req.params.bid, req.params.staffId],
+    );
+    const current = submissions.find((s) => !s.superseded_at) || null;
+    const form = current
+      ? {
+          bank_name: current.bank_name,
+          account_type: current.account_type,
+          routing_number: current.routing_number,
+          account_number: current.account_number,
+          signature_name: current.signature_name,
+          signature_style: current.signature_style,
+          signed_at: current.signed_at,
+          submitted_at: current.submitted_at,
+        }
+      : null;
+    const history = submissions
+      .filter((s) => s.superseded_at)
+      .map((s) => ({
+        bank_name: s.bank_name,
+        account_type: s.account_type,
+        routing_masked: maskNumber(s.routing_number),
+        account_masked: maskNumber(s.account_number),
+        signature_name: s.signature_name,
+        signed_at: s.signed_at,
+        submitted_at: s.submitted_at,
+        superseded_at: s.superseded_at,
+      }));
+    return res.json({
+      details: rows[0],
+      member_name: member.full_name,
+      form,
+      history,
+    });
   }));
 
   // ---- Messages (Workforce inbox follow-up) ----------------------------------
