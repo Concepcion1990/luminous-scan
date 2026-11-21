@@ -5,6 +5,7 @@ import { formatMoney, loadInventory } from '@/lib/inventory';
 import { isDuplicateProduct } from '@/lib/productDuplicates';
 import { useBusiness } from '@/hooks/useBusiness';
 import useEntitlements from '@/hooks/useEntitlements';
+import useStaffAccess from '@/hooks/useStaffAccess';
 import useDataFresh from '@/hooks/useDataFresh';
 import { useCatalogVocabulary } from '@/hooks/useCatalogVocabulary';
 import ProductThumb from '@/components/products/ProductThumb';
@@ -40,7 +41,11 @@ export default function InventoryCategories() {
   // the group low counts and the per-item reorder captions render
   // only when the plan carries alerts. The counts are still
   // computed (Business needs them); Essentials never sees them.
-  const showLow = !entitlementLoading && can('alerts');
+  // The per-person layer (same day): a member sees them only
+  // with the owner's alerts.view enrollment tick — the owner
+  // always does.
+  const { can: canStaff } = useStaffAccess();
+  const showLow = !entitlementLoading && can('alerts') && canStaff('alerts.view');
   const [inventory, setInventory] = useState(null);
   const [search, setSearch] = useState('');
   const [locationId, setLocationId] = useState('');

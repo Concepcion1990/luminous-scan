@@ -59,7 +59,13 @@ export default function Dashboard() {
   // location card's low counts included — the Nov 20 sweep took every
   // low-stock surface off Essentials, Products/Inventory/Categories
   // included).
-  const showAlerts = !entitlementLoading && can('alerts');
+  // The per-person layer (owner ruling, Nov 20, 2026): on
+  // Business the alert surfaces belong to the owner, and to a
+  // member only when the owner handed them the alerts.view
+  // enrollment tick. An unticked member's Overview carries no
+  // Needs attention box, no low-stock card and no low counts —
+  // the surfaces do not exist for that person.
+  const showAlerts = !entitlementLoading && can('alerts') && canStaff('alerts.view');
   const showValuation = !entitlementLoading && can('valuation');
   // FINDING 36: a persistent quiet trial chip — the trial banner only
   // speaks at 5 days, 3 days and the last 24 hours, so on every other
