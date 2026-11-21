@@ -5010,4 +5010,13 @@ export const yue = {
   "payroll.profile.noName": "仲未有姓名記錄。",
   "apiErrors.forbidden.businessOwnerUpdateDetails": "只有企業擁有人可以更新呢啲資料。",
   "apiErrors.invalidValue.homeAddressThousandCharacters": "請將你嘅住址控制喺 1000 個字元以內。",
+  "plans.status.foundingTester": "創始測試者",
+  "plans.priceNoteFoundingTester": "唔收費 — 創始測試者可以終身免費保留 Business。",
+  "subscribe.foundingTesterNote": "呢個工作區以創始測試者身份使用 Business — 終身免費。唔使銀行卡，永遠唔收費。",
+  "upgrade.introFoundingTester": " — 創始測試者嘅工作區，終身免費，絕對唔收費。",
+  "upgrade.foundingTesterNote": "創始測試者可以終身免費保留 Business — 呢度冇可更改嘅套餐，亦冇可取消嘅訂閱。",
+  "apiErrors.foundingTester.alreadyListed": "嗰個電郵已經喺創始測試者名單入面。",
+  "apiErrors.foundingTester.listFull": "創始測試者名單已經滿咗。",
+  "apiErrors.foundingTester.notListed": "嗰個電郵唔喺創始測試者名單入面。",
+  "apiErrors.foundingTester.capWholeNumber": "上限必須係 1 或者更大嘅整數。",
 };

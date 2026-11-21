@@ -5010,4 +5010,13 @@ export const yo = {
   "payroll.profile.noName": "Kò sí orúkọ tí a kọ sílẹ̀ síbẹ̀.",
   "apiErrors.forbidden.businessOwnerUpdateDetails": "Ẹni tó ni iṣòwò nìkan ló lè ṣe àtúnṣe àlàyé wọ̀nyí.",
   "apiErrors.invalidValue.homeAddressThousandCharacters": "Jẹ́ kí àdírẹ́sì ilé rẹ jẹ́ àmì 1000 tàbí díẹ̀ sí i.",
+  "plans.status.foundingTester": "Olùdánwò olùdásílẹ̀",
+  "plans.priceNoteFoundingTester": "Kò sí owó — àwọn olùdánwò olùdásílẹ̀ ń pa Business mọ́ lọ́fẹ̀ẹ́ títí láé.",
+  "subscribe.foundingTesterNote": "Ibi iṣẹ́ yìí ní Business gẹ́gẹ́ bí olùdánwò olùdásílẹ̀ — lọ́fẹ̀ẹ́ títí láé. Kò sí káàdì, kò sí owó, láéláé.",
+  "upgrade.introFoundingTester": " — ibi iṣẹ́ olùdánwò olùdásílẹ̀, lọ́fẹ̀ẹ́ títí láé àti láìsí owó kankan.",
+  "upgrade.foundingTesterNote": "Àwọn olùdánwò olùdásílẹ̀ ń pa Business mọ́ lọ́fẹ̀ẹ́ títí láé — kò sí ètò tí a ó yí padà, kò sí ìforúkọsílẹ̀ tí a ó fagilé.",
+  "apiErrors.foundingTester.alreadyListed": "Ímeèlì yẹn ti wà lórí àkójọ àwọn olùdánwò olùdásílẹ̀.",
+  "apiErrors.foundingTester.listFull": "Àkójọ àwọn olùdánwò olùdásílẹ̀ ti kún.",
+  "apiErrors.foundingTester.notListed": "Ímeèlì yẹn kò sí lórí àkójọ àwọn olùdánwò olùdásílẹ̀.",
+  "apiErrors.foundingTester.capWholeNumber": "Ààlà gbọ́dọ̀ jẹ́ nọ́mbà odidi ti 1 tàbí jù bẹ́ẹ̀ lọ.",
 };
