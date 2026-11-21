@@ -5010,4 +5010,13 @@ export const ja = {
   "payroll.profile.noName": "氏名はまだ登録されていません。",
   "apiErrors.forbidden.businessOwnerUpdateDetails": "これらの情報を更新できるのはビジネスオーナーだけです。",
   "apiErrors.invalidValue.homeAddressThousandCharacters": "自宅住所は1000文字以内にしてください。",
+  "plans.status.foundingTester": "創設テスター",
+  "plans.priceNoteFoundingTester": "料金はかかりません — 創設テスターは Business を永久に無料で使い続けられます。",
+  "subscribe.foundingTesterNote": "このワークスペースは創設テスターとして Business を利用しています — 永久に無料です。カード不要、料金不要、ずっとです。",
+  "upgrade.introFoundingTester": " — 創設テスターのワークスペースで、永久に無料、料金は一切かかりません。",
+  "upgrade.foundingTesterNote": "創設テスターは Business を永久に無料で使い続けられます — 変更するプランも、解約するサブスクリプションもありません。",
+  "apiErrors.foundingTester.alreadyListed": "そのメールアドレスはすでに創設テスターのリストにあります。",
+  "apiErrors.foundingTester.listFull": "創設テスターのリストは満員です。",
+  "apiErrors.foundingTester.notListed": "そのメールアドレスは創設テスターのリストにありません。",
+  "apiErrors.foundingTester.capWholeNumber": "上限は1以上の整数でなければなりません。",
 };

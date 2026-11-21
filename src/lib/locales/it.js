@@ -5010,4 +5010,13 @@ export const it = {
   "payroll.profile.noName": "Nessun nome ancora registrato.",
   "apiErrors.forbidden.businessOwnerUpdateDetails": "Solo il proprietario dell'attività può aggiornare questi dati.",
   "apiErrors.invalidValue.homeAddressThousandCharacters": "Mantieni il tuo indirizzo di casa entro 1000 caratteri o meno.",
+  "plans.status.foundingTester": "Tester fondatore",
+  "plans.priceNoteFoundingTester": "Nessun addebito — i tester fondatori mantengono Business gratis per sempre.",
+  "subscribe.foundingTesterNote": "Questo spazio di lavoro ha Business come tester fondatore — gratis per sempre. Nessuna carta, nessun addebito, mai.",
+  "upgrade.introFoundingTester": " — uno spazio di lavoro da tester fondatore, gratis per sempre e senza addebiti.",
+  "upgrade.foundingTesterNote": "I tester fondatori mantengono Business gratis per sempre — non c'è nessun piano da cambiare e nessun abbonamento da annullare.",
+  "apiErrors.foundingTester.alreadyListed": "Quell'email è già nell'elenco dei tester fondatori.",
+  "apiErrors.foundingTester.listFull": "L'elenco dei tester fondatori è pieno.",
+  "apiErrors.foundingTester.notListed": "Quell'email non è nell'elenco dei tester fondatori.",
+  "apiErrors.foundingTester.capWholeNumber": "Il limite deve essere un numero intero pari o superiore a 1.",
 };
