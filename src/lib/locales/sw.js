@@ -4713,7 +4713,7 @@ export const sw = {
   "plansLib.includes.inviteLink": "Mialiko ya wafanyakazi yenye kiungo cha kujisajili kwa mguso mmoja",
   "subscribe.memberNote": "Umeingia kama mwanachama wa nafasi hii ya kazi. Ukurasa huu ni wa mmiliki wa biashara — ukihitaji chochote hapa, muulize.",
   "subscribe.memberOpenApp": "Fungua programu",
-  "apiErrors.planLimitNeutral": "Hiki hakiwezi kuongezwa sasa — nafasi hii ya kazi imefikia kikomo. Muulize mmiliki wa biashara.",
+  "apiErrors.planLimitNeutral": "Hiki hakiwezi kuongezwa sasa — muulize mmiliki wa biashara.",
   "training.lessons.owner-confidentiality.title": "Taarifa zako hubaki kuwa siri",
   "training.lessons.owner-confidentiality.step1": "Luminous StockHaven huweka taarifa zako kuwa siri kwa wafanyakazi wako. Malipo yako, jaribio lako, usajili wako na hali yako ya bili — na chochote kuhusu taarifa zako binafsi — ni vyako peke yako: wafanyakazi na mameneja hawaoni kamwe, popote katika programu.",
   "training.lessons.owner-confidentiality.step2": "Hiyo inajumuisha sehemu tulivu: hakuna kuhesabu kinyume cha jaribio juu ya kurasa zao, hakuna sehemu za mpango au bili katika Mipangilio yao, hakuna maonyo ya malipo. Mipangilio yao ni ya binafsi — akaunti yao wenyewe, usalama, mwonekano na lugha — pamoja na sehemu za ziada tu unazowachagulia. Bili kamwe si mojawapo ya alama.",
