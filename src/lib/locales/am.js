@@ -4461,7 +4461,7 @@ export const am = {
   "apiErrors.invalidValue.eachShiftNeedsWeekday": "እያንዳንዱ ፈረቃ የሳምንት ቀን (0-6) እና HH:MM የመጀመሪያ እና የመጨረሻ ጊዜዎች ይፈልጋል።",
   "apiErrors.invalidValue.emailRequired": "ኢሜይል ያስፈልጋል።",
   "apiErrors.invalidValue.enterBankName": "የባንክዎን ስም ያስገቡ።",
-  "apiErrors.invalidValue.enterGS1CompanyPrefix": "የGS1 ኩባንያ ቅድመ ቁጥርዎን ያስገቡ — ከ6 እስከ 10 አሃዞች፣ GS1 እንዳወጣው በትክክል — ወይም ባዶ ይተዉት።",
+  "apiErrors.invalidValue.enterGS1CompanyPrefix": "የGS1 ኩባንያ ቅድመ ቁጥርዎን ያስገቡ — ከ6 እስከ 11 አሃዞች፣ GS1 እንዳወጣው በትክክል — ወይም ባዶ ይተዉት።",
   "apiErrors.invalidValue.enterHowManyArrived": "ቢያንስ በአንድ መስመር ላይ ስንት እንደደረሰ ያስገቡ።",
   "apiErrors.invalidValue.enterLightspeedDomainPrefix": "የLightspeed ጎራ ቅድመ ቁጥርዎን ያስገቡ — ከ.retail.lightspeed.app በፊት ያለው ክፍል።",
   "apiErrors.invalidValue.enterStoreDomainLike": "የመደብርዎን ጎራ ያስገቡ፣ እንደ your-store.myshopify.com።",

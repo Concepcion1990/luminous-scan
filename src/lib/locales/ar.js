@@ -4461,7 +4461,7 @@ export const ar = {
   "apiErrors.invalidValue.eachShiftNeedsWeekday": "كل وردية تحتاج إلى يوم أسبوع (0-6) ووقتي بدء وانتهاء HH:MM.",
   "apiErrors.invalidValue.emailRequired": "البريد الإلكتروني مطلوب.",
   "apiErrors.invalidValue.enterBankName": "أدخل اسم البنك الخاص بك.",
-  "apiErrors.invalidValue.enterGS1CompanyPrefix": "أدخل بادئة شركة GS1 الخاصة بك — من 6 إلى 10 أرقام، تمامًا كما أصدرتها GS1 — أو اتركها فارغة.",
+  "apiErrors.invalidValue.enterGS1CompanyPrefix": "أدخل بادئة شركة GS1 الخاصة بك — من 6 إلى 11 أرقام، تمامًا كما أصدرتها GS1 — أو اتركها فارغة.",
   "apiErrors.invalidValue.enterHowManyArrived": "أدخل كم وصل في سطر واحد على الأقل.",
   "apiErrors.invalidValue.enterLightspeedDomainPrefix": "أدخل بادئة نطاق Lightspeed الخاصة بك — الجزء قبل .retail.lightspeed.app.",
   "apiErrors.invalidValue.enterStoreDomainLike": "أدخل نطاق متجرك، مثل your-store.myshopify.com.",

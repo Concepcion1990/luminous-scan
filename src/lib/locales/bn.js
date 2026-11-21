@@ -4461,7 +4461,7 @@ export const bn = {
   "apiErrors.invalidValue.eachShiftNeedsWeekday": "প্রতিটি শিফটের একটি সপ্তাহের দিন (0-6) এবং HH:MM শুরু ও শেষ সময় প্রয়োজন।",
   "apiErrors.invalidValue.emailRequired": "একটি ইমেল প্রয়োজন।",
   "apiErrors.invalidValue.enterBankName": "আপনার ব্যাংকের নাম লিখুন।",
-  "apiErrors.invalidValue.enterGS1CompanyPrefix": "আপনার GS1 কোম্পানি উপসর্গ লিখুন — 6 থেকে 10 সংখ্যা, ঠিক যেমন GS1 এটি জারি করেছিল — অথবা এটি খালি রাখুন।",
+  "apiErrors.invalidValue.enterGS1CompanyPrefix": "আপনার GS1 কোম্পানি উপসর্গ লিখুন — 6 থেকে 11 সংখ্যা, ঠিক যেমন GS1 এটি জারি করেছিল — অথবা এটি খালি রাখুন।",
   "apiErrors.invalidValue.enterHowManyArrived": "অন্তত একটি সারিতে কতগুলি এসেছে তা লিখুন।",
   "apiErrors.invalidValue.enterLightspeedDomainPrefix": "আপনার Lightspeed ডোমেইন উপসর্গ লিখুন — .retail.lightspeed.app এর আগের অংশ।",
   "apiErrors.invalidValue.enterStoreDomainLike": "আপনার দোকানের ডোমেইন লিখুন, যেমন your-store.myshopify.com।",

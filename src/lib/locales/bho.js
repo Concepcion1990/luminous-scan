@@ -4461,7 +4461,7 @@ export const bho = {
   "apiErrors.invalidValue.eachShiftNeedsWeekday": "हर शिफ्ट के हफ्ता के एक दिन (0-6) आ HH:MM शुरू आ खतम समय चाहीं।",
   "apiErrors.invalidValue.emailRequired": "एक ठो ईमेल जरूरी बा।",
   "apiErrors.invalidValue.enterBankName": "आपन बैंक के नाम डालीं।",
-  "apiErrors.invalidValue.enterGS1CompanyPrefix": "आपन GS1 कंपनी उपसर्ग डालीं — 6 से 10 अंक, बिल्कुल ओइसे जइसे GS1 जारी कइले रहे — भा ओके खाली छोड़ दीं।",
+  "apiErrors.invalidValue.enterGS1CompanyPrefix": "आपन GS1 कंपनी उपसर्ग डालीं — 6 से 11 अंक, बिल्कुल ओइसे जइसे GS1 जारी कइले रहे — भा ओके खाली छोड़ दीं।",
   "apiErrors.invalidValue.enterHowManyArrived": "कम से कम एक लाइन पर केतना आइल, डालीं।",
   "apiErrors.invalidValue.enterLightspeedDomainPrefix": "आपन Lightspeed डोमेन उपसर्ग डालीं — .retail.lightspeed.app से पहिले वाला भाग।",
   "apiErrors.invalidValue.enterStoreDomainLike": "आपन स्टोर डोमेन डालीं, जइसे your-store.myshopify.com।",
