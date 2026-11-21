@@ -5004,4 +5004,10 @@ export const it = {
   "apiErrors.invalidValue.chooseSignatureStyle": "Scegli uno stile di firma.",
   "apiErrors.invalidValue.noDdDetailsYet": "Quel membro del team non ha ancora inviato i suoi dati.",
   "training.lessons.owner-dd-setup.step5": "Ciò che arriva è un modulo sigillato e firmato: dalla riga della persona in Buste paga puoi aprirlo per leggere i numeri completi, stamparlo o salvarne una copia — non puoi mai modificarlo. Se un numero sembra sbagliato, rinvia il modulo: la persona lo corregge e lo firma di nuovo da sé, il suo modulo corretto sostituisce quello vecchio, e quello precedente resta nel registro con la sua data di sostituzione.",
+  "payroll.profile.ownerNote": "Questi sono i tuoi dati registrati, quelli del tuo account. Solo tu puoi vederli qui — e siccome sono tuoi, puoi aggiornarli qui stesso ogni volta che cambiano.",
+  "payroll.profile.edit": "Modifica i tuoi dati",
+  "payroll.profile.cancel": "Annulla",
+  "payroll.profile.noName": "Nessun nome ancora registrato.",
+  "apiErrors.forbidden.businessOwnerUpdateDetails": "Solo il proprietario dell'attività può aggiornare questi dati.",
+  "apiErrors.invalidValue.homeAddressThousandCharacters": "Mantieni il tuo indirizzo di casa entro 1000 caratteri o meno.",
 };

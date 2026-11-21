@@ -5004,4 +5004,10 @@ export const ja = {
   "apiErrors.invalidValue.chooseSignatureStyle": "署名スタイルを選んでください。",
   "apiErrors.invalidValue.noDdDetailsYet": "そのチームメンバーはまだ情報を送信していません。",
   "training.lessons.owner-dd-setup.step5": "届くのは封印された署名済みフォームです：給与計算のその人の行から開いて番号の全桁を読み、印刷したりコピーを保存したりできます — 編集することは決してできません。番号が間違っているように見える場合はフォームを返送してください：本人が自分で修正して再署名し、修正済みフォームが古いフォームに置き換わり、以前のフォームは置き換え日とともに記録に残ります。",
+  "payroll.profile.ownerNote": "これはあなた自身の登録情報で、あなたのアカウントのものです。ここで見られるのはあなただけです — そしてあなたのものなので、変わったときはいつでもここで更新できます。",
+  "payroll.profile.edit": "自分の情報を編集",
+  "payroll.profile.cancel": "キャンセル",
+  "payroll.profile.noName": "氏名はまだ登録されていません。",
+  "apiErrors.forbidden.businessOwnerUpdateDetails": "これらの情報を更新できるのはビジネスオーナーだけです。",
+  "apiErrors.invalidValue.homeAddressThousandCharacters": "自宅住所は1000文字以内にしてください。",
 };
