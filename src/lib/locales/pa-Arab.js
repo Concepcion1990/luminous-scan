@@ -4461,7 +4461,7 @@ export const paArab = {
   "apiErrors.invalidValue.eachShiftNeedsWeekday": "ہر شفٹ نوں ہفتے دا دن (0-6) تے HH:MM شروع تے اختتام ویلے چاہیدے نیں۔",
   "apiErrors.invalidValue.emailRequired": "ای میل چاہیدی اے۔",
   "apiErrors.invalidValue.enterBankName": "اپنے بینک دا ناں درج کرو۔",
-  "apiErrors.invalidValue.enterGS1CompanyPrefix": "اپنا GS1 کمپنی پریفکس درج کرو — 6 توں 10 ہندسے، بالکل جیویں GS1 نے جاری کیتا — یا اس نوں خالی چھڈو۔",
+  "apiErrors.invalidValue.enterGS1CompanyPrefix": "اپنا GS1 کمپنی پریفکس درج کرو — 6 توں 11 ہندسے، بالکل جیویں GS1 نے جاری کیتا — یا اس نوں خالی چھڈو۔",
   "apiErrors.invalidValue.enterHowManyArrived": "درج کرو کہ گھٹ توں گھٹ اک سطر تے کتنے آئے۔",
   "apiErrors.invalidValue.enterLightspeedDomainPrefix": "اپنا Lightspeed ڈومین پریفکس درج کرو — .retail.lightspeed.app توں پہلاں والا حصہ۔",
   "apiErrors.invalidValue.enterStoreDomainLike": "اپنی دکان دا ڈومین درج کرو، جیویں your-store.myshopify.com۔",

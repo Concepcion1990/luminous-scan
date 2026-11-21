@@ -4461,7 +4461,7 @@ export const mr = {
   "apiErrors.invalidValue.eachShiftNeedsWeekday": "प्रत्येक शिफ्टला आठवड्याचा दिवस (0-6) आणि HH:MM सुरुवात आणि शेवट वेळा हव्या आहेत.",
   "apiErrors.invalidValue.emailRequired": "ईमेल आवश्यक आहे.",
   "apiErrors.invalidValue.enterBankName": "तुमच्या बँकेचे नाव प्रविष्ट करा.",
-  "apiErrors.invalidValue.enterGS1CompanyPrefix": "तुमचा GS1 कंपनी उपसर्ग प्रविष्ट करा — 6 ते 10 अंक, अगदी GS1 ने दिल्याप्रमाणे — किंवा ते रिकामे ठेवा.",
+  "apiErrors.invalidValue.enterGS1CompanyPrefix": "तुमचा GS1 कंपनी उपसर्ग प्रविष्ट करा — 6 ते 11 अंक, अगदी GS1 ने दिल्याप्रमाणे — किंवा ते रिकामे ठेवा.",
   "apiErrors.invalidValue.enterHowManyArrived": "किमान एका ओळीवर किती आले ते प्रविष्ट करा.",
   "apiErrors.invalidValue.enterLightspeedDomainPrefix": "तुमचा Lightspeed डोमेन उपसर्ग प्रविष्ट करा — .retail.lightspeed.app च्या आधीचा भाग.",
   "apiErrors.invalidValue.enterStoreDomainLike": "तुमचे दुकान डोमेन प्रविष्ट करा, जसे your-store.myshopify.com.",

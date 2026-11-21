@@ -4461,7 +4461,7 @@ export const paGuru = {
   "apiErrors.invalidValue.eachShiftNeedsWeekday": "ਹਰ ਸ਼ਿਫਟ ਨੂੰ ਹਫ਼ਤੇ ਦਾ ਦਿਨ (0-6) ਅਤੇ HH:MM ਸ਼ੁਰੂ ਅਤੇ ਅੰਤ ਸਮੇਂ ਚਾਹੀਦੇ ਹਨ।",
   "apiErrors.invalidValue.emailRequired": "ਇੱਕ ਈਮੇਲ ਲੋੜੀਂਦੀ ਹੈ।",
   "apiErrors.invalidValue.enterBankName": "ਆਪਣੀ ਬੈਂਕ ਦਾ ਨਾਮ ਦਰਜ ਕਰੋ।",
-  "apiErrors.invalidValue.enterGS1CompanyPrefix": "ਆਪਣਾ GS1 ਕੰਪਨੀ ਉਪਸਰਗ ਦਰਜ ਕਰੋ — 6 ਤੋਂ 10 ਅੰਕ, ਬਿਲਕੁਲ ਜਿਵੇਂ GS1 ਨੇ ਇਸਨੂੰ ਜਾਰੀ ਕੀਤਾ ਸੀ — ਜਾਂ ਇਸਨੂੰ ਖਾਲੀ ਛੱਡੋ।",
+  "apiErrors.invalidValue.enterGS1CompanyPrefix": "ਆਪਣਾ GS1 ਕੰਪਨੀ ਉਪਸਰਗ ਦਰਜ ਕਰੋ — 6 ਤੋਂ 11 ਅੰਕ, ਬਿਲਕੁਲ ਜਿਵੇਂ GS1 ਨੇ ਇਸਨੂੰ ਜਾਰੀ ਕੀਤਾ ਸੀ — ਜਾਂ ਇਸਨੂੰ ਖਾਲੀ ਛੱਡੋ।",
   "apiErrors.invalidValue.enterHowManyArrived": "ਘੱਟੋ-ਘੱਟ ਇੱਕ ਲਾਈਨ 'ਤੇ ਕਿੰਨੇ ਆਏ, ਦਰਜ ਕਰੋ।",
   "apiErrors.invalidValue.enterLightspeedDomainPrefix": "ਆਪਣਾ Lightspeed ਡੋਮੇਨ ਉਪਸਰਗ ਦਰਜ ਕਰੋ — .retail.lightspeed.app ਤੋਂ ਪਹਿਲਾਂ ਵਾਲਾ ਹਿੱਸਾ।",
   "apiErrors.invalidValue.enterStoreDomainLike": "ਆਪਣਾ ਸਟੋਰ ਡੋਮੇਨ ਦਰਜ ਕਰੋ, ਜਿਵੇਂ your-store.myshopify.com।",

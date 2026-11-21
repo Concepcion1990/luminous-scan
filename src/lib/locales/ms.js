@@ -4461,7 +4461,7 @@ export const ms = {
   "apiErrors.invalidValue.eachShiftNeedsWeekday": "Setiap syif memerlukan hari bekerja (0-6) dan masa mula dan tamat HH:MM.",
   "apiErrors.invalidValue.emailRequired": "E-mel diperlukan.",
   "apiErrors.invalidValue.enterBankName": "Masukkan nama bank anda.",
-  "apiErrors.invalidValue.enterGS1CompanyPrefix": "Masukkan awalan syarikat GS1 anda — 6 hingga 10 digit, tepat seperti yang dikeluarkan GS1 — atau biarkan kosong.",
+  "apiErrors.invalidValue.enterGS1CompanyPrefix": "Masukkan awalan syarikat GS1 anda — 6 hingga 11 digit, tepat seperti yang dikeluarkan GS1 — atau biarkan kosong.",
   "apiErrors.invalidValue.enterHowManyArrived": "Masukkan berapa banyak yang tiba pada sekurang-kurangnya satu baris.",
   "apiErrors.invalidValue.enterLightspeedDomainPrefix": "Masukkan awalan domain Lightspeed anda — bahagian sebelum .retail.lightspeed.app.",
   "apiErrors.invalidValue.enterStoreDomainLike": "Masukkan domain kedai anda, seperti your-store.myshopify.com.",
