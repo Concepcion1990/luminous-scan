@@ -5010,4 +5010,13 @@ export const kn = {
   "payroll.profile.noName": "ಇನ್ನೂ ಯಾವುದೇ ಹೆಸರು ದಾಖಲಾಗಿಲ್ಲ.",
   "apiErrors.forbidden.businessOwnerUpdateDetails": "ವ್ಯವಹಾರದ ಮಾಲೀಕರು ಮಾತ್ರ ಈ ವಿವರಗಳನ್ನು ನವೀಕರಿಸಬಹುದು.",
   "apiErrors.invalidValue.homeAddressThousandCharacters": "ನಿಮ್ಮ ಮನೆಯ ವಿಳಾಸವನ್ನು 1000 ಅಕ್ಷರಗಳು ಅಥವಾ ಅದಕ್ಕಿಂತ ಕಡಿಮೆ ಇರಿಸಿ.",
+  "plans.status.foundingTester": "ಸಂಸ್ಥಾಪಕ ಪರೀಕ್ಷಕ",
+  "plans.priceNoteFoundingTester": "ಯಾವುದೇ ಶುಲ್ಕವಿಲ್ಲ — ಸಂಸ್ಥಾಪಕ ಪರೀಕ್ಷಕರು Business ಅನ್ನು ಎಂದೆಂದಿಗೂ ಉಚಿತವಾಗಿ ಇಟ್ಟುಕೊಳ್ಳುತ್ತಾರೆ.",
+  "subscribe.foundingTesterNote": "ಈ ಕಾರ್ಯಕ್ಷೇತ್ರವು ಸಂಸ್ಥಾಪಕ ಪರೀಕ್ಷಕರಾಗಿ Business ಅನ್ನು ಹೊಂದಿದೆ — ಎಂದೆಂದಿಗೂ ಉಚಿತ. ಯಾವುದೇ ಕಾರ್ಡ್ ಇಲ್ಲ, ಯಾವುದೇ ಶುಲ್ಕವಿಲ್ಲ, ಎಂದಿಗೂ ಇಲ್ಲ.",
+  "upgrade.introFoundingTester": " — ಒಂದು ಸಂಸ್ಥಾಪಕ ಪರೀಕ್ಷಕ ಕಾರ್ಯಕ್ಷೇತ್ರ, ಎಂದೆಂದಿಗೂ ಉಚಿತ ಮತ್ತು ಯಾವುದೇ ಶುಲ್ಕವಿಲ್ಲದೆ.",
+  "upgrade.foundingTesterNote": "ಸಂಸ್ಥಾಪಕ ಪರೀಕ್ಷಕರು Business ಅನ್ನು ಎಂದೆಂದಿಗೂ ಉಚಿತವಾಗಿ ಇಟ್ಟುಕೊಳ್ಳುತ್ತಾರೆ — ಇಲ್ಲಿ ಬದಲಾಯಿಸಲು ಯಾವುದೇ ಯೋಜನೆ ಇಲ್ಲ ಮತ್ತು ರದ್ದುಗೊಳಿಸಲು ಯಾವುದೇ ಚಂದಾದಾರಿಕೆ ಇಲ್ಲ.",
+  "apiErrors.foundingTester.alreadyListed": "ಆ ಇಮೇಲ್ ಈಗಾಗಲೇ ಸಂಸ್ಥಾಪಕ ಪರೀಕ್ಷಕರ ಪಟ್ಟಿಯಲ್ಲಿದೆ.",
+  "apiErrors.foundingTester.listFull": "ಸಂಸ್ಥಾಪಕ ಪರೀಕ್ಷಕರ ಪಟ್ಟಿ ತುಂಬಿದೆ.",
+  "apiErrors.foundingTester.notListed": "ಆ ಇಮೇಲ್ ಸಂಸ್ಥಾಪಕ ಪರೀಕ್ಷಕರ ಪಟ್ಟಿಯಲ್ಲಿಲ್ಲ.",
+  "apiErrors.foundingTester.capWholeNumber": "ಮಿತಿಯು 1 ಅಥವಾ ಅದಕ್ಕಿಂತ ಹೆಚ್ಚಿನ ಪೂರ್ಣ ಸಂಖ್ಯೆಯಾಗಿರಬೇಕು.",
 };
