@@ -5004,4 +5004,10 @@ export const esUS = {
   "apiErrors.invalidValue.chooseSignatureStyle": "Elija un estilo de firma.",
   "apiErrors.invalidValue.noDdDetailsYet": "Ese integrante del equipo aún no ha enviado sus datos.",
   "training.lessons.owner-dd-setup.step5": "Lo que llega es un formulario sellado y firmado: desde la fila de la persona en Nómina puedes abrirlo para leer los números completos, imprimirlo o guardar una copia — nunca puedes editarlo. Si un número se ve mal, devuelve el formulario: la persona lo corrige y lo firma de nuevo, su formulario corregido reemplaza al anterior, y el formulario anterior queda en el registro con su fecha de reemplazo.",
+  "payroll.profile.ownerNote": "Estos son sus propios datos registrados, de su cuenta. Solo usted puede verlos aquí — y como son suyos, puede actualizarlos aquí mismo cuando cambien.",
+  "payroll.profile.edit": "Editar sus datos",
+  "payroll.profile.cancel": "Cancelar",
+  "payroll.profile.noName": "Aún no hay nombre registrado.",
+  "apiErrors.forbidden.businessOwnerUpdateDetails": "Solo el dueño del negocio puede actualizar estos datos.",
+  "apiErrors.invalidValue.homeAddressThousandCharacters": "Su dirección de casa debe tener 1000 caracteres o menos.",
 };
