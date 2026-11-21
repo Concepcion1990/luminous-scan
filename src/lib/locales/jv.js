@@ -4713,7 +4713,7 @@ export const jv = {
   "plansLib.includes.inviteLink": "Undangan staf nganggo pranala pendaftaran siji tutul",
   "subscribe.memberNote": "Sampeyan mlebu minangka anggota ruang kerja iki. Kaca iki duweke sing duwe bisnis — yen sampeyan butuh apa-apa ing kene, takon marang dheweke.",
   "subscribe.memberOpenApp": "Bukak aplikasi",
-  "apiErrors.planLimitNeutral": "Iki ora bisa ditambahake saiki — ruang kerja iki wis tekan wates. Takon marang sing duwe bisnis.",
+  "apiErrors.planLimitNeutral": "Iki ora bisa ditambahake saiki — takon marang sing duwe bisnis.",
   "training.lessons.owner-confidentiality.title": "Informasi sampeyan tetep rahasia",
   "training.lessons.owner-confidentiality.step1": "Luminous StockHaven njaga informasi sampeyan tetep rahasia saka staf sampeyan. Pembayaran sampeyan, uji coba sampeyan, langganan sampeyan lan status tagihan sampeyan — lan apa wae babagan informasi pribadi sampeyan — iku mung duweke sampeyan dhewe: staf lan manajer ora bakal weruh, ing ngendi wae ing aplikasi.",
   "training.lessons.owner-confidentiality.step2": "Iku kalebu panggonan sing sepi: ora ana etungan mundur uji coba ing ndhuwur kaca-kacane, ora ana bagean rencana utawa tagihan ing Setelane, ora ana peringatan pembayaran. Setelane iku pribadi — akun dhewe, keamanan, tampilan lan basa — ditambah mung bagean tambahan sing sampeyan centhang kanggo dheweke. Tagihan ora tau dadi salah siji centhang.",

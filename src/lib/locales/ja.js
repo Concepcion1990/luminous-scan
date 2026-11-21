@@ -4713,7 +4713,7 @@ export const ja = {
   "plansLib.includes.inviteLink": "ワンタップ登録リンク付きのスタッフ招待",
   "subscribe.memberNote": "このワークスペースのメンバーとしてサインインしています。このページは事業主のものです — ここで何か必要な場合は、事業主にお尋ねください。",
   "subscribe.memberOpenApp": "アプリを開く",
-  "apiErrors.planLimitNeutral": "これは今追加できません — このワークスペースは上限に達しています。事業主にお尋ねください。",
+  "apiErrors.planLimitNeutral": "これは今追加できません — 事業主にお尋ねください。",
   "training.lessons.owner-confidentiality.title": "あなたの情報は秘密に保たれます",
   "training.lessons.owner-confidentiality.step1": "Luminous StockHaven は、あなたの情報をスタッフに対して秘密に保ちます。お支払い、トライアル、サブスクリプションと請求の状態 — そして個人情報に関するあらゆること — はあなただけのものです。スタッフやマネージャーがそれらを見ることは決してありません。アプリのどこにも表示されません。",
   "training.lessons.owner-confidentiality.step2": "それは静かな場所にも当てはまります。彼らのページの上にトライアルのカウントダウンはなく、設定にプランや請求のセクションはなく、支払いの警告もありません。彼らの設定は個人的なものです — 自分のアカウント、セキュリティ、外観、言語 — に加えて、あなたが彼らのためにチェックした追加セクションだけです。請求がチェックの一つになることは決してありません。",

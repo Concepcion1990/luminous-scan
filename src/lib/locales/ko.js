@@ -4713,7 +4713,7 @@ export const ko = {
   "plansLib.includes.inviteLink": "원탭 가입 링크가 있는 직원 초대",
   "subscribe.memberNote": "이 워크스페이스의 구성원으로 로그인하셨습니다. 이 페이지는 사업 소유자의 것입니다 — 여기서 필요한 것이 있으면 소유자에게 문의하세요.",
   "subscribe.memberOpenApp": "앱 열기",
-  "apiErrors.planLimitNeutral": "지금은 추가할 수 없습니다 — 이 워크스페이스가 한도에 도달했습니다. 사업 소유자에게 문의하세요.",
+  "apiErrors.planLimitNeutral": "지금은 추가할 수 없습니다 — 사업 소유자에게 문의하세요.",
   "training.lessons.owner-confidentiality.title": "회원님의 정보는 비밀로 유지됩니다",
   "training.lessons.owner-confidentiality.step1": "Luminous StockHaven은 회원님의 정보를 직원들에게 비밀로 유지합니다. 결제, 체험, 구독 및 청구 상태 — 그리고 개인 정보에 관한 모든 것 — 은 회원님만의 것입니다. 직원과 관리자는 앱 어디에서도 이를 절대 볼 수 없습니다.",
   "training.lessons.owner-confidentiality.step2": "조용한 곳도 마찬가지입니다. 그들의 페이지 위에 체험 카운트다운이 없고, 설정에 요금제나 청구 섹션이 없으며, 결제 경고도 없습니다. 그들의 설정은 개인적인 것입니다 — 본인 계정, 보안, 모양, 언어 — 에 더해 회원님이 그들을 위해 체크한 추가 섹션만 있습니다. 청구는 절대 체크 항목 중 하나가 아닙니다.",
