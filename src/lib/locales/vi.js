@@ -4713,7 +4713,7 @@ export const vi = {
   "plansLib.includes.inviteLink": "Lời mời nhân viên với liên kết đăng ký một chạm",
   "subscribe.memberNote": "Bạn đã đăng nhập với tư cách thành viên của không gian làm việc này. Trang này thuộc về chủ doanh nghiệp — nếu bạn cần gì ở đây, hãy hỏi họ.",
   "subscribe.memberOpenApp": "Mở ứng dụng",
-  "apiErrors.planLimitNeutral": "Không thể thêm cái này bây giờ — không gian làm việc này đã đạt giới hạn. Hãy hỏi chủ doanh nghiệp.",
+  "apiErrors.planLimitNeutral": "Không thể thêm cái này bây giờ — hãy hỏi chủ doanh nghiệp.",
   "training.lessons.owner-confidentiality.title": "Thông tin của bạn luôn được bảo mật",
   "training.lessons.owner-confidentiality.step1": "Luminous StockHaven giữ thông tin của bạn bí mật trước nhân viên của bạn. Các khoản thanh toán, bản dùng thử, gói đăng ký và trạng thái thanh toán của bạn — và bất cứ điều gì về thông tin cá nhân của bạn — chỉ thuộc về bạn: nhân viên và quản lý không bao giờ nhìn thấy chúng, ở bất cứ đâu trong ứng dụng.",
   "training.lessons.owner-confidentiality.step2": "Điều đó bao gồm cả những nơi thầm lặng: không có đếm ngược dùng thử trên các trang của họ, không có mục gói hay thanh toán trong Cài đặt của họ, không có cảnh báo thanh toán. Cài đặt của họ mang tính cá nhân — tài khoản của chính họ, bảo mật, giao diện và ngôn ngữ — cộng thêm chỉ những mục bổ sung mà bạn đánh dấu cho họ. Thanh toán không bao giờ là một trong các dấu tick.",

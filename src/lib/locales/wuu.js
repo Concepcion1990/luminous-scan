@@ -4713,7 +4713,7 @@ export const wuu = {
   "plansLib.includes.inviteLink": "带一键注册链接个员工邀请",
   "subscribe.memberNote": "侬已作为搿个工作区个成员登录。搿个页面是企业所有者个 — 假使侬勒这里需要啥，请问伊拉。",
   "subscribe.memberOpenApp": "打开应用",
-  "apiErrors.planLimitNeutral": "搿个现在呒没办法添加 — 搿个工作区已经到上限了。请问企业所有者。",
+  "apiErrors.planLimitNeutral": "搿个现在呒没办法添加 — 请问企业所有者。",
   "training.lessons.owner-confidentiality.title": "侬个信息保持保密",
   "training.lessons.owner-confidentiality.step1": "Luminous StockHaven 会对侬个员工保密侬个信息。侬个付款、试用、订阅搭账单状态——还有搭侬个人信息有关个任何内容——只属于侬：员工搭经理永远看勿到，应用个任何地方都勿会显示。",
   "training.lessons.owner-confidentiality.step2": "搿也包括许安静个角落：伊拉个页面上头呒没试用倒计时，伊拉个设置里向呒没套餐或者账单部分，呒没付款警告。伊拉个设置是个人性质个——伊拉自家个账户、安全、外观搭语言——再加侬为伊拉勾选个额外部分。账单永远勿会是勾选项之一。",
