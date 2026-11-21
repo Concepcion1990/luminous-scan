@@ -4622,7 +4622,7 @@ export const en = {
   "apiErrors.invalidValue.websiteAddressTooLong": "That website address is too long.",
   "apiErrors.invalidValue.enterValidContactEmail": "Enter a valid contact email, or leave it blank.",
   "apiErrors.invalidValue.enterTaxRateBetween": "Enter a tax rate between 0 and 100, with up to 4 decimal places — or leave it blank.",
-  "apiErrors.invalidValue.enterGS1CompanyPrefix": "Enter your GS1 company prefix — 6 to 10 digits, exactly as GS1 issued it — or leave it blank.",
+  "apiErrors.invalidValue.enterGS1CompanyPrefix": "Enter your GS1 company prefix — 6 to 11 digits, exactly as GS1 issued it — or leave it blank.",
   "apiErrors.codeMintExhausted.couldMintUniqueCode": "Could not mint a unique code — please try again.",
   "apiErrors.codeMintExhausted.couldMintGS1Code": "Could not mint a GS1 code — please try again.",
   "apiErrors.csrfInvalid": "That request did not carry a valid security token. Refresh and try again.",
