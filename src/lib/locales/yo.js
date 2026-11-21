@@ -5004,4 +5004,10 @@ export const yo = {
   "apiErrors.invalidValue.chooseSignatureStyle": "Yan ọ̀nà ìfọwọ́sí kan.",
   "apiErrors.invalidValue.noDdDetailsYet": "Ọmọ-ẹgbẹ́ náà kò tíì fi àlàyé rẹ̀ ránṣẹ́.",
   "training.lessons.owner-dd-setup.step5": "Ohun tí ó dé ni fọ́ọ̀mù tí a dí tí a sì fọwọ́ sí: láti orí ìlà ẹni náà nínú Ìsanwó òṣìṣẹ́ o lè ṣí i láti ka gbogbo nọ́mbà, tẹ̀ ẹ́ jáde tàbí fi ẹ̀dà kan pamọ́ — o kò ní lè ṣàtúnṣe rẹ̀ láé. Tí nọ́mbà kan bá dà bí àṣìṣe, dá fọ́ọ̀mù náà padà: ẹni náà fúnra rẹ̀ ṣàtúnṣe rẹ̀ ó sì tún fọwọ́ sí i, fọ́ọ̀mù rẹ̀ tí a ṣàtúnṣe gba ipò èyí àtijọ́, fọ́ọ̀mù àtẹ̀yìnwá sì wà nínú àkọsílẹ̀ pẹ̀lú ọjọ́ ìrọ́pò rẹ̀.",
+  "payroll.profile.ownerNote": "Àwọn wọ̀nyí ni àlàyé tìrẹ tí ó wà nínú fáìlì, láti inú àkáǹtì rẹ. Ìwọ nìkan ló lè rí wọn níbí — àti pé bí wọ́n ṣe jẹ́ tìrẹ, o lè ṣe àtúnṣe wọn níbí ganan nígbà tí wọ́n bá yípadà.",
+  "payroll.profile.edit": "Ṣàtúnṣe àlàyé rẹ",
+  "payroll.profile.cancel": "Fagilé",
+  "payroll.profile.noName": "Kò sí orúkọ tí a kọ sílẹ̀ síbẹ̀.",
+  "apiErrors.forbidden.businessOwnerUpdateDetails": "Ẹni tó ni iṣòwò nìkan ló lè ṣe àtúnṣe àlàyé wọ̀nyí.",
+  "apiErrors.invalidValue.homeAddressThousandCharacters": "Jẹ́ kí àdírẹ́sì ilé rẹ jẹ́ àmì 1000 tàbí díẹ̀ sí i.",
 };

@@ -5004,4 +5004,10 @@ export const wuu = {
   "apiErrors.invalidValue.chooseSignatureStyle": "请选择签名样式。",
   "apiErrors.invalidValue.noDdDetailsYet": "该团队成员还朆发送伊拉个信息。",
   "training.lessons.owner-dd-setup.step5": "送达个是一份已密封、已签署个表格：垃薪资里向该成员个一行，侬好打开伊查看完整账号、打印或者保存副本 — 侬永远弗好编辑伊。假使某个账号看上去弗对，请退回表格：由本人更正并重新签名，伊拉更正过个表格会替换旧表格，旧表格会连同替换日期一道保留垃记录里向。",
+  "payroll.profile.ownerNote": "搿些是侬自家存档个信息，来自侬个账户。只有侬好勒海看到 — 而且因为是侬自家个，只要有变化，侬随时好直接勒海更新。",
+  "payroll.profile.edit": "编辑侬个信息",
+  "payroll.profile.cancel": "取消",
+  "payroll.profile.noName": "还朆记录姓名。",
+  "apiErrors.forbidden.businessOwnerUpdateDetails": "只有企业所有者好更新搿些信息。",
+  "apiErrors.invalidValue.homeAddressThousandCharacters": "请拿侬个家庭住址控制勒 1000 个字符以内。",
 };
