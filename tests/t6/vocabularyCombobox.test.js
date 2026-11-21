@@ -13,7 +13,11 @@
  *    back after outside taps, which sprang the list on arrival and
  *    undid every dismissal), typing filters, the "Add new" row is
  *    LAST and is the only birth door, picks fire on pointerdown
- *    (beats the field's blur);
+ *    (beats the field's blur), while the "Add new" row itself
+ *    fires on click (Nov 20, 2026: a pointerdown opening mounted
+ *    its window under the still-pressed tap, and the tap's own
+ *    click cancelled that window inside the Categories edit
+ *    window — the A3 tap collision);
  *  - judgeVocabularyValue guards the save: typed-but-unmatched text
  *    is refused with a plain message, a matched value saves under
  *    the list's exact spelling, the value the form opened with is
@@ -65,6 +69,25 @@ test('combobox: the Add new row releases the field before the window opens', () 
   const blurAt = combobox.indexOf('inputRef.current?.blur()');
   const requestAt = combobox.indexOf('onAddNewRequest();');
   assert.ok(blurAt !== -1 && requestAt !== -1 && blurAt < requestAt, 'focus is released before the Add window is asked for');
+});
+
+test('combobox: the Add new row opens its window on click, never on pointerdown (A3 tap collision)', () => {
+  // Nov 20, 2026 (owner ruling): opening the Add window on
+  // pointerdown mounted it under the still-pressed tap, and
+  // inside the short, centered Categories edit window the same
+  // tap's click landed on the window's own Cancel — the window
+  // cancelled itself (harness-instrumented: pointerdown t=7639,
+  // mount t=7647, click on Cancel t=7738, gone t=7741). The row
+  // now requests the window from its click handler, when the
+  // summoning gesture is finished; its pointerdown only guards
+  // the tap (preventDefault — no focus move, no blur race).
+  const rowAt = combobox.indexOf('onAddNewRequest && (');
+  assert.ok(rowAt !== -1, 'the Add new row block exists');
+  const row = combobox.slice(rowAt, combobox.indexOf('</li>', rowAt));
+  assert.ok(row.includes('onPointerDown={(e) => e.preventDefault()}'), 'the row’s pointerdown only guards the tap');
+  const clickAt = row.indexOf('onClick');
+  const requestAt = row.indexOf('onAddNewRequest();');
+  assert.ok(clickAt !== -1 && requestAt > clickAt, 'the Add window is requested from the click handler, not pointerdown');
 });
 
 test('combobox: typing filters the existing options, case-insensitively', () => {

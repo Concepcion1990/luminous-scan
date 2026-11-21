@@ -26,6 +26,26 @@ import { cn } from '@/lib/utils';
  * Selection happens on pointerdown, before the input's blur, so a
  * tap can never lose the race against the list closing.
  *
+ * The "Add new" row is the one exception: it fires on CLICK, not
+ * pointerdown (Nov 20, 2026, owner ruling — the A3 tap
+ * collision). Opening the Add window on pointerdown mounted it
+ * under the still-pressed tap, and inside the short, centered
+ * Categories edit window the window's own Cancel button lands
+ * within pixels of the row's tap point — so the same tap's click
+ * half cancelled the window it had just opened (instrumented
+ * harness log: pointerdown t=7639, window mounted t=7647, click
+ * on its Cancel t=7738, window gone t=7741). A pick from the
+ * list has no such second act — the list is already gone by the
+ * click — but a window summoned on pointerdown is a fresh target
+ * for the click that follows it. On click, the summoning gesture
+ * is fully finished before the window exists, so no part of the
+ * tap remains to land on it. The row's pointerdown still
+ * preventDefaults, which is all the blur protection it needs:
+ * focus never leaves the field, so the list cannot close before
+ * the click arrives. (Keyboard activation improves too: Enter or
+ * Space on the focused row fires click, where pointerdown never
+ * fired at all.)
+ *
  * The list opens on INTENT only — a pointer tap into the field,
  * the chevron, or typing — never on focus alone (Nov 20, 2026,
  * owner catch): this picker lives inside Radix dialogs, whose
@@ -131,8 +151,12 @@ export default function VocabularyCombobox({
               <button
                 type="button"
                 className="flex w-full items-center rounded px-2 py-1.5 text-left text-sm font-medium text-primary hover:bg-accent"
-                onPointerDown={(e) => {
-                  e.preventDefault();
+                // Pointerdown only guards the tap (no focus move,
+                // no blur race); the window opens on click, when
+                // the gesture is over — see the header note on
+                // the A3 tap collision (Nov 20, 2026).
+                onPointerDown={(e) => e.preventDefault()}
+                onClick={() => {
                   setOpen(false);
                   // The Add window takes focus next; release this
                   // field first so nothing here is still holding
