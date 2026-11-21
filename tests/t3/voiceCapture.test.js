@@ -19,7 +19,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { buildVoiceWav, encodeWav16, resamplePcm, VOICE_WAV_RATE } from '../../src/lib/voiceCapture.js';
+import { buildVoiceWav, encodeWav16, resamplePcm, trimWakeHead, VOICE_WAV_RATE } from '../../src/lib/voiceCapture.js';
 import { parseVoiceDataUrl, VOICE_MAX_BYTES } from '../../server/voiceNote.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -85,6 +85,43 @@ test('the built WAV passes the real server parser as audio/wav, bytes intact', (
   assert.ok(parsed, 'the server accepts the capture the fix produces');
   assert.equal(parsed.ext, 'wav');
   assert.ok(parsed.bytes.equals(Buffer.from(wav.bytes)));
+});
+
+test('trimWakeHead: a late-waking mic\u2019s dead head comes off, the speech onset stays whole', () => {
+  // The owner's phone, in miniature (release 337): half a second
+  // of digital silence while the microphone wakes, then a word
+  // whose onset ramps up — a quiet breath, then full voice.
+  const rate = 16000;
+  const samples = new Float32Array(rate * 2);
+  const wordAt = Math.floor(0.5 * rate);
+  for (let i = 0; i < 800; i += 1) samples[wordAt + i] = 0.05; // the soft onset
+  for (let i = 800; i < 8000; i += 1) samples[wordAt + i] = 0.6; // the word itself
+  const out = trimWakeHead(samples, rate);
+  const leadIn = Math.floor(0.15 * rate);
+  assert.equal(out.length, samples.length - (wordAt - leadIn), 'only the dead head is gone');
+  assert.equal(out[leadIn], samples[wordAt], 'the soft onset is the first sound, unclipped');
+  assert.equal(out[leadIn + 800], samples[wordAt + 800], 'the full-voice body follows whole');
+  const wav = buildVoiceWav(out, rate);
+  assert.equal(wav.durationMs, Math.round((out.length / rate) * 1000), 'the sent duration counts the sent samples');
+});
+
+test('trimWakeHead: an instantly-awake mic and a silent take pass through untouched', () => {
+  const rate = 16000;
+  const instant = new Float32Array(rate).fill(0.4);
+  assert.equal(trimWakeHead(instant, rate), instant, 'sound from the first window: same array, no trim, no padding');
+  const silent = new Float32Array(rate * 3);
+  assert.equal(trimWakeHead(silent, rate), silent, 'an all-silence take keeps its recorded length');
+  const early = new Float32Array(rate);
+  early[Math.floor(0.05 * rate)] = 0.5; // sound inside the lead-in of the head
+  assert.equal(trimWakeHead(early, rate), early, 'sound within the lead-in leaves the take alone');
+});
+
+test('the capture waits for flowing audio and trims the wake head in finish()', () => {
+  const src = fs.readFileSync(path.join(here, '../../src/lib/voiceCapture.js'), 'utf8');
+  assert.match(src, /FLOW_SAMPLES/, 'begin() waits for real buffers, not just a running context');
+  assert.match(src, /flowWaiter/, 'the first-buffer arrival is what releases begin()');
+  assert.match(src, /trimWakeHead\(joined/, 'finish() returns the onset-restored samples');
+  assert.match(workforceSrc, /await capture\.begin\(\);/, 'the composer still starts the clock only after begin() resolves');
 });
 
 test('the composer captures by sample count first; MediaRecorder is only the fallback', () => {

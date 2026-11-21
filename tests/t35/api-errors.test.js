@@ -45,7 +45,7 @@ test('item 1: every apiErrors key exists in all 52 locales', async () => {
   // lesson-quiz gate) and 23 message keys — the owner's-quiz
   // refusals and validations, the lesson-quiz wordings, the
   // comment and team-record refusals.
-  assert.equal(new Set(registryKeys).size, 470); // 462 through the training builds batch (Nov 20, 2026); the profile photos batch (Nov 21, 2026) added 5 (the photo 404, the two owner-only refusals, the nothing-waiting refusal, and the owner-name length wording), for 467; the direct-deposit batch (Nov 21, 2026) added 3 (the sign-your-form wording, the signature-style wording, and the not-sent-yet wording), for 470.
+  assert.equal(new Set(registryKeys).size, 472); // 462 through the training builds batch (Nov 20, 2026); the profile photos batch (Nov 21, 2026) added 5 (the photo 404, the two owner-only refusals, the nothing-waiting refusal, and the owner-name length wording), for 467; the direct-deposit batch (Nov 21, 2026) added 3 (the sign-your-form wording, the signature-style wording, and the not-sent-yet wording), for 470; the rider batch (Nov 21, 2026) added 2 (the owner-only details refusal and the home-address length wording), for 472.
   for (const code of LOCALES) {
     const dict = await loadLocale(code);
     for (const key of registryKeys) {

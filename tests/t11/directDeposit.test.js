@@ -227,9 +227,13 @@ test('payroll context: me_profile is the caller\'s own name + address, never ano
   const theirs = await req(`${WF(business.id)}/payroll/context`, { cookie: other.cookie });
   assert.equal(theirs.json.me_profile.personal_address, '99 Other Road');
 
-  // The owner has no staff row of their own here, so no profile card data.
+  // The owner has no staff row: since the rider release (337) the
+  // owner's card is fed from their own account record instead —
+  // empty until they set their name/address, and flagged owner.
   const ownerCtx = await req(`${WF(business.id)}/payroll/context`, { cookie: ownerCookie });
-  assert.equal(ownerCtx.json.me_profile, null);
+  assert.equal(ownerCtx.json.me_profile.owner, true);
+  assert.equal(ownerCtx.json.me_profile.full_name, '');
+  assert.equal(ownerCtx.json.me_profile.personal_address, '');
 });
 
 test('offboarding purges sealed submissions with the bank details', async () => {
