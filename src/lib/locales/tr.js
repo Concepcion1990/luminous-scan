@@ -4461,7 +4461,7 @@ export const tr = {
   "apiErrors.invalidValue.eachShiftNeedsWeekday": "Her vardiyanın bir hafta günü (0-6) ve HH:MM başlangıç ve bitiş saatlerine ihtiyacı var.",
   "apiErrors.invalidValue.emailRequired": "Bir e-posta gereklidir.",
   "apiErrors.invalidValue.enterBankName": "Banka adınızı girin.",
-  "apiErrors.invalidValue.enterGS1CompanyPrefix": "GS1 şirket önekinizi girin — GS1'in verdiği gibi tam olarak 6 ila 10 basamak — veya boş bırakın.",
+  "apiErrors.invalidValue.enterGS1CompanyPrefix": "GS1 şirket önekinizi girin — GS1'in verdiği gibi tam olarak 6 ila 11 basamak — veya boş bırakın.",
   "apiErrors.invalidValue.enterHowManyArrived": "En az bir satırda kaç tane geldiğini girin.",
   "apiErrors.invalidValue.enterLightspeedDomainPrefix": "Lightspeed alan adı önekini girin — .retail.lightspeed.app öncesi kısım.",
   "apiErrors.invalidValue.enterStoreDomainLike": "Mağaza alan adınızı girin, örneğin your-store.myshopify.com.",

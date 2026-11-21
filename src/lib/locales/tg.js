@@ -4461,7 +4461,7 @@ export const tg = {
   "apiErrors.invalidValue.eachShiftNeedsWeekday": "Ҳар смена ба рӯзи ҳафта (0-6) ва вақтҳои оғоз ва анҷоми HH:MM ниёз дорад.",
   "apiErrors.invalidValue.emailRequired": "Почтаи электронӣ лозим аст.",
   "apiErrors.invalidValue.enterBankName": "Номи бонки худро ворид кунед.",
-  "apiErrors.invalidValue.enterGS1CompanyPrefix": "Префикси ширкати GS1-и худро ворид кунед — аз 6 то 10 рақам, маҳз ҳамон тавре ки GS1 додааст — ё онро холӣ гузоред.",
+  "apiErrors.invalidValue.enterGS1CompanyPrefix": "Префикси ширкати GS1-и худро ворид кунед — аз 6 то 11 рақам, маҳз ҳамон тавре ки GS1 додааст — ё онро холӣ гузоред.",
   "apiErrors.invalidValue.enterHowManyArrived": "Ворид кунед, ки чандто расид, ҳадди ақал дар як сатр.",
   "apiErrors.invalidValue.enterLightspeedDomainPrefix": "Префикси домени Lightspeed-и худро ворид кунед — қисми пеш аз .retail.lightspeed.app.",
   "apiErrors.invalidValue.enterStoreDomainLike": "Домени мағозаи худро ворид кунед, ба монанди your-store.myshopify.com.",

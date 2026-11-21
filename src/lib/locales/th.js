@@ -4379,7 +4379,7 @@ export const th = {
   "apiErrors.invalidValue.eachShiftNeedsWeekday": "แต่ละกะต้องมีวันในสัปดาห์ (0-6) และเวลาเริ่มต้นและสิ้นสุดในรูปแบบ HH:MM",
   "apiErrors.invalidValue.emailRequired": "จำเป็นต้องมีอีเมล",
   "apiErrors.invalidValue.enterBankName": "ป้อนชื่อธนาคารของคุณ",
-  "apiErrors.invalidValue.enterGS1CompanyPrefix": "ป้อนคำนำหน้าบริษัท GS1 ของคุณ — 6 ถึง 10 หลัก ตรงตามที่ GS1 ออกให้ — หรือเว้นว่างไว้",
+  "apiErrors.invalidValue.enterGS1CompanyPrefix": "ป้อนคำนำหน้าบริษัท GS1 ของคุณ — 6 ถึง 11 หลัก ตรงตามที่ GS1 ออกให้ — หรือเว้นว่างไว้",
   "apiErrors.invalidValue.enterHowManyArrived": "ป้อนจำนวนที่มาถึงในอย่างน้อยหนึ่งรายการ",
   "apiErrors.invalidValue.enterLightspeedDomainPrefix": "ป้อนคำนำหน้าโดเมน Lightspeed ของคุณ — ส่วนก่อน .retail.lightspeed.app",
   "apiErrors.invalidValue.enterStoreDomainLike": "ป้อนโดเมนร้านค้าของคุณ เช่น your-store.myshopify.com",

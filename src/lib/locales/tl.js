@@ -4461,7 +4461,7 @@ export const tl = {
   "apiErrors.invalidValue.eachShiftNeedsWeekday": "Kailangan ng bawat shift ng weekday (0-6) at HH:MM na start at end times.",
   "apiErrors.invalidValue.emailRequired": "Kailangan ng email.",
   "apiErrors.invalidValue.enterBankName": "Ilagay ang pangalan ng iyong bangko.",
-  "apiErrors.invalidValue.enterGS1CompanyPrefix": "Ilagay ang iyong GS1 company prefix — 6 hanggang 10 digit, eksakto kung paano ito inisyu ng GS1 — o iwanang blangko.",
+  "apiErrors.invalidValue.enterGS1CompanyPrefix": "Ilagay ang iyong GS1 company prefix — 6 hanggang 11 digit, eksakto kung paano ito inisyu ng GS1 — o iwanang blangko.",
   "apiErrors.invalidValue.enterHowManyArrived": "Maglagay kung ilan ang dumating sa hindi bababa sa isang line.",
   "apiErrors.invalidValue.enterLightspeedDomainPrefix": "Ilagay ang iyong Lightspeed domain prefix — ang bahagi bago ang .retail.lightspeed.app.",
   "apiErrors.invalidValue.enterStoreDomainLike": "Ilagay ang domain ng iyong tindahan, tulad ng your-store.myshopify.com.",
