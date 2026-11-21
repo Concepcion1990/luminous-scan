@@ -5010,4 +5010,13 @@ export const th = {
   "payroll.profile.noName": "ยังไม่มีชื่อในบันทึก",
   "apiErrors.forbidden.businessOwnerUpdateDetails": "เฉพาะเจ้าของธุรกิจเท่านั้นที่อัปเดตรายละเอียดเหล่านี้ได้",
   "apiErrors.invalidValue.homeAddressThousandCharacters": "โปรดใช้ที่อยู่บ้านไม่เกิน 1000 ตัวอักษร",
+  "plans.status.foundingTester": "ผู้ทดสอบผู้ก่อตั้ง",
+  "plans.priceNoteFoundingTester": "ไม่มีค่าใช้จ่าย — ผู้ทดสอบผู้ก่อตั้งเก็บ Business ไว้ฟรีตลอดไป",
+  "subscribe.foundingTesterNote": "พื้นที่ทำงานนี้มี Business ในฐานะผู้ทดสอบผู้ก่อตั้ง — ฟรีตลอดไป ไม่มีบัตร ไม่มีค่าใช้จ่าย ไม่เคยเลย",
+  "upgrade.introFoundingTester": " — พื้นที่ทำงานของผู้ทดสอบผู้ก่อตั้ง ฟรีตลอดไปและไม่มีค่าใช้จ่าย",
+  "upgrade.foundingTesterNote": "ผู้ทดสอบผู้ก่อตั้งเก็บ Business ไว้ฟรีตลอดไป — ไม่มีแผนให้เปลี่ยนและไม่มีการสมัครสมาชิกให้ยกเลิก",
+  "apiErrors.foundingTester.alreadyListed": "อีเมลนั้นอยู่ในรายชื่อผู้ทดสอบผู้ก่อตั้งแล้ว",
+  "apiErrors.foundingTester.listFull": "รายชื่อผู้ทดสอบผู้ก่อตั้งเต็มแล้ว",
+  "apiErrors.foundingTester.notListed": "อีเมลนั้นไม่อยู่ในรายชื่อผู้ทดสอบผู้ก่อตั้ง",
+  "apiErrors.foundingTester.capWholeNumber": "ขีดจำกัดต้องเป็นจำนวนเต็มตั้งแต่ 1 ขึ้นไป",
 };
