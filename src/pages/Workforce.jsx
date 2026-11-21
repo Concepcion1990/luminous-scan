@@ -806,6 +806,15 @@ function InboxTab({ businessId, ctx, people, onRead, onGoTab }) {
         // card, wording and all.
         navigate('/settings');
         break;
+      case 'dd_submitted':
+      case 'dd_corrected':
+      case 'dd_correction_requested':
+      case 'dd_invited':
+        // Direct deposit lives on the Payroll page: the owner's
+        // receiving list and the member's own form alike
+        // (Nov 21, 2026).
+        navigate('/payroll');
+        break;
       case 'clock_in':
       case 'break_out':
       case 'break_in':

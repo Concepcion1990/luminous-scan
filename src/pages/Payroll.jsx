@@ -9,9 +9,9 @@
  * (cash-up), direct deposit (details visible to the owner only)
  * and the owner-only IRS forms box.
  */
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Landmark, Printer, Send } from 'lucide-react';
+import { Landmark, PenLine, Printer, Send, Undo2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { useBusiness } from '@/hooks/useBusiness';
@@ -34,6 +34,8 @@ import {
   runPayroll,
   savePayProfile,
   savePayrollConfig,
+  sendBackDirectDeposit,
+  signatureFontFamily,
   submitDirectDeposit,
   updateWorkforceSettings,
 } from '@/lib/workforce';
@@ -619,10 +621,55 @@ function CashUpSection({ businessId }) {
   );
 }
 
+function MyProfileSection({ profile }) {
+  return (
+    <Section title={t('payroll.profile.title')} help={t('payroll.profile.note')}>
+      <dl className="grid max-w-xl gap-3 text-sm sm:grid-cols-2">
+        <div>
+          <dt className={labelCls}>{t('payroll.profile.name')}</dt>
+          <dd className="mt-0.5 font-medium">{profile.full_name}</dd>
+        </div>
+        <div>
+          <dt className={labelCls}>{t('payroll.profile.address')}</dt>
+          <dd className="mt-0.5 whitespace-pre-line">
+            {profile.personal_address ? profile.personal_address : t('payroll.profile.noAddress')}
+          </dd>
+        </div>
+      </dl>
+    </Section>
+  );
+}
+
+function SignaturePreview({ name, style, className = '' }) {
+  return (
+    <span
+      className={`inline-block text-2xl leading-tight text-stone-900 dark:text-stone-100 ${className}`}
+      style={{
+        fontFamily: signatureFontFamily(style),
+        fontStyle: style === 'italic' ? 'italic' : 'normal',
+        fontWeight: style === 'simple' ? 600 : 400,
+      }}
+    >
+      {name}
+    </span>
+  );
+}
+
 function DirectDepositSection({ businessId, ctx, people, businessName }) {
   const { toast } = useToast();
   const [data, setData] = useState(null);
-  const [form, setForm] = useState({ bank_name: '', account_type: 'checking', routing_number: '', account_number: '' });
+  const [form, setForm] = useState({
+    bank_name: '',
+    account_type: 'checking',
+    routing_number: '',
+    account_number: '',
+    signature_name: '',
+    signature_style: 'script',
+  });
+  const [fixing, setFixing] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [sendBackId, setSendBackId] = useState(null);
+  const prefilledFor = useRef(null);
   const load = useCallback(async () => {
     const result = await getDirectDeposit(businessId);
     setData(result);
@@ -630,8 +677,58 @@ function DirectDepositSection({ businessId, ctx, people, businessName }) {
   useEffect(() => {
     load().catch(() => {});
   }, [load]);
+  // Pre-fill the form from the member's standing details whenever
+  // their state changes (first invite, a send-back, a fresh
+  // signing) — never while they are mid-typing in the same state.
+  useEffect(() => {
+    const mine = data?.mine;
+    if (!mine) return;
+    const stamp = `${mine.status}:${mine.signed_at || ''}`;
+    if (prefilledFor.current === stamp) return;
+    prefilledFor.current = stamp;
+    setForm((f) => ({
+      ...f,
+      bank_name: mine.bank_name || f.bank_name,
+      account_type: mine.account_type || f.account_type,
+      signature_name: mine.signature_name || mine.full_name || f.signature_name,
+      signature_style: mine.signature_style || f.signature_style,
+    }));
+  }, [data]);
   if (!data) return null;
   const statusByPerson = Object.fromEntries((data.team || []).map((row) => [row.staff_member_id, row]));
+  const mine = data.mine;
+  const showForm = Boolean(
+    mine && data.enabled && (mine.status !== 'submitted' || fixing),
+  );
+  const signedDate = mine?.signed_at
+    ? new Date(mine.signed_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
+    : '';
+
+  const submit = async () => {
+    setBusy(true);
+    try {
+      const result = await submitDirectDeposit(businessId, form);
+      toast({ title: result?.corrected ? t('payroll.dd.correctedDone') : t('payroll.dd.submitDone') });
+      setFixing(false);
+      await load();
+    } catch (error) {
+      toast({ title: error.message || t('workforce.actionFailed'), variant: 'destructive' });
+    } finally {
+      setBusy(false);
+    }
+  };
+  const sendBack = async (person) => {
+    setSendBackId(person.id);
+    try {
+      await sendBackDirectDeposit(businessId, person.id);
+      toast({ title: t('payroll.dd.sendBackDone', { name: person.full_name }) });
+      await load();
+    } catch (error) {
+      toast({ title: error.message || t('workforce.actionFailed'), variant: 'destructive' });
+    } finally {
+      setSendBackId(null);
+    }
+  };
 
   return (
     <Section title={t('payroll.dd.title')} help={t('payroll.dd.help')}>
@@ -672,8 +769,12 @@ function DirectDepositSection({ businessId, ctx, people, businessName }) {
                   {!row
                     ? t('payroll.dd.none')
                     : row.status === 'submitted'
-                      ? `${t('payroll.dd.submitted')} · ${row.bank_name} ${row.account_masked}`
-                      : t('payroll.dd.invited')}
+                      ? `${t('payroll.dd.submitted')} · ${row.bank_name} ${row.account_masked}${
+                          row.submission_count > 1 ? ` · ${t('payroll.dd.corrected')}` : ''
+                        }`
+                      : row.status === 'correction_requested'
+                        ? t('payroll.dd.correctionWaiting')
+                        : t('payroll.dd.invited')}
                 </span>
                 {!row && (
                   <Button
@@ -689,12 +790,35 @@ function DirectDepositSection({ businessId, ctx, people, businessName }) {
                     {t('payroll.dd.invite')}
                   </Button>
                 )}
+                {row?.status === 'submitted' && (
+                  <>
+                    <Link
+                      to={`/payroll/direct-deposit-form?staff=${encodeURIComponent(person.id)}&store=${encodeURIComponent(businessName || '')}`}
+                      className="inline-flex items-center gap-1.5 rounded-md border border-input px-2.5 py-1.5 text-xs font-medium hover:bg-muted"
+                    >
+                      <PenLine className="h-3.5 w-3.5" /> {t('payroll.dd.viewForm')}
+                    </Link>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={sendBackId === person.id}
+                      onClick={() => sendBack(person)}
+                    >
+                      <Undo2 className="mr-1 h-3.5 w-3.5" /> {t('payroll.dd.sendBack')}
+                    </Button>
+                  </>
+                )}
               </li>
             );
           })}
         </ul>
       )}
-      {data.mine && data.mine.status !== 'submitted' && data.enabled && (
+      {mine?.status === 'correction_requested' && data.enabled && (
+        <div className="mt-4 rounded-md border border-amber-500/50 bg-amber-500/10 p-3 text-sm leading-relaxed">
+          {t('payroll.dd.correctionNotice')}
+        </div>
+      )}
+      {showForm && (
         <div className="mt-4 max-w-xl">
           <h3 className="text-sm font-semibold">{t('payroll.dd.mineTitle')}</h3>
           <div className="mt-2 grid gap-3 sm:grid-cols-2">
@@ -722,6 +846,7 @@ function DirectDepositSection({ businessId, ctx, people, businessName }) {
               <input
                 className={inputCls}
                 inputMode="numeric"
+                placeholder={mine?.routing_masked || ''}
                 value={form.routing_number}
                 onChange={(e) => setForm((f) => ({ ...f, routing_number: e.target.value }))}
               />
@@ -731,31 +856,69 @@ function DirectDepositSection({ businessId, ctx, people, businessName }) {
               <input
                 className={inputCls}
                 inputMode="numeric"
+                placeholder={mine?.account_masked || ''}
                 value={form.account_number}
                 onChange={(e) => setForm((f) => ({ ...f, account_number: e.target.value }))}
               />
             </div>
           </div>
-          <Button
-            className="mt-3"
-            onClick={async () => {
-              try {
-                await submitDirectDeposit(businessId, form);
-                toast({ title: t('payroll.dd.submitDone') });
-                await load();
-              } catch (error) {
-                toast({ title: error.message || t('workforce.actionFailed'), variant: 'destructive' });
-              }
-            }}
-          >
+          <div className="mt-5 rounded-md border border-border p-3">
+            <h4 className="text-sm font-semibold">{t('payroll.dd.signTitle')}</h4>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{t('payroll.dd.signHelp')}</p>
+            <p className="mt-2 text-sm leading-relaxed">{t('payroll.dd.form.auth')}</p>
+            <div className="mt-3">
+              <label className={labelCls}>{t('payroll.dd.signName')}</label>
+              <input
+                className={inputCls}
+                value={form.signature_name}
+                onChange={(e) => setForm((f) => ({ ...f, signature_name: e.target.value }))}
+              />
+            </div>
+            <p className={`${labelCls} mt-3`}>{t('payroll.dd.signStyle')}</p>
+            <div className="mt-1 grid gap-2 sm:grid-cols-3">
+              {[
+                ['script', 'payroll.dd.styleScript'],
+                ['italic', 'payroll.dd.styleItalic'],
+                ['simple', 'payroll.dd.styleSimple'],
+              ].map(([style, labelKey]) => (
+                <button
+                  key={style}
+                  type="button"
+                  onClick={() => setForm((f) => ({ ...f, signature_style: style }))}
+                  className={`rounded-md border px-3 py-2 text-left ${
+                    form.signature_style === style
+                      ? 'border-primary ring-2 ring-ring'
+                      : 'border-input hover:bg-muted'
+                  }`}
+                >
+                  <span className="block overflow-hidden">
+                    <SignaturePreview name={form.signature_name.trim() || mine?.full_name || ''} style={style} />
+                  </span>
+                  <span className="mt-1 block text-xs text-muted-foreground">{t(labelKey)}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+          <Button className="mt-3" disabled={busy} onClick={submit}>
             {t('payroll.dd.submit')}
           </Button>
         </div>
       )}
-      {data.mine?.status === 'submitted' && (
-        <p className="mt-3 text-sm text-muted-foreground">
-          {t('payroll.dd.submitted')}: {data.mine.bank_name} {data.mine.account_masked}
-        </p>
+      {mine?.status === 'submitted' && !fixing && (
+        <div className="mt-3 text-sm">
+          <p className="text-muted-foreground">
+            {t('payroll.dd.submitted')}: {mine.bank_name} {mine.account_masked}
+          </p>
+          {mine.signature_name && (
+            <p className="mt-1 text-muted-foreground">
+              {t('payroll.dd.signedAs', { name: mine.signature_name, date: signedDate })}
+            </p>
+          )}
+          <p className="mt-2 max-w-xl text-xs leading-relaxed text-muted-foreground">{t('payroll.dd.fixHelp')}</p>
+          <Button size="sm" variant="outline" className="mt-2" onClick={() => setFixing(true)}>
+            <PenLine className="mr-1 h-3.5 w-3.5" /> {t('payroll.dd.fixMistake')}
+          </Button>
+        </div>
       )}
     </Section>
   );
@@ -832,6 +995,8 @@ export default function Payroll() {
         <p className="mt-1 text-sm text-muted-foreground">{t('payroll.subtitle')}</p>
       </div>
 
+      {ctx.me_profile && <MyProfileSection profile={ctx.me_profile} />}
+
       {profiles.length > 0 && (
         <ProfilesSection businessId={activeId} profiles={profiles} canSetPay={Boolean(ctx.can_set_pay ?? ctx.is_owner)} reload={load} />
       )}
@@ -841,12 +1006,20 @@ export default function Payroll() {
           <ul className="space-y-2">
             {myStubs.map((stub) => (
               <li key={stub.id} className="rounded-md border border-border p-3 text-sm">
-                <span className="font-medium">
-                  {t('payroll.stubs.period', {
-                    start: String(stub.period_start).slice(0, 10),
-                    end: String(stub.period_end).slice(0, 10),
-                  })}
-                </span>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <span className="font-medium">
+                    {t('payroll.stubs.period', {
+                      start: String(stub.period_start).slice(0, 10),
+                      end: String(stub.period_end).slice(0, 10),
+                    })}
+                  </span>
+                  <Link
+                    to={`/payroll/stub/${encodeURIComponent(stub.id)}`}
+                    className="inline-flex items-center gap-1.5 rounded-md border border-input px-2.5 py-1.5 text-xs font-medium hover:bg-muted"
+                  >
+                    <Printer className="h-3.5 w-3.5" /> {t('payroll.stubs.print')}
+                  </Link>
+                </div>
                 <StubBreakdown stub={stub} />
               </li>
             ))}

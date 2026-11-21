@@ -230,7 +230,34 @@ export function submitDirectDeposit(businessId, values) {
   return apiRequest(`${base(businessId)}/dd/submit`, { method: 'POST', body: values });
 }
 
+export function sendBackDirectDeposit(businessId, staffId) {
+  return apiRequest(`${base(businessId)}/dd/send-back`, { method: 'POST', body: { staff_member_id: staffId } });
+}
+
+// The owner's sealed-form read (owner only, server-enforced):
+// the member's current details, their current signed form in
+// full, and the masked history of the forms it replaced.
+export function getDirectDepositForm(businessId, staffId) {
+  return apiRequest(`${base(businessId)}/dd/details/${encodeURIComponent(staffId)}`);
+}
+
 // ---- Labels --------------------------------------------------------------
+
+// The three signature styles a member can sign with (Nov 21,
+// 2026): the typed name IS the signature, rendered in the chosen
+// style on the sealed form exactly as the member saw it here.
+export const SIGNATURE_STYLES = ['script', 'italic', 'simple'];
+
+export function signatureFontFamily(style) {
+  switch (style) {
+    case 'script':
+      return "'Brush Script MT', 'Segoe Script', 'Lucida Handwriting', cursive";
+    case 'italic':
+      return "Georgia, 'Times New Roman', serif";
+    default:
+      return 'inherit';
+  }
+}
 
 export function timeOffStatusLabel(status) {
   switch (status) {

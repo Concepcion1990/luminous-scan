@@ -452,6 +452,9 @@ export const API_ERROR_MESSAGE_KEYS = {
   "This request was already decided.": "apiErrors.alreadyDecided",
   "Direct deposit is not turned on for this business yet.": "apiErrors.ddDisabled",
   "Ask the owner to send you the direct deposit request first.": "apiErrors.notInvited",
+  "Type your name to sign your direct deposit form.": "apiErrors.invalidValue.signYourForm",
+  "Choose a signature style.": "apiErrors.invalidValue.chooseSignatureStyle",
+  "That team member has not sent their details yet.": "apiErrors.invalidValue.noDdDetailsYet",
   "Custom roles are a Business feature. Essentials uses the five built-in roles — Owner, Manager, Stock clerk, Sales clerk, Viewer. Move to Business to create your own roles.": "apiErrors.customRolesBusinessOnly",
 };
 

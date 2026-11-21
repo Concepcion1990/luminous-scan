@@ -49,6 +49,7 @@ import Workforce from '@/pages/Workforce';
 import Training from '@/pages/Training';
 import Payroll from '@/pages/Payroll';
 import DirectDepositForm from '@/pages/DirectDepositForm';
+import PayStubPrint from '@/pages/PayStubPrint';
 import Purchasing from '@/pages/Purchasing';
 import Suppliers from '@/pages/Suppliers';
 import Welcome from '@/pages/Welcome';
@@ -233,6 +234,7 @@ const AuthenticatedApp = () => {
           <Route path="/training" element={<Training />} />
           <Route path="/payroll" element={<Payroll />} />
           <Route path="/payroll/direct-deposit-form" element={<DirectDepositForm />} />
+          <Route path="/payroll/stub/:stubId" element={<PayStubPrint />} />
           <Route path="/settings" element={<Settings />} />
           </Route>
         </Route>
