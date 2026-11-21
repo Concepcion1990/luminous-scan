@@ -545,6 +545,8 @@ test('direct deposit: details submit to the owner only, masked everywhere else',
       account_type: 'checking',
       routing_number: '123456789',
       account_number: '987654321',
+      signature_name: 'Sam Staff',
+      signature_style: 'script',
     },
     cookie: staff.cookie,
   });
