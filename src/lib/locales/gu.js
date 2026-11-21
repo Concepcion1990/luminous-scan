@@ -4461,7 +4461,7 @@ export const gu = {
   "apiErrors.invalidValue.eachShiftNeedsWeekday": "દરેક શિફ્ટને અઠવાડિયાનો દિવસ (0-6) અને HH:MM શરૂ અને અંત સમય જોઈએ છે.",
   "apiErrors.invalidValue.emailRequired": "ઇમેઇલ જરૂરી છે.",
   "apiErrors.invalidValue.enterBankName": "તમારી બેંકનું નામ દાખલ કરો.",
-  "apiErrors.invalidValue.enterGS1CompanyPrefix": "તમારો GS1 કંપની ઉપસર્ગ દાખલ કરો — 6 થી 10 અંકો, બરાબર જેમ GS1 એ તેને જારી કર્યો હતો — અથવા તેને ખાલી છોડો.",
+  "apiErrors.invalidValue.enterGS1CompanyPrefix": "તમારો GS1 કંપની ઉપસર્ગ દાખલ કરો — 6 થી 11 અંકો, બરાબર જેમ GS1 એ તેને જારી કર્યો હતો — અથવા તેને ખાલી છોડો.",
   "apiErrors.invalidValue.enterHowManyArrived": "ઓછામાં ઓછી એક લાઇન પર કેટલા આવ્યા તે દાખલ કરો.",
   "apiErrors.invalidValue.enterLightspeedDomainPrefix": "તમારો Lightspeed ડોમેઇન ઉપસર્ગ દાખલ કરો — .retail.lightspeed.app પહેલાંનો ભાગ.",
   "apiErrors.invalidValue.enterStoreDomainLike": "તમારું સ્ટોર ડોમેઇન દાખલ કરો, જેમ કે your-store.myshopify.com.",
