@@ -5010,4 +5010,13 @@ export const ms = {
   "payroll.profile.noName": "Tiada nama dalam rekod lagi.",
   "apiErrors.forbidden.businessOwnerUpdateDetails": "Hanya pemilik perniagaan boleh mengemas kini butiran ini.",
   "apiErrors.invalidValue.homeAddressThousandCharacters": "Pastikan alamat rumah anda 1000 aksara atau kurang.",
+  "plans.status.foundingTester": "Penguji pengasas",
+  "plans.priceNoteFoundingTester": "Tiada caj — penguji pengasas mengekalkan Business secara percuma selama-lamanya.",
+  "subscribe.foundingTesterNote": "Ruang kerja ini mempunyai Business sebagai penguji pengasas — percuma selama-lamanya. Tiada kad, tiada caj, selama-lamanya.",
+  "upgrade.introFoundingTester": " — ruang kerja penguji pengasas, percuma selama-lamanya dan tanpa sebarang caj.",
+  "upgrade.foundingTesterNote": "Penguji pengasas mengekalkan Business secara percuma selama-lamanya — tiada pelan untuk ditukar dan tiada langganan untuk dibatalkan.",
+  "apiErrors.foundingTester.alreadyListed": "E-mel itu sudah berada dalam senarai penguji pengasas.",
+  "apiErrors.foundingTester.listFull": "Senarai penguji pengasas sudah penuh.",
+  "apiErrors.foundingTester.notListed": "E-mel itu tiada dalam senarai penguji pengasas.",
+  "apiErrors.foundingTester.capWholeNumber": "Had mestilah nombor bulat 1 atau lebih.",
 };
