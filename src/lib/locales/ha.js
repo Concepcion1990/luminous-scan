@@ -5004,4 +5004,10 @@ export const ha = {
   "apiErrors.invalidValue.chooseSignatureStyle": "Zaɓi salon sa hannu.",
   "apiErrors.invalidValue.noDdDetailsYet": "Wannan memba na ƙungiyar bai aika bayanansa ba tukuna.",
   "training.lessons.owner-dd-setup.step5": "Abin da ya iso shine fom da aka rufe kuma aka sa hannu: daga layin mutumin a Biyan Albashi za ka iya buɗe shi don karanta cikakkun lambobi, buga shi ko adana kwafi — ba za ka taɓa iya gyara shi ba. Idan lamba ta yi kama da kuskure, mayar da fom ɗin: mutumin da kansa ya gyara ya sake sa hannu, fom ɗinsa da aka gyara ya maye gurbin tsohon, kuma fom ɗin baya ya kasance a cikin rubutu tare da ranar maye gurbinsa.",
+  "payroll.profile.ownerNote": "Waɗannan bayanan ka ne da ke cikin fayil, daga asusunka. Kai kaɗai za ka iya ganin su a nan — kuma tun da naka ne, za ka iya sabunta su a nan duk lokacin da suka canza.",
+  "payroll.profile.edit": "Gyara bayananka",
+  "payroll.profile.cancel": "Soke",
+  "payroll.profile.noName": "Babu suna a rubuce tukuna.",
+  "apiErrors.forbidden.businessOwnerUpdateDetails": "Mai kasuwanci ne kawai zai iya sabunta waɗannan bayanan.",
+  "apiErrors.invalidValue.homeAddressThousandCharacters": "Ka riƙe adireshin gidanka a haruffa 1000 ko ƙasa da haka.",
 };
