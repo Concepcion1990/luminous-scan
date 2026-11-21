@@ -4713,7 +4713,7 @@ export const ms = {
   "plansLib.includes.inviteLink": "Jemputan kakitangan dengan pautan pendaftaran satu ketukan",
   "subscribe.memberNote": "Anda log masuk sebagai ahli ruang kerja ini. Halaman ini milik pemilik perniagaan — jika anda memerlukan sesuatu di sini, mintalah kepadanya.",
   "subscribe.memberOpenApp": "Buka aplikasi",
-  "apiErrors.planLimitNeutral": "Ini tidak boleh ditambah sekarang — ruang kerja ini telah mencapai had. Mintalah kepada pemilik perniagaan.",
+  "apiErrors.planLimitNeutral": "Ini tidak boleh ditambah sekarang — mintalah kepada pemilik perniagaan.",
   "training.lessons.owner-confidentiality.title": "Informasi Anda tetap rahasia",
   "training.lessons.owner-confidentiality.step1": "Luminous StockHaven menjaga informasi Anda tetap rahasia dari staf Anda. Pembayaran Anda, uji coba Anda, langganan Anda dan status penagihan Anda — dan apa pun tentang informasi pribadi Anda — adalah milik Anda sendiri: staf dan manajer tidak pernah melihatnya, di mana pun di aplikasi.",
   "training.lessons.owner-confidentiality.step2": "Itu termasuk tempat-tempat yang sepi: tidak ada hitung mundur uji coba di atas halaman mereka, tidak ada bagian paket atau penagihan di Pengaturan mereka, tidak ada peringatan pembayaran. Pengaturan mereka bersifat pribadi — akun mereka sendiri, keamanan, tampilan dan bahasa — ditambah hanya bagian tambahan yang Anda centang untuk mereka. Penagihan tidak pernah menjadi salah satu centang.",
