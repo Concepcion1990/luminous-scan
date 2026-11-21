@@ -96,10 +96,14 @@ export async function planFor(pool, businessId) {
  * just stops them plainly and points at the owner. The owner
  * keeps the full wording below. Registered in the client's
  * apiErrors map (apiErrors.planLimitNeutral) so it renders in
- * the reader's language like every other error.
+ * the reader's language like every other error. (Owner's
+ * ruling, Nov 20, 2026: the earlier draft's workspace-limit
+ * clause was removed — staff are never shown that a limit
+ * was reached; the sentence now goes straight from the stop
+ * to the owner.)
  */
 export const NEUTRAL_LIMIT_MESSAGE =
-  "That can't be added right now — this workspace has reached a limit. Please ask the owner of the business.";
+  "That can't be added right now — please ask the owner of the business.";
 
 export function productLimitMessage(limit, used, { neutral = false } = {}) {
   if (neutral) return NEUTRAL_LIMIT_MESSAGE;

@@ -8,6 +8,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { memberLevelOf } from '@/lib/staff';
 import { gs1LinksForLocale } from '@/lib/gs1Links';
 import LanguagePicker from '@/components/LanguagePicker';
+import SettingsSectionNav from './SettingsSectionNav';
 import BusinessPoliciesCard from './BusinessPoliciesCard';
 import PlatformPoliciesCard from './PlatformPoliciesCard';
 import SettingsCard from './SettingsCard';
@@ -85,6 +86,41 @@ export default function PersonalSettings() {
   // business card below.
   const canContact = grants.has('settings.contactDetails') && level === 'manager';
 
+  // The policies card renders only when the owner has written
+  // something; it reports its own visibility so the section
+  // ribbon below lists exactly what is on this page. A business
+  // switch starts from visible again (the card re-reads).
+  const [policiesVisible, setPoliciesVisible] = useState(true);
+  useEffect(() => {
+    setPoliciesVisible(true);
+  }, [activeId]);
+
+  // The mobile section ribbon's chips (Nov 20, 2026): exactly
+  // the sections rendered below, in render order — granted
+  // sections appear under the same grants that render them,
+  // and the policies chip follows the policies card itself.
+  const sections = [
+    { id: 'settings-sec-security', labelKey: 'settings.security.title' },
+    { id: 'settings-sec-appearance', labelKey: 'settings.appearance.title' },
+    { id: 'settings-sec-business', labelKey: 'settings.businessCard.title' },
+    ...(policiesVisible
+      ? [{ id: 'settings-sec-policies', labelKey: 'settings.policies.title' }]
+      : []),
+    ...(canName || canDetails || canContact
+      ? [{ id: 'settings-sec-granted-details', labelKey: 'settings.details.contactTitle' }]
+      : []),
+    ...(canTaxRate
+      ? [{ id: 'settings-sec-granted-tax', labelKey: 'settings.details.taxRate' }]
+      : []),
+    ...(canGs1
+      ? [{ id: 'settings-sec-granted-gs1', labelKey: 'settings.details.gs1Prefix' }]
+      : []),
+    { id: 'settings-sec-support', labelKey: 'support.title' },
+    { id: 'settings-sec-platform-policies', labelKey: 'settings.platformPolicies.title' },
+    { id: 'settings-sec-install', labelKey: 'settings.install.title' },
+    { id: 'settings-sec-software', labelKey: 'settings.software.title' },
+  ];
+
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-4">
@@ -99,8 +135,13 @@ export default function PersonalSettings() {
         </Button>
       </div>
 
-      <SecurityCard />
+      <SettingsSectionNav sections={sections} />
 
+      <div id="settings-sec-security">
+        <SecurityCard />
+      </div>
+
+      <div id="settings-sec-appearance">
       <SettingsCard
         title={t('settings.appearance.title')}
         description={t('settings.appearance.description')}
@@ -147,35 +188,62 @@ export default function PersonalSettings() {
           <p className="text-xs text-muted-foreground">{t('settings.details.moreLanguages')}</p>
         </div>
       </SettingsCard>
+      </div>
 
-      <BusinessCardReadOnly profile={profile} showContact={!canContact} />
+      <div id="settings-sec-business">
+        <BusinessCardReadOnly profile={profile} showContact={!canContact} />
+      </div>
 
-      <BusinessPoliciesCard businessId={activeId} editable={false} />
+      {policiesVisible ? (
+        <div id="settings-sec-policies">
+          <BusinessPoliciesCard
+            businessId={activeId}
+            editable={false}
+            onVisibilityChange={setPoliciesVisible}
+          />
+        </div>
+      ) : null}
 
       {canName || canDetails || canContact ? (
-        <GrantedDetailsCard
-          businessId={activeId}
-          profile={profile}
-          canName={canName}
-          canDetails={canDetails}
-          canContact={canContact}
-          onSaved={refresh}
-        />
+        <div id="settings-sec-granted-details">
+          <GrantedDetailsCard
+            businessId={activeId}
+            profile={profile}
+            canName={canName}
+            canDetails={canDetails}
+            canContact={canContact}
+            onSaved={refresh}
+          />
+        </div>
       ) : null}
 
       {canTaxRate ? (
-        <GrantedTaxRateCard businessId={activeId} profile={profile} onSaved={refresh} />
+        <div id="settings-sec-granted-tax">
+          <GrantedTaxRateCard businessId={activeId} profile={profile} onSaved={refresh} />
+        </div>
       ) : null}
 
-      {canGs1 ? <GrantedGs1Card businessId={activeId} profile={profile} onSaved={refresh} /> : null}
+      {canGs1 ? (
+        <div id="settings-sec-granted-gs1">
+          <GrantedGs1Card businessId={activeId} profile={profile} onSaved={refresh} />
+        </div>
+      ) : null}
 
-      <SupportCard />
+      <div id="settings-sec-support">
+        <SupportCard />
+      </div>
 
-      <PlatformPoliciesCard />
+      <div id="settings-sec-platform-policies">
+        <PlatformPoliciesCard />
+      </div>
 
-      <InstallAppCard />
+      <div id="settings-sec-install">
+        <InstallAppCard />
+      </div>
 
-      <SoftwareCard />
+      <div id="settings-sec-software">
+        <SoftwareCard />
+      </div>
     </div>
   );
 }

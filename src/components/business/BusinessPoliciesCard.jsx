@@ -95,7 +95,7 @@ function readAsDataUrl(file, mime) {
   });
 }
 
-export default function BusinessPoliciesCard({ businessId, editable }) {
+export default function BusinessPoliciesCard({ businessId, editable, onVisibilityChange }) {
   const [docs, setDocs] = useState(null);
   const [loadError, setLoadError] = useState('');
 
@@ -119,7 +119,18 @@ export default function BusinessPoliciesCard({ businessId, editable }) {
   // A member with nothing written for them sees nothing at all:
   // no card, no empty headings (her ruling — if the owner wrote
   // nothing, nothing shows).
-  if (!editable && docs && docs.policies.kind === 'empty' && docs.terms.kind === 'empty') {
+  const hidden = Boolean(
+    !editable && docs && docs.policies.kind === 'empty' && docs.terms.kind === 'empty',
+  );
+  // The Settings section ribbon (Nov 20, 2026) lists exactly the
+  // sections on the viewer's page, so it follows this card's
+  // visibility: while the documents load the card's shell is on
+  // the page and so is its chip; if both documents are empty the
+  // card leaves and the chip leaves with it.
+  useEffect(() => {
+    onVisibilityChange?.(!hidden);
+  }, [hidden, onVisibilityChange]);
+  if (hidden) {
     return null;
   }
 

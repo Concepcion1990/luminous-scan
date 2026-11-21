@@ -19,6 +19,7 @@ import BusinessListCard from '@/components/business/BusinessListCard';
 import IdentityCard from '@/components/business/IdentityCard';
 import DetailsCard from '@/components/business/DetailsCard';
 import PersonalSettings from '@/components/business/PersonalSettings';
+import SettingsSectionNav from '@/components/business/SettingsSectionNav';
 import BusinessPoliciesCard from '@/components/business/BusinessPoliciesCard';
 import InstallAppCard from '@/components/business/InstallAppCard';
 import { isBoss } from '@/lib/bossAuthority';
@@ -428,6 +429,32 @@ function BossSettings() {
     );
   }
 
+  // The mobile section ribbon's chips (Nov 20, 2026): exactly
+  // the sections rendered below, in render order, each reusing
+  // its own heading string. The publisher diagnostics join the
+  // list under the same condition that renders them; the page
+  // footer at the bottom is not a section and gets no chip.
+  const sections = [
+    { id: 'settings-sec-businesses', labelKey: 'settings.businesses.title' },
+    { id: 'settings-sec-identity', labelKey: 'settings.identity.title' },
+    { id: 'settings-sec-details', labelKey: 'settings.details.contactTitle' },
+    { id: 'settings-sec-policies', labelKey: 'settings.policies.title' },
+    { id: 'settings-sec-plan', labelKey: 'plans.eyebrow' },
+    { id: 'settings-sec-security', labelKey: 'settings.security.title' },
+    { id: 'settings-sec-support', labelKey: 'support.title' },
+    { id: 'settings-sec-install', labelKey: 'settings.install.title' },
+    ...(canShowPrivateBillingDiagnostics
+      ? [
+        { id: 'settings-sec-readiness', labelKey: 'billing.readiness.title' },
+        { id: 'settings-sec-dry-run', labelKey: 'billing.dryRun.title' },
+      ]
+      : []),
+    { id: 'settings-sec-subscription', labelKey: 'settings.subscription.title' },
+    { id: 'settings-sec-appearance', labelKey: 'settings.appearance.title' },
+    { id: 'settings-sec-delete', labelKey: 'settings.delete.title' },
+    { id: 'settings-sec-software', labelKey: 'settings.software.title' },
+  ];
+
   // The policy effective dates come from the policy modules, never
   // hardcoded here, so this line cannot go stale when a policy bumps.
   const policyEffectiveLine =
@@ -469,38 +496,63 @@ function BossSettings() {
         </p>
       )}
 
-      <BusinessListCard
-        onRenamed={(businessId, name) => {
-          if (businessId !== activeId) return;
-          setValues((current) => (current ? { ...current, name } : current));
-          setSyncedName(name);
-        }}
-      />
+      <SettingsSectionNav sections={sections} />
 
-      <IdentityCard
-        values={values}
-        onChange={setValues}
-        onLogoSelected={uploadLogo}
-        uploading={uploading}
-      />
+      <div id="settings-sec-businesses">
+        <BusinessListCard
+          onRenamed={(businessId, name) => {
+            if (businessId !== activeId) return;
+            setValues((current) => (current ? { ...current, name } : current));
+            setSyncedName(name);
+          }}
+        />
+      </div>
 
-      <DetailsCard values={values} onChange={setValues} onPreferenceChange={applyPreference} />
+      <div id="settings-sec-identity">
+        <IdentityCard
+          values={values}
+          onChange={setValues}
+          onLogoSelected={uploadLogo}
+          uploading={uploading}
+        />
+      </div>
 
-      <BusinessPoliciesCard businessId={activeId} editable />
+      <div id="settings-sec-details">
+        <DetailsCard values={values} onChange={setValues} onPreferenceChange={applyPreference} />
+      </div>
 
-      <PlanSummaryCard />
+      <div id="settings-sec-policies">
+        <BusinessPoliciesCard businessId={activeId} editable />
+      </div>
 
-      <SecurityCard />
+      <div id="settings-sec-plan">
+        <PlanSummaryCard />
+      </div>
 
-      <SupportCard />
+      <div id="settings-sec-security">
+        <SecurityCard />
+      </div>
 
-      <InstallAppCard showOwnerNote />
+      <div id="settings-sec-support">
+        <SupportCard />
+      </div>
+
+      <div id="settings-sec-install">
+        <InstallAppCard showOwnerNote />
+      </div>
 
       {canShowPrivateBillingDiagnostics && (
-        <EssentialsCheckoutReadinessDiagnostic businessId={activeId} />
+        <div id="settings-sec-readiness">
+          <EssentialsCheckoutReadinessDiagnostic businessId={activeId} />
+        </div>
       )}
-      {canShowPrivateBillingDiagnostics && <UpgradeDryRunPanel />}
+      {canShowPrivateBillingDiagnostics && (
+        <div id="settings-sec-dry-run">
+          <UpgradeDryRunPanel />
+        </div>
+      )}
 
+      <div id="settings-sec-subscription">
       <SettingsCard
         title={t('settings.subscription.title')}
         description={t('settings.subscription.description')}
@@ -649,7 +701,9 @@ function BossSettings() {
           />
         </div>
       </SettingsCard>
+      </div>
 
+      <div id="settings-sec-appearance">
       <SettingsCard
         title={t('settings.appearance.title')}
         description={t('settings.appearance.description')}
@@ -691,7 +745,9 @@ function BossSettings() {
           {t('settings.appearance.remembered')}
         </p>
       </SettingsCard>
+      </div>
 
+      <div id="settings-sec-delete">
       <SettingsCard
         title={t('settings.delete.title')}
         description={t('settings.delete.description')}
@@ -795,8 +851,11 @@ function BossSettings() {
           </>
         )}
       </SettingsCard>
+      </div>
 
-      <SoftwareCard />
+      <div id="settings-sec-software">
+        <SoftwareCard />
+      </div>
 
       <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
         <p className="text-xs leading-relaxed text-muted-foreground">
