@@ -463,7 +463,7 @@ export default function BulkEditDialog({
             <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
               {t('products.bulkNumbers')}
             </p>
-            <div className="grid gap-3 sm:grid-cols-3">
+            <div className={`grid gap-3 ${planKey === 'business' ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
               <div className="grid gap-2">
                 <Label htmlFor="bulk-price">{t('products.bulkPrice')}</Label>
                 <Input
@@ -488,18 +488,25 @@ export default function BulkEditDialog({
                   className="font-mono"
                 />
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="bulk-reorder">{t('products.bulkReorder')}</Label>
-                <Input
-                  id="bulk-reorder"
-                  type="number"
-                  inputMode="numeric"
-                  value={form.reorder}
-                  onChange={set('reorder')}
-                  placeholder={t('products.leaveUnchanged')}
-                  className="font-mono"
-                />
-              </div>
+              {/* Low stock is a Business surface (owner ruling, Nov 20,
+                  2026): off Business the Reorder point field does not
+                  render, so its value stays empty and neither the
+                  change summary nor the patch can carry a reorder
+                  write. Stored reorder points are never touched. */}
+              {planKey === 'business' && (
+                <div className="grid gap-2">
+                  <Label htmlFor="bulk-reorder">{t('products.bulkReorder')}</Label>
+                  <Input
+                    id="bulk-reorder"
+                    type="number"
+                    inputMode="numeric"
+                    value={form.reorder}
+                    onChange={set('reorder')}
+                    placeholder={t('products.leaveUnchanged')}
+                    className="font-mono"
+                  />
+                </div>
+              )}
             </div>
             <p className="text-[11px] leading-snug text-muted-foreground">
               {t('products.bulkNumbersHint')}

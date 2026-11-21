@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import PhotoGallery from '@/components/products/PhotoGallery';
 import { buildLocationTree, locationPath } from '@/lib/locations';
 import { formatMoney, getLevelsForProduct } from '@/lib/inventory';
+import useEntitlements from '@/hooks/useEntitlements';
 import { t } from '@/lib/i18n';
 
 import {
@@ -23,6 +24,11 @@ function Row({ label, value }) {
 
 /** Read-only product sheet: opened from a product name anywhere in the app. */
 export default function ProductDetailsDialog({ product, locations = [], currency = 'USD', open, onOpenChange }) {
+  // Low stock is a Business surface (owner ruling, Nov 20, 2026):
+  // the reorder stat and the Reorder at row show only when the
+  // plan carries alerts. The stored value itself is untouched.
+  const { can } = useEntitlements();
+  const canAlerts = can('alerts');
   const [levels, setLevels] = useState([]);
   const { byId } = buildLocationTree(locations);
 
@@ -83,10 +89,12 @@ export default function ProductDetailsDialog({ product, locations = [], currency
                   {levels.reduce((sum, level) => sum + (level.quantity || 0), 0)}
                 </p>
               </div>
-              <div>
-                <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">{t('productDetails.reorderLabel')}</p>
-                <p className="numeric text-base font-semibold">{product.reorder_point || 0}</p>
-              </div>
+              {canAlerts && (
+                <div>
+                  <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">{t('productDetails.reorderLabel')}</p>
+                  <p className="numeric text-base font-semibold">{product.reorder_point || 0}</p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -120,7 +128,7 @@ export default function ProductDetailsDialog({ product, locations = [], currency
             <Row
               label={t('productDetails.rowReorderAt')}
               value={
-                product.reorder_point
+                canAlerts && product.reorder_point
                   ? t('productDetails.reorderAtValue', {
                       point: product.reorder_point,
                       unit: product.unit || t('productDetails.unitEach'),

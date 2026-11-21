@@ -52,6 +52,18 @@ export const UPDATE_FIELDS = [
   { key: 'status', get label() { return t('importLib.updateField.status'); }, kind: 'status' },
 ];
 
+/**
+ * The update targets a plan may see (owner ruling, Nov 20, 2026):
+ * the reorder point is a Business low-stock surface, so off
+ * Business it is not offered as a mapping target and not printed
+ * in the downloadable template. Stored values are never touched.
+ */
+export function updateFieldsForPlan(planKey) {
+  return planKey === 'business'
+    ? UPDATE_FIELDS
+    : UPDATE_FIELDS.filter((field) => field.key !== 'reorder_point');
+}
+
 /** Fields a stock-receipt sheet can carry. */
 export const RECEIVE_FIELDS = [
   { key: 'id', get label() { return t('importLib.receiveField.id'); }, kind: 'id' },

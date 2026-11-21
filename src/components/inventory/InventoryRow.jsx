@@ -4,8 +4,14 @@ import { t } from '@/lib/i18n';
 import ProductThumb from '@/components/products/ProductThumb';
 import { Button } from '@/components/ui/button';
 
-/** One product in the inventory list: what is on hand, where, and how to change it. */
-export default function InventoryRow({ product, levels = [], locations = [], onAdjust, canAdjust = false }) {
+/**
+ * One product in the inventory list: what is on hand, where, and how to change it.
+ * The reorder caption + warn color are the Business low-stock surface
+ * (owner ruling, Nov 20, 2026): the caller passes showReorder only
+ * when the plan carries alerts; otherwise the row reads exactly as
+ * it does for a product with no reorder point.
+ */
+export default function InventoryRow({ product, levels = [], locations = [], onAdjust, canAdjust = false, showReorder = false }) {
   const total = levels.reduce((sum, level) => sum + (level.quantity || 0), 0);
   const held = levels.reduce((sum, level) => sum + (level.reserved || 0), 0);
   const placed = locations
@@ -14,7 +20,7 @@ export default function InventoryRow({ product, levels = [], locations = [], onA
       level: levels.find((entry) => entry.location_id === location.id),
     }))
     .filter((entry) => (entry.level?.quantity || 0) > 0);
-  const atReorder = (product.reorder_point || 0) > 0 && total <= product.reorder_point;
+  const atReorder = showReorder && (product.reorder_point || 0) > 0 && total <= product.reorder_point;
 
   return (
     <div className="flex items-start gap-3 border-b border-border px-3 py-3 last:border-b-0 sm:px-4">

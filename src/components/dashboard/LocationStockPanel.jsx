@@ -3,8 +3,13 @@ import { ArrowUpRight } from 'lucide-react';
 import PanelHeading from '@/components/dashboard/PanelHeading';
 import { t } from '@/lib/i18n';
 
-/** Units held per location, with a bar scaled to the fullest place. */
-export default function LocationStockPanel({ perLocation = [] }) {
+/**
+ * Units held per location, with a bar scaled to the fullest place.
+ * The per-location low counts are the Business low-stock surface
+ * (owner ruling, Nov 20, 2026): the caller passes showLow only when
+ * the plan carries alerts, and off Business the counts never render.
+ */
+export default function LocationStockPanel({ perLocation = [], showLow = false }) {
   const maxUnits = Math.max(...perLocation.map((row) => row.units), 1);
 
   return (
@@ -47,7 +52,7 @@ export default function LocationStockPanel({ perLocation = [] }) {
               </div>
               <span className="font-mono text-[10px] text-muted-foreground">
                 {t('dashboard.skusCount', { count: row.skus })}
-                {row.low > 0 && <span className="ml-2 text-warn">{t('dashboard.lowCount', { count: row.low })}</span>}
+                {showLow && row.low > 0 && <span className="ml-2 text-warn">{t('dashboard.lowCount', { count: row.low })}</span>}
               </span>
             </div>
           </div>

@@ -26,6 +26,21 @@ export const IMPORT_FIELDS = [
   { key: 'description', get label() { return t('importLib.field.description'); } },
 ];
 
+/**
+ * The mapping targets a plan may see (owner ruling, Nov 20, 2026):
+ * the reorder point is a Business low-stock surface, so off
+ * Business it is not offered as a mapping target and not printed
+ * in the downloadable template. A reorder column that arrives in
+ * a sheet anyway is simply never mapped there — the parse path
+ * below is unchanged, and any value that reaches a product
+ * through another path still stores harmlessly.
+ */
+export function importFieldsForPlan(planKey) {
+  return planKey === 'business'
+    ? IMPORT_FIELDS
+    : IMPORT_FIELDS.filter((field) => field.key !== 'reorder_point');
+}
+
 const UNITS = ['each', 'case', 'pair', 'pack', 'kg'];
 
 const SYNONYMS = {

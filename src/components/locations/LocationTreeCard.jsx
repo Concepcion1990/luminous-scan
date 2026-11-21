@@ -7,7 +7,12 @@ import { Button } from '@/components/ui/button';
 
 const kindIcon = { store: Store, warehouse: Warehouse, van: Truck, other: Building2 };
 
-/** One top-level location with its totals (including everything nested inside). */
+/**
+ * One top-level location with its totals (including everything nested inside).
+ * The LOW stat is the Business low-stock surface (owner ruling,
+ * Nov 20, 2026): the caller passes showLow only when the plan
+ * carries alerts; off Business the stat never renders.
+ */
 export default function LocationTreeCard({
   location,
   locations = [],
@@ -15,6 +20,7 @@ export default function LocationTreeCard({
   productById,
   onEdit,
   onAddChild,
+  showLow = false,
 }) {
   const ids = new Set(descendantIds(locations, location.id));
   const own = levels.filter((level) => ids.has(level.location_id));
@@ -76,7 +82,7 @@ export default function LocationTreeCard({
         </div>
       </div>
 
-      <div className="mt-4 grid grid-cols-3 gap-2 border-t border-border pt-3">
+      <div className={`mt-4 grid ${showLow ? 'grid-cols-3' : 'grid-cols-2'} gap-2 border-t border-border pt-3`}>
         <div>
           <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">{t('locations.unitsLabel')}</p>
           <p className="numeric text-lg font-semibold">{units.toLocaleString()}</p>
@@ -85,10 +91,12 @@ export default function LocationTreeCard({
           <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">{t('locations.skusLabel')}</p>
           <p className="numeric text-lg font-semibold">{skus}</p>
         </div>
-        <div>
-          <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">{t('locations.lowLabel')}</p>
-          <p className={`numeric text-lg font-semibold ${low > 0 ? 'text-warn' : ''}`}>{low}</p>
-        </div>
+        {showLow && (
+          <div>
+            <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">{t('locations.lowLabel')}</p>
+            <p className={`numeric text-lg font-semibold ${low > 0 ? 'text-warn' : ''}`}>{low}</p>
+          </div>
+        )}
       </div>
 
       {location.address && (
