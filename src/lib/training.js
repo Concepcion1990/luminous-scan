@@ -29,6 +29,70 @@ export function getTeamProgress(businessId) {
   return apiRequest(`${base(businessId)}/team`);
 }
 
+// ---- The per-lesson quiz + comments (Nov 20, 2026) -------------------------
+
+export function getLessonQuiz(businessId, lessonId) {
+  return apiRequest(`${base(businessId)}/lessons/${encodeURIComponent(lessonId)}/quiz`);
+}
+
+export function submitLessonQuiz(businessId, lessonId, answers) {
+  return apiRequest(`${base(businessId)}/lessons/${encodeURIComponent(lessonId)}/quiz`, {
+    method: 'POST',
+    body: { answers },
+  });
+}
+
+export function addLessonComment(businessId, lessonId, body) {
+  return apiRequest(`${base(businessId)}/lessons/${encodeURIComponent(lessonId)}/comments`, {
+    method: 'POST',
+    body: { body },
+  });
+}
+
+export function getTeamMemberResults(businessId, staffId) {
+  return apiRequest(`${base(businessId)}/team/${encodeURIComponent(staffId)}/results`);
+}
+
+// ---- The owner's policy quiz (Nov 20, 2026) ---------------------------------
+
+const policyBase = (businessId) => `/api/businesses/${encodeURIComponent(businessId)}/policy-quiz`;
+
+export function getPolicyQuestions(businessId, kind) {
+  return apiRequest(`${policyBase(businessId)}/questions/${encodeURIComponent(kind)}`);
+}
+
+export function savePolicyQuestions(businessId, kind, values) {
+  return apiRequest(`${policyBase(businessId)}/questions/${encodeURIComponent(kind)}`, {
+    method: 'PUT',
+    body: values,
+  });
+}
+
+export function getPolicyTraining(businessId, kind) {
+  return apiRequest(`${policyBase(businessId)}/training/${encodeURIComponent(kind)}`);
+}
+
+export function checkPolicyAnswer(businessId, kind, questionId, choiceIndex) {
+  return apiRequest(`${policyBase(businessId)}/training/${encodeURIComponent(kind)}/check`, {
+    method: 'POST',
+    body: { question_id: questionId, choice_index: choiceIndex },
+  });
+}
+
+export function submitPolicyTraining(businessId, kind, answers) {
+  return apiRequest(`${policyBase(businessId)}/training/${encodeURIComponent(kind)}/submit`, {
+    method: 'POST',
+    body: { answers },
+  });
+}
+
+export function reviewPolicyAttempt(businessId, attemptId, values) {
+  return apiRequest(`${policyBase(businessId)}/attempts/${encodeURIComponent(attemptId)}/review`, {
+    method: 'POST',
+    body: values,
+  });
+}
+
 export function assignTraining(businessId, values) {
   return apiRequest(`${base(businessId)}/assignments`, { method: 'POST', body: values });
 }

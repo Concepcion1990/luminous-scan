@@ -564,8 +564,10 @@ function TimeOffTab({ businessId, ctx, peopleById }) {
 
 function TasksTab({ businessId, ctx, people, peopleById }) {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [tasks, setTasks] = useState([]);
-  const [form, setForm] = useState({ staff_member_id: '', title: '', notes: '', due_date: '' });
+  const [form, setForm] = useState({ staff_member_id: '', title: '', notes: '', due_date: '', kind: 'task' });
+  const [stopTask, setStopTask] = useState(null);
   const load = useCallback(async () => {
     const data = await listTasks(businessId);
     setTasks(data.tasks ?? []);
@@ -579,7 +581,7 @@ function TasksTab({ businessId, ctx, people, peopleById }) {
     try {
       await createTask(businessId, { ...form, due_date: form.due_date || null });
       toast({ title: t('workforce.tasks.added') });
-      setForm({ staff_member_id: '', title: '', notes: '', due_date: '' });
+      setForm({ staff_member_id: '', title: '', notes: '', due_date: '', kind: 'task' });
       await load();
     } catch (error) {
       toast({ title: error.message || t('workforce.actionFailed'), variant: 'destructive' });
@@ -590,6 +592,14 @@ function TasksTab({ businessId, ctx, people, peopleById }) {
       await setTaskStatus(businessId, task.id, task.status === 'done' ? 'open' : 'done');
       await load();
     } catch (error) {
+      // The training gate (Nov 20, 2026): a training task's Done
+      // refused because the person's training is unfinished —
+      // show the stop dialog with a door back to the training
+      // instead of a bare error.
+      if (error?.data?.error === 'training_incomplete') {
+        setStopTask(task);
+        return;
+      }
       toast({ title: error.message || t('workforce.actionFailed'), variant: 'destructive' });
     }
   };
@@ -639,6 +649,15 @@ function TasksTab({ businessId, ctx, people, peopleById }) {
                 onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
               />
             </div>
+            <label className="flex items-start gap-2 text-sm leading-snug sm:col-span-2">
+              <input
+                type="checkbox"
+                className="mt-0.5"
+                checked={form.kind === 'training'}
+                onChange={(e) => setForm((f) => ({ ...f, kind: e.target.checked ? 'training' : 'task' }))}
+              />
+              <span>{t('workforce.tasks.trainingTask')}</span>
+            </label>
           </div>
           <Button className="mt-3" onClick={add} disabled={!form.staff_member_id || !form.title}>
             {t('workforce.tasks.add')}
@@ -669,6 +688,31 @@ function TasksTab({ businessId, ctx, people, peopleById }) {
           </ul>
         )}
       </Section>
+      {stopTask && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true">
+          <div className="w-full max-w-sm rounded-xl border border-border bg-card p-5 shadow-lg">
+            <h3 className="font-heading text-lg font-semibold">{t('workforce.tasks.notYetTitle')}</h3>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              {t('workforce.tasks.notYetBody', {
+                name: peopleById[stopTask.staff_member_id]?.full_name || '',
+              })}
+            </p>
+            <div className="mt-4 flex flex-wrap justify-end gap-2">
+              <Button variant="outline" onClick={() => setStopTask(null)}>
+                {t('ui.close')}
+              </Button>
+              <Button
+                onClick={() => {
+                  setStopTask(null);
+                  navigate('/training');
+                }}
+              >
+                {t('workforce.tasks.goTraining')}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -344,9 +344,28 @@ export function isLowStockGrant(key) {
   return LOW_STOCK_GRANT_KEYS.includes(key);
 }
 
-/** Any per-member grant key (Settings sections + returns + products + locations + roster + low stock). */
+/**
+ * Owner-granted policy trainings (Nov 20, 2026): TWO sibling
+ * ticks, one per owner document. Reading the Store Policies and
+ * the Terms stays core for everyone — these ticks assign only
+ * the QUIZ training the owner builds beside each document in
+ * Settings. Off by default, in no preset, either plan (the
+ * documents live on both).
+ */
+export const TRAINING_GRANTS = [
+  { key: 'training.policiesQuiz', get label() { return t('staffLib.perm.trainingPoliciesQuiz'); } },
+  { key: 'training.termsQuiz', get label() { return t('staffLib.perm.trainingTermsQuiz'); } },
+];
+
+export const TRAINING_GRANT_KEYS = TRAINING_GRANTS.map((grant) => grant.key);
+
+export function isTrainingGrant(key) {
+  return TRAINING_GRANT_KEYS.includes(key);
+}
+
+/** Any per-member grant key (Settings sections + returns + products + locations + roster + low stock + policy trainings). */
 export function isMemberGrant(key) {
-  return isSettingsGrant(key) || isReturnsGrant(key) || isProductsGrant(key) || isLocationsGrant(key) || isRosterGrant(key) || isLowStockGrant(key);
+  return isSettingsGrant(key) || isReturnsGrant(key) || isProductsGrant(key) || isLocationsGrant(key) || isRosterGrant(key) || isLowStockGrant(key) || isTrainingGrant(key);
 }
 
 /** A member row's level, mirroring the server's personLevel. */

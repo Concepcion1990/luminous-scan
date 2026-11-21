@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/client';
 import { Loader2, TriangleAlert } from 'lucide-react';
-import { allRoles, BUSINESS_ONLY_PERMISSIONS, isLocationsGrant, isLowStockGrant, isMemberGrant, isProductsGrant, isReturnsGrant, isRosterGrant, isSettingsGrant, LOCATIONS_GRANTS, LOW_STOCK_GRANTS, PRODUCTS_GRANTS, RETURNS_GRANTS, ROSTER_GRANTS, roleById, SETTINGS_GRANTS, STATUS_OPTIONS } from '@/lib/staff';
+import { allRoles, BUSINESS_ONLY_PERMISSIONS, isLocationsGrant, isLowStockGrant, isMemberGrant, isProductsGrant, isReturnsGrant, isRosterGrant, isSettingsGrant, isTrainingGrant, LOCATIONS_GRANTS, LOW_STOCK_GRANTS, PRODUCTS_GRANTS, RETURNS_GRANTS, ROSTER_GRANTS, roleById, SETTINGS_GRANTS, STATUS_OPTIONS, TRAINING_GRANTS } from '@/lib/staff';
 import { Checkbox } from '@/components/ui/checkbox';
 import { createStaffMember } from '@/lib/entitlements';
 import { fixStaffEmail } from '@/lib/recovery';
@@ -81,6 +81,12 @@ const emptyForm = (customRoles, stripBusinessOnly = (permissions) => permissions
     // ride the save either way, so an Essentials edit never
     // wipes a tick stored earlier.
     lowstock_grants: [],
+    // Owner-granted policy trainings (Nov 20, 2026): TWO sibling
+    // per-member ticks — the quiz training on the owner's Store
+    // Policies, and the one on her Terms & Conditions. Reading
+    // the documents stays core for everyone; the ticks assign
+    // only the quiz trainings. Off by default for everyone.
+    training_grants: [],
     status: 'invited',
     location_id: '',
     location_name: '',
@@ -172,6 +178,9 @@ export default function StaffMemberDialog({
             ),
             lowstock_grants: (Array.isArray(member.permissions) ? member.permissions : []).filter(
               (key) => isLowStockGrant(key)
+            ),
+            training_grants: (Array.isArray(member.permissions) ? member.permissions : []).filter(
+              (key) => isTrainingGrant(key)
             ),
             status: member.status || 'invited',
             location_id: member.location_id || '',
@@ -279,6 +288,7 @@ export default function StaffMemberDialog({
           ...(form.locations_grants || []),
           ...(form.roster_grants || []),
           ...(form.lowstock_grants || []),
+          ...(form.training_grants || []),
         ],
         status: form.status,
         location_id: form.location_id || '',
@@ -734,6 +744,40 @@ export default function StaffMemberDialog({
               </p>
             </div>
           )}
+
+          {/* Owner-granted policy trainings (Nov 20, 2026): TWO
+              sibling ticks, one per owner document. Reading the
+              Store Policies and the Terms is core for everyone —
+              these ticks assign only the quiz training the owner
+              builds beside each document in Settings. Offered for
+              every role, off by default, on both plans. */}
+          <div className="space-y-1.5">
+            <Label>{t('staffLib.area.trainingAccess')}</Label>
+            <div className="rounded-lg border border-border p-2.5">
+              <div className="grid gap-1.5">
+                {TRAINING_GRANTS.map((grant) => (
+                  <label key={grant.key} className="flex items-start gap-2 text-xs leading-snug">
+                    <Checkbox
+                      checked={(form.training_grants || []).includes(grant.key)}
+                      onCheckedChange={(on) =>
+                        setForm((c) => ({
+                          ...c,
+                          training_grants: on
+                            ? [...new Set([...(c.training_grants || []), grant.key])]
+                            : (c.training_grants || []).filter((key) => key !== grant.key),
+                        }))
+                      }
+                      className="mt-0.5"
+                    />
+                    <span>{grant.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            <p className="text-[11px] text-muted-foreground">
+              {t('staff.memberDialog.trainingAccessHint')}
+            </p>
+          </div>
 
           {canHire && (
             <>

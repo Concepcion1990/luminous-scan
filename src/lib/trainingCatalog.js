@@ -60,12 +60,13 @@ export const TRAINING_MODULES = [
 ];
 
 export const TRAINING_LESSONS = [
-  { id: 'welcome-basics', track: 'staff', module: 'getting-started', steps: 5 , visuals: [
+  { id: 'welcome-basics', track: 'staff', module: 'getting-started', steps: 6 , visuals: [
       { route: '/', target: '[data-tour="overview"]' },
       { route: '/', target: '[data-tour="all-screens"]', door: true },
       { route: '/', target: '[data-tour="all-screens"]', door: true },
       null,
       { route: '/settings' },
+      null,
     ] },
   { id: 'your-language', track: 'staff', module: 'language', steps: 4 },
   { id: 'scanner-lookup', track: 'staff', module: 'scanner', steps: 4 , visuals: [
@@ -149,6 +150,7 @@ export const TRAINING_LESSONS = [
       { route: '/orders', target: '[data-tour="orders-list"]', door: true },
     ] },
   { id: 'owner-tax-rate', track: 'owner', module: 'orders', steps: 3 },
+  { id: 'mgr-tax-rate', track: 'manager', module: 'orders', steps: 4 },
   { id: 'returns-basics', track: 'staff', module: 'returns', steps: 4 },
   { id: 'listings-basics', track: 'staff', module: 'listings', steps: 4 },
   { id: 'import-basics', track: 'staff', module: 'import', steps: 5 },
@@ -168,6 +170,10 @@ export const TRAINING_LESSONS = [
   { id: 'spare-keys-setup', track: 'staff', module: 'settings', steps: 5 },
   { id: 'lost-email-recovery', track: 'staff', module: 'settings', steps: 4 },
   { id: 'report-problem', track: 'staff', module: 'settings', steps: 4 },
+  { id: 'download-app', track: 'staff', module: 'settings', steps: 4 },
+  { id: 'staff-reports', track: 'staff', module: 'reports', steps: 4, feature: 'reports' },
+  { id: 'staff-cross-store', track: 'staff', module: 'cross-store', steps: 4, feature: 'crossStore' },
+  { id: 'staff-builds', track: 'staff', module: 'builds', steps: 4, feature: 'builds' },
   { id: 'mgr-schedules', track: 'manager', module: 'workforce', steps: 4 },
   { id: 'mgr-timeoff-decide', track: 'manager', module: 'workforce', steps: 4 },
   { id: 'mgr-tasks-assign', track: 'manager', module: 'workforce', steps: 4 },
@@ -193,7 +199,7 @@ export const TRAINING_LESSONS = [
     ] },
   { id: 'owner-report-problem', track: 'owner', module: 'settings', steps: 4 },
   { id: 'owner-delete-account', track: 'owner', module: 'settings', steps: 4 },
-  { id: 'owner-confidentiality', track: 'owner', module: 'staff', steps: 4 },
+  { id: 'owner-confidentiality', track: 'owner', module: 'staff', steps: 7 },
   { id: 'owner-staff-roles', track: 'owner', module: 'staff', steps: 4 },
   { id: 'owner-training-admin', track: 'owner', module: 'training', steps: 4 },
   { id: 'owner-workforce-settings', track: 'owner', module: 'workforce', steps: 4 },

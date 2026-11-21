@@ -3,6 +3,7 @@ import { Check, Loader2, Save, Trash2, Upload } from 'lucide-react';
 import { apiRequest } from '@/api/client';
 import SettingsCard from './SettingsCard';
 import PolicyDocumentView from './PolicyDocumentView';
+import PolicyQuestionsEditor from './PolicyQuestionsEditor';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -339,6 +340,12 @@ function PolicyDocEditor({ businessId, doc, state, onState }) {
           {error}
         </p>
       ) : null}
+
+      {/* The owner's quiz on this document (Nov 20, 2026):
+          "Questions for your team" lives beside the document it
+          belongs to. This editor renders only inside the owner's
+          editing view — the writing is hers alone. */}
+      <PolicyQuestionsEditor businessId={businessId} docKind={doc.kind} />
     </div>
   );
 }

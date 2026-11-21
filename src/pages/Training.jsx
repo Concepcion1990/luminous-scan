@@ -15,22 +15,32 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AlarmClock, BellRing, Check, ChevronDown, Flag, GraduationCap, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import StepVisual from '@/components/training/StepVisual';
 import { useToast } from '@/components/ui/use-toast';
 import { useBusiness } from '@/hooks/useBusiness';
+import { apiRequest } from '@/api/client';
 import { t } from '@/lib/i18n';
 import { toLocalDate } from '@/lib/dates';
 import { TRAINING_LESSONS, lessonVisibleOnPlan, visibleLessonsForTrack } from '@/lib/trainingCatalog';
 import {
+  addLessonComment,
   assignTraining,
+  checkPolicyAnswer,
   completeLesson,
+  getLessonQuiz,
+  getPolicyTraining,
+  getTeamMemberResults,
   getTeamProgress,
   getTrainingState,
   lessonById,
   lessonSteps,
   lessonTitle,
   moduleLabel,
+  reviewPolicyAttempt,
   setAssignmentDeadline,
+  submitLessonQuiz,
+  submitPolicyTraining,
   trackHelp,
   trackTitle,
   warnAssignment,
@@ -78,7 +88,173 @@ function DueChip({ assignment }) {
   );
 }
 
-function LessonCard({ lesson, done, completedAt, open, onToggle, onComplete, busy }) {
+function stepText(ref) {
+  return t(`training.lessons.${ref.lesson_id}.step${ref.step}`);
+}
+
+const QUIZ_PROMPT_KEY = {
+  belongs: 'training.quiz.belongs',
+  notBelongs: 'training.quiz.notBelongs',
+  order: 'training.quiz.order',
+};
+
+/**
+ * The per-lesson quiz (Nov 20, 2026): a lesson counts complete
+ * only when its quiz is answered correctly — retry until pass.
+ * The questions quote the app's own lesson steps by reference and
+ * the server scores them; no answer key ever reaches this page.
+ */
+function QuizPanel({ businessId, lesson, onPassed }) {
+  const { toast } = useToast();
+  const [quiz, setQuiz] = useState(null);
+  const [answers, setAnswers] = useState([]);
+  const [result, setResult] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [failed, setFailed] = useState(false);
+
+  const load = useCallback(async () => {
+    setFailed(false);
+    setResult(null);
+    try {
+      const data = await getLessonQuiz(businessId, lesson.id);
+      setQuiz(data);
+      setAnswers(new Array((data.questions || []).length).fill(null));
+    } catch {
+      setFailed(true);
+    }
+  }, [businessId, lesson.id]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  if (failed) {
+    return <p className="mt-4 text-sm text-destructive">{t('training.loadFailed')}</p>;
+  }
+  if (!quiz) {
+    return <p className="mt-4 text-sm text-muted-foreground">{t('training.loading')}</p>;
+  }
+
+  const submit = async () => {
+    setBusy(true);
+    try {
+      const data = await submitLessonQuiz(businessId, lesson.id, answers);
+      if (data.passed) {
+        toast({ title: t('training.quiz.passed') });
+        await onPassed();
+      } else {
+        setResult(data);
+      }
+    } catch (error) {
+      toast({ title: error.message || t('training.loadFailed'), variant: 'destructive' });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="mt-5 rounded-lg border border-border bg-card p-4">
+      <p className={labelCls}>{t('training.quiz.title')}</p>
+      <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{t('training.quiz.intro')}</p>
+      <div className="mt-3 space-y-4">
+        {quiz.questions.map((question, qi) => (
+          <fieldset key={qi}>
+            <legend className="text-sm font-medium">
+              {qi + 1}. {t(QUIZ_PROMPT_KEY[question.type] || 'training.quiz.belongs')}
+            </legend>
+            <div className="mt-2 space-y-1.5">
+              {question.options.map((option, oi) => (
+                <label
+                  key={oi}
+                  className={`flex cursor-pointer items-start gap-2 rounded-md border px-3 py-2 text-sm leading-relaxed ${
+                    answers[qi] === oi ? 'border-primary bg-primary/5' : 'border-border'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name={`quiz-${lesson.id}-${qi}`}
+                    className="mt-1"
+                    checked={answers[qi] === oi}
+                    onChange={() => {
+                      setAnswers((current) => {
+                        const next = [...current];
+                        next[qi] = oi;
+                        return next;
+                      });
+                      setResult(null);
+                    }}
+                  />
+                  <span>{stepText(option)}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        ))}
+      </div>
+      {result && !result.passed && (
+        <p className="mt-3 rounded-lg border border-amber-300/50 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:bg-amber-900/20 dark:text-amber-100">
+          {t('training.quiz.failed', { correct: result.correct, total: result.total })}
+        </p>
+      )}
+      <Button className="mt-4" onClick={submit} disabled={busy || answers.some((a) => a === null)}>
+        {t('training.quiz.submit')}
+      </Button>
+    </div>
+  );
+}
+
+/** A comment on a lesson, filed quietly to the owner (Nov 20,
+ *  2026) — it lands in the person's staff record; no bell rings. */
+function CommentBox({ businessId, lesson, mine }) {
+  const { toast } = useToast();
+  const [draft, setDraft] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [sent, setSent] = useState(false);
+  const send = async () => {
+    if (!draft.trim()) return;
+    setBusy(true);
+    try {
+      await addLessonComment(businessId, lesson.id, draft.trim());
+      setDraft('');
+      setSent(true);
+      toast({ title: t('training.comment.sent') });
+    } catch (error) {
+      toast({ title: error.message || t('training.loadFailed'), variant: 'destructive' });
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <div className="mt-5 border-t border-border pt-4">
+      <p className={labelCls}>{t('training.comment.title')}</p>
+      {mine?.length ? (
+        <ul className="mt-2 space-y-1.5">
+          {mine.map((comment, i) => (
+            <li key={i} className="rounded-md bg-muted px-3 py-2 text-sm leading-relaxed">
+              {comment.body}
+              <span className="mt-0.5 block text-xs text-muted-foreground">{formatDay(comment.created_at)}</span>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+      {sent && <p className="mt-2 text-sm text-ok">{t('training.comment.sent')}</p>}
+      <Textarea
+        value={draft}
+        onChange={(event) => setDraft(event.target.value)}
+        placeholder={t('training.comment.placeholder')}
+        rows={2}
+        className="mt-2"
+        maxLength={1000}
+      />
+      <Button size="sm" variant="outline" className="mt-2" onClick={send} disabled={busy || !draft.trim()}>
+        {t('training.comment.send')}
+      </Button>
+    </div>
+  );
+}
+
+function LessonCard({ businessId, lesson, visibleSteps, done, completedAt, open, onToggle, onComplete, onPassed, busy, isOwner, myComments }) {
+  const steps = lessonSteps(lesson);
   return (
     <div className="rounded-lg border border-border bg-background">
       <button
@@ -107,37 +283,47 @@ function LessonCard({ lesson, done, completedAt, open, onToggle, onComplete, bus
         <div className="border-t border-border px-4 py-4 sm:px-5">
           <p className={labelCls}>{t('training.steps')}</p>
           <ol className="mt-2.5 space-y-2.5">
-            {lessonSteps(lesson).map((step, i) => (
-              <li key={i} className="flex gap-3 text-sm leading-relaxed">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
-                  {i + 1}
-                </span>
-                <span className="min-w-0 flex-1 pt-0.5">
-                  {step}
-                  {lesson.visuals?.[i] ? (
-                    <StepVisual visual={lesson.visuals[i]} title={lessonTitle(lesson)} />
-                  ) : null}
-                </span>
-              </li>
-            ))}
+            {steps.map((stepText, i) => {
+              // Steps are scoped to the reader's doors too: a
+              // step they cannot perform is not rendered (the
+              // server sends the visible step numbers).
+              if (visibleSteps && !visibleSteps.includes(i + 1)) return null;
+              return (
+                <li key={i} className="flex gap-3 text-sm leading-relaxed">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                    {i + 1}
+                  </span>
+                  <span className="min-w-0 flex-1 pt-0.5">
+                    {stepText}
+                    {lesson.visuals?.[i] ? (
+                      <StepVisual visual={lesson.visuals[i]} title={lessonTitle(lesson)} />
+                    ) : null}
+                  </span>
+                </li>
+              );
+            })}
           </ol>
-          {!done && (
+          {!done && isOwner && (
             <Button className="mt-4" onClick={() => onComplete(lesson)} disabled={busy}>
               <Check className="mr-1.5 h-4 w-4" /> {t('training.markDone')}
             </Button>
+          )}
+          {!done && !isOwner && (
+            <QuizPanel businessId={businessId} lesson={lesson} onPassed={onPassed} />
           )}
           {done && (
             <p className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-ok/12 px-3 py-1.5 text-sm text-ok">
               <Check className="h-4 w-4" /> {t('training.done')}
             </p>
           )}
+          {!isOwner && <CommentBox businessId={businessId} lesson={lesson} mine={myComments} />}
         </div>
       )}
     </div>
   );
 }
 
-function MyAssignments({ assignments, completedSet, completedAtById, openLesson, onToggleLesson, onComplete, busy }) {
+function MyAssignments({ businessId, assignments, completedSet, completedAtById, openLesson, onToggleLesson, onComplete, onPassed, busy, isOwner, visibleStepsFor, commentsByLesson }) {
   const open = assignments.filter((a) => a.status !== 'completed');
   if (!open.length) return null;
   return (
@@ -174,13 +360,18 @@ function MyAssignments({ assignments, completedSet, completedAtById, openLesson,
                 return (
                   <LessonCard
                     key={id}
+                    businessId={businessId}
                     lesson={lesson}
+                    visibleSteps={visibleStepsFor(lesson)}
                     done={completedSet.has(id)}
                     completedAt={completedAtById.get(id)}
                     open={openLesson === id}
                     onToggle={() => onToggleLesson(id)}
                     onComplete={onComplete}
+                    onPassed={onPassed}
                     busy={busy}
+                    isOwner={isOwner}
+                    myComments={commentsByLesson.get(id)}
                   />
                 );
               })}
@@ -265,6 +456,406 @@ function AssignmentRow({ businessId, assignment, reload }) {
   );
 }
 
+const POLICY_DOCS = [
+  { kind: 'policies', headingKey: 'settings.policies.storePolicies' },
+  { kind: 'terms', headingKey: 'settings.policies.termsConditions' },
+];
+
+/**
+ * One owner's-quiz training (Nov 20, 2026): read the owner's
+ * document, then answer her questions. Multiple choice is
+ * checked on the spot — a wrong pick is flagged and retried, a
+ * right one locks in. Typed answers go in with the submit; one
+ * that matches hers nearly word for word counts on the spot, and
+ * one that does not still lets the training close — it files to
+ * the owner flagged for review instead of trapping the person.
+ */
+function PolicyTrainingCard({ businessId, doc, onDone }) {
+  const { toast } = useToast();
+  const [data, setData] = useState(null);
+  const [docState, setDocState] = useState(null);
+  const [hidden, setHidden] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [picks, setPicks] = useState({});
+  const [wrong, setWrong] = useState({});
+  const [texts, setTexts] = useState({});
+  const [result, setResult] = useState(null);
+  const [busy, setBusy] = useState(false);
+
+  const load = useCallback(async () => {
+    try {
+      const next = await getPolicyTraining(businessId, doc.kind);
+      setData(next);
+    } catch {
+      // Not ticked for this training — the card simply is not theirs.
+      setHidden(true);
+    }
+    try {
+      const policies = await apiRequest(`/api/businesses/${encodeURIComponent(businessId)}/policies`);
+      setDocState(policies?.[doc.kind] || null);
+    } catch {
+      setDocState(null);
+    }
+  }, [businessId, doc.kind]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  if (hidden || !data) return null;
+  const attempt = data.latest_attempt;
+  const finished = attempt?.status === 'passed';
+  const sentBack = attempt?.status === 'sent_back';
+
+  const pick = async (question, choiceIndex) => {
+    if (picks[question.id] !== undefined) return;
+    try {
+      const { correct } = await checkPolicyAnswer(businessId, doc.kind, question.id, choiceIndex);
+      if (correct) {
+        setPicks((current) => ({ ...current, [question.id]: choiceIndex }));
+        setWrong((current) => ({ ...current, [question.id]: false }));
+      } else {
+        setWrong((current) => ({ ...current, [question.id]: true }));
+      }
+    } catch (error) {
+      toast({ title: error.message || t('training.loadFailed'), variant: 'destructive' });
+    }
+  };
+
+  const submit = async () => {
+    setBusy(true);
+    try {
+      const answers = data.questions.map((q) =>
+        q.kind === 'mc'
+          ? { question_id: q.id, choice_index: picks[q.id] }
+          : { question_id: q.id, text: texts[q.id] || '' },
+      );
+      const next = await submitPolicyTraining(businessId, doc.kind, answers);
+      setResult(next);
+      if (next.status === 'passed') {
+        toast({ title: t('training.quiz.passed') });
+        await load();
+        await onDone?.();
+      }
+    } catch (error) {
+      toast({ title: error.message || t('training.loadFailed'), variant: 'destructive' });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const allPicked = data.questions
+    .filter((q) => q.kind === 'mc')
+    .every((q) => picks[q.id] !== undefined);
+
+  return (
+    <div className="rounded-lg border border-border bg-background">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="flex w-full items-center gap-3 px-4 py-3.5 text-left"
+        aria-expanded={open}
+      >
+        <span
+          className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${
+            finished ? 'bg-ok/12 text-ok' : 'bg-muted text-muted-foreground'
+          }`}
+        >
+          {finished ? <Check className="h-4 w-4" /> : <GraduationCap className="h-4 w-4" />}
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-sm font-medium">{t(doc.headingKey)}</span>
+          <span className="mt-0.5 block text-xs text-muted-foreground">
+            {finished
+              ? attempt.score_percent !== null && attempt.score_percent !== undefined
+                ? `${t('training.done')} · ${t('training.policy.score', { score: attempt.score_percent })}`
+                : t('training.done')
+              : sentBack
+                ? t('training.policy.sentBack')
+                : t('training.policy.passLine', { percent: data.pass_percent })}
+          </span>
+        </span>
+        <ChevronDown className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <div className="border-t border-border px-4 py-4 sm:px-5">
+          {sentBack && attempt.review_note ? (
+            <p className="mb-3 rounded-lg border border-amber-300/50 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:bg-amber-900/20 dark:text-amber-100">
+              {attempt.review_note}
+            </p>
+          ) : null}
+          {finished && attempt.needs_review ? (
+            <p className="mb-3 text-sm text-muted-foreground">{t('training.policy.reviewWaiting')}</p>
+          ) : null}
+          <p className={labelCls}>{t('training.policy.read')}</p>
+          {docState?.kind === 'text' ? (
+            <div className="mt-2 max-h-64 overflow-y-auto whitespace-pre-wrap rounded-md bg-muted px-3 py-2 text-sm leading-relaxed">
+              {docState.text}
+            </div>
+          ) : docState?.kind === 'file' ? (
+            <p className="mt-2 text-sm text-muted-foreground">{docState.filename}</p>
+          ) : (
+            <p className="mt-2 text-sm text-muted-foreground">{t('training.policy.noDocument')}</p>
+          )}
+          {!finished && (
+            <>
+              {data.questions.length === 0 ? (
+                <>
+                  <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{t('training.policy.noQuestions')}</p>
+                  <Button className="mt-3" onClick={submit} disabled={busy}>
+                    {t('training.policy.markRead')}
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <div className="mt-4 space-y-4">
+                    {data.questions.map((q, qi) => (
+                      <fieldset key={q.id}>
+                        <legend className="text-sm font-medium">{qi + 1}. {q.question}</legend>
+                        {q.kind === 'mc' ? (
+                          <div className="mt-2 space-y-1.5">
+                            {q.choices.map((choice, ci) => (
+                              <button
+                                key={ci}
+                                type="button"
+                                disabled={picks[q.id] !== undefined}
+                                onClick={() => pick(q, ci)}
+                                className={`block w-full rounded-md border px-3 py-2 text-left text-sm leading-relaxed ${
+                                  picks[q.id] === ci
+                                    ? 'border-ok bg-ok/10'
+                                    : 'border-border hover:border-primary'
+                                }`}
+                              >
+                                {'ABCD'[ci]}. {choice}
+                              </button>
+                            ))}
+                            {wrong[q.id] ? (
+                              <p className="text-sm text-destructive">{t('training.policy.wrongPick')}</p>
+                            ) : null}
+                            {picks[q.id] !== undefined ? (
+                              <p className="text-sm text-ok">{t('training.policy.rightPick')}</p>
+                            ) : null}
+                          </div>
+                        ) : (
+                          <Textarea
+                            value={texts[q.id] || ''}
+                            onChange={(event) => setTexts((current) => ({ ...current, [q.id]: event.target.value }))}
+                            rows={2}
+                            className="mt-2"
+                            maxLength={1000}
+                          />
+                        )}
+                      </fieldset>
+                    ))}
+                  </div>
+                  {result?.status === 'below_line' && (
+                    <p className="mt-3 rounded-lg border border-amber-300/50 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:bg-amber-900/20 dark:text-amber-100">
+                      {t('training.policy.score', { score: result.score_percent })} ·{' '}
+                      {t('training.policy.passLine', { percent: result.pass_percent })} {t('training.policy.belowLine')}
+                    </p>
+                  )}
+                  <Button className="mt-4" onClick={submit} disabled={busy || !allPicked}>
+                    {t('training.policy.submitAnswers')}
+                  </Button>
+                </>
+              )}
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PolicyTrainings({ businessId, onDone }) {
+  return (
+    <Section title={t('training.policy.sectionTitle')} help={t('training.policy.sectionHelp')} icon={GraduationCap}>
+      <div className="space-y-3">
+        {POLICY_DOCS.map((doc) => (
+          <PolicyTrainingCard key={doc.kind} businessId={businessId} doc={doc} onDone={onDone} />
+        ))}
+      </div>
+    </Section>
+  );
+}
+
+/**
+ * One person's filed training record (Nov 20, 2026): quiz
+ * results, lesson comments, and the owner's-quiz attempts with
+ * the answers themselves. The owner and managers read it; review
+ * actions (accept / send back) are the owner's alone.
+ */
+function PersonRecord({ businessId, staffId, level }) {
+  const { toast } = useToast();
+  const [record, setRecord] = useState(null);
+  const [note, setNote] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  const load = useCallback(async () => {
+    try {
+      setRecord(await getTeamMemberResults(businessId, staffId));
+    } catch {
+      setRecord({ quiz_results: [], comments: [], policy_attempts: [] });
+    }
+  }, [businessId, staffId]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  if (!record) return <p className="mt-3 text-sm text-muted-foreground">{t('training.loading')}</p>;
+  const empty = !record.quiz_results.length && !record.comments.length && !record.policy_attempts.length;
+
+  const review = async (attemptId, action) => {
+    setBusy(true);
+    try {
+      await reviewPolicyAttempt(businessId, attemptId, { action, note });
+      setNote('');
+      toast({ title: t('settings.save.saved') });
+      await load();
+    } catch (error) {
+      toast({ title: error.message || t('training.loadFailed'), variant: 'destructive' });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="mt-3 space-y-4 border-t border-border pt-3">
+      {empty && <p className="text-sm text-muted-foreground">{t('training.team.recordNone')}</p>}
+      {record.quiz_results.length > 0 && (
+        <div>
+          <p className={labelCls}>{t('training.team.recordQuiz')}</p>
+          <ul className="mt-2 space-y-1.5">
+            {record.quiz_results.map((row, i) => {
+              const lesson = lessonById(row.lesson_id);
+              return (
+                <li key={i} className="flex flex-wrap items-center gap-x-2 text-sm">
+                  <span className="font-medium">{lesson ? lessonTitle(lesson) : row.lesson_id}</span>
+                  <span className="text-muted-foreground">
+                    {t('training.team.scoreOf', { correct: row.correct, total: row.total })} · {formatDay(row.created_at)}
+                  </span>
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-xs ${
+                      row.passed ? 'bg-ok/12 text-ok' : 'bg-red-100 text-red-900 dark:bg-red-900/40 dark:text-red-100'
+                    }`}
+                  >
+                    {row.passed ? t('training.team.passed') : t('training.team.notPassed')}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+      {record.comments.length > 0 && (
+        <div>
+          <p className={labelCls}>{t('training.team.recordComments')}</p>
+          <ul className="mt-2 space-y-1.5">
+            {record.comments.map((row, i) => {
+              const lesson = lessonById(row.lesson_id);
+              return (
+                <li key={i} className="rounded-md bg-muted px-3 py-2 text-sm leading-relaxed">
+                  <span className="font-medium">{lesson ? lessonTitle(lesson) : row.lesson_id}: </span>
+                  {row.body}
+                  <span className="mt-0.5 block text-xs text-muted-foreground">{formatDay(row.created_at)}</span>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+      {record.policy_attempts.length > 0 && (
+        <div>
+          <p className={labelCls}>{t('training.team.recordPolicy')}</p>
+          <div className="mt-2 space-y-3">
+            {record.policy_attempts.map((attempt) => (
+              <div key={attempt.id} className="rounded-md border border-border px-3 py-2.5">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
+                  <span className="font-medium">
+                    {t(attempt.doc_kind === 'policies' ? 'settings.policies.storePolicies' : 'settings.policies.termsConditions')}
+                  </span>
+                  {attempt.score_percent !== null && attempt.score_percent !== undefined && (
+                    <span className="text-muted-foreground">{t('training.policy.score', { score: attempt.score_percent })}</span>
+                  )}
+                  <span className="text-muted-foreground">{formatDay(attempt.created_at)}</span>
+                  {attempt.status === 'passed' && (
+                    <span className="rounded-full bg-ok/12 px-2 py-0.5 text-xs text-ok">{t('training.team.passed')}</span>
+                  )}
+                  {attempt.status === 'below_line' && (
+                    <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs text-red-900 dark:bg-red-900/40 dark:text-red-100">
+                      {t('training.team.belowLineChip')}
+                    </span>
+                  )}
+                  {attempt.status === 'sent_back' && (
+                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-900 dark:bg-amber-900/40 dark:text-amber-100">
+                      {t('training.team.sentBackChip')}
+                    </span>
+                  )}
+                  {attempt.needs_review && (
+                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-900 dark:bg-amber-900/40 dark:text-amber-100">
+                      {t('training.team.needsReview')}
+                    </span>
+                  )}
+                </div>
+                {Array.isArray(attempt.answers) && attempt.answers.length > 0 && (
+                  <ul className="mt-2 space-y-2">
+                    {attempt.answers.map((answer, i) => (
+                      <li key={i} className="text-sm leading-relaxed">
+                        <span className="font-medium">{answer.question}</span>
+                        {answer.kind === 'mc' ? (
+                          <span className="block text-muted-foreground">
+                            {t('training.team.theirChoice')}:{' '}
+                            {answer.choice_index !== null && answer.choice_index !== undefined
+                              ? answer.choices?.[answer.choice_index] || ''
+                              : '—'}{' '}
+                            · {answer.correct ? t('training.team.passed') : t('training.team.notPassed')}
+                          </span>
+                        ) : (
+                          <>
+                            <span className="block text-muted-foreground">
+                              {t('training.team.theirAnswer')}: {answer.text || '—'}
+                            </span>
+                            <span className="block text-muted-foreground">
+                              {t('training.team.expectedAnswer')}: {answer.expected_answer}
+                            </span>
+                          </>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {attempt.needs_review && level === 'owner' && (
+                  <div className="mt-3 flex flex-wrap items-end gap-2">
+                    <label className="block min-w-48 flex-1">
+                      <span className={labelCls}>{t('training.team.reviewNote')}</span>
+                      <input
+                        value={note}
+                        onChange={(event) => setNote(event.target.value)}
+                        className={`${inputCls} mt-1`}
+                        maxLength={500}
+                      />
+                    </label>
+                    <Button size="sm" disabled={busy} onClick={() => review(attempt.id, 'accept')}>
+                      {t('training.team.accept')}
+                    </Button>
+                    <Button size="sm" variant="outline" disabled={busy} onClick={() => review(attempt.id, 'send_back')}>
+                      {t('training.team.sendBack')}
+                    </Button>
+                  </div>
+                )}
+                {attempt.review_note ? (
+                  <p className="mt-2 text-xs text-muted-foreground">{attempt.review_note}</p>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function TeamSection({ businessId, level, isBusiness }) {
   const { toast } = useToast();
   const [team, setTeam] = useState(null);
@@ -272,6 +863,7 @@ function TeamSection({ businessId, level, isBusiness }) {
   const [module, setModule] = useState('');
   const [days, setDays] = useState('');
   const [busy, setBusy] = useState(false);
+  const [recordFor, setRecordFor] = useState('');
 
   const load = useCallback(async () => {
     const data = await getTeamProgress(businessId);
@@ -417,6 +1009,18 @@ function TeamSection({ businessId, level, isBusiness }) {
                 </>
               );
             })()}
+            <div className="mt-4">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setRecordFor(recordFor === person.staff_id ? '' : person.staff_id)}
+              >
+                {t('training.team.record')}
+              </Button>
+              {recordFor === person.staff_id && (
+                <PersonRecord businessId={businessId} staffId={person.staff_id} level={level} />
+              )}
+            </div>
           </div>
         ))}
       </div>
@@ -462,6 +1066,24 @@ export default function Training() {
     }
   };
 
+  // Scoping (Nov 20, 2026): the steps a person sees inside a
+  // lesson are the steps they can perform — the server sends the
+  // visible step numbers with the state; a lesson with no entry
+  // shows every step.
+  const visibleStepsFor = useCallback(
+    (lesson) => state?.step_scope?.[lesson.id] ?? null,
+    [state],
+  );
+
+  const commentsByLesson = useMemo(() => {
+    const map = new Map();
+    for (const comment of state?.my_comments ?? []) {
+      if (!map.has(comment.lesson_id)) map.set(comment.lesson_id, []);
+      map.get(comment.lesson_id).push(comment);
+    }
+    return map;
+  }, [state]);
+
   if (!activeId || (!state && !failed)) {
     return (
       <div className="mx-auto w-full max-w-4xl px-4 py-8 sm:px-6">
@@ -497,17 +1119,29 @@ export default function Training() {
       </header>
 
       <MyAssignments
+        businessId={activeId}
         assignments={state.assignments.map(visibleAssignment).filter(Boolean)}
         completedSet={completedSet}
         completedAtById={completedAtById}
         openLesson={openLesson}
         onToggleLesson={(id) => setOpenLesson(openLesson === id ? null : id)}
         onComplete={onComplete}
+        onPassed={load}
         busy={busy}
+        isOwner={state.is_owner}
+        visibleStepsFor={visibleStepsFor}
+        commentsByLesson={commentsByLesson}
       />
 
+      {!state.is_owner && <PolicyTrainings businessId={activeId} onDone={load} />}
+
       {state.tracks.map((track) => {
-        const lessons = visibleLessonsForTrack(track, isBusiness);
+        // Scoping (Nov 20, 2026): a person sees only the lessons
+        // their real doors open (the server's my_lesson_ids) — the
+        // owner sees the whole catalog.
+        const myIds = new Set(state.my_lesson_ids ?? []);
+        const lessons = visibleLessonsForTrack(track, isBusiness)
+          .filter((l) => state.is_owner || myIds.has(l.id));
         const doneCount = lessons.filter((l) => completedSet.has(l.id)).length;
         return (
           <Section
@@ -519,13 +1153,18 @@ export default function Training() {
               {lessons.map((lesson) => (
                 <LessonCard
                   key={lesson.id}
+                  businessId={activeId}
                   lesson={lesson}
+                  visibleSteps={visibleStepsFor(lesson)}
                   done={completedSet.has(lesson.id)}
                   completedAt={completedAtById.get(lesson.id)}
                   open={openLesson === lesson.id}
                   onToggle={() => setOpenLesson(openLesson === lesson.id ? null : lesson.id)}
                   onComplete={onComplete}
+                  onPassed={load}
                   busy={busy}
+                  isOwner={state.is_owner}
+                  myComments={commentsByLesson.get(lesson.id)}
                 />
               ))}
               {!lessons.length && <p className="text-sm text-muted-foreground">{t('training.empty')}</p>}
