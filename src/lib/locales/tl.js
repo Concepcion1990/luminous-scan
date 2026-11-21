@@ -4713,7 +4713,7 @@ export const tl = {
   "plansLib.includes.inviteLink": "Mga imbitasyon sa staff na may one-tap na sign-up link",
   "subscribe.memberNote": "Naka-sign in ka bilang miyembro ng workspace na ito. Ang page na ito ay sa may-ari ng negosyo — kung may kailangan ka dito, magtanong sa kanya.",
   "subscribe.memberOpenApp": "Buksan ang app",
-  "apiErrors.planLimitNeutral": "Hindi ito maidaragdag ngayon — umabot na sa limit ang workspace na ito. Magtanong sa may-ari ng negosyo.",
+  "apiErrors.planLimitNeutral": "Hindi ito maidaragdag ngayon — magtanong sa may-ari ng negosyo.",
   "training.lessons.owner-confidentiality.title": "Mananatiling kumpidensyal ang iyong impormasyon",
   "training.lessons.owner-confidentiality.step1": "Pinananatiling kumpidensyal ng Luminous StockHaven ang iyong impormasyon mula sa iyong mga kawani. Ang iyong mga bayad, ang iyong pagsubok, ang iyong subscription at ang katayuan ng iyong pagsingil — at anumang tungkol sa iyong personal na impormasyon — ay sa iyo lamang: hindi ito kailanman nakikita ng mga kawani at tagapamahala, saanman sa app.",
   "training.lessons.owner-confidentiality.step2": "Kasama rito ang mga tahimik na lugar: walang countdown ng pagsubok sa ibabaw ng kanilang mga pahina, walang seksyon ng plano o pagsingil sa kanilang Mga Setting, walang babala sa pagbabayad. Ang kanilang Mga Setting ay personal — ang sarili nilang account, seguridad, hitsura at wika — dagdag lamang ang mga karagdagang seksyon na pipiliin mo para sa kanila. Ang pagsingil ay hindi kailanman isa sa mga tsek.",

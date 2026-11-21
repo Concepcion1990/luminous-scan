@@ -4713,7 +4713,7 @@ export const tr = {
   "plansLib.includes.inviteLink": "Tek dokunuşla kayıt bağlantısı içeren personel davetleri",
   "subscribe.memberNote": "Bu çalışma alanının bir üyesi olarak oturum açtınız. Bu sayfa işletme sahibinindir — burada bir şeye ihtiyacınız olursa, lütfen ona sorun.",
   "subscribe.memberOpenApp": "Uygulamayı aç",
-  "apiErrors.planLimitNeutral": "Bu şu anda eklenemez — bu çalışma alanı bir limite ulaştı. Lütfen işletme sahibine sorun.",
+  "apiErrors.planLimitNeutral": "Bu şu anda eklenemez — lütfen işletme sahibine sorun.",
   "training.lessons.owner-confidentiality.title": "Bilgileriniz gizli kalır",
   "training.lessons.owner-confidentiality.step1": "Luminous StockHaven bilgilerinizi personelinizden gizli tutar. Ödemeleriniz, denemeniz, aboneliğiniz ve faturalandırma durumunuz — ve kişisel bilgilerinizle ilgili her şey — yalnızca sizindir: personel ve yöneticiler bunları asla, uygulamanın hiçbir yerinde görmez.",
   "training.lessons.owner-confidentiality.step2": "Buna sessiz yerler de dahildir: sayfalarının üzerinde deneme geri sayımı yok, Ayarlar’ında plan veya faturalandırma bölümü yok, ödeme uyarısı yok. Ayarları kişiseldir — kendi hesapları, güvenlikleri, görünümleri ve dilleri — artı yalnızca onlar için işaretlemeyi seçtiğiniz ek bölümler. Faturalandırma asla işaretlerden biri değildir.",
