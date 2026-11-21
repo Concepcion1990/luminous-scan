@@ -4713,7 +4713,7 @@ export const frCA = {
   "plansLib.includes.inviteLink": "Invitations au personnel avec un lien d’inscription en un toucher",
   "subscribe.memberNote": "Vous êtes connecté comme membre de cet espace de travail. Cette page appartient au propriétaire de l’entreprise — si vous avez besoin de quelque chose ici, demandez-le-lui.",
   "subscribe.memberOpenApp": "Ouvrir l’application",
-  "apiErrors.planLimitNeutral": "Cela ne peut pas être ajouté pour le moment — cet espace de travail a atteint une limite. Demandez au propriétaire de l’entreprise.",
+  "apiErrors.planLimitNeutral": "Cela ne peut pas être ajouté pour le moment — demandez au propriétaire de l’entreprise.",
   "training.lessons.owner-confidentiality.title": "Vos informations restent confidentielles",
   "training.lessons.owner-confidentiality.step1": "Luminous StockHaven garde vos informations confidentielles pour votre personnel. Vos paiements, votre essai, votre abonnement et l’état de votre facturation — et tout ce qui concerne vos informations personnelles — n’appartiennent qu’à vous : le personnel et les gérants ne les voient jamais, nulle part dans l’application.",
   "training.lessons.owner-confidentiality.step2": "Cela comprend les endroits discrets : aucun compte à rebours d’essai sur leurs pages, aucune section de forfait ou de facturation dans leurs Paramètres, aucun avertissement de paiement. Leurs Paramètres sont personnels — leur propre compte, sécurité, apparence et langue — plus seulement les sections supplémentaires que vous choisissez de cocher pour eux. La facturation n’est jamais l’une des cases.",
