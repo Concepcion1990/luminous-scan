@@ -5004,4 +5004,10 @@ export const jv = {
   "apiErrors.invalidValue.chooseSignatureStyle": "Pilih gaya tandha tangan.",
   "apiErrors.invalidValue.noDdDetailsYet": "Anggota tim iku durung ngirim rinciane.",
   "training.lessons.owner-dd-setup.step5": "Sing teka iku formulir sing disegel lan ditandatangani: saka larik wong iku ing Penggajian sampeyan bisa mbukak kanggo maca nomer lengkap, nyetak, utawa nyimpen salinan — sampeyan ora bakal bisa ngowahi. Yen nomer katon salah, kirim bali formulire: wong iku ndandani dhewe lan tandha tangan maneh, formulir sing didandani ngganti sing lawas, lan formulir sadurunge tetep ing cathetan kanthi tanggal panggantine.",
+  "payroll.profile.ownerNote": "Iki rincian sampeyan dhewe sing kacathet, saka akun sampeyan. Mung sampeyan sing bisa ndeleng ing kene — lan amarga iki duweke sampeyan, sampeyan bisa nganyari ing kene saben ana owah-owahan.",
+  "payroll.profile.edit": "Owahi rincian sampeyan",
+  "payroll.profile.cancel": "Batalaken",
+  "payroll.profile.noName": "Durung ana jeneng sing kacathet.",
+  "apiErrors.forbidden.businessOwnerUpdateDetails": "Mung pemilik usaha sing bisa nganyari rincian iki.",
+  "apiErrors.invalidValue.homeAddressThousandCharacters": "Alamat omah sampeyan kudu 1000 aksara utawa kurang.",
 };
