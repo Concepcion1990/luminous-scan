@@ -5004,4 +5004,10 @@ export const ms = {
   "apiErrors.invalidValue.chooseSignatureStyle": "Pilih gaya tandatangan.",
   "apiErrors.invalidValue.noDdDetailsYet": "Ahli pasukan itu belum menghantar butiran mereka.",
   "training.lessons.owner-dd-setup.step5": "Yang tiba ialah borang yang dimeterai dan ditandatangani: dari baris orang itu dalam Gaji anda boleh membukanya untuk membaca nombor penuh, mencetaknya atau menyimpan salinan — anda tidak boleh mengeditnya. Jika nombor kelihatan salah, hantar semula borang: orang itu membetulkannya sendiri dan menandatangani semula, borang mereka yang dibetulkan menggantikan yang lama, dan borang sebelumnya kekal dalam rekod dengan tarikh penggantiannya.",
+  "payroll.profile.ownerNote": "Ini adalah butiran anda sendiri dalam rekod, daripada akaun anda. Hanya anda yang boleh melihatnya di sini — dan kerana ia milik anda, anda boleh mengemas kininya di sini setiap kali ia berubah.",
+  "payroll.profile.edit": "Ubah butiran anda",
+  "payroll.profile.cancel": "Batal",
+  "payroll.profile.noName": "Tiada nama dalam rekod lagi.",
+  "apiErrors.forbidden.businessOwnerUpdateDetails": "Hanya pemilik perniagaan boleh mengemas kini butiran ini.",
+  "apiErrors.invalidValue.homeAddressThousandCharacters": "Pastikan alamat rumah anda 1000 aksara atau kurang.",
 };
