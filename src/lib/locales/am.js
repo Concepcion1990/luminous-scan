@@ -4713,7 +4713,7 @@ export const am = {
   "plansLib.includes.inviteLink": "የአንድ-መንካት የምዝገባ አገናኝ ያላቸው የሠራተኞች ግብዣዎች",
   "subscribe.memberNote": "እንደ የዚህ የሥራ ቦታ አባል ገብተዋል። ይህ ገጽ የንግዱ ባለቤት ነው — እዚህ የሆነ ነገር ከፈልጉ እባክዎ ይጠይቋቸው።",
   "subscribe.memberOpenApp": "መተግበሪያውን ክፈት",
-  "apiErrors.planLimitNeutral": "ይህ አሁን ሊጨመር አይችልም — ይህ የሥራ ቦታ ወደ ወሰን ደርሷል። የንግዱን ባለቤት ይጠይቁ።",
+  "apiErrors.planLimitNeutral": "ይህ አሁን ሊጨመር አይችልም — የንግዱን ባለቤት ይጠይቁ።",
   "training.lessons.owner-confidentiality.title": "መረጃዎ ሚስጥራዊ ሆኖ ይቆያል",
   "training.lessons.owner-confidentiality.step1": "Luminous StockHaven መረጃዎን ከሠራተኞችዎ ሚስጥራዊ አድርጎ ይጠብቃል። ክፍያዎችዎ፣ ሙከራዎ፣ ምዝገባዎ እና የክፍያ ሁኔታዎ — እና ስለ ግል መረጃዎ ማንኛውም ነገር — የእርስዎ ብቻ ናቸው፦ ሠራተኞች እና አስተዳዳሪዎች በጭራሽ አያዩዋቸውም፣ በመተግበሪያው ውስጥ የትም የለም።",
   "training.lessons.owner-confidentiality.step2": "ይህ ጸጥ ያሉ ቦታዎችንም ያካትታል፦ በገጾቻቸው ላይ የሙከራ ቆጣሪ የለም፣ በቅንብሮቻቸው ውስጥ የዕቅድ ወይም የክፍያ ክፍል የለም፣ የክፍያ ማስጠንቀቂያ የለም። ቅንብሮቻቸው የግል ናቸው — የራሳቸው መለያ፣ ደህንነት፣ ገጽታ እና ቋንቋ — በተጨማሪም ለእነሱ የሚመርጧቸው ተጨማሪ ክፍሎች ብቻ። ክፍያ በጭራሽ ከምልክቶቹ አንዱ አይደለም።",
