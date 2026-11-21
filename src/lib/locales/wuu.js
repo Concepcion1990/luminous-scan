@@ -4379,7 +4379,7 @@ export const wuu = {
   "apiErrors.invalidValue.eachShiftNeedsWeekday": "每个班次都需要星期几（0-6）搭 HH:MM 格式个开始搭结束辰光。",
   "apiErrors.invalidValue.emailRequired": "需要电子邮件。",
   "apiErrors.invalidValue.enterBankName": "请输入侬个银行名称。",
-  "apiErrors.invalidValue.enterGS1CompanyPrefix": "请输入侬个 GS1 公司前缀 — 6 到 10 位数字，搭 GS1 签发个一式一样 — 或者留空。",
+  "apiErrors.invalidValue.enterGS1CompanyPrefix": "请输入侬个 GS1 公司前缀 — 6 到 11 位数字，搭 GS1 签发个一式一样 — 或者留空。",
   "apiErrors.invalidValue.enterHowManyArrived": "请至少勒一行输入到达数量。",
   "apiErrors.invalidValue.enterLightspeedDomainPrefix": "请输入侬个 Lightspeed 域名前缀 — .retail.lightspeed.app 前头个部分。",
   "apiErrors.invalidValue.enterStoreDomainLike": "请输入侬个店铺域名，比方 your-store.myshopify.com。",

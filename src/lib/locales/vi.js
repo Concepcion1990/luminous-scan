@@ -4461,7 +4461,7 @@ export const vi = {
   "apiErrors.invalidValue.eachShiftNeedsWeekday": "Mỗi ca cần một ngày trong tuần (0-6) và thời gian bắt đầu và kết thúc HH:MM.",
   "apiErrors.invalidValue.emailRequired": "Cần có email.",
   "apiErrors.invalidValue.enterBankName": "Nhập tên ngân hàng của bạn.",
-  "apiErrors.invalidValue.enterGS1CompanyPrefix": "Nhập tiền tố công ty GS1 của bạn — 6 đến 10 chữ số, chính xác như GS1 đã cấp — hoặc để trống.",
+  "apiErrors.invalidValue.enterGS1CompanyPrefix": "Nhập tiền tố công ty GS1 của bạn — 6 đến 11 chữ số, chính xác như GS1 đã cấp — hoặc để trống.",
   "apiErrors.invalidValue.enterHowManyArrived": "Nhập số lượng đã đến trên ít nhất một dòng.",
   "apiErrors.invalidValue.enterLightspeedDomainPrefix": "Nhập tiền tố tên miền Lightspeed của bạn — phần trước .retail.lightspeed.app.",
   "apiErrors.invalidValue.enterStoreDomainLike": "Nhập tên miền cửa hàng của bạn, như your-store.myshopify.com.",

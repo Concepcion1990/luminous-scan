@@ -4461,7 +4461,7 @@ export const ur = {
   "apiErrors.invalidValue.eachShiftNeedsWeekday": "ہر شفٹ کو ہفتے کا دن (0-6) اور HH:MM شروع اور اختتام اوقات درکار ہیں۔",
   "apiErrors.invalidValue.emailRequired": "ای میل درکار ہے۔",
   "apiErrors.invalidValue.enterBankName": "اپنے بینک کا نام درج کریں۔",
-  "apiErrors.invalidValue.enterGS1CompanyPrefix": "اپنا GS1 کمپنی پریفکس درج کریں — 6 سے 10 ہندسے، بالکل جیسے GS1 نے جاری کیا — یا اسے خالی چھوڑیں۔",
+  "apiErrors.invalidValue.enterGS1CompanyPrefix": "اپنا GS1 کمپنی پریفکس درج کریں — 6 سے 11 ہندسے، بالکل جیسے GS1 نے جاری کیا — یا اسے خالی چھوڑیں۔",
   "apiErrors.invalidValue.enterHowManyArrived": "درج کریں کہ کم از کم ایک سطر پر کتنے آئے۔",
   "apiErrors.invalidValue.enterLightspeedDomainPrefix": "اپنا Lightspeed ڈومین پریفکس درج کریں — .retail.lightspeed.app سے پہلے والا حصہ۔",
   "apiErrors.invalidValue.enterStoreDomainLike": "اپنی دکان کا ڈومین درج کریں، جیسے your-store.myshopify.com۔",

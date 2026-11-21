@@ -4461,7 +4461,7 @@ export const uk = {
   "apiErrors.invalidValue.eachShiftNeedsWeekday": "Кожній зміні потрібен день тижня (0-6) і час початку та кінця HH:MM.",
   "apiErrors.invalidValue.emailRequired": "Потрібна адреса електронної пошти.",
   "apiErrors.invalidValue.enterBankName": "Введіть назву вашого банку.",
-  "apiErrors.invalidValue.enterGS1CompanyPrefix": "Введіть префікс компанії GS1 — від 6 до 10 цифр, точно як видала GS1, — або залиште порожнім.",
+  "apiErrors.invalidValue.enterGS1CompanyPrefix": "Введіть префікс компанії GS1 — від 6 до 11 цифр, точно як видала GS1, — або залиште порожнім.",
   "apiErrors.invalidValue.enterHowManyArrived": "Введіть, скільки прибуло, принаймні в одному рядку.",
   "apiErrors.invalidValue.enterLightspeedDomainPrefix": "Введіть префікс домену Lightspeed — частину перед .retail.lightspeed.app.",
   "apiErrors.invalidValue.enterStoreDomainLike": "Введіть домен магазину, наприклад your-store.myshopify.com.",
