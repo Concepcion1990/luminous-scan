@@ -5010,4 +5010,13 @@ export const pcm = {
   "payroll.profile.noName": "No name dey for record yet.",
   "apiErrors.forbidden.businessOwnerUpdateDetails": "Na only de business owner fit update dis details dem.",
   "apiErrors.invalidValue.homeAddressThousandCharacters": "Make your house address no pass 1000 characters.",
+  "plans.status.foundingTester": "Founder tester",
+  "plans.priceNoteFoundingTester": "No charge — founder testers dey keep Business free for life.",
+  "subscribe.foundingTesterNote": "Dis workspace get Business as founder tester — free for life. No card, no charge, ever at all.",
+  "upgrade.introFoundingTester": " — one founder tester workspace, free for life with no charge at all.",
+  "upgrade.foundingTesterNote": "Founder testers dey keep Business free for life — no plan dey to change and no subscription dey to cancel.",
+  "apiErrors.foundingTester.alreadyListed": "Dat email don already dey for de founder tester list.",
+  "apiErrors.foundingTester.listFull": "De founder tester list don full.",
+  "apiErrors.foundingTester.notListed": "Dat email no dey for de founder tester list.",
+  "apiErrors.foundingTester.capWholeNumber": "De cap must be whole number wey be 1 or more.",
 };

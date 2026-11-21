@@ -5010,4 +5010,13 @@ export const paGuru = {
   "payroll.profile.noName": "ਅਜੇ ਤੱਕ ਕੋਈ ਨਾਂ ਦਰਜ ਨਹੀਂ ਹੈ।",
   "apiErrors.forbidden.businessOwnerUpdateDetails": "ਸਿਰਫ਼ ਕਾਰੋਬਾਰ ਦਾ ਮਾਲਕ ਹੀ ਇਹ ਵੇਰਵੇ ਅੱਪਡੇਟ ਕਰ ਸਕਦਾ ਹੈ।",
   "apiErrors.invalidValue.homeAddressThousandCharacters": "ਆਪਣੇ ਘਰ ਦੇ ਪਤੇ ਨੂੰ 1000 ਅੱਖਰਾਂ ਜਾਂ ਇਸ ਤੋਂ ਘੱਟ ਤੱਕ ਰੱਖੋ।",
+  "plans.status.foundingTester": "ਸੰਸਥਾਪਕ ਪਰਖਕ",
+  "plans.priceNoteFoundingTester": "ਕੋਈ ਚਾਰਜ ਨਹੀਂ — ਸੰਸਥਾਪਕ ਪਰਖਕ Business ਨੂੰ ਹਮੇਸ਼ਾ ਲਈ ਮੁਫ਼ਤ ਰੱਖਦੇ ਹਨ।",
+  "subscribe.foundingTesterNote": "ਇਸ ਵਰਕਸਪੇਸ ਕੋਲ ਸੰਸਥਾਪਕ ਪਰਖਕ ਵਜੋਂ Business ਹੈ — ਹਮੇਸ਼ਾ ਲਈ ਮੁਫ਼ਤ। ਕੋਈ ਕਾਰਡ ਨਹੀਂ, ਕੋਈ ਚਾਰਜ ਨਹੀਂ, ਕਦੇ ਨਹੀਂ।",
+  "upgrade.introFoundingTester": " — ਇੱਕ ਸੰਸਥਾਪਕ ਪਰਖਕ ਵਰਕਸਪੇਸ, ਹਮੇਸ਼ਾ ਲਈ ਮੁਫ਼ਤ ਅਤੇ ਬਿਨਾਂ ਕਿਸੇ ਚਾਰਜ ਦੇ।",
+  "upgrade.foundingTesterNote": "ਸੰਸਥਾਪਕ ਪਰਖਕ Business ਨੂੰ ਹਮੇਸ਼ਾ ਲਈ ਮੁਫ਼ਤ ਰੱਖਦੇ ਹਨ — ਇੱਥੇ ਬਦਲਣ ਲਈ ਕੋਈ ਪਲਾਨ ਨਹੀਂ ਹੈ ਅਤੇ ਰੱਦ ਕਰਨ ਲਈ ਕੋਈ ਗਾਹਕੀ ਨਹੀਂ ਹੈ।",
+  "apiErrors.foundingTester.alreadyListed": "ਉਹ ਈਮੇਲ ਪਹਿਲਾਂ ਹੀ ਸੰਸਥਾਪਕ ਪਰਖਕਾਂ ਦੀ ਸੂਚੀ ਵਿੱਚ ਹੈ।",
+  "apiErrors.foundingTester.listFull": "ਸੰਸਥਾਪਕ ਪਰਖਕਾਂ ਦੀ ਸੂਚੀ ਭਰੀ ਹੋਈ ਹੈ।",
+  "apiErrors.foundingTester.notListed": "ਉਹ ਈਮੇਲ ਸੰਸਥਾਪਕ ਪਰਖਕਾਂ ਦੀ ਸੂਚੀ ਵਿੱਚ ਨਹੀਂ ਹੈ।",
+  "apiErrors.foundingTester.capWholeNumber": "ਸੀਮਾ 1 ਜਾਂ ਇਸ ਤੋਂ ਵੱਧ ਪੂਰੀ ਸੰਖਿਆ ਹੋਣੀ ਚਾਹੀਦੀ ਹੈ।",
 };
