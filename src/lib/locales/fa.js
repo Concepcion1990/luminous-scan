@@ -5010,4 +5010,13 @@ export const fa = {
   "payroll.profile.noName": "هنوز نامی ثبت نشده است.",
   "apiErrors.forbidden.businessOwnerUpdateDetails": "فقط مالک کسب‌وکار می‌تواند این جزئیات را به‌روز کند.",
   "apiErrors.invalidValue.homeAddressThousandCharacters": "نشانی خانه خود را به ۱۰۰۰ نویسه یا کمتر محدود کنید.",
+  "plans.status.foundingTester": "آزمایش‌کننده بنیان‌گذار",
+  "plans.priceNoteFoundingTester": "بدون هزینه — آزمایش‌کنندگان بنیان‌گذار Business را برای همیشه رایگان نگه می‌دارند.",
+  "subscribe.foundingTesterNote": "این فضای کاری Business را به‌عنوان آزمایش‌کننده بنیان‌گذار دارد — رایگان برای همیشه. بدون کارت، بدون هزینه، هرگز.",
+  "upgrade.introFoundingTester": " — یک فضای کاری آزمایش‌کننده بنیان‌گذار، رایگان برای همیشه و بدون هزینه.",
+  "upgrade.foundingTesterNote": "آزمایش‌کنندگان بنیان‌گذار Business را برای همیشه رایگان نگه می‌دارند — هیچ طرحی برای تغییر و هیچ اشتراکی برای لغو وجود ندارد.",
+  "apiErrors.foundingTester.alreadyListed": "آن ایمیل از قبل در فهرست آزمایش‌کنندگان بنیان‌گذار است.",
+  "apiErrors.foundingTester.listFull": "فهرست آزمایش‌کنندگان بنیان‌گذار پر است.",
+  "apiErrors.foundingTester.notListed": "آن ایمیل در فهرست آزمایش‌کنندگان بنیان‌گذار نیست.",
+  "apiErrors.foundingTester.capWholeNumber": "سقف باید یک عدد صحیح ۱ یا بیشتر باشد.",
 };
