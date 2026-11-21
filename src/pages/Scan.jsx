@@ -62,7 +62,12 @@ const allActions = [...actions, ...adjustments];
 
 export default function Scan() {
   const { activeId, profile } = useBusiness();
-  const { planKey } = useEntitlements();
+  const { planKey, can: canPlan, isLoading: entitlementLoading } = useEntitlements();
+  // Low stock is a Business surface (owner ruling, Nov 20, 2026):
+  // the amber at/below-reorder coloring of a scanned product's
+  // per-location quantities shows only when the plan carries
+  // alerts. The quantities themselves are unchanged on both plans.
+  const showLow = !entitlementLoading && canPlan('alerts');
   // No dangling doors (owner ruling, Nov 19, 2026): the not-found
   // panel's Create product button renders only for a person who
   // can actually create — products.edit, or the owner's per-member
@@ -686,7 +691,7 @@ export default function Scan() {
                     const level = levels.find((lv) => lv.location_id === l.id);
                     const q = level?.quantity ?? 0;
                     const holds = level?.reserved ?? 0;
-                    const isLow = product.reorder_point > 0 && q <= product.reorder_point;
+                    const isLow = showLow && product.reorder_point > 0 && q <= product.reorder_point;
                     return (
                       <div
                         key={l.id}

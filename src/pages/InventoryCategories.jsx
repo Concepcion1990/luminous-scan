@@ -24,19 +24,23 @@ const UNCATEGORIZED = 'Uncategorized';
 
 /**
  * Every product in the business, gathered under the category it is filed in, with
- * what that category is worth and what is running low inside it.
+ * what that category is worth — and, on Business, what is running low inside it.
  */
 export default function InventoryCategories() {
   const { activeId, profile } = useBusiness();
   const { can, isLoading: entitlementLoading } = useEntitlements();
   // AUDIT FINDING 5: the category header printed the money value of each
   // category — stock valuation, a Business-only feature — while the route
-  // itself is ungated. Hide the money line on Essentials and keep the
-  // units and low counts, which are passive counts (core, by design). The
-  // route stays open: gating the whole page would take the category
+  // itself is ungated. Hide the money line on Essentials. The route
+  // stays open: gating the whole page would take the category
   // browsing away from Essentials. While the plan is still loading the
   // money stays hidden rather than flashing to an Essentials account.
   const showValue = !entitlementLoading && can('valuation');
+  // Low stock is a Business surface (owner ruling, Nov 20, 2026):
+  // the group low counts and the per-item reorder captions render
+  // only when the plan carries alerts. The counts are still
+  // computed (Business needs them); Essentials never sees them.
+  const showLow = !entitlementLoading && can('alerts');
   const [inventory, setInventory] = useState(null);
   const [search, setSearch] = useState('');
   const [locationId, setLocationId] = useState('');
@@ -252,7 +256,7 @@ export default function InventoryCategories() {
                         count: group.count,
                         word: group.count === 1 ? t('inventory.productSingular') : t('inventory.productPlural'),
                       })}
-                      {group.low ? t('inventory.groupLowSuffix', { low: group.low }) : ''}
+                      {showLow && group.low ? t('inventory.groupLowSuffix', { low: group.low }) : ''}
                     </p>
                   </div>
                   <div className="shrink-0 text-right">
@@ -289,9 +293,9 @@ export default function InventoryCategories() {
                           </button>
                         </div>
                         <div className="shrink-0 text-right">
-                          <p className={`numeric text-sm font-semibold ${low ? 'text-warn' : ''}`}>{onHand}</p>
+                          <p className={`numeric text-sm font-semibold ${showLow && low ? 'text-warn' : ''}`}>{onHand}</p>
                           <p className="font-mono text-[9px] uppercase tracking-wide text-muted-foreground">
-                            {low ? t('inventory.reorderLabel', { point: product.reorder_point }) : t('inventory.onHand')}
+                            {showLow && low ? t('inventory.reorderLabel', { point: product.reorder_point }) : t('inventory.onHand')}
                           </p>
                         </div>
                       </div>

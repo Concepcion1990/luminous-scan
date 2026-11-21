@@ -95,6 +95,14 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
   // refuses pricing writes off-Business and strips them from reads).
   const { can } = useEntitlements();
   const canPricing = can('pricing');
+  // Low stock is a Business surface (owner ruling, Nov 20, 2026):
+  // the Reorder at field renders only when the plan carries
+  // alerts. Unlike pricing above, the field's state and the save
+  // payload are NOT plan-shaped: the form still initializes from
+  // the product and writes the value back unchanged, so a stored
+  // reorder point survives an Essentials edit untouched and
+  // Business reveals it exactly as it was.
+  const canAlerts = can('alerts');
   // No dangling doors (owner ruling, Nov 19, 2026): minting a NEW
   // category from this form is a Category create — the server asks
   // categories.manage for it. The "+ Add new" row in the category
@@ -1078,7 +1086,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
             </p>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className={`grid ${canAlerts ? 'grid-cols-3' : 'grid-cols-2'} gap-3`}>
             <div className="grid gap-2">
               <Label htmlFor="cost">{t('productForm.costLabel')}</Label>
               <Input id="cost" type="number" inputMode="decimal" value={form.cost} onChange={set('cost')} />
@@ -1087,16 +1095,18 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
               <Label htmlFor="price">{t('productForm.priceLabel')}</Label>
               <Input id="price" type="number" inputMode="decimal" value={form.price} onChange={set('price')} />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="reorder">{t('productForm.reorderLabel')}</Label>
-              <Input
-                id="reorder"
-                type="number"
-                inputMode="numeric"
-                value={form.reorder_point}
-                onChange={set('reorder_point')}
-              />
-            </div>
+            {canAlerts && (
+              <div className="grid gap-2">
+                <Label htmlFor="reorder">{t('productForm.reorderLabel')}</Label>
+                <Input
+                  id="reorder"
+                  type="number"
+                  inputMode="numeric"
+                  value={form.reorder_point}
+                  onChange={set('reorder_point')}
+                />
+              </div>
+            )}
           </div>
 
           {!product && !createdProduct && (

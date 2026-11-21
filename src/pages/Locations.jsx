@@ -28,7 +28,11 @@ export default function Locations() {
   // page and its edit pencils but sees no add door anywhere.
   const { can, unrestricted } = useStaffAccess();
   const canAddLocation = unrestricted || can('locations.create');
-  const { limits, isLoading: entitlementLoading } = useEntitlements();
+  const { limits, can: canPlan, isLoading: entitlementLoading } = useEntitlements();
+  // Low stock is a Business surface (owner ruling, Nov 20, 2026):
+  // the location cards' LOW stat renders only when the plan
+  // carries alerts. Stored reorder points are never touched.
+  const showAlerts = !entitlementLoading && canPlan('alerts');
   const { toast } = useToast();
   const [locations, setLocations] = useState([]);
   const [levels, setLevels] = useState([]);
@@ -146,6 +150,7 @@ export default function Locations() {
             productById={productById}
             onEdit={openEdit}
             onAddChild={canAddLocation ? openNew : null}
+            showLow={showAlerts}
           />
         ))}
       </div>

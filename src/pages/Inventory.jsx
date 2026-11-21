@@ -4,6 +4,7 @@ import { Search } from 'lucide-react';
 import { loadInventory, productMatchesSearch, productTruncationNotice, searchWords } from '@/lib/inventory';
 import { countDistinctProducts, isDuplicateProduct } from '@/lib/productDuplicates';
 import { useBusiness } from '@/hooks/useBusiness';
+import useEntitlements from '@/hooks/useEntitlements';
 import useStaffAccess from '@/hooks/useStaffAccess';
 import useDataFresh from '@/hooks/useDataFresh';
 import { useOfflineSync } from '@/hooks/useOfflineSync';
@@ -27,6 +28,12 @@ export default function Inventory() {
   // The row Adjust door is catalog stock editing (products.edit,
   // owner catch Nov 19, 2026) — see Products for the same gate.
   const canEditProducts = can('products.edit');
+  // Low stock is a Business surface (owner ruling, Nov 20, 2026):
+  // the Low stat card and the rows' reorder captions render only
+  // when the plan carries alerts. Stored reorder points are never
+  // touched — they stay saved, unseen here.
+  const { can: canPlan, isLoading: entitlementLoading } = useEntitlements();
+  const showAlerts = !entitlementLoading && canPlan('alerts');
   // T6: the manager's live view — the convergence check re-reads when
   // the server version moves (a phone's queued work just landed).
   const sync = useOfflineSync(activeId, { onConverged: () => load() });
@@ -112,7 +119,9 @@ export default function Inventory() {
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <StatCard label={t('inventory.statUnits')} value={units} unit={t('inventory.unitUnits')} />
             <StatCard label={t('inventory.statStocked')} value={stocked} unit={t('inventory.ofProducts', { count: countDistinctProducts(products) })} />
-            <StatCard label={t('inventory.statLow')} value={low} tone={low ? 'warn' : 'default'} hint={t('inventory.lowHint')} />
+            {showAlerts && (
+              <StatCard label={t('inventory.statLow')} value={low} tone={low ? 'warn' : 'default'} hint={t('inventory.lowHint')} />
+            )}
             <StatCard label={t('inventory.statLocations')} value={locations.length} unit={t('inventory.unitPlaces')} />
           </div>
 
@@ -171,6 +180,7 @@ export default function Inventory() {
                     locations={locations}
                     onAdjust={setAdjusting}
                     canAdjust={canEditProducts}
+                    showReorder={showAlerts}
                   />
                 ))}
               </div>

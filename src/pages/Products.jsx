@@ -91,7 +91,13 @@ export default function Products() {
   // never sees them; the server refusal stays as the lock underneath.
   const canCreateProducts = can('products.edit') || can('products.create');
   const { profile, activeId, record } = useBusiness();
-  const { limits, planKey, isLoading: entitlementLoading } = useEntitlements();
+  const { limits, planKey, can: canPlan, isLoading: entitlementLoading } = useEntitlements();
+  // Low stock is a Business surface (owner ruling, Nov 20, 2026):
+  // the LOW badge, the Reorder column, the reorder sort and the
+  // expanded row's reorder line render only when the plan carries
+  // alerts. The stored reorder_point values are never touched —
+  // they stay saved, unseen here, and Business reveals them.
+  const showAlerts = !entitlementLoading && canPlan('alerts');
   const { toast } = useToast();
   const isDesktop = useIsDesktop();
   const { open: dialogOpen, onOpenChange: setDialogOpen } = useModalHistory({
@@ -143,7 +149,7 @@ export default function Products() {
     { value: 'codes', label: t('products.sortCodes') },
     { value: 'category', label: t('products.sortCategory') },
     { value: 'onHand', label: t('products.sortOnHand') },
-    { value: 'reorder', label: t('products.sortReorder') },
+    ...(showAlerts ? [{ value: 'reorder', label: t('products.sortReorder') }] : []),
     { value: 'price', label: t('products.sortPrice') },
   ];
 
@@ -612,21 +618,23 @@ export default function Products() {
       )}
 
       <div data-tour="products-list" className="overflow-hidden rounded-xl border border-border bg-card">
-        <div className="hidden grid-cols-[26px_minmax(0,2.2fr)_minmax(0,1.2fr)_110px_110px_88px] gap-3 border-b border-border bg-muted/50 px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground md:grid xl:grid-cols-[26px_48px_minmax(0,2.4fr)_minmax(0,1.3fr)_120px_110px_84px_104px_96px]">
+        <div className={`hidden grid-cols-[26px_minmax(0,2.2fr)_minmax(0,1.2fr)_110px_110px_88px] gap-3 border-b border-border bg-muted/50 px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground md:grid ${showAlerts ? 'xl:grid-cols-[26px_48px_minmax(0,2.4fr)_minmax(0,1.3fr)_120px_110px_84px_104px_96px]' : 'xl:grid-cols-[26px_48px_minmax(0,2.4fr)_minmax(0,1.3fr)_120px_110px_104px_96px]'}`}>
           <span />
           <span className="hidden xl:block">{t('products.colPhoto')}</span>
           <SortHeader label={t('products.colProduct')} column="name" sort={sort} onSort={toggleSort} />
           <SortHeader label={t('products.colCodes')} column="codes" sort={sort} onSort={toggleSort} />
           <SortHeader label={t('products.colCategory')} column="category" sort={sort} onSort={toggleSort} />
           <SortHeader label={t('products.colOnHand')} column="onHand" sort={sort} onSort={toggleSort} align="right" />
-          <SortHeader
-            label={t('products.colReorder')}
-            column="reorder"
-            sort={sort}
-            onSort={toggleSort}
-            align="right"
-            className="hidden xl:flex"
-          />
+          {showAlerts && (
+            <SortHeader
+              label={t('products.colReorder')}
+              column="reorder"
+              sort={sort}
+              onSort={toggleSort}
+              align="right"
+              className="hidden xl:flex"
+            />
+          )}
           <SortHeader
             label={t('products.colPrice')}
             column="price"
@@ -664,7 +672,7 @@ export default function Products() {
             return (
               <div key={product.id}>
                 <div
-                  className={`grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 md:grid-cols-[26px_minmax(0,2.2fr)_minmax(0,1.2fr)_110px_110px_88px] xl:grid-cols-[26px_48px_minmax(0,2.4fr)_minmax(0,1.3fr)_120px_110px_84px_104px_96px] ${
+                  className={`grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 md:grid-cols-[26px_minmax(0,2.2fr)_minmax(0,1.2fr)_110px_110px_88px] ${showAlerts ? 'xl:grid-cols-[26px_48px_minmax(0,2.4fr)_minmax(0,1.3fr)_120px_110px_84px_104px_96px]' : 'xl:grid-cols-[26px_48px_minmax(0,2.4fr)_minmax(0,1.3fr)_120px_110px_104px_96px]'} ${
                     selected.includes(product.id) ? 'bg-primary/5' : ''
                   }`}
                 >
@@ -696,7 +704,7 @@ export default function Products() {
                       <span className="block truncate text-sm font-medium">{product.name}</span>
                       <span className="numeric block truncate text-[11px] text-muted-foreground">
                         {product.sku}
-                        {isLow && <span className="ml-2 font-mono uppercase text-warn">{t('products.lowBadge')}</span>}
+                        {showAlerts && isLow && <span className="ml-2 font-mono uppercase text-warn">{t('products.lowBadge')}</span>}
                         {product.status && product.status !== 'active' && (
                           <span className="ml-2 font-mono uppercase text-muted-foreground">
                             {product.status}
@@ -746,9 +754,11 @@ export default function Products() {
                       </button>
                     )}
                   </span>
-                  <span className="numeric hidden text-right text-xs text-muted-foreground xl:block">
-                    {product.reorder_point || 0}
-                  </span>
+                  {showAlerts && (
+                    <span className="numeric hidden text-right text-xs text-muted-foreground xl:block">
+                      {product.reorder_point || 0}
+                    </span>
+                  )}
                   <span className="numeric hidden text-right text-sm xl:block">
                     <ProductPrice product={product} currency={profile.currency} digits={2} />
                   </span>
@@ -820,13 +830,15 @@ export default function Products() {
                         );
                       })}
                     </div>
-                    <p className="mt-2 font-mono text-[10px] uppercase tracking-wide text-muted-foreground">
-                      {t('products.reorderLine', {
-                        reorder: product.reorder_point || 0,
-                        cost: formatMoney(product.cost, profile.currency, 2),
-                        price: product.price || 0,
-                      })}
-                    </p>
+                    {showAlerts && (
+                      <p className="mt-2 font-mono text-[10px] uppercase tracking-wide text-muted-foreground">
+                        {t('products.reorderLine', {
+                          reorder: product.reorder_point || 0,
+                          cost: formatMoney(product.cost, profile.currency, 2),
+                          price: product.price || 0,
+                        })}
+                      </p>
+                    )}
                     {(product.isbn || product.author || product.condition) && (
                       <p className="mt-1 text-[11px] text-muted-foreground">
                         {[

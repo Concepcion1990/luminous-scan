@@ -50,11 +50,15 @@ export default function Dashboard() {
   // teaser cards linking to /upgrade; the owner's invisibility ruling
   // (Nov 14, 2026 — "anything pertaining to business shouldn't be
   // popping up on essentials") superseded that: on Essentials the two
-  // cards do not render at all, and the Needs-attention panel shows
-  // only its normal empty state (its rows are the Business alerts
-  // surface; the upsell block is gone, nothing invented in its place).
-  // Passive low-stock counts stay visible on the Products, Inventory
-  // and Category pages by design; only the alerts surface is gated here.
+  // cards do not render at all. The panel at first kept its normal
+  // empty state on Essentials — until the owner caught the lie in it
+  // (Nov 20, 2026: the Stock-by-location card said "1 low" while the
+  // panel below said "Nothing below its reorder point") and ruled the
+  // whole box belongs to Business: on Essentials the panel does not
+  // render at all, and neither does any other low-stock trace (the
+  // location card's low counts included — the Nov 20 sweep took every
+  // low-stock surface off Essentials, Products/Inventory/Categories
+  // included).
   const showAlerts = !entitlementLoading && can('alerts');
   const showValuation = !entitlementLoading && can('valuation');
   // FINDING 36: a persistent quiet trial chip — the trial banner only
@@ -265,15 +269,13 @@ export default function Dashboard() {
 
           <div className="grid gap-4 lg:grid-cols-3">
             <div className="lg:col-span-2">
-              <LocationStockPanel perLocation={stats.perLocation} />
+              <LocationStockPanel perLocation={stats.perLocation} showLow={showAlerts} />
             </div>
             {entitlementLoading ? (
               <div className="h-[220px] animate-pulse rounded-xl border border-border bg-card" />
             ) : showAlerts ? (
               <AttentionPanel low={stats.low} />
-            ) : (
-              <AttentionPanel low={[]} />
-            )}
+            ) : null}
           </div>
 
           <div className="grid gap-4 lg:grid-cols-3">

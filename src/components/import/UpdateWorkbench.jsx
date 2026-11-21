@@ -4,7 +4,8 @@ import { CheckCircle2, Loader2, RotateCcw, TriangleAlert, Upload } from 'lucide-
 import { t } from '@/lib/i18n';
 import useImportSheet from '@/hooks/useImportSheet';
 import useImportDraft from '@/hooks/useImportDraft';
-import { evaluateUpdates, guessUpdateField, UPDATE_FIELDS } from '@/lib/importModes';
+import useEntitlements from '@/hooks/useEntitlements';
+import { evaluateUpdates, guessUpdateField, updateFieldsForPlan } from '@/lib/importModes';
 import { applyProductUpdates } from '@/lib/importCommit';
 import { downloadTemplateCsv, downloadTemplateXlsx } from '@/lib/importTemplates';
 import { scoped } from '@/lib/scoped';
@@ -40,7 +41,20 @@ const EXAMPLE = {
  * SKU, blank cells are left alone unless asked, and quantities never change.
  */
 export default function UpdateWorkbench({ businessId }) {
-  const sheet = useImportSheet(guessUpdateField);
+  const { planKey } = useEntitlements();
+  // The reorder point is a Business update target (owner ruling,
+  // Nov 20, 2026): off Business it is not offered in the mapper,
+  // not printed in the template, and a guessed or restored mapping
+  // to it drops to Ignore, so it can never be written there.
+  // Stored values are never touched.
+  const showReorder = planKey === 'business';
+  const visibleFields = updateFieldsForPlan(planKey);
+  const sanitizeMapping = (entries) =>
+    showReorder ? entries : entries.map((field) => (field === 'reorder_point' ? '' : field));
+  const sheet = useImportSheet((header) => {
+    const guessed = guessUpdateField(header);
+    return showReorder || guessed !== 'reorder_point' ? guessed : '';
+  });
   const [products, setProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [clearBlanks, setClearBlanks] = useState(false);
@@ -131,7 +145,10 @@ export default function UpdateWorkbench({ businessId }) {
     mode: 'update',
     snapshot: draftSnapshot,
     restore: (draft) => {
-      sheet.hydrate(draft.sheet);
+      sheet.hydrate({
+        ...(draft.sheet || {}),
+        mapping: sanitizeMapping((draft.sheet && draft.sheet.mapping) || []),
+      });
       setClearBlanks(Boolean(draft.clearBlanks));
       setConfirmed(Boolean(draft.confirmed));
       setDryRun(draft.dryRun || null);
@@ -225,12 +242,12 @@ export default function UpdateWorkbench({ businessId }) {
           }}
         />
       </label>
-      <Button variant="outline" onClick={() => downloadTemplateCsv('product-update-template.csv', UPDATE_FIELDS, EXAMPLE)}>
+      <Button variant="outline" onClick={() => downloadTemplateCsv('product-update-template.csv', visibleFields, EXAMPLE)}>
         {t('import.csvTemplate')}
       </Button>
       <Button
         variant="outline"
-        onClick={() => downloadTemplateXlsx('product-update-template.xlsx', UPDATE_FIELDS, EXAMPLE)}
+        onClick={() => downloadTemplateXlsx('product-update-template.xlsx', visibleFields, EXAMPLE)}
       >
         {t('import.excelTemplate')}
       </Button>
@@ -360,7 +377,7 @@ export default function UpdateWorkbench({ businessId }) {
               dropChecks();
               setExcluded([]);
             }}
-            fields={UPDATE_FIELDS}
+            fields={visibleFields}
             requiredKeys={['sku', 'id']}
             missingMessage={t('import.updateMissingMessage')}
           />

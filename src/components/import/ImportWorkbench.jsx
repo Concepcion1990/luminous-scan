@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { base44 } from '@/api/client';
 import { Loader2, RotateCcw, TriangleAlert, Upload } from 'lucide-react';
 import { t } from '@/lib/i18n';
-import { IMPORT_FIELDS, guessField, parseCsv } from '@/lib/csvImport';
+import { guessField, importFieldsForPlan, parseCsv } from '@/lib/csvImport';
 import { evaluateRows, existingKeys } from '@/lib/importProducts';
 import { downloadCsv, toCsv } from '@/lib/csv';
 import { scoped } from '@/lib/scoped';
@@ -33,7 +33,16 @@ const NO_LOCATION = 'none';
  */
 export default function ImportWorkbench({ businessId }) {
   const { user } = useAuth();
-  const { limits } = useEntitlements();
+  const { limits, planKey } = useEntitlements();
+  // The reorder point is a Business mapping target (owner ruling,
+  // Nov 20, 2026): off Business it is not offered in the mapper,
+  // not printed in the template, and a guessed or restored mapping
+  // to it drops to Ignore. Stored values are never touched.
+  const visibleFields = importFieldsForPlan(planKey);
+  const sanitizeMapping = (entries) =>
+    planKey === 'business'
+      ? entries
+      : entries.map((field) => (field === 'reorder_point' ? '' : field));
   const [fileName, setFileName] = useState('');
   const [sheets, setSheets] = useState([]);
   const [sheetName, setSheetName] = useState('');
@@ -117,7 +126,7 @@ export default function ImportWorkbench({ businessId }) {
       setSheetName(snap.sheetName || '');
       setTable(snap.table || null);
       setWarnings(snap.warnings || []);
-      setMapping(snap.mapping || []);
+      setMapping(sanitizeMapping(snap.mapping || []));
       setLocationId(draft.locationId || '');
       setDryRun(draft.dryRun || null);
       setExcluded(Array.isArray(draft.excluded) ? draft.excluded : []);
@@ -151,7 +160,7 @@ export default function ImportWorkbench({ businessId }) {
   const loadSheet = (sheet) => {
     setSheetName(sheet.name);
     setTable({ headers: sheet.headers, rows: sheet.rows });
-    setMapping(sheet.headers.map(guessField));
+    setMapping(sanitizeMapping(sheet.headers.map(guessField)));
     setDryRun(null);
     setExcluded([]);
   };
@@ -223,7 +232,7 @@ export default function ImportWorkbench({ businessId }) {
   };
 
   const downloadTemplate = () => {
-    const columns = IMPORT_FIELDS.map((field) => ({
+    const columns = visibleFields.map((field) => ({
       label: field.label,
       value: (row) => row[field.key],
     }));
@@ -238,7 +247,7 @@ export default function ImportWorkbench({ businessId }) {
       [
         {
           name: 'Products',
-          columns: IMPORT_FIELDS.map((field) => ({
+          columns: visibleFields.map((field) => ({
             label: field.label,
             text: textFields.has(field.key),
             value: (row) => row[field.key],
@@ -492,7 +501,7 @@ export default function ImportWorkbench({ businessId }) {
             </div>
           )}
 
-          <ColumnMapper headers={table.headers} mapping={mapping} onChange={changeMapping} />
+          <ColumnMapper headers={table.headers} mapping={mapping} onChange={changeMapping} fields={visibleFields} />
           <ImportPreview
             report={report}
             excluded={excludedSet}
