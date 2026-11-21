@@ -5004,4 +5004,10 @@ export const de = {
   "apiErrors.invalidValue.chooseSignatureStyle": "Wählen Sie einen Unterschriftsstil.",
   "apiErrors.invalidValue.noDdDetailsYet": "Dieses Teammitglied hat seine Daten noch nicht gesendet.",
   "training.lessons.owner-dd-setup.step5": "Was ankommt, ist ein versiegeltes, unterschriebenes Formular: In der Zeile der Person in der Lohnabrechnung können Sie es öffnen, um die vollständigen Nummern zu lesen, es zu drucken oder eine Kopie zu speichern — bearbeiten können Sie es nie. Wenn eine Nummer falsch aussieht, senden Sie das Formular zurück: Die Person korrigiert es und unterschreibt selbst erneut, ihr korrigiertes Formular ersetzt das alte, und das frühere bleibt mit seinem Ersatzdatum im Datensatz.",
+  "payroll.profile.ownerNote": "Dies sind Ihre eigenen hinterlegten Daten aus Ihrem Konto. Nur Sie können sie hier sehen — und weil es Ihre sind, können Sie sie hier jederzeit aktualisieren, wenn sie sich ändern.",
+  "payroll.profile.edit": "Ihre Daten bearbeiten",
+  "payroll.profile.cancel": "Abbrechen",
+  "payroll.profile.noName": "Noch kein Name hinterlegt.",
+  "apiErrors.forbidden.businessOwnerUpdateDetails": "Nur der Geschäftsinhaber kann diese Daten aktualisieren.",
+  "apiErrors.invalidValue.homeAddressThousandCharacters": "Ihre Wohnadresse darf höchstens 1000 Zeichen lang sein.",
 };
