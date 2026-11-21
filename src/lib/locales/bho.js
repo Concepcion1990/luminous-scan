@@ -5010,4 +5010,13 @@ export const bho = {
   "payroll.profile.noName": "अभी तक कवनो नाम दर्ज नइखे।",
   "apiErrors.forbidden.businessOwnerUpdateDetails": "खाली कारोबार के मालिक ही ई विवरण अपडेट कर सकेला।",
   "apiErrors.invalidValue.homeAddressThousandCharacters": "आपन घर के पता 1000 अक्षर भा ओसे कम में राखीं।",
+  "plans.status.foundingTester": "संस्थापक परीक्षक",
+  "plans.priceNoteFoundingTester": "कवनो शुल्क ना — संस्थापक परीक्षक Business के हमेशा खातिर मुफ़्त रखेलें।",
+  "subscribe.foundingTesterNote": "ई कार्यक्षेत्र के पास संस्थापक परीक्षक के रूप में Business बा — हमेशा खातिर मुफ़्त। कवनो कार्ड ना, कवनो शुल्क ना, कबो ना।",
+  "upgrade.introFoundingTester": " — एक संस्थापक परीक्षक कार्यक्षेत्र, हमेशा खातिर मुफ़्त आ बिना शुल्क के।",
+  "upgrade.foundingTesterNote": "संस्थापक परीक्षक Business के हमेशा खातिर मुफ़्त रखेलें — इहाँ बदले खातिर कवनो योजना नइखे आ रद्द करे खातिर कवनो सदस्यता नइखे।",
+  "apiErrors.foundingTester.alreadyListed": "ऊ ईमेल पहिलहीं से संस्थापक परीक्षकों की सूची में बा।",
+  "apiErrors.foundingTester.listFull": "संस्थापक परीक्षकों की सूची भर गइल बा।",
+  "apiErrors.foundingTester.notListed": "ऊ ईमेल संस्थापक परीक्षकों की सूची में नइखे।",
+  "apiErrors.foundingTester.capWholeNumber": "सीमा 1 भा ओसे अधिक के पूर्ण संख्या होखे के चाहीं।",
 };
