@@ -5004,4 +5004,10 @@ export const vi = {
   "apiErrors.invalidValue.chooseSignatureStyle": "Chọn một kiểu chữ ký.",
   "apiErrors.invalidValue.noDdDetailsYet": "Thành viên nhóm đó chưa gửi thông tin của họ.",
   "training.lessons.owner-dd-setup.step5": "Thứ đến là một biểu mẫu đã niêm phong và đã ký: từ hàng của người đó trong Bảng lương, bạn có thể mở nó để đọc số đầy đủ, in nó hoặc lưu một bản sao — bạn không bao giờ có thể chỉnh sửa nó. Nếu một số trông sai, hãy gửi lại biểu mẫu: chính người đó sửa và ký lại, biểu mẫu đã sửa của họ thay thế biểu mẫu cũ, và biểu mẫu trước đó vẫn ở trong hồ sơ với ngày thay thế của nó.",
+  "payroll.profile.ownerNote": "Đây là thông tin của chính bạn trong hồ sơ, từ tài khoản của bạn. Chỉ bạn mới có thể xem chúng ở đây — và vì chúng là của bạn, bạn có thể cập nhật ngay tại đây mỗi khi chúng thay đổi.",
+  "payroll.profile.edit": "Chỉnh sửa thông tin của bạn",
+  "payroll.profile.cancel": "Hủy",
+  "payroll.profile.noName": "Chưa có tên nào trong hồ sơ.",
+  "apiErrors.forbidden.businessOwnerUpdateDetails": "Chỉ chủ doanh nghiệp mới có thể cập nhật các thông tin này.",
+  "apiErrors.invalidValue.homeAddressThousandCharacters": "Vui lòng giữ địa chỉ nhà của bạn trong 1000 ký tự trở xuống.",
 };
