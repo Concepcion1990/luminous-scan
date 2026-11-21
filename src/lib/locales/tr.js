@@ -5004,4 +5004,10 @@ export const tr = {
   "apiErrors.invalidValue.chooseSignatureStyle": "Bir imza stili seçiniz.",
   "apiErrors.invalidValue.noDdDetailsYet": "O ekip üyesi bilgilerini henüz göndermedi.",
   "training.lessons.owner-dd-setup.step5": "Gelen, mühürlü ve imzalı bir formdur: kişinin Bordro içindeki satırından onu açıp tam numaraları okuyabilir, yazdırabilir veya bir kopyasını kaydedebilirsiniz — onu asla düzenleyemezsiniz. Bir numara yanlış görünürse formu geri gönderiniz: kişi düzeltir ve kendisi yeniden imzalar, düzeltilmiş formu eskisinin yerini alır ve önceki form, değiştirilme tarihiyle kayıtta kalır.",
+  "payroll.profile.ownerNote": "Bunlar, hesabınızdan dosyada bulunan kendi bilgilerinizdir. Bunları burada yalnızca siz görebilirsiniz — ve size ait oldukları için, değiştiklerinde hemen buradan güncelleyebilirsiniz.",
+  "payroll.profile.edit": "Bilgilerinizi düzenleyin",
+  "payroll.profile.cancel": "İptal",
+  "payroll.profile.noName": "Henüz kayıtlı bir ad yok.",
+  "apiErrors.forbidden.businessOwnerUpdateDetails": "Bu bilgileri yalnızca işletme sahibi güncelleyebilir.",
+  "apiErrors.invalidValue.homeAddressThousandCharacters": "Ev adresinizi 1000 karakter veya daha az tutun.",
 };
