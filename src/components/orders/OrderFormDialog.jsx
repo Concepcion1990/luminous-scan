@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { Link } from 'react-router-dom';
 import { base44, apiRequest } from '@/api/client';
 import { Plus, ScanBarcode } from 'lucide-react';
@@ -628,19 +629,40 @@ export default function OrderFormDialog({ open, onOpenChange, order, products, l
           </Button>
         </DialogFooter>
 
-        {/* In-form scanner overlay: rendered INSIDE the dialog, so
+        {/* In-form scanner window: rendered INSIDE the dialog, so
             the form underneath never unmounts and nothing typed is
             lost. Closing it (capture or Cancel) returns to the exact
-            same half-filled order. */}
+            same half-filled order. Since Nov 20, 2026 (release 328)
+            it is a real nested Radix Dialog on the Add window's
+            construction, not a hand-rolled fixed overlay: the
+            hand-rolled card was fixed-positioned INSIDE this
+            dialog's transformed content, so it anchored to the
+            dialog's box rather than the viewport, and it had no
+            focus trap and no scroll lock of its own. As a nested
+            dialog it portals to the viewport, holds focus, and
+            locks scroll; Escape and the backdrop now also close
+            the scanner (never the order form). */}
         {trackingScanOpen && (
-          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 p-4">
-            <div className="w-full max-w-sm space-y-3 rounded-xl bg-card p-4 shadow-lg">
-              <BarcodeScanner onDetect={handleTrackingScan} />
-              <Button type="button" variant="outline" className="w-full" onClick={() => setTrackingScanOpen(false)}>
-                {t('orders.cancel')}
-              </Button>
-            </div>
-          </div>
+          <DialogPrimitive.Root
+            open
+            onOpenChange={(next) => {
+              if (!next) setTrackingScanOpen(false);
+            }}
+          >
+            <DialogPrimitive.Portal>
+              <DialogPrimitive.Overlay className="fixed inset-0 z-[80] bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+              <DialogPrimitive.Content
+                aria-describedby={undefined}
+                className="fixed left-[50%] top-[50%] z-[80] w-[calc(100vw-2rem)] max-w-sm translate-x-[-50%] translate-y-[-50%] space-y-3 rounded-xl bg-card p-4 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
+              >
+                <DialogPrimitive.Title className="sr-only">{t('orders.scanTracking')}</DialogPrimitive.Title>
+                <BarcodeScanner onDetect={handleTrackingScan} />
+                <Button type="button" variant="outline" className="w-full" onClick={() => setTrackingScanOpen(false)}>
+                  {t('orders.cancel')}
+                </Button>
+              </DialogPrimitive.Content>
+            </DialogPrimitive.Portal>
+          </DialogPrimitive.Root>
         )}
       </DialogContent>
     </Dialog>

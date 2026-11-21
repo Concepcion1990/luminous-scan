@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { AlertTriangle, Check, Save, ScanLine, Send, Undo2 } from 'lucide-react';
 import { t } from '@/lib/i18n';
 
@@ -225,35 +226,53 @@ export default function CountSheet({ session, products, levels, user, onChanged 
         </div>
       )}
 
-      {/* In-sheet tally scanner overlay: same in-dialog scanner as
-          the product form; the sheet underneath never unmounts, so
-          every counted value typed so far is preserved. The scanner
-          stays open and tallies until Done — each capture lands on
-          this sheet only (Nov 16, 2026). */}
+      {/* In-sheet tally scanner window: the sheet underneath never
+          unmounts, so every counted value typed so far is
+          preserved. The scanner stays open and tallies until Done
+          — each capture lands on this sheet only (Nov 16, 2026).
+          Since Nov 20, 2026 (release 328) it is a real Radix
+          Dialog on the Add window's construction, not a hand-rolled
+          fixed overlay: the hand-rolled card had no focus trap and
+          no scroll lock, so focus stayed wherever it was and the
+          page behind it still scrolled. As a real dialog the
+          window holds focus and locks the page; Escape and the
+          backdrop now also close it, exactly like Done — every
+          tally already scanned stays on the sheet either way. */}
       {scannerOpen && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 p-4">
-          <div className="w-full max-w-sm space-y-3 rounded-xl bg-card p-4 shadow-lg">
-            <p className="flex items-center gap-1.5 text-sm font-medium">
-              <ScanLine className="h-4 w-4" /> {t('scanTally.title')}
-            </p>
-            <BarcodeScanner onDetect={handleTallyDetect} />
-            <p className="text-sm text-muted-foreground">{t('scanTally.hint')}</p>
-            {tallyNote && (
-              <p
-                className={`flex items-start gap-1.5 text-sm ${
-                  tallyNote.ok ? 'text-ok' : 'text-destructive'
-                }`}
-                role="status"
-              >
-                {tallyNote.ok && <Check className="mt-0.5 h-4 w-4 shrink-0" />}
-                <span>{tallyNote.text}</span>
-              </p>
-            )}
-            <Button type="button" className="w-full" onClick={() => setScannerOpen(false)}>
-              {t('scanTally.done')}
-            </Button>
-          </div>
-        </div>
+        <DialogPrimitive.Root
+          open
+          onOpenChange={(next) => {
+            if (!next) setScannerOpen(false);
+          }}
+        >
+          <DialogPrimitive.Portal>
+            <DialogPrimitive.Overlay className="fixed inset-0 z-[80] bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+            <DialogPrimitive.Content
+              aria-describedby={undefined}
+              className="fixed left-[50%] top-[50%] z-[80] w-[calc(100vw-2rem)] max-w-sm translate-x-[-50%] translate-y-[-50%] space-y-3 rounded-xl bg-card p-4 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
+            >
+              <DialogPrimitive.Title className="flex items-center gap-1.5 text-sm font-medium">
+                <ScanLine className="h-4 w-4" /> {t('scanTally.title')}
+              </DialogPrimitive.Title>
+              <BarcodeScanner onDetect={handleTallyDetect} />
+              <p className="text-sm text-muted-foreground">{t('scanTally.hint')}</p>
+              {tallyNote && (
+                <p
+                  className={`flex items-start gap-1.5 text-sm ${
+                    tallyNote.ok ? 'text-ok' : 'text-destructive'
+                  }`}
+                  role="status"
+                >
+                  {tallyNote.ok && <Check className="mt-0.5 h-4 w-4 shrink-0" />}
+                  <span>{tallyNote.text}</span>
+                </p>
+              )}
+              <Button type="button" className="w-full" onClick={() => setScannerOpen(false)}>
+                {t('scanTally.done')}
+              </Button>
+            </DialogPrimitive.Content>
+          </DialogPrimitive.Portal>
+        </DialogPrimitive.Root>
       )}
 
       <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
