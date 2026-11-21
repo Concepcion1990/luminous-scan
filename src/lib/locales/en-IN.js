@@ -5007,4 +5007,10 @@ export const enIN = {
   "apiErrors.invalidValue.chooseSignatureStyle": "Choose a signature style.",
   "apiErrors.invalidValue.noDdDetailsYet": "That team member has not sent their details yet.",
   "training.lessons.owner-dd-setup.step5": "What arrives is a sealed, signed form: from the person's row in Payroll you can open it to read the full numbers, print it, or save a copy — you can never edit it. If a number looks wrong, send the form back: the person fixes it and signs again themselves, their corrected form replaces the old one, and the earlier form stays in the record under its replacement date.",
+  "payroll.profile.ownerNote": "These are your own details on file, from your account. Only you can see them here — and because they are yours, you can update them right here whenever they change.",
+  "payroll.profile.edit": "Edit your details",
+  "payroll.profile.cancel": "Cancel",
+  "payroll.profile.noName": "No name on file yet.",
+  "apiErrors.forbidden.businessOwnerUpdateDetails": "Only the business owner can update these details.",
+  "apiErrors.invalidValue.homeAddressThousandCharacters": "Keep your home address to 1000 characters or fewer.",
 };
