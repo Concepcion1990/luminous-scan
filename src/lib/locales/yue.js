@@ -4810,3 +4810,4 @@ export const yue = {
   "apiErrors.reorderChangeReserved": "只有店主，或者經店主允許更改補貨點嘅團隊成員，先可以更改補貨點。",
   "apiErrors.alertsViewReserved": "只有店主，或者經店主允許睇庫存不足提示嘅團隊成員，先可以睇庫存不足提示。",
 };
+
