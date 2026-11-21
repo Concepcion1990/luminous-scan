@@ -37,6 +37,7 @@ import {
   sendBackDirectDeposit,
   signatureFontFamily,
   submitDirectDeposit,
+  updateMyPayrollDetails,
   updateWorkforceSettings,
 } from '@/lib/workforce';
 
@@ -621,21 +622,94 @@ function CashUpSection({ businessId }) {
   );
 }
 
-function MyProfileSection({ profile }) {
+function MyProfileSection({ profile, businessId, reload }) {
+  const { toast } = useToast();
+  const isOwner = Boolean(profile.owner);
+  const [editing, setEditing] = useState(false);
+  const [name, setName] = useState('');
+  const [address, setAddress] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  const startEdit = () => {
+    setName(profile.full_name || '');
+    setAddress(profile.personal_address || '');
+    setEditing(true);
+  };
+
+  const save = async () => {
+    setBusy(true);
+    try {
+      await updateMyPayrollDetails(businessId, { full_name: name, personal_address: address });
+      toast({ title: t('payroll.saved') });
+      setEditing(false);
+      reload();
+    } catch (error) {
+      toast({ title: error.message, variant: 'destructive' });
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
-    <Section title={t('payroll.profile.title')} help={t('payroll.profile.note')}>
-      <dl className="grid max-w-xl gap-3 text-sm sm:grid-cols-2">
-        <div>
-          <dt className={labelCls}>{t('payroll.profile.name')}</dt>
-          <dd className="mt-0.5 font-medium">{profile.full_name}</dd>
+    <Section
+      title={t('payroll.profile.title')}
+      help={isOwner ? t('payroll.profile.ownerNote') : t('payroll.profile.note')}
+    >
+      {editing ? (
+        <div className="grid max-w-xl gap-3 text-sm">
+          <div>
+            <label className={labelCls} htmlFor="my-details-name">{t('payroll.profile.name')}</label>
+            <input
+              id="my-details-name"
+              className={`${inputCls} mt-1`}
+              value={name}
+              maxLength={80}
+              onChange={(event) => setName(event.target.value)}
+            />
+          </div>
+          <div>
+            <label className={labelCls} htmlFor="my-details-address">{t('payroll.profile.address')}</label>
+            <textarea
+              id="my-details-address"
+              className={`${inputCls} mt-1`}
+              rows={3}
+              value={address}
+              maxLength={1000}
+              onChange={(event) => setAddress(event.target.value)}
+            />
+          </div>
+          <div className="flex gap-2">
+            <Button size="sm" onClick={save} disabled={busy}>{t('payroll.save')}</Button>
+            <Button size="sm" variant="outline" onClick={() => setEditing(false)} disabled={busy}>
+              {t('payroll.profile.cancel')}
+            </Button>
+          </div>
         </div>
-        <div>
-          <dt className={labelCls}>{t('payroll.profile.address')}</dt>
-          <dd className="mt-0.5 whitespace-pre-line">
-            {profile.personal_address ? profile.personal_address : t('payroll.profile.noAddress')}
-          </dd>
-        </div>
-      </dl>
+      ) : (
+        <>
+          <dl className="grid max-w-xl gap-3 text-sm sm:grid-cols-2">
+            <div>
+              <dt className={labelCls}>{t('payroll.profile.name')}</dt>
+              <dd className="mt-0.5 font-medium">
+                {profile.full_name ? profile.full_name : t('payroll.profile.noName')}
+              </dd>
+            </div>
+            <div>
+              <dt className={labelCls}>{t('payroll.profile.address')}</dt>
+              <dd className="mt-0.5 whitespace-pre-line">
+                {profile.personal_address ? profile.personal_address : t('payroll.profile.noAddress')}
+              </dd>
+            </div>
+          </dl>
+          {isOwner && (
+            <div className="mt-3">
+              <Button size="sm" variant="outline" onClick={startEdit}>
+                <PenLine className="mr-1.5 h-3.5 w-3.5" /> {t('payroll.profile.edit')}
+              </Button>
+            </div>
+          )}
+        </>
+      )}
     </Section>
   );
 }
@@ -995,7 +1069,7 @@ export default function Payroll() {
         <p className="mt-1 text-sm text-muted-foreground">{t('payroll.subtitle')}</p>
       </div>
 
-      {ctx.me_profile && <MyProfileSection profile={ctx.me_profile} />}
+      {ctx.me_profile && <MyProfileSection profile={ctx.me_profile} businessId={activeId} reload={load} />}
 
       {profiles.length > 0 && (
         <ProfilesSection businessId={activeId} profiles={profiles} canSetPay={Boolean(ctx.can_set_pay ?? ctx.is_owner)} reload={load} />

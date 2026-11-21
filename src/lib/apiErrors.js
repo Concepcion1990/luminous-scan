@@ -93,6 +93,8 @@ export const API_ERROR_MESSAGE_KEYS = {
   "Enter a business name (up to 120 characters).": "apiErrors.invalidName",
   "Could not create the business.": "apiErrors.createFailed",
   "Only the business owner can change these settings.": "apiErrors.forbidden.businessOwnerChangeThese",
+  "Only the business owner can update these details.": "apiErrors.forbidden.businessOwnerUpdateDetails",
+  "Keep your home address to 1000 characters or fewer.": "apiErrors.invalidValue.homeAddressThousandCharacters",
   "You do not have access to this workspace.": "apiErrors.forbidden.accessWorkspace",
   "This workspace is read-only: the subscription ended and the 15-day grace period allows viewing products only. No changes, scanning, importing, or exporting.": "apiErrors.graceReadOnly",
   "This workspace does not have an active subscription. Subscribe to a plan to use it — access starts only when the trial or payment is confirmed.": "apiErrors.subscriptionRequired",

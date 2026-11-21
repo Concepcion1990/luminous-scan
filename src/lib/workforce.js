@@ -162,6 +162,10 @@ export function getPayrollContext(businessId) {
   return apiRequest(`${base(businessId)}/payroll/context`);
 }
 
+export function updateMyPayrollDetails(businessId, values) {
+  return apiRequest(`${base(businessId)}/payroll/my-details`, { method: 'PUT', body: values });
+}
+
 export function getPayrollConfig(businessId) {
   return apiRequest(`${base(businessId)}/payroll/config`);
 }

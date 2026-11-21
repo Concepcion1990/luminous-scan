@@ -24,6 +24,25 @@
  * The stored rate is 16 kHz mono: plenty for a voice, and a
  * full 3-minute note is 5,760,000 bytes — inside the server's
  * 8 MB cap with room to spare.
+ *
+ * Rider (Nov 21, 2026): her hand-proof of the fix above found
+ * the body true and smooth, but the first split-second still
+ * clipped — only the tail of her first word survived. Her
+ * phone's microphone wakes late: the UI said "recording" while
+ * the audio path was still opening, and her first word fell
+ * into that gap. Two guards, both on this PCM path only (the
+ * MediaRecorder fallback is untouched):
+ *   - begin() does not resolve until the context is running
+ *     AND real buffers are actually flowing, so the recording
+ *     clock and the "recording" face start only when the path
+ *     is live. Buffers captured during the wait are kept —
+ *     they are the pre-roll.
+ *   - finish() trims the wake head (trimWakeHead below): the
+ *     dead near-silence before the first real sound is dropped,
+ *     keeping a short lead-in so a soft onset keeps its attack.
+ *     Nothing is ever padded: an instant-wake mic and an
+ *     all-silence take pass through sample-for-sample, and the
+ *     duration stays the exact count of the samples sent.
  */
 
 export const VOICE_WAV_RATE = 16000;
@@ -47,6 +66,42 @@ export function resamplePcm(samples, fromRate, toRate) {
     out[i] = a + (b - a) * frac;
   }
   return out;
+}
+
+/**
+ * Drop the wake head: the dead air a late-waking microphone
+ * leaves before the first real sound. Scans in 10 ms windows
+ * for the first window whose peak reaches the sound threshold
+ * and cuts everything before it except a 150 ms lead-in, so a
+ * soft onset (the breath at the start of a word) keeps its
+ * attack. The threshold sits far above a silent device's
+ * digital zero and far below any spoken sound, so the cut can
+ * only ever remove near-silence.
+ *
+ * Two passes stay untouched, sample for sample: sound that
+ * starts in the very first window (an instantly-awake mic —
+ * no dead head exists, and none is invented), and a take with
+ * no sound at all (a silent note stays the length it was
+ * recorded at).
+ */
+export function trimWakeHead(samples, sampleRate, opts = {}) {
+  const threshold = opts.threshold ?? 0.01;
+  const win = Math.max(1, Math.round((sampleRate * (opts.windowMs ?? 10)) / 1000));
+  const leadIn = Math.round((sampleRate * (opts.leadInMs ?? 150)) / 1000);
+  let onset = -1;
+  for (let start = 0; start < samples.length; start += win) {
+    let peak = 0;
+    const end = Math.min(samples.length, start + win);
+    for (let i = start; i < end; i += 1) {
+      const a = Math.abs(samples[i]);
+      if (a > peak) peak = a;
+    }
+    if (peak >= threshold) { onset = start; break; }
+  }
+  if (onset <= 0) return samples;
+  const cut = onset - leadIn;
+  if (cut <= 0) return samples;
+  return samples.slice(cut);
 }
 
 /** Encode mono Float32 samples as a 16-bit PCM WAV byte array. */
@@ -118,10 +173,20 @@ export function createPcmCapture(stream) {
   const proc = ctx.createScriptProcessor(4096, 1, 1);
   const chunks = [];
   let total = 0;
+  // begin() waits for the audio path to prove it is flowing —
+  // two full processor buffers delivered — before it lets the
+  // recording start. flowWaiter is that wait's wake-up call.
+  const FLOW_SAMPLES = 8192;
+  let flowWaiter = null;
   proc.onaudioprocess = (event) => {
     const data = event.inputBuffer.getChannelData(0);
     chunks.push(new Float32Array(data));
     total += data.length;
+    if (flowWaiter && total >= FLOW_SAMPLES) {
+      const wake = flowWaiter;
+      flowWaiter = null;
+      wake();
+    }
   };
 
   let tornDown = false;
@@ -144,16 +209,35 @@ export function createPcmCapture(stream) {
         teardown();
         throw new Error('webaudio-suspended');
       }
+      // A running context is not yet a flowing microphone: on
+      // a late-waking device the first buffers arrive hundreds
+      // of milliseconds after resume(), and a speaker who
+      // starts the moment the UI says "recording" loses their
+      // first word into that gap. So the recording — the
+      // caller's clock and recording face — starts only once
+      // real buffers are flowing. The wait is bounded: if the
+      // samples never come, begin() still resolves and the
+      // take proceeds exactly as before (the buffers captured
+      // during the wait are kept either way — they are the
+      // pre-roll finish() trims from).
+      await new Promise((resolve) => {
+        if (total >= FLOW_SAMPLES) { resolve(); return; }
+        const timer = setTimeout(() => { flowWaiter = null; resolve(); }, 1500);
+        flowWaiter = () => { clearTimeout(timer); resolve(); };
+      });
     },
     finish() {
       teardown();
-      const samples = new Float32Array(total);
+      const joined = new Float32Array(total);
       let offset = 0;
       for (const chunk of chunks) {
-        samples.set(chunk, offset);
+        joined.set(chunk, offset);
         offset += chunk.length;
       }
-      return { samples, sampleRate: ctx.sampleRate };
+      // The wake head comes off here, so the note that is
+      // built, timed and sent starts at the speaker's first
+      // real sound (plus its lead-in), never in dead air.
+      return { samples: trimWakeHead(joined, ctx.sampleRate), sampleRate: ctx.sampleRate };
     },
     dispose() {
       teardown();

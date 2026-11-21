@@ -1,0 +1,16 @@
+-- 036_owner_home_address.sql — The rider release (Nov 21, 2026):
+-- the Payroll "Your details on file" card for EVERYONE.
+--
+-- Release 336 fed the card from the caller's own staff_members
+-- row (migration 030's personal_address). The owner has no staff
+-- row, so the owner's own Payroll page showed no card. The owner
+-- is a USER, not a member: their card is fed from their own
+-- account record — users.display_name (migration 034) for the
+-- name, and this new column for their home address.
+--
+-- The column belongs to the account, not to any one business:
+-- the same person owns their details wherever they sign in, and
+-- only they can write them (PUT /workforce/payroll/my-details,
+-- owner-only). It is served back only to that same owner, on
+-- their own Payroll page — never to a member, never in a list.
+ALTER TABLE users ADD COLUMN IF NOT EXISTS personal_address TEXT;

@@ -135,6 +135,29 @@ async function personOr404(pool, businessId, staffId) {
   return rows[0];
 }
 
+// The caller's OWN details-on-file card (owner ruling, Nov 21,
+// 2026: the card is for everyone, owner down to viewer). The
+// owner has no staff row — their card reads their own account
+// record (display_name + personal_address on users) and carries
+// owner: true so the client renders the owner's editable variant.
+// A member's card reads their own staff row only. Either way the
+// payload is the caller's own details and nobody else's, ever.
+async function ownProfile(pool, req, access, me) {
+  if (access.isOwner) {
+    const { rows } = await pool.query(
+      'SELECT display_name, personal_address FROM users WHERE id = $1 LIMIT 1',
+      [req.user.id],
+    );
+    return {
+      full_name: String(rows[0]?.display_name || '').trim(),
+      personal_address: rows[0]?.personal_address || '',
+      owner: true,
+    };
+  }
+  if (!me) return null;
+  return { full_name: me.full_name, personal_address: me.personal_address || '' };
+}
+
 // ---- Business-local time ----------------------------------------------
 // Shift windows are judged in the business's own timezone, in
 // minutes-since-local-midnight space — no absolute-instant math, so
@@ -1125,10 +1148,45 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
       // page — the view migration 030 promised. This is the
       // caller's own staff row and nothing else's: nobody's
       // payload ever carries another member's address from here.
-      me_profile: me
-        ? { full_name: me.full_name, personal_address: me.personal_address || '' }
-        : null,
+      //
+      // The card is for EVERYONE, owner down to viewer (owner
+      // ruling, Nov 21, 2026): the owner has no staff row, so
+      // their card is fed from their OWN account record instead —
+      // users.display_name (migration 034) + users.personal_address
+      // (migration 036). It is still only ever the caller's own
+      // details: the owner's user row for the owner, the member's
+      // staff row for a member.
+      me_profile: await ownProfile(pool(), req, access, me),
     });
+  }));
+
+  // The owner's own details on file — the one card its owner may
+  // edit (owner ruling, Nov 21, 2026). The owner is the authority,
+  // so they keep their own name + home address current right on
+  // their Payroll card; members' cards stay read-only (their
+  // changes go through the owner/manager, as the card says).
+  // Account-level write: display_name is the same owner name the
+  // header and Messages speak (release 335), so this door and
+  // the Settings owner-name door write the one same value.
+  router.put(`${base}/payroll/my-details`, asyncHandler(async (req, res) => {
+    const { access } = await ctx(req);
+    if (!access.isOwner) {
+      throw err(403, 'forbidden', 'Only the business owner can update these details.');
+    }
+    await assertNotInGrace(pool(), req.params.bid);
+    const fullName = String(req.body?.full_name ?? '').trim();
+    if (fullName.length > 80) {
+      throw err(400, 'invalid_value', 'Keep your name to 80 characters or fewer.');
+    }
+    const address = String(req.body?.personal_address ?? '').trim();
+    if (address.length > 1000) {
+      throw err(400, 'invalid_value', 'Keep your home address to 1000 characters or fewer.');
+    }
+    await pool().query(
+      'UPDATE users SET display_name = $1, personal_address = $2, updated_at = NOW() WHERE id = $3',
+      [fullName || null, address || null, req.user.id],
+    );
+    return res.json({ me_profile: await ownProfile(pool(), req, access, null) });
   }));
 
   router.get(`${base}/payroll/config`, asyncHandler(async (req, res) => {
