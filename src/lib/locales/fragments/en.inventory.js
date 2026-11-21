@@ -219,7 +219,7 @@ export const enInventory = {
   'productForm.copyGroupPlaceholder': 'Leave blank to group by ISBN',
   'productForm.variantLabel': 'Variation label',
   'productForm.variantOptionsLabel': 'Variation options',
-  'productForm.variantOptionsHint': 'Size, colour, material, style or packaging.',
+  'productForm.variantOptionsHint': 'Size, color, material, style or packaging.',
   'productForm.removeVariationAria': 'Remove variation option',
   'productForm.uploadFailed': 'Could not upload that photo. Try a smaller image.',
   'productForm.nameSkuRequired': 'A product name and SKU are required.',

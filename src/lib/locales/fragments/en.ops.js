@@ -16,7 +16,7 @@ export const enOps = {
   'exports.eyebrow': 'Data',
   'exports.title': 'Exports & backups',
   'exports.subtitleStart': 'Downloads are always limited to',
-  'exports.subtitleRest': '. Every file is labelled with the business name and the date it was made.',
+  'exports.subtitleRest': '. Every file is labeled with the business name and the date it was made.',
   'exports.createBusinessFirst': 'Create a business first — exports belong to a business, not to the app.',
   'exports.lockedTitle': 'CSV and Excel exports is a Business feature',
   'exports.lockedDesc': 'Your workspace is on the Essentials plan. Business adds CSV and Excel exports, stock valuation, unlimited products and staff, suppliers, purchasing and bundles.',
