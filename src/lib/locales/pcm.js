@@ -4713,7 +4713,7 @@ export const pcm = {
   "plansLib.includes.inviteLink": "Staff invitations with one-tap sign-up link",
   "subscribe.memberNote": "You don sign in as member of this workspace. This page na the business owner own — if you need anything for here, abeg ask them.",
   "subscribe.memberOpenApp": "Open di app",
-  "apiErrors.planLimitNeutral": "Dem no fit add this one now — this workspace don reach limit. Abeg ask the business owner.",
+  "apiErrors.planLimitNeutral": "Dem no fit add this one now — abeg ask the business owner.",
   "training.lessons.owner-confidentiality.title": "Your informashon go stay private",
   "training.lessons.owner-confidentiality.step1": "Luminous StockHaven dey keep your informashon private from your staff. Your payments, your trial, your subscription and your billing status — and anytin about your personal informashon — na your own alone: staff and managers no dey ever see dem, for anywhere inside di app.",
   "training.lessons.owner-confidentiality.step2": "Dat one include di quiet places: no trial countdown on top dia pages, no plan or billing section for dia Settings, no payment warning. Dia Settings na personal — dia own account, security, appearance and language — plus only di extra sections wey you tick for dem. Billing no be one of di ticks at all.",

@@ -4713,7 +4713,7 @@ export const ptPT = {
   "plansLib.includes.inviteLink": "Convites à equipa com uma ligação de registo de um toque",
   "subscribe.memberNote": "Entrou como membro deste espaço de trabalho. Esta página é do proprietário da empresa — se precisar de algo aqui, peça-lhe.",
   "subscribe.memberOpenApp": "Abrir a aplicação",
-  "apiErrors.planLimitNeutral": "Isso não pode ser adicionado agora — este espaço de trabalho atingiu um limite. Peça ao proprietário da empresa.",
+  "apiErrors.planLimitNeutral": "Isso não pode ser adicionado agora — peça ao proprietário da empresa.",
   "training.lessons.owner-confidentiality.title": "As suas informações permanecem confidenciais",
   "training.lessons.owner-confidentiality.step1": "O Luminous StockHaven mantém as suas informações confidenciais da sua equipa. Os seus pagamentos, a sua avaliação, a sua subscrição e o estado da sua faturação — e qualquer coisa sobre as suas informações pessoais — são só seus: a equipa e os gerentes nunca os veem, em nenhum lugar da aplicação.",
   "training.lessons.owner-confidentiality.step2": "Isso inclui os lugares discretos: nenhuma contagem decrescente da avaliação sobre as páginas deles, nenhuma secção de plano ou faturação nas Definições deles, nenhum aviso de pagamento. As Definições deles são pessoais — a própria conta, segurança, aparência e idioma — mais apenas as secções extras que decidir marcar para eles. A faturação nunca é uma das marcas.",
