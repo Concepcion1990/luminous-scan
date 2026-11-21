@@ -5004,4 +5004,10 @@ export const pcm = {
   "apiErrors.invalidValue.chooseSignatureStyle": "Choose one signature style.",
   "apiErrors.invalidValue.noDdDetailsYet": "Dat team member never send dia details yet.",
   "training.lessons.owner-dd-setup.step5": "Wetin dey arrive na sealed form wey dem don sign: from dat person row for Staff pay you fit open am read di full numbers, print am or save one copy — you no go ever fit edit am. If number look wrong, send di form back: di person go correct am by imself come sign again, im corrected form go replace di old one, and di old form go remain for record wit di date wey dem replace am.",
+  "payroll.profile.ownerNote": "Dis na your own details wey dey for record, from your account. Na only you fit see dem here — and as na your own, you fit update dem right here any time dem change.",
+  "payroll.profile.edit": "Change your details",
+  "payroll.profile.cancel": "Cancel am",
+  "payroll.profile.noName": "No name dey for record yet.",
+  "apiErrors.forbidden.businessOwnerUpdateDetails": "Na only de business owner fit update dis details dem.",
+  "apiErrors.invalidValue.homeAddressThousandCharacters": "Make your house address no pass 1000 characters.",
 };
