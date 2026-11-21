@@ -4713,7 +4713,7 @@ export const de = {
   "plansLib.includes.inviteLink": "Team-Einladungen mit einem Registrierungslink per Fingertipp",
   "subscribe.memberNote": "Sie sind als Mitglied dieses Arbeitsbereichs angemeldet. Diese Seite gehört dem Geschäftsinhaber — wenn Sie hier etwas brauchen, fragen Sie ihn bitte.",
   "subscribe.memberOpenApp": "App öffnen",
-  "apiErrors.planLimitNeutral": "Das kann gerade nicht hinzugefügt werden — dieser Arbeitsbereich hat ein Limit erreicht. Fragen Sie bitte den Geschäftsinhaber.",
+  "apiErrors.planLimitNeutral": "Das kann gerade nicht hinzugefügt werden — fragen Sie bitte den Geschäftsinhaber.",
   "training.lessons.owner-confidentiality.title": "Ihre Informationen bleiben vertraulich",
   "training.lessons.owner-confidentiality.step1": "Luminous StockHaven hält Ihre Informationen gegenüber Ihrem Team vertraulich. Ihre Zahlungen, Ihre Testphase, Ihr Abonnement und Ihr Abrechnungsstatus — und alles zu Ihren persönlichen Informationen — gehören allein Ihnen: Team und Manager sehen sie nie, nirgendwo in der App.",
   "training.lessons.owner-confidentiality.step2": "Das gilt auch für die stillen Stellen: kein Testphasen-Countdown über ihren Seiten, keine Plan- oder Abrechnungsabschnitte in ihren Einstellungen, keine Zahlungswarnungen. Ihre Einstellungen sind persönlich — ihr eigenes Konto, Sicherheit, Erscheinungsbild und Sprache — plus nur die zusätzlichen Abschnitte, die Sie für sie ankreuzen. Die Abrechnung ist nie eines der Kästchen.",

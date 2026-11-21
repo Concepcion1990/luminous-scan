@@ -4716,7 +4716,7 @@ export const enCA = {
   "plansLib.includes.inviteLink": "Staff invitations with a one-tap sign-up link",
   "subscribe.memberNote": "You're signed in as a member of this workspace. This page belongs to the business owner — if you need anything here, please ask them.",
   "subscribe.memberOpenApp": "Open the app",
-  "apiErrors.planLimitNeutral": "That can't be added right now — this workspace has reached a limit. Please ask the owner of the business.",
+  "apiErrors.planLimitNeutral": "That can't be added right now — please ask the owner of the business.",
   "training.lessons.owner-confidentiality.title": "Your information stays confidential",
   "training.lessons.owner-confidentiality.step1": "Luminous StockHaven keeps your information confidential from your staff. Your payments, your trial, your subscription and billing status — and anything about your personal information — are yours alone: staff and managers never see them, anywhere in the app.",
   "training.lessons.owner-confidentiality.step2": "That includes the quiet places: no trial countdown over their pages, no plan or billing sections in their Settings, no payment warnings. Their Settings are personal — their own account, security, appearance and language — plus only the extra sections you choose to tick for them. Billing is never one of the ticks.",
