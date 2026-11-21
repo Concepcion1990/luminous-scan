@@ -5004,4 +5004,10 @@ export const zhHans = {
   "apiErrors.invalidValue.chooseSignatureStyle": "请选择签名样式。",
   "apiErrors.invalidValue.noDdDetailsYet": "该团队成员尚未发送他们的信息。",
   "training.lessons.owner-dd-setup.step5": "送达的是一份已密封、已签署的表格：在薪资中该成员所在行，您可以打开它查看完整账号、打印或保存副本 — 您永远无法编辑它。如果某个账号看起来不对，请退回表格：由本人更正并重新签名，他们更正后的表格会替换旧表格，旧表格会连同替换日期一起保留在记录中。",
+  "payroll.profile.ownerNote": "这是您本人存档的信息，来自您的账户。只有您可以在这里看到它们 — 而且因为这是您自己的信息，只要有变化，您可以随时直接在这里更新。",
+  "payroll.profile.edit": "编辑您的信息",
+  "payroll.profile.cancel": "取消",
+  "payroll.profile.noName": "尚未记录姓名。",
+  "apiErrors.forbidden.businessOwnerUpdateDetails": "只有企业所有者可以更新这些信息。",
+  "apiErrors.invalidValue.homeAddressThousandCharacters": "请将您的家庭住址控制在 1000 个字符以内。",
 };

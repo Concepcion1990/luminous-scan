@@ -5004,4 +5004,10 @@ export const yue = {
   "apiErrors.invalidValue.chooseSignatureStyle": "請揀簽名款式。",
   "apiErrors.invalidValue.noDdDetailsYet": "嗰位團隊成員仲未傳送佢哋嘅資料。",
   "training.lessons.owner-dd-setup.step5": "送到嘅係一份已密封、已簽署嘅表格：喺出糧入面嗰位成員嗰一行，你可以打開佢睇完整帳號、列印或者儲存副本 — 你永遠唔可以編輯佢。如果某個帳號睇落唔啱，請退回表格：由本人更正並重新簽名，佢哋更正咗嘅表格會取代舊表格，舊表格會連同取代日期一齊保留喺記錄入面。",
+  "payroll.profile.ownerNote": "呢啲係你本人存檔嘅資料，嚟自你嘅帳戶。只有你可以喺呢度睇到 — 而且因為係你自己嘅資料，只要有變，你隨時可以直接喺呢度更新。",
+  "payroll.profile.edit": "編輯你嘅資料",
+  "payroll.profile.cancel": "取消",
+  "payroll.profile.noName": "仲未有姓名記錄。",
+  "apiErrors.forbidden.businessOwnerUpdateDetails": "只有企業擁有人可以更新呢啲資料。",
+  "apiErrors.invalidValue.homeAddressThousandCharacters": "請將你嘅住址控制喺 1000 個字元以內。",
 };

@@ -5004,4 +5004,10 @@ export const zhHant = {
   "apiErrors.invalidValue.chooseSignatureStyle": "請選擇簽名樣式。",
   "apiErrors.invalidValue.noDdDetailsYet": "該團隊成員尚未傳送他們的資訊。",
   "training.lessons.owner-dd-setup.step5": "送達的是一份已密封、已簽署的表格：在薪資中該成員所在列，您可以開啟它查看完整帳號、列印或儲存副本 — 您永遠無法編輯它。如果某個帳號看起來不對，請退回表格：由本人更正並重新簽名，他們更正後的表格會取代舊表格，舊表格會連同取代日期一起保留在記錄中。",
+  "payroll.profile.ownerNote": "這是您本人存檔的資訊，來自您的帳戶。只有您可以在這裡看到它們 — 而且因為這是您自己的資訊，只要有變化，您可以隨時直接在這裡更新。",
+  "payroll.profile.edit": "編輯您的資訊",
+  "payroll.profile.cancel": "取消",
+  "payroll.profile.noName": "尚未記錄姓名。",
+  "apiErrors.forbidden.businessOwnerUpdateDetails": "只有企業擁有者可以更新這些資訊。",
+  "apiErrors.invalidValue.homeAddressThousandCharacters": "請將您的住家地址控制在 1000 個字元以內。",
 };
