@@ -81,7 +81,11 @@ export default function ProductDetailsFields({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          {/* Paired grids here follow the product form's mobile
+              stacking rule (owner ruling, Nov 20, 2026 — see
+              ProductFormDialog): one full-width field per row below
+              the sm breakpoint, the pairs return on wider screens. */}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="grid gap-2">
               <Label htmlFor="brand">{t('productForm.brandLabel')}</Label>
               <Input id="brand" value={form.brand} onChange={set('brand')} />
@@ -92,7 +96,7 @@ export default function ProductDetailsFields({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="grid gap-2">
               <Label htmlFor="publisher">{t('productForm.publisherLabel')}</Label>
               <Input id="publisher" value={form.publisher} onChange={set('publisher')} />
@@ -103,7 +107,7 @@ export default function ProductDetailsFields({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="grid gap-2">
               <Label htmlFor="subcategory">{t('productForm.subcategoryLabel')}</Label>
               <VocabularyCombobox
@@ -132,7 +136,7 @@ export default function ProductDetailsFields({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="grid gap-2">
               <Label>{t('productForm.statusLabel')}</Label>
               <Select value={form.status} onValueChange={set('status')}>
@@ -165,7 +169,7 @@ export default function ProductDetailsFields({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="grid gap-2">
               <Label htmlFor="acquired">{t('productForm.acquiredLabel')}</Label>
               <Input
@@ -186,7 +190,7 @@ export default function ProductDetailsFields({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="grid gap-2">
               <Label htmlFor="batch">{t('productForm.batchLabel')}</Label>
               <Input id="batch" value={form.batch_lot} onChange={set('batch_lot')} />
@@ -202,7 +206,7 @@ export default function ProductDetailsFields({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="grid gap-2">
               <Label htmlFor="weight">{t('productForm.weightLabel')}</Label>
               <Input id="weight" value={form.weight} onChange={set('weight')} placeholder="320 g" />

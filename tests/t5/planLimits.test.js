@@ -143,7 +143,11 @@ test('frontend gates: no Incoming stock / Reorder suggestions cards on Essential
   const dashboard = src('src/pages/Dashboard.jsx');
   assert.match(dashboard, /showPurchasing/);
   assert.match(dashboard, /showPurchasing = !entitlementLoading && can\('purchasing'\)/);
-  assert.match(dashboard, /{showPurchasing && \(/);
+  // Release 331 rider (owner ruling, Nov 20, 2026): the Reorder
+  // suggestions panel names the low products, so it additionally
+  // follows the effective alert visibility (showAlerts — the
+  // alerts.view tick layer from release 330) on top of purchasing.
+  assert.match(dashboard, /{showPurchasing && showAlerts && \(/);
   assert.match(dashboard, /<IncomingStock/);
   assert.match(dashboard, /<ReorderPanel/);
 });

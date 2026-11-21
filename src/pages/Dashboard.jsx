@@ -297,7 +297,16 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {showPurchasing && (
+          {/* Reorder suggestions name the low products, so this
+              panel is a low-stock ALERT surface too (owner ruling,
+              Nov 20, 2026): it follows the same effective alert
+              visibility as every other low-stock surface —
+              showAlerts (the plan's alerts feature, and for a
+              member the owner's alerts.view tick). An unticked
+              Business member sees no product named as low here.
+              Incoming stock above stays on showPurchasing alone:
+              it names open purchase orders, not low products. */}
+          {showPurchasing && showAlerts && (
             <ReorderPanel items={stats.low} currency={profile.currency} businessId={activeId} />
           )}
 

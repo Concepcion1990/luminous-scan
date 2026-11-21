@@ -774,7 +774,14 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
             <Input id="name" value={form.name} onChange={set('name')} placeholder={t('productForm.namePlaceholder')} />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          {/* Mobile stacking (owner ruling, Nov 20, 2026): below the
+              sm breakpoint every field in this form takes its own
+              full-width row — the half-width pairs cut her codes off
+              mid-number on her phone (SKU "BK-QUIET-0…", ISBN
+              "978-3-16-1…"). Wider screens keep the two-per-row
+              pairs exactly. The same rule shapes every paired grid
+              below and in ProductDetailsFields. */}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="grid gap-2">
               <Label htmlFor="sku">{t('productForm.skuLabel')}</Label>
               <div className="flex gap-2">
@@ -813,7 +820,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="grid gap-2">
               <Label htmlFor="isbn">{t('productForm.isbnLabel')}</Label>
               <div className="flex gap-2">
@@ -867,7 +874,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="grid gap-2">
               <Label htmlFor="barcode">{t('productForm.barcodeLabel')}</Label>
               <div className="flex gap-2">
@@ -1086,7 +1093,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
             </p>
           </div>
 
-          <div className={`grid ${canAlerts ? 'grid-cols-3' : 'grid-cols-2'} gap-3`}>
+          <div className={`grid grid-cols-1 ${canAlerts ? 'sm:grid-cols-3' : 'sm:grid-cols-2'} gap-3`}>
             <div className="grid gap-2">
               <Label htmlFor="cost">{t('productForm.costLabel')}</Label>
               <Input id="cost" type="number" inputMode="decimal" value={form.cost} onChange={set('cost')} />
@@ -1223,7 +1230,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
                 )}
                 {form.pricing_mode === 'rollback' && (
                   <>
-                    <div className="grid grid-cols-3 gap-3">
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                       <div className="grid gap-2">
                         <Label htmlFor="sale_price">{t('pricing.salePriceLabel')}</Label>
                         <Input

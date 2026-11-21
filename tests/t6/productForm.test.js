@@ -9,6 +9,11 @@
  *  - Only the name is required to save; the old combined
  *    name-and-SKU message (which claimed the name was missing when
  *    only the SKU was) is gone from the save gate.
+ *  - Mobile stacking (Nov 20, 2026): every paired grid in the form
+ *    is one-field-per-row below the sm breakpoint — the half-width
+ *    pairs cut the owner's codes off mid-number on her phone (SKU
+ *    "BK-QUIET-0…", ISBN "978-3-16-1…") — and the pairs return
+ *    unchanged on wider screens.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -16,6 +21,10 @@ import { readFileSync } from 'node:fs';
 
 const dialog = readFileSync(
   new URL('../../src/components/products/ProductFormDialog.jsx', import.meta.url),
+  'utf8',
+);
+const details = readFileSync(
+  new URL('../../src/components/products/ProductDetailsFields.jsx', import.meta.url),
   'utf8',
 );
 const inventoryLib = readFileSync(
@@ -194,6 +203,30 @@ test('scan capture: the code-taken lookup covers the QR field too', () => {
   );
   assert.ok(lookup.includes('{ qr_code: { $in: variants } }'), 'the exact-pass lookup matches qr_code');
   assert.ok(lookup.includes("{ qr_code: { $regex: pattern, $options: 'i' } }"), 'the loose-pass lookup matches qr_code');
+});
+
+test('mobile stacking: every paired grid is one-per-row below sm, pairs return at sm', () => {
+  // No bare multi-column grid may survive in either half of the
+  // form: an unprefixed grid-cols-2/3 would pair fields at phone
+  // widths again and cut the codes off mid-number.
+  for (const [name, source] of [['dialog', dialog], ['details', details]]) {
+    assert.ok(
+      !/(?<!sm:)grid-cols-[23]/.test(source),
+      `${name}: every multi-column grid waits for the sm breakpoint`,
+    );
+  }
+  const dialogPairs = dialog.match(/grid-cols-1 gap-3 sm:grid-cols-2/g) || [];
+  assert.equal(dialogPairs.length, 3, 'SKU/Category, ISBN/Author and Barcode/QR stack on mobile');
+  assert.ok(
+    dialog.includes("canAlerts ? 'sm:grid-cols-3' : 'sm:grid-cols-2'"),
+    'the cost/price(/reorder) row stacks on mobile too',
+  );
+  assert.ok(
+    dialog.includes('grid-cols-1 gap-3 sm:grid-cols-3'),
+    'the rollback sale price/start/end row stacks on mobile too',
+  );
+  const detailPairs = details.match(/grid-cols-1 gap-3 sm:grid-cols-2/g) || [];
+  assert.equal(detailPairs.length, 7, 'all seven More-details pairs stack on mobile');
 });
 
 test('scan button: plan-independent — no plan or entitlement check touches the scanner', () => {

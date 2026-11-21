@@ -49,9 +49,29 @@ test('the Overview gates both purchasing cards on the loaded entitlement', () =>
   // Unknown while loading — never another plan's state (PR #44 pattern).
   assert.match(page, /const showPurchasing = !entitlementLoading && can\('purchasing'\);/);
   assert.match(page, /\{showPurchasing && <IncomingStock purchaseOrders=\{ops\.purchaseOrders\} \/>\}/);
-  assert.match(page, /\{showPurchasing && \(\s*<ReorderPanel items=\{stats\.low\}/);
+  assert.match(page, /\{showPurchasing && showAlerts && \(\s*<ReorderPanel items=\{stats\.low\}/);
   // Nothing else on the Overview is gated away: orders to fulfil stay.
   assert.match(page, /<OrdersToFulfil orders=\{ops\.orders\} currency=\{profile\.currency\} \/>/);
+});
+
+/**
+ * RIDER (release 331, owner ruling Nov 20, 2026 — "Put it behind
+ * the alert tick too"): the Reorder suggestions panel names the
+ * low products, so it is a low-stock ALERT surface, not merely a
+ * purchasing one. It renders only under the SAME effective alert
+ * visibility release 330 built (showAlerts: the plan's alerts
+ * feature, and for a member the owner's alerts.view tick) on top
+ * of the purchasing gate. An unticked Business member's Overview
+ * names no product as low. Incoming stock stays on the purchasing
+ * gate alone — it names open purchase orders, not low products.
+ * (The same panel on /low-stock was already behind the alerts
+ * route; this closes the Overview copy the 330 record flagged.)
+ */
+test('the Reorder suggestions panel also follows the alert tick (release 331 rider)', () => {
+  const page = readFileSync('src/pages/Dashboard.jsx', 'utf8');
+  assert.match(page, /\{showPurchasing && showAlerts && \(\s*<ReorderPanel items=\{stats\.low\}/);
+  assert.match(page, /\{showPurchasing && <IncomingStock purchaseOrders=\{ops\.purchaseOrders\} \/>\}/);
+  assert.doesNotMatch(page, /showAlerts && <IncomingStock/);
 });
 
 test('the Overview never asks for purchase orders unless the cards may show', () => {
@@ -100,7 +120,7 @@ test('no backend function serves the purchasing cards', () => {
  */
 test('the Overview gates the Low-stock and Stock-value cards on the loaded entitlement', () => {
   const page = readFileSync('src/pages/Dashboard.jsx', 'utf8');
-  assert.match(page, /const showAlerts = !entitlementLoading && can\('alerts'\);/);
+  assert.match(page, /const showAlerts = !entitlementLoading && can\('alerts'\) && canStaff\('alerts\.view'\);/);
   assert.match(page, /const showValuation = !entitlementLoading && can\('valuation'\);/);
   // The real cards render only when the plan is known to allow them —
   // and on any other plan the slots render nothing at all (no teaser).
