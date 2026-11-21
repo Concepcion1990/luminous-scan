@@ -5010,4 +5010,13 @@ export const gu = {
   "payroll.profile.noName": "હજી સુધી કોઈ નામ નોંધાયેલું નથી.",
   "apiErrors.forbidden.businessOwnerUpdateDetails": "ફક્ત વ્યવસાયનો માલિક જ આ વિગતો અપડેટ કરી શકે છે.",
   "apiErrors.invalidValue.homeAddressThousandCharacters": "તમારું ઘરનું સરનામું 1000 અક્ષરો કે તેથી ઓછું રાખો.",
+  "plans.status.foundingTester": "સ્થાપક પરીક્ષક",
+  "plans.priceNoteFoundingTester": "કોઈ ચાર્જ નહીં — સ્થાપક પરીક્ષકો Business ને હંમેશા માટે મફત રાખે છે.",
+  "subscribe.foundingTesterNote": "આ કાર્યક્ષેત્ર પાસે સ્થાપક પરીક્ષક તરીકે Business છે — હંમેશા માટે મફત. કોઈ કાર્ડ નહીં, કોઈ ચાર્જ નહીં, ક્યારેય નહીં.",
+  "upgrade.introFoundingTester": " — એક સ્થાપક પરીક્ષક કાર્યક્ષેત્ર, હંમેશા માટે મફત અને કોઈ ચાર્જ વિના.",
+  "upgrade.foundingTesterNote": "સ્થાપક પરીક્ષકો Business ને હંમેશા માટે મફત રાખે છે — અહીં બદલવા માટે કોઈ પ્લાન નથી અને રદ કરવા માટે કોઈ સબ્સ્ક્રિપ્શન નથી.",
+  "apiErrors.foundingTester.alreadyListed": "તે ઇમેઇલ પહેલેથી જ સ્થાપક પરીક્ષકોની યાદીમાં છે.",
+  "apiErrors.foundingTester.listFull": "સ્થાપક પરીક્ષકોની યાદી ભરેલી છે.",
+  "apiErrors.foundingTester.notListed": "તે ઇમેઇલ સ્થાપક પરીક્ષકોની યાદીમાં નથી.",
+  "apiErrors.foundingTester.capWholeNumber": "મર્યાદા 1 કે તેથી વધુ પૂર્ણ સંખ્યા હોવી જોઈએ.",
 };

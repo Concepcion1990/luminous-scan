@@ -5010,4 +5010,13 @@ export const ha = {
   "payroll.profile.noName": "Babu suna a rubuce tukuna.",
   "apiErrors.forbidden.businessOwnerUpdateDetails": "Mai kasuwanci ne kawai zai iya sabunta waɗannan bayanan.",
   "apiErrors.invalidValue.homeAddressThousandCharacters": "Ka riƙe adireshin gidanka a haruffa 1000 ko ƙasa da haka.",
+  "plans.status.foundingTester": "Mai gwaji na farko",
+  "plans.priceNoteFoundingTester": "Babu caji — masu gwaji na farko suna riƙe Business kyauta har abada.",
+  "subscribe.foundingTesterNote": "Wannan filin aiki yana da Business a matsayin mai gwaji na farko — kyauta har abada. Babu kati, babu caji, ko kaɗan.",
+  "upgrade.introFoundingTester": " — filin aiki na mai gwaji na farko, kyauta har abada kuma ba tare da wani caji ba.",
+  "upgrade.foundingTesterNote": "Masu gwaji na farko suna riƙe Business kyauta har abada — babu tsarin da za a canza kuma babu rajista da za a soke.",
+  "apiErrors.foundingTester.alreadyListed": "Wannan imel ɗin ya riga ya kasance a cikin jerin masu gwaji na farko.",
+  "apiErrors.foundingTester.listFull": "Jerin masu gwaji na farko ya cika.",
+  "apiErrors.foundingTester.notListed": "Wannan imel ɗin ba ya cikin jerin masu gwaji na farko.",
+  "apiErrors.foundingTester.capWholeNumber": "Dole ne iyaka ta zama cikakkiyar lamba 1 ko fiye.",
 };
