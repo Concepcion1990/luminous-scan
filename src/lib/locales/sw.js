@@ -4379,7 +4379,7 @@ export const sw = {
   "apiErrors.invalidValue.eachShiftNeedsWeekday": "Kila zamu inahitaji siku ya juma (0-6) na nyakati za kuanza na kumaliza za HH:MM.",
   "apiErrors.invalidValue.emailRequired": "Barua pepe inahitajika.",
   "apiErrors.invalidValue.enterBankName": "Weka jina la benki yako.",
-  "apiErrors.invalidValue.enterGS1CompanyPrefix": "Weka kiambishi awali cha kampuni yako ya GS1 — tarakimu 6 hadi 10, kama GS1 ilivyotoa — au kiache tupu.",
+  "apiErrors.invalidValue.enterGS1CompanyPrefix": "Weka kiambishi awali cha kampuni yako ya GS1 — tarakimu 6 hadi 11, kama GS1 ilivyotoa — au kiache tupu.",
   "apiErrors.invalidValue.enterHowManyArrived": "Weka ni kiasi gani kimefika kwenye angalau mstari mmoja.",
   "apiErrors.invalidValue.enterLightspeedDomainPrefix": "Weka kiambishi awali cha kikoa chako cha Lightspeed — sehemu iliyo kabla ya .retail.lightspeed.app.",
   "apiErrors.invalidValue.enterStoreDomainLike": "Weka kikoa chako cha duka, kama your-store.myshopify.com.",

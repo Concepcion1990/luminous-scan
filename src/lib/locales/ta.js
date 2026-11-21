@@ -4461,7 +4461,7 @@ export const ta = {
   "apiErrors.invalidValue.eachShiftNeedsWeekday": "ஒவ்வொரு ஷிப்டுக்கும் வார நாள் (0-6) மற்றும் HH:MM தொடக்க மற்றும் முடிவு நேரங்கள் தேவை.",
   "apiErrors.invalidValue.emailRequired": "ஒரு மின்னஞ்சல் தேவை.",
   "apiErrors.invalidValue.enterBankName": "உங்கள் வங்கியின் பெயரை உள்ளிடவும்.",
-  "apiErrors.invalidValue.enterGS1CompanyPrefix": "உங்கள் GS1 நிறுவன முன்னொட்டை உள்ளிடவும் — 6 முதல் 10 இலக்கங்கள், GS1 வழங்கியது போலவே — அல்லது அதை காலியாக விடவும்.",
+  "apiErrors.invalidValue.enterGS1CompanyPrefix": "உங்கள் GS1 நிறுவன முன்னொட்டை உள்ளிடவும் — 6 முதல் 11 இலக்கங்கள், GS1 வழங்கியது போலவே — அல்லது அதை காலியாக விடவும்.",
   "apiErrors.invalidValue.enterHowManyArrived": "குறைந்தது ஒரு வரியில் எத்தனை வந்தன என்பதை உள்ளிடவும்.",
   "apiErrors.invalidValue.enterLightspeedDomainPrefix": "உங்கள் Lightspeed டொமைன் முன்னொட்டை உள்ளிடவும் — .retail.lightspeed.app க்கு முன் உள்ள பகுதி.",
   "apiErrors.invalidValue.enterStoreDomainLike": "உங்கள் கடை டொமைனை உள்ளிடவும், எடுத்துக்காட்டாக your-store.myshopify.com.",

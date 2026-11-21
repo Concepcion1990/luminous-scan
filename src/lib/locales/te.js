@@ -4461,7 +4461,7 @@ export const te = {
   "apiErrors.invalidValue.eachShiftNeedsWeekday": "ప్రతి షిఫ్ట్‌కు వారంలోని రోజు (0-6) మరియు HH:MM ప్రారంభ మరియు ముగింపు సమయాలు అవసరం.",
   "apiErrors.invalidValue.emailRequired": "ఒక ఇమెయిల్ అవసరం.",
   "apiErrors.invalidValue.enterBankName": "మీ బ్యాంకు పేరును నమోదు చేయండి.",
-  "apiErrors.invalidValue.enterGS1CompanyPrefix": "మీ GS1 కంపెనీ ఉపసర్గను నమోదు చేయండి — 6 నుండి 10 అంకెలు, GS1 జారీ చేసినట్లుగానే — లేదా దానిని ఖాళీగా వదిలేయండి.",
+  "apiErrors.invalidValue.enterGS1CompanyPrefix": "మీ GS1 కంపెనీ ఉపసర్గను నమోదు చేయండి — 6 నుండి 11 అంకెలు, GS1 జారీ చేసినట్లుగానే — లేదా దానిని ఖాళీగా వదిలేయండి.",
   "apiErrors.invalidValue.enterHowManyArrived": "కనీసం ఒక పంక్తిపై ఎన్ని వచ్చాయో నమోదు చేయండి.",
   "apiErrors.invalidValue.enterLightspeedDomainPrefix": "మీ Lightspeed డొమైన్ ఉపసర్గను నమోదు చేయండి — .retail.lightspeed.app కు ముందు భాగం.",
   "apiErrors.invalidValue.enterStoreDomainLike": "మీ దుకాణ డొమైన్‌ను నమోదు చేయండి, ఉదాహరణకు your-store.myshopify.com.",

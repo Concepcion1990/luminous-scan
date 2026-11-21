@@ -4461,7 +4461,7 @@ export const ru = {
   "apiErrors.invalidValue.eachShiftNeedsWeekday": "Каждой смене нужен день недели (0-6) и время начала и конца HH:MM.",
   "apiErrors.invalidValue.emailRequired": "Требуется адрес электронной почты.",
   "apiErrors.invalidValue.enterBankName": "Введите название вашего банка.",
-  "apiErrors.invalidValue.enterGS1CompanyPrefix": "Введите префикс компании GS1 — от 6 до 10 цифр, точно как выдала GS1, — или оставьте пустым.",
+  "apiErrors.invalidValue.enterGS1CompanyPrefix": "Введите префикс компании GS1 — от 6 до 11 цифр, точно как выдала GS1, — или оставьте пустым.",
   "apiErrors.invalidValue.enterHowManyArrived": "Введите, сколько прибыло, хотя бы в одной строке.",
   "apiErrors.invalidValue.enterLightspeedDomainPrefix": "Введите префикс домена Lightspeed — часть перед .retail.lightspeed.app.",
   "apiErrors.invalidValue.enterStoreDomainLike": "Введите домен магазина, например your-store.myshopify.com.",
