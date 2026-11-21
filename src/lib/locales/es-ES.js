@@ -5010,4 +5010,13 @@ export const esES = {
   "payroll.profile.noName": "Aún no hay nombre registrado.",
   "apiErrors.forbidden.businessOwnerUpdateDetails": "Solo el dueño del negocio puede actualizar estos datos.",
   "apiErrors.invalidValue.homeAddressThousandCharacters": "Tu dirección de casa debe tener 1000 caracteres o menos.",
+  "plans.status.foundingTester": "Probador fundador",
+  "plans.priceNoteFoundingTester": "Sin cargo — los probadores fundadores conservan Business gratis de por vida.",
+  "subscribe.foundingTesterNote": "Este espacio de trabajo tiene Business como probador fundador — gratis de por vida. Sin tarjeta, sin cargo, nunca.",
+  "upgrade.introFoundingTester": " — un espacio de trabajo de probador fundador, gratis de por vida y sin cargo.",
+  "upgrade.foundingTesterNote": "Los probadores fundadores conservan Business gratis de por vida — no hay plan que cambiar ni suscripción que cancelar.",
+  "apiErrors.foundingTester.alreadyListed": "Ese correo ya está en la lista de probadores fundadores.",
+  "apiErrors.foundingTester.listFull": "La lista de probadores fundadores está llena.",
+  "apiErrors.foundingTester.notListed": "Ese correo no está en la lista de probadores fundadores.",
+  "apiErrors.foundingTester.capWholeNumber": "El límite debe ser un número entero de 1 o más.",
 };
