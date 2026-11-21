@@ -4461,7 +4461,7 @@ export const kn = {
   "apiErrors.invalidValue.eachShiftNeedsWeekday": "ಪ್ರತಿ ಶಿಫ್ಟ್‌ಗೆ ವಾರದ ದಿನ (0-6) ಮತ್ತು HH:MM ಪ್ರಾರಂಭ ಮತ್ತು ಅಂತ್ಯ ಸಮಯಗಳು ಬೇಕು.",
   "apiErrors.invalidValue.emailRequired": "ಒಂದು ಇಮೇಲ್ ಅಗತ್ಯವಿದೆ.",
   "apiErrors.invalidValue.enterBankName": "ನಿಮ್ಮ ಬ್ಯಾಂಕ್ ಹೆಸರನ್ನು ನಮೂದಿಸಿ.",
-  "apiErrors.invalidValue.enterGS1CompanyPrefix": "ನಿಮ್ಮ GS1 ಕಂಪನಿ ಪೂರ್ವಪ್ರತ್ಯಯವನ್ನು ನಮೂದಿಸಿ — 6 ರಿಂದ 10 ಅಂಕಿಗಳು, GS1 ಅದನ್ನು ನೀಡಿದಂತೆಯೇ — ಅಥವಾ ಅದನ್ನು ಖಾಲಿ ಬಿಡಿ.",
+  "apiErrors.invalidValue.enterGS1CompanyPrefix": "ನಿಮ್ಮ GS1 ಕಂಪನಿ ಪೂರ್ವಪ್ರತ್ಯಯವನ್ನು ನಮೂದಿಸಿ — 6 ರಿಂದ 11 ಅಂಕಿಗಳು, GS1 ಅದನ್ನು ನೀಡಿದಂತೆಯೇ — ಅಥವಾ ಅದನ್ನು ಖಾಲಿ ಬಿಡಿ.",
   "apiErrors.invalidValue.enterHowManyArrived": "ಕನಿಷ್ಠ ಒಂದು ಸಾಲಿನಲ್ಲಿ ಎಷ್ಟು ಬಂದಿವೆ ಎಂದು ನಮೂದಿಸಿ.",
   "apiErrors.invalidValue.enterLightspeedDomainPrefix": "ನಿಮ್ಮ Lightspeed ಡೊಮೇನ್ ಪೂರ್ವಪ್ರತ್ಯಯವನ್ನು ನಮೂದಿಸಿ — .retail.lightspeed.app ಮೊದಲ ಭಾಗ.",
   "apiErrors.invalidValue.enterStoreDomainLike": "ನಿಮ್ಮ ಅಂಗಡಿ ಡೊಮೇನ್ ನಮೂದಿಸಿ, ಉದಾಹರಣೆಗೆ your-store.myshopify.com.",

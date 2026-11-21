@@ -4379,7 +4379,7 @@ export const ja = {
   "apiErrors.invalidValue.eachShiftNeedsWeekday": "各シフトには曜日（0-6）と HH:MM 形式の開始・終了時刻が必要。",
   "apiErrors.invalidValue.emailRequired": "メールアドレスが必要。",
   "apiErrors.invalidValue.enterBankName": "銀行名を入力すること。",
-  "apiErrors.invalidValue.enterGS1CompanyPrefix": "GS1 会社プレフィックスを入力すること — GS1 が発行した通りの6〜10桁 — または空欄のままにすること。",
+  "apiErrors.invalidValue.enterGS1CompanyPrefix": "GS1 会社プレフィックスを入力すること — GS1 が発行した通りの6〜11桁 — または空欄のままにすること。",
   "apiErrors.invalidValue.enterHowManyArrived": "少なくとも1行に到着数を入力すること。",
   "apiErrors.invalidValue.enterLightspeedDomainPrefix": "Lightspeed のドメインプレフィックスを入力すること — .retail.lightspeed.app の前の部分。",
   "apiErrors.invalidValue.enterStoreDomainLike": "店舗ドメインを入力すること。例：your-store.myshopify.com。",

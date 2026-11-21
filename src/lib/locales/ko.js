@@ -4379,7 +4379,7 @@ export const ko = {
   "apiErrors.invalidValue.eachShiftNeedsWeekday": "각 근무에는 요일(0-6)과 HH:MM 형식의 시작 및 종료 시간이 필요해요.",
   "apiErrors.invalidValue.emailRequired": "이메일이 필요해요.",
   "apiErrors.invalidValue.enterBankName": "은행 이름을 입력해 주세요.",
-  "apiErrors.invalidValue.enterGS1CompanyPrefix": "GS1 회사 접두사를 입력해 주세요 — GS1가 발급한 그대로 6~10자리 — 또는 비워 두세요.",
+  "apiErrors.invalidValue.enterGS1CompanyPrefix": "GS1 회사 접두사를 입력해 주세요 — GS1가 발급한 그대로 6~11자리 — 또는 비워 두세요.",
   "apiErrors.invalidValue.enterHowManyArrived": "최소 한 행에 도착 수량을 입력해 주세요.",
   "apiErrors.invalidValue.enterLightspeedDomainPrefix": "Lightspeed 도메인 접두사를 입력해 주세요 — .retail.lightspeed.app 앞부분이에요.",
   "apiErrors.invalidValue.enterStoreDomainLike": "매장 도메인을 입력해 주세요. 예: your-store.myshopify.com.",

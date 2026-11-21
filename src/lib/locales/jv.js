@@ -4461,7 +4461,7 @@ export const jv = {
   "apiErrors.invalidValue.eachShiftNeedsWeekday": "Saben shift butuh dina kerja (0-6) lan wektu wiwitan lan pungkasan HH:MM.",
   "apiErrors.invalidValue.emailRequired": "Email dibutuhake.",
   "apiErrors.invalidValue.enterBankName": "Lebokake jeneng bank sampeyan.",
-  "apiErrors.invalidValue.enterGS1CompanyPrefix": "Lebokake awalan perusahaan GS1 sampeyan — 6 nganti 10 digit, pas kaya sing ditokake GS1 — utawa kosongake.",
+  "apiErrors.invalidValue.enterGS1CompanyPrefix": "Lebokake awalan perusahaan GS1 sampeyan — 6 nganti 11 digit, pas kaya sing ditokake GS1 — utawa kosongake.",
   "apiErrors.invalidValue.enterHowManyArrived": "Lebokake pira sing teka ing paling ora siji baris.",
   "apiErrors.invalidValue.enterLightspeedDomainPrefix": "Lebokake awalan domain Lightspeed sampeyan — bagean sadurunge .retail.lightspeed.app.",
   "apiErrors.invalidValue.enterStoreDomainLike": "Lebokake domain toko sampeyan, kaya your-store.myshopify.com.",
