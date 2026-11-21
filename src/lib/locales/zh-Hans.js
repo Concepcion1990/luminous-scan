@@ -4713,7 +4713,7 @@ export const zhHans = {
   "plansLib.includes.inviteLink": "带一键注册链接的员工邀请",
   "subscribe.memberNote": "您已作为此工作区的成员登录。此页面属于企业所有者 — 如果您在这里需要什么，请向他们询问。",
   "subscribe.memberOpenApp": "打开应用",
-  "apiErrors.planLimitNeutral": "现在无法添加这个 — 此工作区已达到上限。请向企业所有者询问。",
+  "apiErrors.planLimitNeutral": "现在无法添加这个 — 请向企业所有者询问。",
   "training.lessons.owner-confidentiality.title": "您的信息保持保密",
   "training.lessons.owner-confidentiality.step1": "Luminous StockHaven 会对您的员工保密您的信息。您的付款、试用、订阅和账单状态——以及与您个人信息有关的任何内容——只属于您：员工和经理永远看不到，应用的任何地方都不会显示。",
   "training.lessons.owner-confidentiality.step2": "这也包括那些安静的角落：他们的页面上方没有试用倒计时，他们的设置里没有套餐或账单部分，没有付款警告。他们的设置是个人性质的——他们自己的账户、安全、外观和语言——再加上您为他们勾选的额外部分。账单永远不会是勾选项之一。",

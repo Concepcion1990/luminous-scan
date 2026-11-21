@@ -4713,7 +4713,7 @@ export const yue = {
   "plansLib.includes.inviteLink": "帶一鍵註冊連結嘅員工邀請",
   "subscribe.memberNote": "你已作為呢個工作區嘅成員登入。呢個頁面係屬於企業擁有人嘅 — 如果你喺呢度需要啲乜，請問佢哋。",
   "subscribe.memberOpenApp": "開啟應用",
-  "apiErrors.planLimitNeutral": "呢個而家加唔到 — 呢個工作區已經到咗上限。請問企業擁有人。",
+  "apiErrors.planLimitNeutral": "呢個而家加唔到 — 請問企業擁有人。",
   "training.lessons.owner-confidentiality.title": "你嘅資料會保密",
   "training.lessons.owner-confidentiality.step1": "Luminous StockHaven 會對你嘅員工保密你嘅資料。你嘅付款、試用、訂閱同賬單狀態——同埋任何關於你個人資料嘅嘢——只係屬於你：員工同經理永遠都唔會見到，喺個應用程式入面任何地方都唔會顯示。",
   "training.lessons.owner-confidentiality.step2": "呢樣嘢亦都包括啲安靜嘅角落：佢哋嘅頁面上面冇試用倒數，佢哋嘅設定入面冇計劃或者賬單部分，冇付款警告。佢哋嘅設定係個人嘅——佢哋自己嘅帳戶、安全、外觀同語言——再加你為佢哋揀嘅額外部分。賬單永遠唔會係其中一個選項。",

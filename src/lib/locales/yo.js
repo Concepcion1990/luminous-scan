@@ -4713,7 +4713,7 @@ export const yo = {
   "plansLib.includes.inviteLink": "Àwọn ìpè òṣìṣẹ́ pẹ̀lú ìjápọ̀ ìforúkọsílẹ̀ ìfọwọ́kan kan",
   "subscribe.memberNote": "O ti wọlé gẹ́gẹ́ bí ọmọ ẹgbẹ́ ibi iṣẹ́ yìí. Ojú ewé yìí jẹ́ ti olówó ìṣòwò — bí o bá nílò nǹkan níbí, béèrè lọ́wọ́ wọn.",
   "subscribe.memberOpenApp": "Ṣí àpù náà",
-  "apiErrors.planLimitNeutral": "A kò lè fi èyí kún un ní báyìí — ibi iṣẹ́ yìí ti dé ààlà. Béèrè lọ́wọ́ olówó ìṣòwò.",
+  "apiErrors.planLimitNeutral": "A kò lè fi èyí kún un ní báyìí — béèrè lọ́wọ́ olówó ìṣòwò.",
   "training.lessons.owner-confidentiality.title": "Àlàyé rẹ dúró ní ìkọ̀kọ̀",
   "training.lessons.owner-confidentiality.step1": "Luminous StockHaven ń pa àlàyé rẹ mọ́ ní ìkọ̀kọ̀ kúrò lọ́dọ̀ àwọn òṣìṣẹ́ rẹ. Àwọn ìsanwó rẹ, ìdánwò rẹ, ìforúkọsílẹ̀ rẹ àti ipò ìṣirò owó rẹ — àti ohunkóhun nípa àlàyé ti ara ẹni rẹ — jẹ́ tìrẹ nìkan: àwọn òṣìṣẹ́ àti àwọn olùṣàkóso kò rí i rí, níbikíbi nínú app náà.",
   "training.lessons.owner-confidentiality.step2": "Ìyẹn pẹ̀lú àwọn ibi ìdákẹ́jẹ́ẹ́: kò sí ìkànǹkán ìdánwò lórí àwọn ojú-ìwé wọn, kò sí apá ètò tàbí ìṣirò owó nínú Ètò wọn, kò sí ìkìlọ̀ ìsanwó. Ètò wọn jẹ́ ti ara ẹni — àkàǹtì tiwọn, ààbò, ìrísí àti èdè — pẹ̀lú àwọn apá àfikún tí o yàn fún wọn nìkan. Ìṣirò owó kì í ṣe ọ̀kan lára àwọn àmì rárá.",
