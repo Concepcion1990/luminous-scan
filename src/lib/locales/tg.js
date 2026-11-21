@@ -5010,4 +5010,13 @@ export const tg = {
   "payroll.profile.noName": "Ҳанӯз ягон ном сабт нашудааст.",
   "apiErrors.forbidden.businessOwnerUpdateDetails": "Танҳо соҳиби корхона метавонад ин тафсилотро навсозӣ кунад.",
   "apiErrors.invalidValue.homeAddressThousandCharacters": "Суроғаи хонаи худро то 1000 аломат ё камтар нигоҳ доред.",
+  "plans.status.foundingTester": "Озмоишгари муассис",
+  "plans.priceNoteFoundingTester": "Ҳеҷ пардохт нест — озмоишгарони муассис Business-ро барои ҳамеша ройгон нигоҳ медоранд.",
+  "subscribe.foundingTesterNote": "Ин фазои корӣ Business-ро ҳамчун озмоишгари муассис дорад — барои ҳамеша ройгон. Ҳеҷ корт нест, ҳеҷ пардохт нест, ҳаргиз.",
+  "upgrade.introFoundingTester": " — фазои кории озмоишгари муассис, барои ҳамеша ройгон ва бе ҳеҷ пардохт.",
+  "upgrade.foundingTesterNote": "Озмоишгарони муассис Business-ро барои ҳамеша ройгон нигоҳ медоранд — ин ҷо нақшае барои иваз кардан ва обунае барои бекор кардан вуҷуд надорад.",
+  "apiErrors.foundingTester.alreadyListed": "Он почтаи электронӣ аллакай дар рӯйхати озмоишгарони муассис ҳаст.",
+  "apiErrors.foundingTester.listFull": "Рӯйхати озмоишгарони муассис пур аст.",
+  "apiErrors.foundingTester.notListed": "Он почтаи электронӣ дар рӯйхати озмоишгарони муассис нест.",
+  "apiErrors.foundingTester.capWholeNumber": "Маҳдудият бояд адади бутуни 1 ё бештар бошад.",
 };
