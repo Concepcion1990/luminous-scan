@@ -4713,7 +4713,7 @@ export const esES = {
   "plansLib.includes.inviteLink": "Invitaciones al personal con un enlace de registro de un toque",
   "subscribe.memberNote": "Has iniciado sesión como miembro de este espacio de trabajo. Esta página es del dueño del negocio: si necesitas algo aquí, pídeselo, por favor.",
   "subscribe.memberOpenApp": "Abrir la app",
-  "apiErrors.planLimitNeutral": "Eso no se puede agregar ahora: este espacio de trabajo llegó a un límite. Pregúntale al dueño del negocio, por favor.",
+  "apiErrors.planLimitNeutral": "Eso no se puede agregar ahora — pregúntale al dueño del negocio, por favor.",
   "training.lessons.owner-confidentiality.title": "Tu información se mantiene confidencial",
   "training.lessons.owner-confidentiality.step1": "Luminous StockHaven mantiene tu información confidencial frente a tu personal. Tus pagos, tu prueba, tu suscripción y el estado de tu facturación — y todo lo que tenga que ver con tu información personal — son solo tuyos: el personal y los gerentes nunca los ven, en ninguna parte de la app.",
   "training.lessons.owner-confidentiality.step2": "Eso incluye los lugares discretos: ninguna cuenta atrás de la prueba sobre sus páginas, ninguna sección de plan o facturación en su Configuración, ningún aviso de pago. Su Configuración es personal — su propia cuenta, seguridad, apariencia e idioma — más solo las secciones extra que tú decidas marcar para ellos. La facturación nunca es una de las marcas.",
