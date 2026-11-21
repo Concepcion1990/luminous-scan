@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/client';
 import { Loader2, TriangleAlert } from 'lucide-react';
-import { allRoles, BUSINESS_ONLY_PERMISSIONS, isLocationsGrant, isMemberGrant, isProductsGrant, isReturnsGrant, isRosterGrant, isSettingsGrant, LOCATIONS_GRANTS, PRODUCTS_GRANTS, RETURNS_GRANTS, ROSTER_GRANTS, roleById, SETTINGS_GRANTS, STATUS_OPTIONS } from '@/lib/staff';
+import { allRoles, BUSINESS_ONLY_PERMISSIONS, isLocationsGrant, isLowStockGrant, isMemberGrant, isProductsGrant, isReturnsGrant, isRosterGrant, isSettingsGrant, LOCATIONS_GRANTS, LOW_STOCK_GRANTS, PRODUCTS_GRANTS, RETURNS_GRANTS, ROSTER_GRANTS, roleById, SETTINGS_GRANTS, STATUS_OPTIONS } from '@/lib/staff';
 import { Checkbox } from '@/components/ui/checkbox';
 import { createStaffMember } from '@/lib/entitlements';
 import { fixStaffEmail } from '@/lib/recovery';
@@ -73,6 +73,14 @@ const emptyForm = (customRoles, stripBusinessOnly = (permissions) => permissions
     // takes effect only for a manager; a staff member's tick
     // stays inert (the server enforces the same split).
     roster_grants: [],
+    // Owner-granted low stock (Nov 20, 2026): TWO sibling
+    // per-member ticks — seeing the low-stock alerts, and
+    // saving a change to a reorder point. Off by default for
+    // everyone. The tick block renders only on Business (low
+    // stock does not exist on Essentials); the stored values
+    // ride the save either way, so an Essentials edit never
+    // wipes a tick stored earlier.
+    lowstock_grants: [],
     status: 'invited',
     location_id: '',
     location_name: '',
@@ -140,8 +148,8 @@ export default function StaffMemberDialog({
             role_name: member.role_name || '',
             // The per-member grants (Settings sections + returns
             // completion + product creation + location creation +
-            // the staff roster) ride the same stored array but
-            // are edited as their own ticks below —
+            // the staff roster + the low-stock pair) ride the same
+            // stored array but are edited as their own ticks below —
             // split them out so the permission picker (and its
             // All/None buttons) can never wipe a grant by accident.
             permissions: (Array.isArray(member.permissions) ? member.permissions : []).filter(
@@ -161,6 +169,9 @@ export default function StaffMemberDialog({
             ),
             roster_grants: (Array.isArray(member.permissions) ? member.permissions : []).filter(
               (key) => isRosterGrant(key)
+            ),
+            lowstock_grants: (Array.isArray(member.permissions) ? member.permissions : []).filter(
+              (key) => isLowStockGrant(key)
             ),
             status: member.status || 'invited',
             location_id: member.location_id || '',
@@ -267,6 +278,7 @@ export default function StaffMemberDialog({
           ...(form.products_grants || []),
           ...(form.locations_grants || []),
           ...(form.roster_grants || []),
+          ...(form.lowstock_grants || []),
         ],
         status: form.status,
         location_id: form.location_id || '',
@@ -682,6 +694,46 @@ export default function StaffMemberDialog({
               {t('staff.memberDialog.staffAccessHint')}
             </p>
           </div>
+
+          {/* Owner-granted low stock (Nov 20, 2026): TWO sibling
+              ticks, Business only — low stock does not exist on
+              Essentials, so on Essentials this block does not
+              render at all. The first tick shows this person the
+              low-stock alert surfaces; without it they do not
+              exist for them. The second lets them SAVE a change
+              to a reorder point — the Reorder at box stays
+              visible to everyone on Business either way, and a
+              save that leaves the value alone needs no tick.
+              Offered for every role, off by default. */}
+          {!entitlementLoading && !isEssentials && (
+            <div className="space-y-1.5">
+              <Label>{t('staffLib.area.lowStockAccess')}</Label>
+              <div className="rounded-lg border border-border p-2.5">
+                <div className="grid gap-1.5">
+                  {LOW_STOCK_GRANTS.map((grant) => (
+                    <label key={grant.key} className="flex items-start gap-2 text-xs leading-snug">
+                      <Checkbox
+                        checked={(form.lowstock_grants || []).includes(grant.key)}
+                        onCheckedChange={(on) =>
+                          setForm((c) => ({
+                            ...c,
+                            lowstock_grants: on
+                              ? [...new Set([...(c.lowstock_grants || []), grant.key])]
+                              : (c.lowstock_grants || []).filter((key) => key !== grant.key),
+                          }))
+                        }
+                        className="mt-0.5"
+                      />
+                      <span>{grant.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                {t('staff.memberDialog.lowStockAccessHint')}
+              </p>
+            </div>
+          )}
 
           {canHire && (
             <>

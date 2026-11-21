@@ -100,6 +100,8 @@ export const API_ERROR_MESSAGE_KEYS = {
   "That welcome message is too long.": "apiErrors.welcomeScriptTooLong",
   "Only the owner, or a team member the owner has allowed to complete refunds and exchanges, can approve and finish a return.": "apiErrors.returnsCompleteReserved",
   "Only the owner, or a team member the owner has allowed to add locations, can add a location.": "apiErrors.locationsCreateReserved",
+  "Only the owner, or a team member the owner has allowed to change reorder points, can change a reorder point.": "apiErrors.reorderChangeReserved",
+  "Only the owner, or a team member the owner has allowed to see low-stock alerts, can see low-stock alerts.": "apiErrors.alertsViewReserved",
   "Only the owner can change this store's policies and terms.": "apiErrors.businessPoliciesOwnerOnly",
   "Send a PDF, text, Word or OpenDocument file under 2 MB.": "apiErrors.policyFileInvalid",
   "That document is too long to type here. You can upload it as a file instead.": "apiErrors.policyTextTooLong",

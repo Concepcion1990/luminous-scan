@@ -409,7 +409,7 @@ test('the catalog Export button refuses to render on Essentials', () => {
 test('every other export action lives on a Business-only page', () => {
   const app = readFileSync('src/App.jsx', 'utf8');
   for (const feature of ['valuation', 'reports', 'alerts', 'purchasing', 'suppliers', 'exports']) {
-    assert.match(app, new RegExp(`<PlanRedirect feature="${feature}">`), `${feature} must bounce via PlanRedirect`);
+    assert.match(app, new RegExp(`<PlanRedirect feature="${feature}"[^>]*>`), `${feature} must bounce via PlanRedirect`);
   }
   // Import is NOT gated: it is an Essentials feature and stays open.
   const importLine = app.split('\n').find((line) => line.includes('path="/import"'));

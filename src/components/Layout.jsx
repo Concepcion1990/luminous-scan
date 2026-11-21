@@ -229,11 +229,20 @@ export default function Layout() {
   // tick, Nov 19, 2026).
   const doorOpens = (item) =>
     !item.perm || can(item.perm) || (item.anyPerm || []).some((key) => can(key));
+  // A fourth, narrower filter (Nov 20, 2026): an item's grant
+  // field names an owner-handed enrollment tick the person must
+  // ALSO hold for the door to hang at all (the Low stock and
+  // Alerts doors follow the alerts.view tick). It narrows only
+  // the hanging doors — doorOpens above still decides the
+  // NoAccess state, so a typed URL reaches the page's own
+  // PlanRedirect, which bounces an unticked member quietly to
+  // the Overview exactly as it bounces the wrong plan.
   const allowedItems = translatedItems.filter(
     (item) =>
       doorOpens(item) &&
       (!item.feature || planAllows(item.feature)) &&
-      (!item.bossOnly || boss)
+      (!item.bossOnly || boss) &&
+      (!item.grant || can(item.grant))
   );
   // Mobile tabs and the full module menu use the exact same staff/plan filters as desktop.
   const mobileTabPaths = ['/', '/scan', '/products', '/orders', '/settings'];

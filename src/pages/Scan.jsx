@@ -63,16 +63,19 @@ const allActions = [...actions, ...adjustments];
 export default function Scan() {
   const { activeId, profile } = useBusiness();
   const { planKey, can: canPlan, isLoading: entitlementLoading } = useEntitlements();
+  const { can } = useStaffAccess();
   // Low stock is a Business surface (owner ruling, Nov 20, 2026):
   // the amber at/below-reorder coloring of a scanned product's
   // per-location quantities shows only when the plan carries
   // alerts. The quantities themselves are unchanged on both plans.
-  const showLow = !entitlementLoading && canPlan('alerts');
+  // The per-person layer (same day): a member sees the coloring
+  // only with the owner's alerts.view enrollment tick — the
+  // owner always does.
+  const showLow = !entitlementLoading && canPlan('alerts') && can('alerts.view');
   // No dangling doors (owner ruling, Nov 19, 2026): the not-found
   // panel's Create product button renders only for a person who
   // can actually create — products.edit, or the owner's per-member
   // products.create tick. The Scan next button stays for everyone.
-  const { can } = useStaffAccess();
   const canCreateProducts = can('products.edit') || can('products.create');
   // T6 offline-first sync: the queue, the visible status, and the
   // convergence check (the manager's view re-reads when the server

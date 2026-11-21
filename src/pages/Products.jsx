@@ -97,7 +97,14 @@ export default function Products() {
   // expanded row's reorder line render only when the plan carries
   // alerts. The stored reorder_point values are never touched —
   // they stay saved, unseen here, and Business reveals them.
-  const showAlerts = !entitlementLoading && canPlan('alerts');
+  // The two layers split here (owner rulings, Nov 20, 2026): the
+  // reorder VALUES — the column, the sort, the expanded line —
+  // stay visible to everyone on Business, exactly as the Reorder
+  // at box does in the form; the LOW badge is an ALERT surface,
+  // and a member sees it only with the owner's alerts.view
+  // enrollment tick (the owner always does).
+  const showReorderValues = !entitlementLoading && canPlan('alerts');
+  const showAlerts = showReorderValues && can('alerts.view');
   const { toast } = useToast();
   const isDesktop = useIsDesktop();
   const { open: dialogOpen, onOpenChange: setDialogOpen } = useModalHistory({
@@ -149,7 +156,7 @@ export default function Products() {
     { value: 'codes', label: t('products.sortCodes') },
     { value: 'category', label: t('products.sortCategory') },
     { value: 'onHand', label: t('products.sortOnHand') },
-    ...(showAlerts ? [{ value: 'reorder', label: t('products.sortReorder') }] : []),
+    ...(showReorderValues ? [{ value: 'reorder', label: t('products.sortReorder') }] : []),
     { value: 'price', label: t('products.sortPrice') },
   ];
 
@@ -618,14 +625,14 @@ export default function Products() {
       )}
 
       <div data-tour="products-list" className="overflow-hidden rounded-xl border border-border bg-card">
-        <div className={`hidden grid-cols-[26px_minmax(0,2.2fr)_minmax(0,1.2fr)_110px_110px_88px] gap-3 border-b border-border bg-muted/50 px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground md:grid ${showAlerts ? 'xl:grid-cols-[26px_48px_minmax(0,2.4fr)_minmax(0,1.3fr)_120px_110px_84px_104px_96px]' : 'xl:grid-cols-[26px_48px_minmax(0,2.4fr)_minmax(0,1.3fr)_120px_110px_104px_96px]'}`}>
+        <div className={`hidden grid-cols-[26px_minmax(0,2.2fr)_minmax(0,1.2fr)_110px_110px_88px] gap-3 border-b border-border bg-muted/50 px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground md:grid ${showReorderValues ? 'xl:grid-cols-[26px_48px_minmax(0,2.4fr)_minmax(0,1.3fr)_120px_110px_84px_104px_96px]' : 'xl:grid-cols-[26px_48px_minmax(0,2.4fr)_minmax(0,1.3fr)_120px_110px_104px_96px]'}`}>
           <span />
           <span className="hidden xl:block">{t('products.colPhoto')}</span>
           <SortHeader label={t('products.colProduct')} column="name" sort={sort} onSort={toggleSort} />
           <SortHeader label={t('products.colCodes')} column="codes" sort={sort} onSort={toggleSort} />
           <SortHeader label={t('products.colCategory')} column="category" sort={sort} onSort={toggleSort} />
           <SortHeader label={t('products.colOnHand')} column="onHand" sort={sort} onSort={toggleSort} align="right" />
-          {showAlerts && (
+          {showReorderValues && (
             <SortHeader
               label={t('products.colReorder')}
               column="reorder"
@@ -672,7 +679,7 @@ export default function Products() {
             return (
               <div key={product.id}>
                 <div
-                  className={`grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 md:grid-cols-[26px_minmax(0,2.2fr)_minmax(0,1.2fr)_110px_110px_88px] ${showAlerts ? 'xl:grid-cols-[26px_48px_minmax(0,2.4fr)_minmax(0,1.3fr)_120px_110px_84px_104px_96px]' : 'xl:grid-cols-[26px_48px_minmax(0,2.4fr)_minmax(0,1.3fr)_120px_110px_104px_96px]'} ${
+                  className={`grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 md:grid-cols-[26px_minmax(0,2.2fr)_minmax(0,1.2fr)_110px_110px_88px] ${showReorderValues ? 'xl:grid-cols-[26px_48px_minmax(0,2.4fr)_minmax(0,1.3fr)_120px_110px_84px_104px_96px]' : 'xl:grid-cols-[26px_48px_minmax(0,2.4fr)_minmax(0,1.3fr)_120px_110px_104px_96px]'} ${
                     selected.includes(product.id) ? 'bg-primary/5' : ''
                   }`}
                 >
@@ -754,7 +761,7 @@ export default function Products() {
                       </button>
                     )}
                   </span>
-                  {showAlerts && (
+                  {showReorderValues && (
                     <span className="numeric hidden text-right text-xs text-muted-foreground xl:block">
                       {product.reorder_point || 0}
                     </span>
@@ -830,7 +837,7 @@ export default function Products() {
                         );
                       })}
                     </div>
-                    {showAlerts && (
+                    {showReorderValues && (
                       <p className="mt-2 font-mono text-[10px] uppercase tracking-wide text-muted-foreground">
                         {t('products.reorderLine', {
                           reorder: product.reorder_point || 0,

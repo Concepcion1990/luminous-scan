@@ -37,6 +37,7 @@ import {
   bulkUpdateEntities,
   deleteEntity,
   assertProductCap,
+  ALERTS_VIEW_MESSAGE,
 } from './entities.js';
 import {
   recordMovementTx,
@@ -712,12 +713,19 @@ export function createShopRouter({ getPool: getPoolFn }) {
   router.get('/businesses/:bid/alerts', asyncHandler(async (req, res) => {
     const access = await accessOr403(pool(), req.user, req.params.bid);
     if (!featureAllowed(access.planKey, 'alerts')) throw err(403, 'plan_gated', 'Low-stock alerts are part of the Business plan.');
+    // The per-person layer (owner ruling, Nov 20, 2026): on
+    // Business the alerts belong to the owner, and to a member
+    // only with the owner's alerts.view enrollment tick — the
+    // endpoints refuse an unticked member exactly as the
+    // doors hide them.
+    if (!access.isOwner && !access.can('alerts.view')) throw err(403, 'alerts_view_not_granted', ALERTS_VIEW_MESSAGE);
     return res.json(await evaluateAlerts(pool(), req.params.bid));
   }));
 
   router.post('/businesses/:bid/alerts/evaluate', asyncHandler(async (req, res) => {
     const access = await accessOr403(pool(), req.user, req.params.bid);
     if (!featureAllowed(access.planKey, 'alerts')) throw err(403, 'plan_gated', 'Low-stock alerts are part of the Business plan.');
+    if (!access.isOwner && !access.can('alerts.view')) throw err(403, 'alerts_view_not_granted', ALERTS_VIEW_MESSAGE);
     return res.json(await evaluateAlerts(pool(), req.params.bid));
   }));
 

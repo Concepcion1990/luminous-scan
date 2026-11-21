@@ -595,6 +595,40 @@ export const RETURNS_COMPLETE_MESSAGE =
 export const LOCATIONS_CREATE_MESSAGE =
   'Only the owner, or a team member the owner has allowed to add locations, can add a location.';
 
+/** The reorder-point save refusal (owner ruling, Nov 20,
+ * 2026). Factual, subject-only: it says who may change a
+ * reorder point and nothing else. Registered in the client's
+ * apiErrors map (apiErrors.reorderChangeReserved) so it
+ * renders in the reader's language. */
+export const REORDER_CHANGE_MESSAGE =
+  'Only the owner, or a team member the owner has allowed to change reorder points, can change a reorder point.';
+
+/** The low-stock alerts refusal (owner ruling, Nov 20, 2026):
+ * the alert endpoints answer a Business member without the
+ * owner's alerts.view tick with this — factual, subject-only.
+ * Registered in the client's apiErrors map
+ * (apiErrors.alertsViewReserved) so it renders in the reader's
+ * language. */
+export const ALERTS_VIEW_MESSAGE =
+  'Only the owner, or a team member the owner has allowed to see low-stock alerts, can see low-stock alerts.';
+
+/**
+ * Does this caller hold the reorder-point right? (Owner
+ * ruling, Nov 20, 2026.) The Reorder at box stays visible to
+ * everyone on Business; SAVING a changed value belongs to the
+ * owner, or to a member the owner gave the products.reorder
+ * enrollment tick. Off Business the right is universal —
+ * Essentials has no low stock and no tick, and its stored
+ * values keep round-tripping exactly as the Nov 20 sweep left
+ * them. The guards below compare values themselves: a save
+ * that does not change the stored point never reaches for
+ * this right.
+ */
+function holdsReorderRight(access) {
+  if (access.planKey !== 'business') return true;
+  return access.isOwner || access.can('products.reorder');
+}
+
 async function guardCreate(pool, def, name, access, values) {
   const { business, planKey } = access;
   // Specific error first: suppliers refuse with their own code,
@@ -684,6 +718,23 @@ async function guardCreate(pool, def, name, access, values) {
     }
   }
   if (name === 'Product') {
+    // Reorder-point gate (owner ruling, Nov 20, 2026): a
+    // product BORN with a reorder point is a reorder point
+    // being set. On Business that takes the owner, or a member
+    // the owner gave the products.reorder tick — the value is
+    // refused, never silently stripped (refusals over silent
+    // changes is the house rule). A product born at the
+    // default (no point) needs no tick, and off Business the
+    // value stores exactly as it always has.
+    if (
+      !holdsReorderRight(access)
+      && values.reorder_point !== undefined
+      && values.reorder_point !== null
+      && values.reorder_point !== ''
+      && Number(values.reorder_point) !== 0
+    ) {
+      throw err(403, 'reorder_change_not_granted', REORDER_CHANGE_MESSAGE);
+    }
     if (pricingPayloadActive(values) && !featureAllowed(planKey, 'pricing')) {
       throw err(403, 'pricing_business_only', 'Clearance and rollback pricing is part of the Business plan.');
     }
@@ -754,6 +805,22 @@ async function guardUpdate(pool, def, name, access, row, patch) {
     throw err(403, 'custom_roles_business_only', customRolesBusinessOnlyMessage({ neutral: !access.isOwner }));
   }
   if (name === 'Product') {
+    // Reorder-point gate (owner ruling, Nov 20, 2026): the
+    // Reorder at box stays visible to everyone on Business,
+    // but SAVING a different value belongs to the owner, or
+    // to a member the owner gave the products.reorder tick.
+    // The comparison is against the stored row, so a save
+    // that leaves the point untouched — the ordinary product
+    // edit — goes through on the normal edit right, and the
+    // bulk-edit write path (one guarded update per product)
+    // is held to exactly the same line.
+    if (
+      !holdsReorderRight(access)
+      && patch.reorder_point !== undefined
+      && Number(patch.reorder_point ?? 0) !== Number(row.reorder_point ?? 0)
+    ) {
+      throw err(403, 'reorder_change_not_granted', REORDER_CHANGE_MESSAGE);
+    }
     if (pricingPayloadActive(patch) && !featureAllowed(planKey, 'pricing')) {
       throw err(403, 'pricing_business_only', 'Clearance and rollback pricing is part of the Business plan.');
     }

@@ -308,9 +308,45 @@ export function isRosterGrant(key) {
   return ROSTER_GRANT_KEYS.includes(key);
 }
 
-/** Any per-member grant key (Settings sections + returns + products + locations + roster). */
+/**
+ * Owner-granted low stock — TWO sibling ticks (the owner's
+ * rulings, Nov 20, 2026). Same pattern as the grants above: the
+ * keys live in the member's own permissions array, deliberately
+ * NOT part of PERMISSION_GROUPS / ALL_PERMISSIONS / the preset
+ * roles, edited in the member dialog as their own ticks, so the
+ * permission picker can never wipe them and no role carries
+ * them by default — a manager included. The owner holds both
+ * inherently. Low stock exists only on Business, so the tick
+ * block renders only there; on Essentials neither tick exists.
+ *
+ * - alerts.view       the low-stock ALERT surfaces: the
+ *                     Overview Needs attention box and low
+ *                     counts, the Low Stock and Alerts pages
+ *                     and their doors, the LOW marks. Without
+ *                     it those surfaces simply do not exist
+ *                     for that person, even on Business.
+ * - products.reorder  SAVING a change to a product's reorder
+ *                     point. The Reorder at box itself stays
+ *                     visible to everyone on Business, exactly
+ *                     as before — without this tick a save
+ *                     that changes the value is refused by
+ *                     the server; a save that leaves it alone
+ *                     goes through on the ordinary edit right.
+ */
+export const LOW_STOCK_GRANTS = [
+  { key: 'alerts.view', get label() { return t('staffLib.perm.alertsView'); } },
+  { key: 'products.reorder', get label() { return t('staffLib.perm.productsReorder'); } },
+];
+
+export const LOW_STOCK_GRANT_KEYS = LOW_STOCK_GRANTS.map((grant) => grant.key);
+
+export function isLowStockGrant(key) {
+  return LOW_STOCK_GRANT_KEYS.includes(key);
+}
+
+/** Any per-member grant key (Settings sections + returns + products + locations + roster + low stock). */
 export function isMemberGrant(key) {
-  return isSettingsGrant(key) || isReturnsGrant(key) || isProductsGrant(key) || isLocationsGrant(key) || isRosterGrant(key);
+  return isSettingsGrant(key) || isReturnsGrant(key) || isProductsGrant(key) || isLocationsGrant(key) || isRosterGrant(key) || isLowStockGrant(key);
 }
 
 /** A member row's level, mirroring the server's personLevel. */
