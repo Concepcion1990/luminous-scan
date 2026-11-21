@@ -110,10 +110,12 @@ test('Overview: no Business teaser cards or upsell panel on Essentials; Business
   assert.doesNotMatch(dashboard, /dashboard\.seeBusiness/);
   assert.doesNotMatch(dashboard, /dashboard\.attentionLocked/);
   assert.doesNotMatch(dashboard, /dashboard\.seeWhatBusinessIncludes/);
-  // Needs attention: real rows only on Business; on Essentials the
-  // panel follows its normal empty behavior (AttentionPanel, no rows).
+  // Needs attention: the box is the Business low-stock home (owner
+  // ruling, Nov 20, 2026): real rows on Business, and on Essentials
+  // the box does not render at all — no empty panel, no placeholder.
   assert.match(dashboard, /: showAlerts \? \(\s*<AttentionPanel low=\{stats\.low\} \/>/);
-  assert.match(dashboard, /: \(\s*<AttentionPanel low=\{\[\]\} \/>/);
+  assert.match(dashboard, /<AttentionPanel low=\{stats\.low\} \/>\s*\) : null\}/);
+  assert.doesNotMatch(dashboard, /<AttentionPanel low=\{\[\]\}/);
   assert.equal((dashboard.match(/<AttentionPanel low=\{stats\.low\} \/>/g) || []).length, 1);
   // The ungated cards stay on both plans.
   assert.match(dashboard, /<StatCard label=\{t\('dashboard\.unitsOnHand'\)\}/);

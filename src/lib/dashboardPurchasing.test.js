@@ -91,10 +91,12 @@ test('no backend function serves the purchasing cards', () => {
  * `!entitlementLoading && can(…)` pattern and showed locked teasers
  * linking to /upgrade. The owner's invisibility ruling (Nov 14, 2026)
  * superseded the teasers: on Essentials the two cards do not render
- * at all and the Needs-attention panel shows only its normal empty
- * state — no Business content of any kind pops up on Essentials.
- * Business renders all three exactly as before. Units on hand and
- * Active SKUs stay ungated on both plans.
+ * at all. The low-stock sweep (owner ruling, Nov 20, 2026) finished
+ * the panel: the Needs-attention box is the Business low-stock home,
+ * so on Essentials it does not render at all either — no Business
+ * content of any kind pops up on Essentials. Business renders all
+ * three exactly as before. Units on hand and Active SKUs stay
+ * ungated on both plans.
  */
 test('the Overview gates the Low-stock and Stock-value cards on the loaded entitlement', () => {
   const page = readFileSync('src/pages/Dashboard.jsx', 'utf8');
@@ -117,9 +119,11 @@ test('the Overview gates the Low-stock and Stock-value cards on the loaded entit
 test('the Overview gates the Needs-attention panel behind alerts', () => {
   const page = readFileSync('src/pages/Dashboard.jsx', 'utf8');
   assert.match(page, /: showAlerts \? \(\s*<AttentionPanel low=\{stats\.low\} \/>/);
-  // Off Business the panel keeps its normal empty state — the upsell
-  // block (LockedAttentionPanel) is gone entirely.
-  assert.match(page, /: \(\s*<AttentionPanel low=\{\[\]\} \/>/);
+  // Off Business the panel does not render at all (owner ruling,
+  // Nov 20, 2026) — the box is the Business low-stock home. The
+  // upsell block (LockedAttentionPanel) stays gone entirely.
+  assert.match(page, /<AttentionPanel low=\{stats\.low\} \/>\s*\) : null\}/);
+  assert.doesNotMatch(page, /<AttentionPanel low=\{\[\]\}/);
   assert.doesNotMatch(page, /LockedAttentionPanel/);
   assert.doesNotMatch(page, /dashboard\.attentionLocked/);
   assert.doesNotMatch(page, /dashboard\.seeWhatBusinessIncludes/);

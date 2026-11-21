@@ -157,7 +157,7 @@ test('Products and Locations gate their caps on the loaded entitlement', () => {
   assert.match(products, /const atProductLimit = productLimit != null && activeCount >= productLimit;/);
 
   const locations = readFileSync('src/pages/Locations.jsx', 'utf8');
-  assert.match(locations, /const \{ limits, isLoading: entitlementLoading \} = useEntitlements\(\);/);
+  assert.match(locations, /const \{ limits, can: canPlan, isLoading: entitlementLoading \} = useEntitlements\(\);/);
   assert.match(locations, /const siteLimit = displayLimit\(limits\.sites, entitlementLoading\);/);
   assert.match(locations, /const atSiteLimit = siteLimit != null && siteCount >= siteLimit;/);
 });
@@ -267,20 +267,22 @@ test('the plan comparison says low-stock counts are on every page', () => {
 
 /** AUDIT FINDING 5: the category header printed the money value of each
  * category — stock valuation, a Business-only feature — while the route
- * itself is ungated. Hide the money line on Essentials; keep the units
- * and low counts, which are passive counts (core, by design). The route
- * stays open: gating the whole page would take category browsing away
- * from Essentials. */
+ * itself is ungated. Hide the money line on Essentials. The low-stock
+ * sweep (owner ruling, Nov 20, 2026) later took the low counts too:
+ * they are a Business surface now, gated on can('alerts'). The units
+ * stay. The route stays open: gating the whole page would take
+ * category browsing away from Essentials. */
 test('Inventory by category hides the money line on Essentials', () => {
   const page = readFileSync('src/pages/InventoryCategories.jsx', 'utf8');
   assert.match(page, /const showValue = !entitlementLoading && can\('valuation'\);/);
   assert.match(page, /\{showValue && \(/);
   assert.match(page, /formatMoney\(group\.value, profile\.currency, 2\)/);
-  // The money line is the only thing gated: units and low counts stay.
+  // The money line is gated, and so are the low counts (Nov 20, 2026);
+  // the units stay on both plans.
   assert.equal((page.match(/formatMoney\(group\.value, profile\.currency, 2\)/g) || []).length, 1);
   assert.match(page, /\{group\.units\}/);
   // T6.3: the low suffix moved into en.js (inventory.groupLowSuffix).
-  assert.match(page, /\{group\.low \? t\('inventory\.groupLowSuffix', \{ low: group\.low \}\) : ''\}/);
+  assert.match(page, /\{showLow && group\.low \? t\('inventory\.groupLowSuffix', \{ low: group\.low \}\) : ''\}/);
   assert.equal(en['inventory.groupLowSuffix'], ' · {low} low');
   assert.match(page, /t\('inventory\.byCategorySubtitleUnits'\)/);
   assert.match(en['inventory.byCategorySubtitleUnits'], /with the units each one holds/);

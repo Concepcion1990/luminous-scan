@@ -241,11 +241,14 @@ test('36f: ForgotPassword success copy mentions the spam folder', () => {
   assert.match(en['forgot.sentLine2'], /Check your spam folder/);
 });
 
-// Finding 36g — DELIBERATE: the amber low-stock styling on Scan stays.
-// It is a reorder-point display (quantity at/below the product's reorder
-// point), not a low-stock alert, so it is not gated on can('alerts').
-test('36g: Scan keeps the amber reorder-point display (deliberate, not gated)', () => {
-  assert.match(scan, /isLow = product\.reorder_point > 0 && q <= product\.reorder_point/);
+// Finding 36g — SUPERSEDED by the owner's low-stock sweep ruling
+// (Nov 20, 2026): EVERYTHING connected to low stock comes off
+// Essentials, and the amber at/below-reorder coloring on Scan is a
+// low-stock marker. It is now gated on the alerts entitlement like
+// every other low surface; the quantities themselves render on both
+// plans exactly as before.
+test('36g: Scan gates the amber reorder-point display behind alerts (Nov 20, 2026 sweep)', () => {
+  assert.match(scan, /const showLow = !entitlementLoading && canPlan\('alerts'\);/);
+  assert.match(scan, /isLow = showLow && product\.reorder_point > 0 && q <= product\.reorder_point/);
   assert.match(scan, /isLow \? 'text-warn'/);
-  assert.doesNotMatch(scan, /can\('alerts'\)/);
 });
