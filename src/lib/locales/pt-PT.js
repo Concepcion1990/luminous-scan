@@ -5004,4 +5004,10 @@ export const ptPT = {
   "apiErrors.invalidValue.chooseSignatureStyle": "Escolha um estilo de assinatura.",
   "apiErrors.invalidValue.noDdDetailsYet": "Esse membro da equipe ainda não enviou os dados.",
   "training.lessons.owner-dd-setup.step5": "O que chega é um formulário lacrado e assinado: na linha da pessoa em Salários, você pode abri-lo para ler os números completos, imprimi-lo ou salvar uma cópia — você nunca pode editá-lo. Se um número parecer errado, devolva o formulário: a pessoa corrige e assina de novo, o formulário corrigido substitui o anterior, e o anterior fica no registro com sua data de substituição.",
+  "payroll.profile.ownerNote": "Estes são os seus próprios dados registados, da sua conta. Só você pode vê-los aqui — e, como são seus, você pode atualizá-los aqui mesmo sempre que mudarem.",
+  "payroll.profile.edit": "Editar os seus dados",
+  "payroll.profile.cancel": "Cancelar",
+  "payroll.profile.noName": "Nenhum nome registado ainda.",
+  "apiErrors.forbidden.businessOwnerUpdateDetails": "Somente o proprietário da empresa pode atualizar esses dados.",
+  "apiErrors.invalidValue.homeAddressThousandCharacters": "Mantenha o seu endereço de casa com 1000 caracteres ou menos.",
 };
