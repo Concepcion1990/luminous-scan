@@ -4379,7 +4379,7 @@ export const de = {
   "apiErrors.invalidValue.eachShiftNeedsWeekday": "Jede Schicht braucht einen Wochentag (0-6) und Start- und Endzeiten im Format HH:MM.",
   "apiErrors.invalidValue.emailRequired": "Eine E-Mail ist erforderlich.",
   "apiErrors.invalidValue.enterBankName": "Geben Sie den Namen Ihrer Bank ein.",
-  "apiErrors.invalidValue.enterGS1CompanyPrefix": "Geben Sie Ihr GS1-Firmenpräfix ein — 6 bis 10 Ziffern, genau wie von GS1 ausgestellt — oder lassen Sie es leer.",
+  "apiErrors.invalidValue.enterGS1CompanyPrefix": "Geben Sie Ihr GS1-Firmenpräfix ein — 6 bis 11 Ziffern, genau wie von GS1 ausgestellt — oder lassen Sie es leer.",
   "apiErrors.invalidValue.enterHowManyArrived": "Geben Sie ein, wie viele auf mindestens einer Zeile eingetroffen sind.",
   "apiErrors.invalidValue.enterLightspeedDomainPrefix": "Geben Sie Ihr Lightspeed-Domainpräfix ein — den Teil vor .retail.lightspeed.app.",
   "apiErrors.invalidValue.enterStoreDomainLike": "Geben Sie Ihre Filialdomain ein, z. B. ihre-filiale.myshopify.com.",
