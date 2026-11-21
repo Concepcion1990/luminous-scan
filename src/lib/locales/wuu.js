@@ -5010,4 +5010,13 @@ export const wuu = {
   "payroll.profile.noName": "还朆记录姓名。",
   "apiErrors.forbidden.businessOwnerUpdateDetails": "只有企业所有者好更新搿些信息。",
   "apiErrors.invalidValue.homeAddressThousandCharacters": "请拿侬个家庭住址控制勒 1000 个字符以内。",
+  "plans.status.foundingTester": "创始测试者",
+  "plans.priceNoteFoundingTester": "弗收费 — 创始测试者好终身免费保留 Business。",
+  "subscribe.foundingTesterNote": "搿个工作区以创始测试者身份使用 Business — 终身免费。弗需要银行卡，永远弗收费。",
+  "upgrade.introFoundingTester": " — 创始测试者个工作区，终身免费，绝对弗收费。",
+  "upgrade.foundingTesterNote": "创始测试者好终身免费保留 Business — 搿搭呒没可更改个套餐，也呒没可取消个订阅。",
+  "apiErrors.foundingTester.alreadyListed": "搿个邮箱已经勒创始测试者名单里向了。",
+  "apiErrors.foundingTester.listFull": "创始测试者名单满脱了。",
+  "apiErrors.foundingTester.notListed": "搿个邮箱弗勒创始测试者名单里向。",
+  "apiErrors.foundingTester.capWholeNumber": "上限必须是 1 或者更大个整数。",
 };

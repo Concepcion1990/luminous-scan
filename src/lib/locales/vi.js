@@ -5010,4 +5010,13 @@ export const vi = {
   "payroll.profile.noName": "Chưa có tên nào trong hồ sơ.",
   "apiErrors.forbidden.businessOwnerUpdateDetails": "Chỉ chủ doanh nghiệp mới có thể cập nhật các thông tin này.",
   "apiErrors.invalidValue.homeAddressThousandCharacters": "Vui lòng giữ địa chỉ nhà của bạn trong 1000 ký tự trở xuống.",
+  "plans.status.foundingTester": "Người thử nghiệm sáng lập",
+  "plans.priceNoteFoundingTester": "Không tính phí — người thử nghiệm sáng lập giữ Business miễn phí trọn đời.",
+  "subscribe.foundingTesterNote": "Không gian làm việc này có Business với tư cách người thử nghiệm sáng lập — miễn phí trọn đời. Không thẻ, không phí, không bao giờ.",
+  "upgrade.introFoundingTester": " — một không gian làm việc của người thử nghiệm sáng lập, miễn phí trọn đời và không mất phí.",
+  "upgrade.foundingTesterNote": "Người thử nghiệm sáng lập giữ Business miễn phí trọn đời — không có gói nào để thay đổi và không có đăng ký nào để hủy.",
+  "apiErrors.foundingTester.alreadyListed": "Email đó đã có trong danh sách người thử nghiệm sáng lập.",
+  "apiErrors.foundingTester.listFull": "Danh sách người thử nghiệm sáng lập đã đầy.",
+  "apiErrors.foundingTester.notListed": "Email đó không có trong danh sách người thử nghiệm sáng lập.",
+  "apiErrors.foundingTester.capWholeNumber": "Giới hạn phải là số nguyên từ 1 trở lên.",
 };
