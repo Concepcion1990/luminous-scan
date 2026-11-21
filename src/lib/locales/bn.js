@@ -5010,4 +5010,13 @@ export const bn = {
   "payroll.profile.noName": "এখনও কোনো নাম নথিভুক্ত নেই।",
   "apiErrors.forbidden.businessOwnerUpdateDetails": "শুধুমাত্র ব্যবসার মালিকই এই বিবরণ আপডেট করতে পারেন।",
   "apiErrors.invalidValue.homeAddressThousandCharacters": "আপনার বাড়ির ঠিকানা ১০০০ অক্ষর বা তার কম রাখুন।",
+  "plans.status.foundingTester": "প্রতিষ্ঠাতা পরীক্ষক",
+  "plans.priceNoteFoundingTester": "কোনো চার্জ নেই — প্রতিষ্ঠাতা পরীক্ষকরা Business চিরকালের জন্য বিনামূল্যে রাখেন।",
+  "subscribe.foundingTesterNote": "এই কর্মক্ষেত্রে প্রতিষ্ঠাতা পরীক্ষক হিসেবে Business আছে — চিরকালের জন্য বিনামূল্যে। কোনো কার্ড নয়, কোনো চার্জ নয়, কখনোই নয়।",
+  "upgrade.introFoundingTester": " — একটি প্রতিষ্ঠাতা পরীক্ষক কর্মক্ষেত্র, চিরকালের জন্য বিনামূল্যে এবং কোনো চার্জ ছাড়াই।",
+  "upgrade.foundingTesterNote": "প্রতিষ্ঠাতা পরীক্ষকরা Business চিরকালের জন্য বিনামূল্যে রাখেন — এখানে বদলানোর মতো কোনো প্ল্যান নেই এবং বাতিল করার মতো কোনো সাবস্ক্রিপশন নেই।",
+  "apiErrors.foundingTester.alreadyListed": "সেই ইমেলটি ইতিমধ্যে প্রতিষ্ঠাতা পরীক্ষকদের তালিকায় আছে।",
+  "apiErrors.foundingTester.listFull": "প্রতিষ্ঠাতা পরীক্ষকদের তালিকা পূর্ণ।",
+  "apiErrors.foundingTester.notListed": "সেই ইমেলটি প্রতিষ্ঠাতা পরীক্ষকদের তালিকায় নেই।",
+  "apiErrors.foundingTester.capWholeNumber": "সীমা অবশ্যই ১ বা তার বেশি পূর্ণ সংখ্যা হতে হবে।",
 };
