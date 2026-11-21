@@ -5004,4 +5004,10 @@ export const id = {
   "apiErrors.invalidValue.chooseSignatureStyle": "Pilih gaya tanda tangan.",
   "apiErrors.invalidValue.noDdDetailsYet": "Anggota tim itu belum mengirim detailnya.",
   "training.lessons.owner-dd-setup.step5": "Yang tiba adalah formulir yang tersegel dan bertanda tangan: dari baris orang itu di Penggajian Anda dapat membukanya untuk membaca nomor lengkap, mencetaknya, atau menyimpan salinannya — Anda tidak akan pernah dapat mengeditnya. Jika nomor tampak salah, kirim kembali formulirnya: orang itu memperbaikinya sendiri dan menandatangani lagi, formulirnya yang diperbaiki menggantikan yang lama, dan formulir sebelumnya tetap ada dalam catatan dengan tanggal penggantiannya.",
+  "payroll.profile.ownerNote": "Ini adalah detail Anda sendiri yang tercatat, dari akun Anda. Hanya Anda yang dapat melihatnya di sini — dan karena ini milik Anda, Anda dapat memperbaruinya di sini setiap kali berubah.",
+  "payroll.profile.edit": "Ubah detail Anda",
+  "payroll.profile.cancel": "Batalkan",
+  "payroll.profile.noName": "Belum ada nama yang tercatat.",
+  "apiErrors.forbidden.businessOwnerUpdateDetails": "Hanya pemilik usaha yang dapat memperbarui detail ini.",
+  "apiErrors.invalidValue.homeAddressThousandCharacters": "Alamat rumah Anda maksimal 1000 karakter.",
 };
