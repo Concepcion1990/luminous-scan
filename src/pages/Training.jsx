@@ -470,7 +470,7 @@ const POLICY_DOCS = [
  * one that does not still lets the training close — it files to
  * the owner flagged for review instead of trapping the person.
  */
-function PolicyTrainingCard({ businessId, doc, onDone }) {
+function PolicyTrainingCard({ businessId, doc, onDone, onVisibility }) {
   const { toast } = useToast();
   const [data, setData] = useState(null);
   const [docState, setDocState] = useState(null);
@@ -486,9 +486,11 @@ function PolicyTrainingCard({ businessId, doc, onDone }) {
     try {
       const next = await getPolicyTraining(businessId, doc.kind);
       setData(next);
+      onVisibility?.(doc.kind, true);
     } catch {
       // Not ticked for this training — the card simply is not theirs.
       setHidden(true);
+      onVisibility?.(doc.kind, false);
     }
     try {
       const policies = await apiRequest(`/api/businesses/${encodeURIComponent(businessId)}/policies`);
@@ -496,7 +498,7 @@ function PolicyTrainingCard({ businessId, doc, onDone }) {
     } catch {
       setDocState(null);
     }
-  }, [businessId, doc.kind]);
+  }, [businessId, doc.kind, onVisibility]);
 
   useEffect(() => {
     load();
@@ -668,13 +670,24 @@ function PolicyTrainingCard({ businessId, doc, onDone }) {
 }
 
 function PolicyTrainings({ businessId, onDone }) {
+  // The section shell shows only when at least one of its cards is
+  // really the person's (Nov 21, 2026): a member ticked for neither
+  // quiz training must not meet an empty section.
+  const [visible, setVisible] = useState({});
+  const report = useCallback((kind, isVisible) => {
+    setVisible((current) => (current[kind] === isVisible ? current : { ...current, [kind]: isVisible }));
+  }, []);
+  const cards = (
+    <div className="space-y-3">
+      {POLICY_DOCS.map((doc) => (
+        <PolicyTrainingCard key={doc.kind} businessId={businessId} doc={doc} onDone={onDone} onVisibility={report} />
+      ))}
+    </div>
+  );
+  if (!Object.values(visible).some(Boolean)) return cards;
   return (
     <Section title={t('training.policy.sectionTitle')} help={t('training.policy.sectionHelp')} icon={GraduationCap}>
-      <div className="space-y-3">
-        {POLICY_DOCS.map((doc) => (
-          <PolicyTrainingCard key={doc.kind} businessId={businessId} doc={doc} onDone={onDone} />
-        ))}
-      </div>
+      {cards}
     </Section>
   );
 }
