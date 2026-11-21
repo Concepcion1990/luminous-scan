@@ -5010,4 +5010,13 @@ export const hi = {
   "payroll.profile.noName": "अभी तक कोई नाम दर्ज नहीं है।",
   "apiErrors.forbidden.businessOwnerUpdateDetails": "केवल व्यवसाय का मालिक ही ये विवरण अपडेट कर सकता है।",
   "apiErrors.invalidValue.homeAddressThousandCharacters": "अपने घर का पता 1000 अक्षरों या उससे कम में रखें।",
+  "plans.status.foundingTester": "संस्थापक परीक्षक",
+  "plans.priceNoteFoundingTester": "कोई शुल्क नहीं — संस्थापक परीक्षक Business को हमेशा के लिए मुफ़्त रखते हैं।",
+  "subscribe.foundingTesterNote": "इस कार्यक्षेत्र के पास संस्थापक परीक्षक के रूप में Business है — हमेशा के लिए मुफ़्त। कोई कार्ड नहीं, कोई शुल्क नहीं, कभी नहीं।",
+  "upgrade.introFoundingTester": " — एक संस्थापक परीक्षक कार्यक्षेत्र, हमेशा के लिए मुफ़्त और बिना किसी शुल्क के।",
+  "upgrade.foundingTesterNote": "संस्थापक परीक्षक Business को हमेशा के लिए मुफ़्त रखते हैं — यहाँ बदलने के लिए कोई योजना नहीं है और रद्द करने के लिए कोई सदस्यता नहीं है।",
+  "apiErrors.foundingTester.alreadyListed": "वह ईमेल पहले से ही संस्थापक परीक्षकों की सूची में है।",
+  "apiErrors.foundingTester.listFull": "संस्थापक परीक्षकों की सूची भरी हुई है।",
+  "apiErrors.foundingTester.notListed": "वह ईमेल संस्थापक परीक्षकों की सूची में नहीं है।",
+  "apiErrors.foundingTester.capWholeNumber": "सीमा 1 या उससे अधिक की पूर्ण संख्या होनी चाहिए।",
 };

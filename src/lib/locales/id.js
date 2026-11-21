@@ -5010,4 +5010,13 @@ export const id = {
   "payroll.profile.noName": "Belum ada nama yang tercatat.",
   "apiErrors.forbidden.businessOwnerUpdateDetails": "Hanya pemilik usaha yang dapat memperbarui detail ini.",
   "apiErrors.invalidValue.homeAddressThousandCharacters": "Alamat rumah Anda maksimal 1000 karakter.",
+  "plans.status.foundingTester": "Penguji pendiri",
+  "plans.priceNoteFoundingTester": "Tanpa biaya — penguji pendiri mempertahankan Business gratis selamanya.",
+  "subscribe.foundingTesterNote": "Ruang kerja ini memiliki Business sebagai penguji pendiri — gratis selamanya. Tanpa kartu, tanpa biaya, selamanya.",
+  "upgrade.introFoundingTester": " — ruang kerja penguji pendiri, gratis selamanya dan tanpa biaya apa pun.",
+  "upgrade.foundingTesterNote": "Penguji pendiri mempertahankan Business gratis selamanya — tidak ada paket untuk diubah dan tidak ada langganan untuk dibatalkan.",
+  "apiErrors.foundingTester.alreadyListed": "Email itu sudah ada di daftar penguji pendiri.",
+  "apiErrors.foundingTester.listFull": "Daftar penguji pendiri sudah penuh.",
+  "apiErrors.foundingTester.notListed": "Email itu tidak ada di daftar penguji pendiri.",
+  "apiErrors.foundingTester.capWholeNumber": "Batasnya harus berupa bilangan bulat 1 atau lebih.",
 };
