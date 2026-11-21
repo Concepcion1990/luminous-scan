@@ -5010,4 +5010,13 @@ export const ptBR = {
   "payroll.profile.noName": "Nenhum nome registrado ainda.",
   "apiErrors.forbidden.businessOwnerUpdateDetails": "Somente o proprietário da empresa pode atualizar esses dados.",
   "apiErrors.invalidValue.homeAddressThousandCharacters": "Mantenha seu endereço de casa com 1000 caracteres ou menos.",
+  "plans.status.foundingTester": "Testador fundador",
+  "plans.priceNoteFoundingTester": "Sem cobrança — os testadores fundadores mantêm o Business grátis para sempre.",
+  "subscribe.foundingTesterNote": "Este espaço de trabalho tem o Business como testador fundador — grátis para sempre. Sem cartão, sem cobrança, nunca.",
+  "upgrade.introFoundingTester": " — um espaço de trabalho de testador fundador, grátis para sempre e sem cobrança.",
+  "upgrade.foundingTesterNote": "Os testadores fundadores mantêm o Business grátis para sempre — não há plano para trocar nem assinatura para cancelar.",
+  "apiErrors.foundingTester.alreadyListed": "Esse e-mail já está na lista de testadores fundadores.",
+  "apiErrors.foundingTester.listFull": "A lista de testadores fundadores está cheia.",
+  "apiErrors.foundingTester.notListed": "Esse e-mail não está na lista de testadores fundadores.",
+  "apiErrors.foundingTester.capWholeNumber": "O limite deve ser um número inteiro de 1 ou mais.",
 };
