@@ -5004,4 +5004,10 @@ export const sw = {
   "apiErrors.invalidValue.chooseSignatureStyle": "Chagua mtindo wa saini.",
   "apiErrors.invalidValue.noDdDetailsYet": "Mwanachama huyo wa timu bado hajatuma maelezo yake.",
   "training.lessons.owner-dd-setup.step5": "Kinachowasili ni fomu iliyofungwa na kusainiwa: kutoka safu ya mtu huyo katika Malipo ya mishahara unaweza kuifungua kusoma namba kamili, kuichapisha au kuhifadhi nakala — huwezi kamwe kuihariri. Ikiwa namba inaonekana si sahihi, rudisha fomu: mtu huyo anaarekebisha mwenyewe na kusaini tena, fomu yake iliyorekebishwa inachukua nafasi ya ile ya zamani, na fomu ya awali inabaki kwenye rekodi ikiwa na tarehe yake ya ubadilishaji.",
+  "payroll.profile.ownerNote": "Haya ni maelezo yako mwenyewe yaliyo kwenye faili, kutoka kwa akaunti yako. Ni wewe tu unaweza kuyaona hapa — na kwa kuwa ni yako, unaweza kuyasasisha hapa hapa yanapobadilika.",
+  "payroll.profile.edit": "Badilisha maelezo yako",
+  "payroll.profile.cancel": "Ghairi",
+  "payroll.profile.noName": "Hakuna jina lililorekodiwa bado.",
+  "apiErrors.forbidden.businessOwnerUpdateDetails": "Mmiliki wa biashara tu ndiye anayeweza kusasisha maelezo haya.",
+  "apiErrors.invalidValue.homeAddressThousandCharacters": "Weka anwani yako ya nyumbani iwe herufi 1000 au chache zaidi.",
 };
