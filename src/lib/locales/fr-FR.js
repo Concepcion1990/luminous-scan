@@ -5004,4 +5004,10 @@ export const frFR = {
   "apiErrors.invalidValue.chooseSignatureStyle": "Choisissez un style de signature.",
   "apiErrors.invalidValue.noDdDetailsYet": "Ce membre de l’équipe n’a pas encore envoyé ses coordonnées.",
   "training.lessons.owner-dd-setup.step5": "Ce qui arrive est un formulaire scellé et signé : depuis la ligne de la personne dans Paie, vous pouvez l’ouvrir pour lire les numéros complets, l’imprimer ou en enregistrer une copie — vous ne pouvez jamais le modifier. Si un numéro semble faux, renvoyez le formulaire : la personne le corrige et le signe de nouveau elle-même, son formulaire corrigé remplace l’ancien, et l’ancien reste au dossier avec sa date de remplacement.",
+  "payroll.profile.ownerNote": "Ce sont vos propres coordonnées enregistrées, celles de votre compte. Vous seul pouvez les voir ici — et comme ce sont les vôtres, vous pouvez les mettre à jour ici même dès qu'elles changent.",
+  "payroll.profile.edit": "Modifier vos coordonnées",
+  "payroll.profile.cancel": "Annuler",
+  "payroll.profile.noName": "Aucun nom enregistré pour le moment.",
+  "apiErrors.forbidden.businessOwnerUpdateDetails": "Seul le propriétaire de l'entreprise peut mettre à jour ces coordonnées.",
+  "apiErrors.invalidValue.homeAddressThousandCharacters": "Limitez votre adresse de domicile à 1000 caractères ou moins.",
 };
