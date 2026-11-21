@@ -41,7 +41,11 @@ test('the conversation list carries the Sent/Received label and voice rows', () 
 
 test('receipts are shaped on the server, at the one choke point', () => {
   const routes = read('server/workforceRoutes.js');
-  assert.match(routes, /function shapeMessageForViewer\(message, thread, access, viewerUserId\)/);
+  // Nov 21, 2026 (profile photos build): the shaper gained an
+  // optional fifth argument — the owner's live display name, so
+  // a message the owner sent before setting their name still
+  // shows the name they go by now. Same one choke point.
+  assert.match(routes, /function shapeMessageForViewer\(message, thread, access, viewerUserId, ownerName = null\)/);
   assert.match(routes, /const hideRead = Boolean\(reader\) && reader\.key === OWNER_KEY && !access\.isOwner;/);
   assert.match(routes, /read_at: hideRead \? null : message\.read_at/);
   // The thread read and both post responses pass through it.

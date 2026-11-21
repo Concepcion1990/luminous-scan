@@ -67,13 +67,16 @@ test('plan-visible counts: Business whole, Essentials without the Business subje
   // lesson (staff, both plans), three Business-only staff lessons
   // (reports, cross-store, builds), and the manager tax lesson
   // (both plans): staff 38/33, manager 18/12, owner unchanged.
-  assert.equal(count('owner', true), 40);
+  // The profile photos batch (Nov 21, 2026) adds one both-plans
+  // lesson per affected track (staff your-profile-photo, owner
+  // owner-profile-photos): staff 39/34, owner 41/23.
+  assert.equal(count('owner', true), 41);
   assert.equal(count('manager', true), 18);
-  assert.equal(count('staff', true), 38);
+  assert.equal(count('staff', true), 39);
   // Essentials: 19 owner subjects hidden, owner-import in their place.
-  assert.equal(count('owner', false), 22); // +1 confidentiality lesson (Nov 19, 2026)
+  assert.equal(count('owner', false), 23); // +1 confidentiality lesson (Nov 19, 2026)
   assert.equal(count('manager', false), 12);
-  assert.equal(count('staff', false), 33);
+  assert.equal(count('staff', false), 34);
   // Payroll / workforce / direct-deposit lessons stay on Essentials.
   const essentialsStaff = client.visibleLessonsForTrack('staff', false).map((l) => l.id);
   for (const id of ['stub-yours', 'dd-submit', 'clock-basics']) {

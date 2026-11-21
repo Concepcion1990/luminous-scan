@@ -66,6 +66,7 @@ test('ribbon: a chip tap smooth-scrolls its section, clearing the sticky header 
 test('boss ribbon: exactly the owner’s sections, in render order', () => {
   assert.deepEqual(sectionIdsIn(boss), [
     'settings-sec-businesses',
+    'settings-sec-profile',
     'settings-sec-identity',
     'settings-sec-details',
     'settings-sec-policies',
@@ -85,7 +86,7 @@ test('boss ribbon: exactly the owner’s sections, in render order', () => {
   for (const id of sectionIdsIn(boss)) {
     assert.ok(boss.includes(`<div id="${id}">`), `boss anchor ${id} exists`);
   }
-  assert.equal(boss.split('id="settings-sec-').length - 1, 14, 'no stray section anchors');
+  assert.equal(boss.split('id="settings-sec-').length - 1, 15, 'no stray section anchors'); // 14 through the settings ribbon batch (Nov 20, 2026); the profile photos batch (Nov 21, 2026) added the profile section, for 15.
 });
 
 test('boss ribbon: the publisher diagnostics ride the same condition that renders them', () => {
@@ -98,6 +99,7 @@ test('boss ribbon: the publisher diagnostics ride the same condition that render
 
 test('member ribbon: exactly the personal sections, grants and policies gated like the cards', () => {
   assert.deepEqual(sectionIdsIn(personal), [
+    'settings-sec-profile',
     'settings-sec-security',
     'settings-sec-appearance',
     'settings-sec-business',
@@ -114,7 +116,7 @@ test('member ribbon: exactly the personal sections, grants and policies gated li
   for (const id of sectionIdsIn(personal)) {
     assert.ok(personal.includes(`id="${id}"`), `member anchor ${id} exists`);
   }
-  assert.equal(personal.split('id="settings-sec-').length - 1, 11, 'no stray section anchors');
+  assert.equal(personal.split('id="settings-sec-').length - 1, 12, 'no stray section anchors'); // 11 through the settings ribbon batch (Nov 20, 2026); the profile photos batch (Nov 21, 2026) added the profile section, for 12.
   // The granted chips are spread in under the same grants that render the cards.
   assert.ok(personal.includes("...(canTaxRate"), 'the tax chip follows the tax grant');
   assert.ok(personal.includes("...(canGs1"), 'the GS1 chip follows the GS1 grant');

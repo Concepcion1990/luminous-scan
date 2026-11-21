@@ -242,7 +242,10 @@ test('the server split sits in the entity reads, manager-level, and the contact 
   assert.match(entities, /access\.can\('staff\.roster'\)/, 'the helper reads the tick');
   assert.match(entities, /memberLevel\(access\.staffRow\) === 'manager'/, 'the helper enforces manager level');
   assert.match(entities, /!access\.isOwner && !canSeeRoster\(access\)/, 'both read paths scope through the helper');
-  assert.match(entities, /function stripStaffContact\(row\)/, 'the contact strip still stands');
+  // Nov 21, 2026 (email-exposure rule): the strip gained an
+  // options bag — roster-only viewers also lose other members'
+  // emails. The strip itself stands exactly where it stood.
+  assert.match(entities, /function stripStaffContact\(row, \{ stripEmail = false \} = \{\}\)/, 'the contact strip still stands');
 });
 
 test('the Staff door follows the tick and the page renders read-only for a roster holder', () => {
