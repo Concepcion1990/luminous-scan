@@ -4379,7 +4379,7 @@ export const yo = {
   "apiErrors.invalidValue.eachShiftNeedsWeekday": "Gbogbo ìyípadà nílò ọjọ́ ọ̀sẹ̀ (0-6) àti àkókò ìbẹ̀rẹ̀ àti ìparí HH:MM.",
   "apiErrors.invalidValue.emailRequired": "A nílò ímeèlì.",
   "apiErrors.invalidValue.enterBankName": "Tẹ orúkọ báǹkì rẹ wọlé.",
-  "apiErrors.invalidValue.enterGS1CompanyPrefix": "Tẹ ìṣáájú ilé-iṣẹ́ GS1 rẹ wọlé — àwọn díjítì 6 sí 10, gẹ́gẹ́ bí GS1 ti fún ni — tàbí fi sílẹ̀ ní òfo.",
+  "apiErrors.invalidValue.enterGS1CompanyPrefix": "Tẹ ìṣáájú ilé-iṣẹ́ GS1 rẹ wọlé — àwọn díjítì 6 sí 11, gẹ́gẹ́ bí GS1 ti fún ni — tàbí fi sílẹ̀ ní òfo.",
   "apiErrors.invalidValue.enterHowManyArrived": "Tẹ iye tí ó dé wọlé ní ìlà kan ní ìwọ̀nba.",
   "apiErrors.invalidValue.enterLightspeedDomainPrefix": "Tẹ ìṣáájú agbègbè Lightspeed rẹ wọlé — apá tí ó wà ṣáájú .retail.lightspeed.app.",
   "apiErrors.invalidValue.enterStoreDomainLike": "Tẹ agbègbè ṣọ́ọ̀bù rẹ wọlé, bíi your-store.myshopify.com.",

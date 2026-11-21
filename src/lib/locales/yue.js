@@ -4379,7 +4379,7 @@ export const yue = {
   "apiErrors.invalidValue.eachShiftNeedsWeekday": "每個班次都需要星期幾（0-6）同 HH:MM 格式嘅開始同結束時間。",
   "apiErrors.invalidValue.emailRequired": "需要電郵。",
   "apiErrors.invalidValue.enterBankName": "請輸入你嘅銀行名稱。",
-  "apiErrors.invalidValue.enterGS1CompanyPrefix": "請輸入你嘅 GS1 公司前綴 — 6 到 10 位數字，同 GS1 簽發嘅完全一致 — 或者留空。",
+  "apiErrors.invalidValue.enterGS1CompanyPrefix": "請輸入你嘅 GS1 公司前綴 — 6 到 11 位數字，同 GS1 簽發嘅完全一致 — 或者留空。",
   "apiErrors.invalidValue.enterHowManyArrived": "請至少喺一行輸入到達數量。",
   "apiErrors.invalidValue.enterLightspeedDomainPrefix": "請輸入你嘅 Lightspeed 網域前綴 — .retail.lightspeed.app 之前嗰部分。",
   "apiErrors.invalidValue.enterStoreDomainLike": "請輸入你嘅店舖網域，例如 your-store.myshopify.com。",

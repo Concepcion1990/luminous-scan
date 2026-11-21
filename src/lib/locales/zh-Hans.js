@@ -4379,7 +4379,7 @@ export const zhHans = {
   "apiErrors.invalidValue.eachShiftNeedsWeekday": "每个班次都需要星期几（0-6）以及 HH:MM 格式的开始和结束时间。",
   "apiErrors.invalidValue.emailRequired": "需要电子邮件。",
   "apiErrors.invalidValue.enterBankName": "请输入您的银行名称。",
-  "apiErrors.invalidValue.enterGS1CompanyPrefix": "请输入您的 GS1 公司前缀 — 6 到 10 位数字，与 GS1 签发的完全一致 — 或留空。",
+  "apiErrors.invalidValue.enterGS1CompanyPrefix": "请输入您的 GS1 公司前缀 — 6 到 11 位数字，与 GS1 签发的完全一致 — 或留空。",
   "apiErrors.invalidValue.enterHowManyArrived": "请至少在一行输入到达数量。",
   "apiErrors.invalidValue.enterLightspeedDomainPrefix": "请输入您的 Lightspeed 域名前缀 — .retail.lightspeed.app 之前的部分。",
   "apiErrors.invalidValue.enterStoreDomainLike": "请输入您的店铺域名，例如 your-store.myshopify.com。",
