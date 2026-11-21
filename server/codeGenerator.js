@@ -224,9 +224,13 @@ export async function mintUniqueCode(pool, businessId, type, { name = '', rng } 
 /* generator mints TRUE retail GTINs from their numbers.             */
 /*                                                                   */
 /* - The prefix is the owner's, from her own GS1 license. The app    */
-/*   never invents or suggests one. Validation: digits, 6–10 — the   */
-/*   company-prefix range that supports GTIN-12 (a 10-digit prefix   */
-/*   still leaves one item-reference digit).                         */
+/*   never invents or suggests one. Validation: digits, 6–11 — GS1   */
+/*   issues prefixes at varying lengths, and longer ones are         */
+/*   welcome (owner ruling, Nov 20, 2026). A 10-digit prefix still    */
+/*   leaves one GTIN-12 item-reference digit; an 11-digit prefix     */
+/*   leaves one for GTIN-13 and none for GTIN-12, whose capacity     */
+/*   then reads zero and refuses honestly below. A 12-digit prefix   */
+/*   could mint neither kind, so it is refused at the field.         */
 /* - Item references run sequentially per (business, prefix, kind)   */
 /*   from the minted_gtins ledger (migration 028) and are NEVER      */
 /*   reused: the ledger row is written at mint time and survives     */
@@ -241,7 +245,7 @@ export async function mintUniqueCode(pool, businessId, type, { name = '', rng } 
 export const GS1_KINDS = { 'gs1-upc': 'gtin12', 'gs1-ean': 'gtin13' };
 
 export function validateGs1Prefix(text) {
-  return text === '' || /^\d{6,10}$/.test(text);
+  return text === '' || /^\d{6,11}$/.test(text);
 }
 
 export function gs1RefDigits(prefix, kind) {

@@ -6,7 +6,7 @@ import { t } from '@/lib/i18n';
 
 
 /** Lists the other copies/variations of one title and offers to add another. */
-export default function CopyGroupPanel({ product, businessId, totals, onAddCopy }) {
+export default function CopyGroupPanel({ product, businessId, totals, canAddCopy, onAddCopy }) {
   const [rows, setRows] = useState(null);
 
   useEffect(() => {
@@ -26,9 +26,18 @@ export default function CopyGroupPanel({ product, businessId, totals, onAddCopy 
         <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
           {rows?.length ? t('products.copiesTitleCount', { count: rows.length }) : t('products.copiesTitle')}
         </p>
-        <Button variant="outline" size="sm" className="h-7" onClick={() => onAddCopy(product)}>
-          <CopyPlus className="mr-1 h-3.5 w-3.5" /> {t('products.addCopy')}
-        </Button>
+        {/* Adding a copy CREATES a product, so the door follows
+            the same effective create right as Duplicate
+            (owner ruling, Nov 19, 2026 — no dangling doors;
+            this panel's button escaped the release-318 sweep
+            and is gated now): products.edit, or the owner's
+            per-member products.create tick. The server create
+            path enforces the same pair underneath. */}
+        {canAddCopy && (
+          <Button variant="outline" size="sm" className="h-7" onClick={() => onAddCopy(product)}>
+            <CopyPlus className="mr-1 h-3.5 w-3.5" /> {t('products.addCopy')}
+          </Button>
+        )}
       </div>
 
       {rows === null && <p className="mt-1.5 text-[11px] text-muted-foreground">{t('products.checkingCopies')}</p>}

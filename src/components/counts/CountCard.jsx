@@ -11,7 +11,7 @@ const PILL = {
   ok: 'bg-ok/12 text-ok',
 };
 
-export default function CountCard({ session, expanded, onToggle, onCancel, onDelete, busy, children }) {
+export default function CountCard({ session, canManage, expanded, onToggle, onCancel, onDelete, busy, children }) {
   const status = COUNT_STATUS[session.status] || COUNT_STATUS.open;
   const summary = countSummary(session.lines || []);
 
@@ -58,12 +58,16 @@ export default function CountCard({ session, expanded, onToggle, onCancel, onDel
           {expanded ? <ChevronDown className="mr-1 h-3.5 w-3.5" /> : <ChevronRight className="mr-1 h-3.5 w-3.5" />}
           {expanded ? t('counts.hideSheet') : t('counts.openSheet')}
         </Button>
-        {['open', 'review'].includes(session.status) && (
+        {/* Cancelling and deleting a count are counts.run acts
+            (owner ruling, Nov 19, 2026): on the shared board
+            they render only for the people who hold that right —
+            everyone else counts, saves and sends for review. */}
+        {canManage && ['open', 'review'].includes(session.status) && (
           <Button size="sm" variant="ghost" disabled={busy} onClick={onCancel}>
             {t('counts.cancelSession')}
           </Button>
         )}
-        {session.status !== 'applied' && (
+        {canManage && session.status !== 'applied' && (
           <Button
             size="sm"
             variant="ghost"

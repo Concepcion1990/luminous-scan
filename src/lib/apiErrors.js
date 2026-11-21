@@ -306,7 +306,7 @@ export const API_ERROR_MESSAGE_KEYS = {
   "That website address is too long.": "apiErrors.invalidValue.websiteAddressTooLong",
   "Enter a valid contact email, or leave it blank.": "apiErrors.invalidValue.enterValidContactEmail",
   "Enter a tax rate between 0 and 100, with up to 4 decimal places — or leave it blank.": "apiErrors.invalidValue.enterTaxRateBetween",
-  "Enter your GS1 company prefix — 6 to 10 digits, exactly as GS1 issued it — or leave it blank.": "apiErrors.invalidValue.enterGS1CompanyPrefix",
+  "Enter your GS1 company prefix — 6 to 11 digits, exactly as GS1 issued it — or leave it blank.": "apiErrors.invalidValue.enterGS1CompanyPrefix",
   "Could not mint a unique code — please try again.": "apiErrors.codeMintExhausted.couldMintUniqueCode",
   "Could not mint a GS1 code — please try again.": "apiErrors.codeMintExhausted.couldMintGS1Code",
   "That request did not carry a valid security token. Refresh and try again.": "apiErrors.csrfInvalid",

@@ -6,6 +6,7 @@ import CountSessionDialog from '@/components/counts/CountSessionDialog';
 import CountSheet from '@/components/counts/CountSheet';
 import { Button } from '@/components/ui/button';
 import { useBusiness } from '@/hooks/useBusiness';
+import useStaffAccess from '@/hooks/useStaffAccess';
 import { useDataFresh } from '@/hooks/useDataFresh';
 import { useOfflineSync } from '@/hooks/useOfflineSync';
 import SyncIndicator from '@/components/sync/SyncIndicator';
@@ -17,6 +18,14 @@ import { t } from '@/lib/i18n';
 
 export default function Counts() {
   const { user, activeId } = useBusiness();
+  // The shared board (owner ruling, Nov 19, 2026): every staff
+  // member SEES this page and may count, save and send for
+  // review. Starting a count, cancelling, deleting, applying
+  // and reopening stay with counts.run — those doors simply do
+  // not render for anyone else, and the server holds the same
+  // line underneath.
+  const { can } = useStaffAccess();
+  const canRunCounts = can('counts.run');
   // T6: the queue status shows here too — a count done offline is
   // still sending until the server confirms it.
   const sync = useOfflineSync(activeId);
@@ -92,9 +101,11 @@ export default function Counts() {
             {t('counts.subtitle')}
           </p>
         </div>
-        <Button data-tour="count-start" onClick={() => setDialogOpen(true)}>
-          <Plus className="mr-1.5 h-4 w-4" /> {t('counts.startCount')}
-        </Button>
+        {canRunCounts && (
+          <Button data-tour="count-start" onClick={() => setDialogOpen(true)}>
+            <Plus className="mr-1.5 h-4 w-4" /> {t('counts.startCount')}
+          </Button>
+        )}
       </div>
 
       {flash && (
@@ -151,6 +162,7 @@ export default function Counts() {
           <CountCard
             key={session.id}
             session={session}
+            canManage={canRunCounts}
             expanded={expanded === session.id}
             onToggle={() => setExpanded(expanded === session.id ? '' : session.id)}
             onCancel={() =>
@@ -172,6 +184,7 @@ export default function Counts() {
               products={products}
               levels={levels}
               user={user}
+              canRun={canRunCounts}
               onChanged={(text) => {
                 setFlash({ ok: true, text });
                 setReload((n) => n + 1);

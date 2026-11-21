@@ -629,6 +629,33 @@ function holdsReorderRight(access) {
   return access.isOwner || access.can('products.reorder');
 }
 
+/**
+ * Is this CountSession patch one of the three floor powers?
+ * (Owner ruling, Nov 19, 2026: the Stock counts page is one
+ * shared board — EVERY staff member can count the stock on
+ * the floor, save, and send the count for review, so nobody
+ * double-counts the same count. Creating counts, approving,
+ * applying and cancelling stay with counts.run exactly as
+ * before.) A floor patch touches ONLY the counted lines, and
+ * may move the session exactly one step: open → review (send
+ * for review). A lines-only save counts only while the
+ * session is still open — once a count sits in review it
+ * waits for a boss, and reopening it is a counts.run act.
+ * Anything else — a jump to applied or cancelled, the
+ * applied stamp fields, a notes or scope edit — is not a
+ * floor patch and keeps the counts.run door in guardUpdate.
+ */
+function isFloorCountPatch(row, patch) {
+  const keys = Object.keys(patch || {});
+  if (!keys.length) return false;
+  if (!keys.every((key) => key === 'lines' || key === 'status')) return false;
+  if (patch.lines !== undefined && !Array.isArray(patch.lines)) return false;
+  if (patch.status !== undefined) {
+    return row.status === 'open' && patch.status === 'review';
+  }
+  return row.status === 'open';
+}
+
 async function guardCreate(pool, def, name, access, values) {
   const { business, planKey } = access;
   // Specific error first: suppliers refuse with their own code,
@@ -796,7 +823,16 @@ async function guardUpdate(pool, def, name, access, row, patch) {
   }
   if (name === 'Entitlement') throw err(403, 'entitlement_read_only', 'Entitlements are managed by billing (T4).');
   if (def.writePerm && !access.can(def.writePerm)) {
-    throw err(403, 'forbidden', 'You do not have permission to do that here.');
+    // The counts floor exception (owner ruling, Nov 19, 2026):
+    // a CountSession patch that is only counting, saving or
+    // sending for review is open to every member of the
+    // business — the shared board. Everything else on a count
+    // (create, apply, reopen, cancel, delete, any other field)
+    // keeps the counts.run door.
+    const floorCount = name === 'CountSession' && isFloorCountPatch(row, patch);
+    if (!floorCount) {
+      throw err(403, 'forbidden', 'You do not have permission to do that here.');
+    }
   }
   // Audit Finding 36: role edit has no plan check — a custom role left
   // over from a downgrade could be edited on Essentials, bypassing

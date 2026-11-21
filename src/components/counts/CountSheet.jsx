@@ -20,7 +20,7 @@ import {
   tallyCountedLine,
 } from '@/lib/counts';
 
-export default function CountSheet({ session, products, levels, user, onChanged }) {
+export default function CountSheet({ session, products, levels, user, canRun, onChanged }) {
   const [lines, setLines] = useState(session.lines || []);
   // The tally path resolves codes asynchronously while the camera
   // keeps firing, so scan handling reads and writes the lines
@@ -50,6 +50,14 @@ export default function CountSheet({ session, products, levels, user, onChanged 
 
   const summary = useMemo(() => countSummary(lines), [lines]);
   const locked = ['applied', 'cancelled'].includes(session.status);
+  // The floor split (owner ruling, Nov 19, 2026): a member
+  // without counts.run works a count only while it is OPEN —
+  // count, save, send for review. Once the count sits in
+  // review it waits for a boss, so for everyone else the sheet
+  // reads as locked, with the awaiting-approval note below
+  // saying why. Applying and reopening render only for
+  // counts.run holders; the server holds the same line.
+  const floorLocked = locked || (!canRun && session.status !== 'open');
 
   const setCount = (productId, value) => {
     commitLines(linesRef.current.map((l) => (l.product_id === productId ? { ...l, counted: value } : l)));
@@ -208,7 +216,7 @@ export default function CountSheet({ session, products, levels, user, onChanged 
 
   return (
     <div className="mt-3 space-y-3 border-t border-border pt-3">
-      {!locked && (
+      {!floorLocked && (
         <div className="flex gap-2">
           <Input
             value={scan}
@@ -312,7 +320,7 @@ export default function CountSheet({ session, products, levels, user, onChanged 
               <CountLineRow
                 key={line.product_id}
                 line={line}
-                onChange={locked ? () => {} : (value) => setCount(line.product_id, value)}
+                onChange={floorLocked ? () => {} : (value) => setCount(line.product_id, value)}
               />
             ))}
           </div>
@@ -332,7 +340,7 @@ export default function CountSheet({ session, products, levels, user, onChanged 
 
       {error && <p className="text-sm text-destructive">{error}</p>}
 
-      {!locked && (
+      {!floorLocked && (
         <div className="flex flex-wrap gap-1.5">
           <Button size="sm" variant="outline" onClick={() => save()} disabled={busy === 'save' || !dirty}>
             <Save className="mr-1 h-3.5 w-3.5" /> {t('counts.saveCounts')}
@@ -342,7 +350,7 @@ export default function CountSheet({ session, products, levels, user, onChanged 
               <Send className="mr-1 h-3.5 w-3.5" /> {t('counts.sendForReview')}
             </Button>
           )}
-          {session.status === 'review' && (
+          {session.status === 'review' && canRun && (
             <>
               <Button size="sm" onClick={apply} disabled={busy === 'apply'}>
                 <Check className="mr-1 h-3.5 w-3.5" />{' '}

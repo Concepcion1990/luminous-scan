@@ -20,7 +20,10 @@ test('the manifest names the app Luminous StockHaven', () => {
   assert.ok(existsSync(manifestPath), 'manifest.webmanifest is missing');
   const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
   assert.equal(manifest.name, 'Luminous StockHaven');
-  assert.equal(manifest.short_name, 'StockHaven');
+  // The installed icon carries the FULL name (owner catch,
+  // Nov 19, 2026): Android labels the icon with short_name,
+  // so the short name is the full name too.
+  assert.equal(manifest.short_name, 'Luminous StockHaven');
   assert.equal(manifest.start_url, '/');
   assert.equal(manifest.display, 'standalone');
   assert.ok(manifest.theme_color);

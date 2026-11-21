@@ -331,12 +331,17 @@ function validateBusinessPatch(patch) {
       clean.staff_welcome_script = text;
     } else if (key === 'gs1_prefix') {
       // GS1 company prefix: blank unsets it; otherwise digits
-      // only, 6–10 of them — the company-prefix range that
-      // supports GTIN-12 minting — exactly as GS1 issued it.
-      // Anything else is refused whole: a prefix is never
-      // trimmed into validity or invented.
-      if (text && !/^\d{6,10}$/.test(text)) {
-        return { error: 'Enter your GS1 company prefix — 6 to 10 digits, exactly as GS1 issued it — or leave it blank.' };
+      // only, 6–11 of them, exactly as GS1 issued it. GS1
+      // issues prefixes at varying lengths (owner ruling,
+      // Nov 20, 2026: longer prefixes are welcome); 11 is the
+      // longest that can still mint — a GTIN-13 body carries
+      // 12 digits, so an 11-digit prefix leaves one item-
+      // reference digit, while a 12-digit prefix could never
+      // mint any code and is refused rather than stored as a
+      // door to nowhere. Anything else is refused whole: a
+      // prefix is never trimmed into validity or invented.
+      if (text && !/^\d{6,11}$/.test(text)) {
+        return { error: 'Enter your GS1 company prefix — 6 to 11 digits, exactly as GS1 issued it — or leave it blank.' };
       }
       clean.gs1_prefix = text;
     } else {

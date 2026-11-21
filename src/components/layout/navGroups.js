@@ -58,7 +58,14 @@ export const NAV_GROUPS = [
       { to: '/locations', label: 'Locations', labelKey: 'nav.locations', icon: MapPin, perm: 'locations.manage' },
       { to: '/movements', label: 'Movements', labelKey: 'nav.movements', icon: ArrowLeftRight, perm: 'scan.use' },
       { to: '/cross-store-inbox', label: 'Cross-store inbox', labelKey: 'nav.crossStoreInbox', icon: Inbox, feature: 'crossStore' },
-      { to: '/counts', label: 'Stock counts', labelKey: 'nav.counts', icon: ClipboardCheck, perm: 'counts.run' },
+      // Stock counts carries NO perm (owner ruling, Nov 19,
+      // 2026): the page is one shared board every staff member
+      // sees, so nobody double-counts the same count. What a
+      // person may DO on it splits inside the page and on the
+      // server — counting, saving and sending for review are
+      // open to all; creating, approving, applying and
+      // cancelling stay with counts.run.
+      { to: '/counts', label: 'Stock counts', labelKey: 'nav.counts', icon: ClipboardCheck },
       { to: '/materials', label: 'Bundles & builds', labelKey: 'nav.bundles', icon: Boxes, perm: 'builds.manage', feature: 'builds' },
     ],
   },

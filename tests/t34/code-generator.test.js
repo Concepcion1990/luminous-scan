@@ -114,10 +114,16 @@ test('GS1 builders: true GTINs from the prefix, honest capacity, strict prefix r
   assert.equal(gs1Capacity('123456', 'gtin13'), 1000000);
   assert.equal(gs1Capacity('1234567890', 'gtin12'), 10);
   assert.equal(gs1Capacity('1234567890', 'gtin13'), 100);
+  // Longer prefixes are welcome (owner ruling, Nov 20, 2026):
+  // an 11-digit prefix still mints GTIN-13 (one reference
+  // digit, capacity 10) and honestly holds zero GTIN-12 room.
+  assert.equal(gs1Capacity('12345678901', 'gtin13'), 10);
+  assert.equal(gs1Capacity('12345678901', 'gtin12'), 0);
   assert.ok(validateGs1Prefix(''));
   assert.ok(validateGs1Prefix('123456'));
   assert.ok(validateGs1Prefix('1234567890'));
-  for (const bad of ['12345', '12345678901', '12A456', ' 123456', '1234 56']) {
+  assert.ok(validateGs1Prefix('12345678901'));
+  for (const bad of ['12345', '123456789012', '12A456', ' 123456', '1234 56']) {
     assert.ok(!validateGs1Prefix(bad), `${JSON.stringify(bad)} refused`);
   }
 });
@@ -250,7 +256,7 @@ test('no prefix: the GS1 mint answers gs1_prefix_missing and the state says so',
 
 test('the Settings PATCH validates the prefix strictly and stores it as typed', async () => {
   const owner = await ownerWithBusiness('gs1-prefix@example.com', 'Prefix Shop', { plan: 'essentials' });
-  for (const bad of ['12345', '12345678901', '12A456', '1234 56', 'abcdef']) {
+  for (const bad of ['12345', '123456789012', '12A456', '1234 56', 'abcdef']) {
     const refused = await patchBusiness(owner.cookie, owner.business.id, { gs1_prefix: bad });
     assert.equal(refused.status, 400, `${bad} refused whole`);
   }
@@ -262,6 +268,11 @@ test('the Settings PATCH validates the prefix strictly and stores it as typed', 
   const cleared = await patchBusiness(owner.cookie, owner.business.id, { gs1_prefix: '' });
   assert.equal(cleared.status, 200);
   assert.equal(cleared.json.gs1_prefix, '', 'blank unsets the prefix');
+  // Longer prefixes are welcome (owner ruling, Nov 20, 2026):
+  // an 11-digit prefix saves exactly as typed.
+  const savedLong = await patchBusiness(owner.cookie, owner.business.id, { gs1_prefix: '12345678901' });
+  assert.equal(savedLong.status, 200, savedLong.text);
+  assert.equal(savedLong.json.gs1_prefix, '12345678901');
 });
 
 test('GS1 mints run sequentially, are spent forever, and survive product deletes', async () => {

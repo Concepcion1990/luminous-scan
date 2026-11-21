@@ -883,6 +883,7 @@ export default function Products() {
                       product={product}
                       businessId={activeId}
                       totals={totals}
+                      canAddCopy={canCreateProducts}
                       onAddCopy={openCopy}
                     />
                   </div>
