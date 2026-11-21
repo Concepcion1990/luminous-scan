@@ -5010,4 +5010,13 @@ export const ru = {
   "payroll.profile.noName": "Имя пока не указано.",
   "apiErrors.forbidden.businessOwnerUpdateDetails": "Только владелец предприятия может обновлять эти данные.",
   "apiErrors.invalidValue.homeAddressThousandCharacters": "Домашний адрес должен содержать не более 1000 символов.",
+  "plans.status.foundingTester": "Тестировщик-основатель",
+  "plans.priceNoteFoundingTester": "Без оплаты — тестировщики-основатели сохраняют Business бесплатно навсегда.",
+  "subscribe.foundingTesterNote": "У этого рабочего пространства Business как у тестировщика-основателя — бесплатно навсегда. Без карты, без оплаты, никогда.",
+  "upgrade.introFoundingTester": " — рабочее пространство тестировщика-основателя, бесплатно навсегда и без оплаты.",
+  "upgrade.foundingTesterNote": "Тестировщики-основатели сохраняют Business бесплатно навсегда — здесь нечего менять в тарифе и нечего отменять в подписке.",
+  "apiErrors.foundingTester.alreadyListed": "Этот адрес уже есть в списке тестировщиков-основателей.",
+  "apiErrors.foundingTester.listFull": "Список тестировщиков-основателей полон.",
+  "apiErrors.foundingTester.notListed": "Этого адреса нет в списке тестировщиков-основателей.",
+  "apiErrors.foundingTester.capWholeNumber": "Лимит должен быть целым числом не меньше 1.",
 };
