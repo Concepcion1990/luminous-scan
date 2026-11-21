@@ -32,7 +32,9 @@ export default function Locations() {
   // Low stock is a Business surface (owner ruling, Nov 20, 2026):
   // the location cards' LOW stat renders only when the plan
   // carries alerts. Stored reorder points are never touched.
-  const showAlerts = !entitlementLoading && canPlan('alerts');
+  // The per-person layer (same day): a member sees it only with
+  // the owner's alerts.view enrollment tick — the owner always does.
+  const showAlerts = !entitlementLoading && canPlan('alerts') && can('alerts.view');
   const { toast } = useToast();
   const [locations, setLocations] = useState([]);
   const [levels, setLevels] = useState([]);

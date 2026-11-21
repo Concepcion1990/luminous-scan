@@ -89,7 +89,7 @@ for (const { file, feature, component } of REDIRECTED_PAGES) {
     const app = readFileSync('src/App.jsx', 'utf8');
     assert.match(
       app,
-      new RegExp(`<PlanRedirect feature="${feature}">\\s*<${component} \\/>`)
+      new RegExp(`<PlanRedirect feature="${feature}"[^>]*>\\s*<${component} \\/>`)
     );
   });
 }

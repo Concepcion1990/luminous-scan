@@ -36,23 +36,27 @@ const ROUTES = [
   { path: '/exports', feature: 'exports', component: 'Exports', page: 'src/pages/Exports.jsx' },
   { path: '/valuation', feature: 'valuation', component: 'Valuation', page: 'src/pages/Valuation.jsx' },
   { path: '/reports', feature: 'reports', component: 'Reports', page: 'src/pages/Reports.jsx' },
-  { path: '/alerts', feature: 'alerts', component: 'Alerts', page: 'src/pages/Alerts.jsx' },
-  { path: '/low-stock', feature: 'alerts', component: 'LowStock', page: 'src/pages/LowStock.jsx' },
+  { path: '/alerts', feature: 'alerts', component: 'Alerts', page: 'src/pages/Alerts.jsx', perm: 'alerts.view' },
+  { path: '/low-stock', feature: 'alerts', component: 'LowStock', page: 'src/pages/LowStock.jsx', perm: 'alerts.view' },
 ];
 
 test('PlanRedirect is the one mechanism: children when allowed, quiet bounce otherwise', () => {
   const redirect = src('src/components/plan/PlanRedirect.jsx');
   assert.match(redirect, /if \(!can\(feature\)\) return <Navigate to="\/" replace \/>;/);
+  // The per-person layer (the low-stock ticks, Nov 20, 2026): a
+  // route may also carry an owner-handed tick; an unticked member
+  // bounces just as quietly.
+  assert.match(redirect, /if \(perm && !canStaff\(perm\)\) return <Navigate to="\/" replace \/>;/);
   assert.match(redirect, /return children;/);
 });
 
 test('every audited Business-only route bounces via PlanRedirect, gate-free', () => {
   const app = src('src/App.jsx');
-  for (const { path, feature, component } of ROUTES) {
+  for (const { path, feature, component, perm } of ROUTES) {
     assert.match(app, new RegExp(`path="${path.replace(/\//g, '\\/')}"`), `${path} route exists`);
     assert.match(
       app,
-      new RegExp(`<PlanRedirect feature="${feature}">\\s*<${component} \\/>`),
+      new RegExp(`<PlanRedirect feature="${feature}"${perm ? ` perm="${perm}"` : ''}>\\s*<${component} \\/>`),
       `${path} is wrapped in PlanRedirect(${feature}) so Essentials bounces to the Overview`,
     );
     assert.doesNotMatch(
@@ -76,7 +80,7 @@ test('nav entries for every audited surface carry the feature (hidden off Busine
   for (const { path, feature } of ROUTES) {
     assert.match(
       nav,
-      new RegExp(`\\{ to: '${path.replace(/\//g, '\\/')}'[^}]*feature: '${feature}' \\}`),
+      new RegExp(`\\{ to: '${path.replace(/\//g, '\\/')}'[^}]*feature: '${feature}'[^}]*\\}`),
       `the ${path} nav item carries feature '${feature}'`,
     );
   }
@@ -99,7 +103,7 @@ test('Overview: no Business teaser cards or upsell panel on Essentials; Business
   const dashboard = src('src/pages/Dashboard.jsx');
   // The real cards are entitlement-gated exactly as the purchasing
   // cards are — and off Business the slots render nothing at all.
-  assert.match(dashboard, /const showAlerts = !entitlementLoading && can\('alerts'\);/);
+  assert.match(dashboard, /const showAlerts = !entitlementLoading && can\('alerts'\) && canStaff\('alerts\.view'\);/);
   assert.match(dashboard, /const showValuation = !entitlementLoading && can\('valuation'\);/);
   assert.match(dashboard, /\{showAlerts && \(\s*<StatCard\s+label=\{t\('dashboard\.lowStock'\)\}/);
   assert.match(dashboard, /\{showValuation && \(\s*<StatCard\s+label=\{t\('dashboard\.stockValue'\)\}/);

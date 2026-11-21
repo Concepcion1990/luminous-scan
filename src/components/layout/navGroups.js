@@ -89,8 +89,13 @@ export const NAV_GROUPS = [
   {
     label: 'Watchlist', labelKey: 'nav.group.watchlist',
     items: [
-      { to: '/low-stock', label: 'Low stock', labelKey: 'nav.lowStock', icon: TriangleAlert, perm: 'reports.view', feature: 'alerts' },
-      { to: '/alerts', label: 'Alerts', labelKey: 'nav.alerts', icon: BellRing, perm: 'reports.view', feature: 'alerts' },
+      // The grant field is the owner's alerts.view enrollment
+      // tick (Nov 20, 2026): on Business these two doors hang
+      // only for the owner and for members the owner ticked —
+      // an unticked member never sees them, and the routes
+      // bounce the same way (PlanRedirect carries the same tick).
+      { to: '/low-stock', label: 'Low stock', labelKey: 'nav.lowStock', icon: TriangleAlert, perm: 'reports.view', feature: 'alerts', grant: 'alerts.view' },
+      { to: '/alerts', label: 'Alerts', labelKey: 'nav.alerts', icon: BellRing, perm: 'reports.view', feature: 'alerts', grant: 'alerts.view' },
       { to: '/valuation', label: 'Stock value', labelKey: 'nav.valuation', icon: CircleDollarSign, perm: 'reports.view', feature: 'valuation' },
       { to: '/reports', label: 'Reports', labelKey: 'nav.reports', icon: BarChart3, perm: 'reports.view', feature: 'reports' },
     ],

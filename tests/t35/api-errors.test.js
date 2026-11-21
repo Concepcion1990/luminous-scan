@@ -38,8 +38,10 @@ test('item 1: every apiErrors key exists in all 52 locales', async () => {
   // 2026) added 1: the add-a-location refusal. The business
   // policies build (Nov 19, 2026) added 5: the owner-only
   // refusal, the file refusal, the typed-text cap, and the two
-  // policy 404 wordings.
-  assert.equal(new Set(registryKeys).size, 435);
+  // policy 404 wordings. The low-stock ticks (Nov 20, 2026)
+  // added 2: the reorder-change refusal and the alerts-view
+  // refusal.
+  assert.equal(new Set(registryKeys).size, 437);
   for (const code of LOCALES) {
     const dict = await loadLocale(code);
     for (const key of registryKeys) {
