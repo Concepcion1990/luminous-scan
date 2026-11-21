@@ -96,7 +96,7 @@ export const API_ERROR_MESSAGE_KEYS = {
   "This workspace is read-only: the subscription ended and the 15-day grace period allows viewing products only. No changes, scanning, importing, or exporting.": "apiErrors.graceReadOnly",
   "This workspace does not have an active subscription. Subscribe to a plan to use it — access starts only when the trial or payment is confirmed.": "apiErrors.subscriptionRequired",
   "Changes are turned off right now. Nothing can be added or changed at the moment — please ask the owner of the business if you need anything.": "apiErrors.neutralStop",
-  "That can't be added right now — this workspace has reached a limit. Please ask the owner of the business.": "apiErrors.planLimitNeutral",
+  "That can't be added right now — please ask the owner of the business.": "apiErrors.planLimitNeutral",
   "That welcome message is too long.": "apiErrors.welcomeScriptTooLong",
   "Only the owner, or a team member the owner has allowed to complete refunds and exchanges, can approve and finish a return.": "apiErrors.returnsCompleteReserved",
   "Only the owner, or a team member the owner has allowed to add locations, can add a location.": "apiErrors.locationsCreateReserved",

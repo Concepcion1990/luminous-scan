@@ -53,6 +53,24 @@ test('every locale carries the key, and none keeps the removed English clause', 
   }
 });
 
+test('the client message-to-key map keys on the new sentence, never the old', () => {
+  // apiErrors.js maps the server's exact English message back to
+  // the locale key; if the map kept the old sentence, a localized
+  // refusal would silently fall back to raw English.
+  const map = readFileSync(
+    new URL('../../src/lib/apiErrors.js', import.meta.url),
+    'utf8',
+  );
+  assert.ok(
+    map.includes(`"${FINAL}": "apiErrors.planLimitNeutral"`),
+    'the map must key planLimitNeutral on the new sentence',
+  );
+  assert.ok(
+    !map.includes('this workspace has reached a limit'),
+    'the map must not keep the removed clause',
+  );
+});
+
 test('the owner-facing limit wording is untouched', () => {
   // productLimitMessage still tells the OWNER the real numbers.
   assert.match(plans, /productLimitMessage\(limit, used/);
