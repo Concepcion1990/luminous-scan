@@ -5010,4 +5010,13 @@ export const tr = {
   "payroll.profile.noName": "Henüz kayıtlı bir ad yok.",
   "apiErrors.forbidden.businessOwnerUpdateDetails": "Bu bilgileri yalnızca işletme sahibi güncelleyebilir.",
   "apiErrors.invalidValue.homeAddressThousandCharacters": "Ev adresinizi 1000 karakter veya daha az tutun.",
+  "plans.status.foundingTester": "Kurucu test kullanıcısı",
+  "plans.priceNoteFoundingTester": "Ücret yok — kurucu test kullanıcıları Business'ı ömür boyu ücretsiz tutar.",
+  "subscribe.foundingTesterNote": "Bu çalışma alanında kurucu test kullanıcısı olarak Business var — ömür boyu ücretsiz. Kart yok, ücret yok, asla.",
+  "upgrade.introFoundingTester": " — bir kurucu test kullanıcısı çalışma alanı, ömür boyu ücretsiz ve herhangi bir ücret olmadan.",
+  "upgrade.foundingTesterNote": "Kurucu test kullanıcıları Business'ı ömür boyu ücretsiz tutar — değiştirilecek bir plan ve iptal edilecek bir abonelik yoktur.",
+  "apiErrors.foundingTester.alreadyListed": "Bu e-posta zaten kurucu test kullanıcıları listesinde.",
+  "apiErrors.foundingTester.listFull": "Kurucu test kullanıcıları listesi dolu.",
+  "apiErrors.foundingTester.notListed": "Bu e-posta kurucu test kullanıcıları listesinde değil.",
+  "apiErrors.foundingTester.capWholeNumber": "Sınır, 1 veya daha büyük bir tam sayı olmalıdır.",
 };

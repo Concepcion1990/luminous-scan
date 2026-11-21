@@ -5010,4 +5010,13 @@ export const tl = {
   "payroll.profile.noName": "Wala pang pangalang nakatala.",
   "apiErrors.forbidden.businessOwnerUpdateDetails": "Ang may-ari lamang ng negosyo ang maaaring mag-update ng mga detalyeng ito.",
   "apiErrors.invalidValue.homeAddressThousandCharacters": "Panatilihing 1000 character o mas kaunti ang address ng iyong bahay.",
+  "plans.status.foundingTester": "Tagapagtatag na tagasubok",
+  "plans.priceNoteFoundingTester": "Walang singil — pinapanatili ng mga tagapagtatag na tagasubok ang Business nang libre habang buhay.",
+  "subscribe.foundingTesterNote": "Ang workspace na ito ay may Business bilang tagapagtatag na tagasubok — libre habang buhay. Walang card, walang singil, kailanman.",
+  "upgrade.introFoundingTester": " — isang workspace ng tagapagtatag na tagasubok, libre habang buhay at walang anumang singil.",
+  "upgrade.foundingTesterNote": "Pinapanatili ng mga tagapagtatag na tagasubok ang Business nang libre habang buhay — walang planong papalitan at walang subscription na kakanselahin.",
+  "apiErrors.foundingTester.alreadyListed": "Ang email na iyon ay nasa listahan na ng mga tagapagtatag na tagasubok.",
+  "apiErrors.foundingTester.listFull": "Puno na ang listahan ng mga tagapagtatag na tagasubok.",
+  "apiErrors.foundingTester.notListed": "Ang email na iyon ay wala sa listahan ng mga tagapagtatag na tagasubok.",
+  "apiErrors.foundingTester.capWholeNumber": "Ang limit ay dapat buong bilang na 1 o higit pa.",
 };
