@@ -124,6 +124,9 @@ const FR_FR_COGNATE_KEYS = new Set([
   // Translation sweep (Nov 15, 2026): 'Photo' and 'Fiction' are
   // the genuine French words — true cognates, not untranslated.
   'products.colPhoto', 'productForm.categoryPlaceholder',
+  // Training builds (Nov 20, 2026): 'Question' is the genuine
+  // French word for the owner's-quiz question label.
+  'settings.policyQuiz.question',
 ]);
 const FR_CA_COGNATE_KEYS = new Set([
   'counts.notesLabel', 'dashboard.minReorder', 'importLib.field.description',
@@ -147,6 +150,8 @@ const FR_CA_COGNATE_KEYS = new Set([
   'workforce.tasks.notes',
   // Translation sweep (Nov 15, 2026): same French cognates as fr-FR.
   'products.colPhoto', 'productForm.categoryPlaceholder',
+  // Training builds (Nov 20, 2026): 'Question' — same cognate as fr-FR.
+  'settings.policyQuiz.question',
 ]);
 const PT_BR_COGNATE_KEYS = new Set([
   'bomLib.kindBundleShort', 'dashboard.skusCount', 'exports.backupJson',

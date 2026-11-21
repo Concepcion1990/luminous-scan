@@ -40,8 +40,12 @@ test('item 1: every apiErrors key exists in all 52 locales', async () => {
   // refusal, the file refusal, the typed-text cap, and the two
   // policy 404 wordings. The low-stock ticks (Nov 20, 2026)
   // added 2: the reorder-change refusal and the alerts-view
-  // refusal.
-  assert.equal(new Set(registryKeys).size, 437);
+  // refusal. The training builds (Nov 20, 2026) added 25: the
+  // two code keys (the First-training task refusal and the
+  // lesson-quiz gate) and 23 message keys — the owner's-quiz
+  // refusals and validations, the lesson-quiz wordings, the
+  // comment and team-record refusals.
+  assert.equal(new Set(registryKeys).size, 462);
   for (const code of LOCALES) {
     const dict = await loadLocale(code);
     for (const key of registryKeys) {

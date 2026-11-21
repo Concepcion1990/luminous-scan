@@ -25,6 +25,7 @@ const BUSINESS_ONLY = {
   'owner-send-supplier-order': 'purchasing', 'mgr-send-supplier-order': 'purchasing',
   'mgr-suppliers-orders': 'suppliers',
   'mgr-reports-alerts': 'reports',
+  'staff-reports': 'reports', 'staff-cross-store': 'crossStore', 'staff-builds': 'builds',
   'owner-pos-connect-square': 'pos', 'owner-pos-connect-shopify': 'pos',
   'owner-pos-connect-clover': 'pos', 'owner-pos-connect-toast': 'pos',
   'owner-pos-connect-lightspeed': 'pos', 'owner-pos-connect-zettle': 'pos',
@@ -62,13 +63,17 @@ test('plan-visible counts: Business whole, Essentials without the Business subje
   // confidentiality lesson (owner track only, same day) makes owner 39.
   // The owner store-policies lesson (Nov 19, 2026, both plans) makes
   // owner 40 on Business and 22 on Essentials.
+  // The training builds (Nov 20, 2026) add the download-the-app
+  // lesson (staff, both plans), three Business-only staff lessons
+  // (reports, cross-store, builds), and the manager tax lesson
+  // (both plans): staff 38/33, manager 18/12, owner unchanged.
   assert.equal(count('owner', true), 40);
-  assert.equal(count('manager', true), 17);
-  assert.equal(count('staff', true), 34);
+  assert.equal(count('manager', true), 18);
+  assert.equal(count('staff', true), 38);
   // Essentials: 19 owner subjects hidden, owner-import in their place.
   assert.equal(count('owner', false), 22); // +1 confidentiality lesson (Nov 19, 2026)
-  assert.equal(count('manager', false), 11);
-  assert.equal(count('staff', false), 32);
+  assert.equal(count('manager', false), 12);
+  assert.equal(count('staff', false), 33);
   // Payroll / workforce / direct-deposit lessons stay on Essentials.
   const essentialsStaff = client.visibleLessonsForTrack('staff', false).map((l) => l.id);
   for (const id of ['stub-yours', 'dd-submit', 'clock-basics']) {

@@ -19,6 +19,11 @@ import {
   ownerWithBusiness,
   setPlan,
 } from './helpers.js';
+import { buildQuiz } from '../../server/trainingScope.js';
+import { lessonById as serverLessonById } from '../../server/trainingCatalog.js';
+import { presetRoleById } from '../../server/authz.js';
+import { permissionsForPlan } from '../../server/plans.js';
+import { lessonInScope } from '../../server/trainingScope.js';
 
 after(close);
 beforeEach(() => resetRateLimits());
@@ -75,10 +80,40 @@ function datePlus(days) {
   return d.toISOString().slice(0, 10);
 }
 
+/**
+ * Pass a lesson's quiz the way the page does (Nov 20, 2026: a
+ * lesson counts complete only when its quiz is answered
+ * correctly). The quiz structure is deterministic per person +
+ * lesson, so the test rebuilds it with the server's own builder
+ * over the steps the state says this person can see, and answers
+ * every question correctly.
+ */
+async function passQuiz(cookie, bid, lessonId) {
+  const st = await state(cookie, bid);
+  const lesson = serverLessonById(lessonId);
+  assert.ok(lesson, `${lessonId} exists`);
+  const steps = st.step_scope?.[lessonId]
+    ?? Array.from({ length: lesson.steps }, (_, i) => i + 1);
+  const quiz = buildQuiz(lesson, steps, {
+    personKey: st.my_key,
+    isBusiness: st.plan === 'business',
+  });
+  const res = await req(`${TR(bid)}/lessons/${lessonId}/quiz`, {
+    method: 'POST',
+    body: { answers: quiz.questions.map((q) => q.answer_index) },
+    cookie,
+  });
+  assert.equal(res.status, 200, `quiz ${lessonId}: ${res.text}`);
+  assert.equal(res.json.passed, true, `quiz ${lessonId} passes`);
+  return res.json;
+}
+
 async function completeAll(cookie, bid, lessonIds) {
   for (const id of lessonIds) {
     const res = await req(`${TR(bid)}/lessons/${id}/complete`, { method: 'POST', body: {}, cookie });
-    assert.equal(res.status, 200, `complete ${id}`);
+    if (res.status === 200) continue; // the owner is quiz-exempt
+    assert.equal(res.json?.error, 'quiz_required', `complete ${id} asks for its quiz`);
+    await passQuiz(cookie, bid, id);
   }
 }
 
@@ -129,9 +164,13 @@ test('completion: a person completes lessons in their own tracks and is refused 
   const manager = await addTeamMember(business, owner.id, 'train-done-mgr@example.com', { manager: true });
   const staff = await addTeamMember(business, owner.id, 'train-done-staff@example.com');
 
-  const ok = await req(`${TR(business.id)}/lessons/clock-basics/complete`, { method: 'POST', body: {}, cookie: staff.cookie });
-  assert.equal(ok.status, 200);
-  assert.ok(ok.json.completed_lesson_ids.includes('clock-basics'));
+  // Integrity (Nov 20, 2026): the plain complete door refuses a
+  // non-owner — the lesson finishes through its quiz.
+  const gated = await req(`${TR(business.id)}/lessons/clock-basics/complete`, { method: 'POST', body: {}, cookie: staff.cookie });
+  assert.equal(gated.status, 400);
+  assert.equal(gated.json.error, 'quiz_required');
+  const ok = await passQuiz(staff.cookie, business.id, 'clock-basics');
+  assert.ok(ok.completed_lesson_ids.includes('clock-basics'));
   // Idempotent: completing twice keeps one record.
   const again = await req(`${TR(business.id)}/lessons/clock-basics/complete`, { method: 'POST', body: {}, cookie: staff.cookie });
   assert.equal(again.status, 200);
@@ -146,7 +185,10 @@ test('completion: a person completes lessons in their own tracks and is refused 
   assert.equal((await req(`${TR(business.id)}/lessons/mgr-schedules/complete`, { method: 'POST', body: {}, cookie: staff.cookie })).status, 403);
   assert.equal((await req(`${TR(business.id)}/lessons/owner-setup/complete`, { method: 'POST', body: {}, cookie: staff.cookie })).status, 403);
   assert.equal((await req(`${TR(business.id)}/lessons/no-such-lesson/complete`, { method: 'POST', body: {}, cookie: staff.cookie })).status, 404);
-  assert.equal((await req(`${TR(business.id)}/lessons/mgr-schedules/complete`, { method: 'POST', body: {}, cookie: manager.cookie })).status, 200);
+  // A manager is not the owner: their lessons finish by quiz too.
+  assert.equal((await req(`${TR(business.id)}/lessons/mgr-schedules/complete`, { method: 'POST', body: {}, cookie: manager.cookie })).status, 400);
+  await passQuiz(manager.cookie, business.id, 'mgr-schedules');
+  // The owner is exempt — "don't torture the owner".
   assert.equal((await req(`${TR(business.id)}/lessons/owner-setup/complete`, { method: 'POST', body: {}, cookie: ownerCookie })).status, 200);
   // ...and the state carries the completion stamp.
   const mine = await state(staff.cookie, business.id);
@@ -503,12 +545,15 @@ test('assign everything (Essentials): an assigned lesson above the assignee\u201
   assert.ok(mine, 'the assignment is on the assignee\u2019s state');
   assert.deepEqual([...mine.lesson_ids].sort(), [...ids].sort());
 
-  // The owner-track lesson completes for its assignee...
-  const done = await req(`${TR(business.id)}/lessons/owner-white-label/complete`, {
+  // The owner-track lesson completes for its assignee — through
+  // its quiz, like every non-owner completion (Nov 20, 2026).
+  const gated = await req(`${TR(business.id)}/lessons/owner-white-label/complete`, {
     method: 'POST', body: {}, cookie: staff.cookie,
   });
-  assert.equal(done.status, 200);
-  assert.ok(done.json.completed_lesson_ids.includes('owner-white-label'));
+  assert.equal(gated.status, 400);
+  assert.equal(gated.json.error, 'quiz_required');
+  const done = await passQuiz(staff.cookie, business.id, 'owner-white-label');
+  assert.ok(done.completed_lesson_ids.includes('owner-white-label'));
 
   // ...while an UNASSIGNED lesson above their role still refuses.
   const refused = await req(`${TR(business.id)}/lessons/mgr-schedules/complete`, {
@@ -537,23 +582,23 @@ test('assign everything (Business): the complete Business catalog, cross-role, e
   assert.equal(pos.json.assignment.lesson_ids.length, 12);
 
   // A Business-only owner lesson from that assignment completes
-  // for the staff assignee.
-  const done = await req(`${TR(business.id)}/lessons/owner-pos-connect-square/complete`, {
-    method: 'POST', body: {}, cookie: staff.cookie,
-  });
-  assert.equal(done.status, 200);
-  assert.ok(done.json.completed_lesson_ids.includes('owner-pos-connect-square'));
+  // for the staff assignee — through its quiz (Nov 20, 2026).
+  const done = await passQuiz(staff.cookie, business.id, 'owner-pos-connect-square');
+  assert.ok(done.completed_lesson_ids.includes('owner-pos-connect-square'));
 });
 
 // ---- Join seed (owner ruling, Nov 15, 2026) -------------------------------
 //
 // A new member does not wait for a role change to meet their
 // training: creating their StaffMember row sets their OWN track
-// in place — every module with lessons at their level, plan-
-// filtered — and accepting the invite at sign-in runs the same
+// in place — and accepting the invite at sign-in runs the same
 // seed, so a row written before the seed existed is set on
 // arrival too. Automatic doors stay at the person's own level;
 // anything beyond it is the owner's manual Assign box.
+// Since the training builds (Nov 20, 2026) the seed follows the
+// person's REAL doors: the core lessons for everyone, plus the
+// lessons their role's permissions actually open — nobody trains
+// on what they don't have.
 
 /** Create a member through the real invite door (the entity API). */
 async function inviteMember(ownerCookie, business, { email, name, roleId, roleName, status }) {
@@ -573,14 +618,23 @@ async function inviteMember(ownerCookie, business, { email, name, roleId, roleNa
   return res.json;
 }
 
-/** The exact set the seed owes a level on a plan: module -> sorted lesson ids. */
-async function expectedSeedSet(level, isBusiness) {
+/**
+ * The exact set the seed owes a level on a plan: module -> sorted
+ * lesson ids. Since the training builds (Nov 20, 2026) the seed
+ * follows the person's REAL doors: plan-visible lessons at their
+ * level that their role's permissions actually open (core lessons
+ * always; the rest by permission). The seed tests invite with
+ * preset roles, so the expectation is computed from the preset.
+ */
+async function expectedSeedSet(level, isBusiness, roleId = 'preset-sales') {
   const server = await import('../../server/trainingCatalog.js');
+  const permissions = permissionsForPlan(isBusiness ? 'business' : 'essentials', presetRoleById(roleId)?.permissions || []);
   const expected = {};
   for (const mod of server.TRAINING_MODULES) {
     const ids = server
       .lessonsForModuleAtLevel(mod, level)
       .filter((lesson) => server.lessonVisibleOnPlan(lesson, isBusiness))
+      .filter((lesson) => lessonInScope(lesson, { level, permissions }))
       .map((lesson) => lesson.id)
       .sort();
     if (ids.length) expected[mod] = ids;
@@ -650,11 +704,16 @@ test('join seed: a new manager is set with the manager track on top of staff (Es
   const account = await registerVerifiedUser('train-seed-mgr-m@example.com');
 
   const staffState = await state(account.cookie, business.id);
-  assertSeeded(staffState, await expectedSeedSet('manager', false), 'new manager');
+  assertSeeded(staffState, await expectedSeedSet('manager', false, 'preset-manager'), 'new manager');
   // Manager-only modules are present, and no owner-track lesson
-  // slipped in above their level.
+  // slipped in above their level. Scoping (Nov 20, 2026): the
+  // staff module's only manager lesson teaches the Staff screen's
+  // permission editing, which follows staff.manage / the roster
+  // tick — the preset Manager holds neither, so no staff module
+  // is seeded until the owner ticks the roster for them.
   const modules = staffState.assignments.map((a) => a.module);
-  assert.ok(modules.includes('training') && modules.includes('staff'), 'manager modules are set');
+  assert.ok(modules.includes('training'), 'manager modules are set');
+  assert.ok(!modules.includes('staff'), 'no staff module behind a door the manager does not hold');
   const ownerIds = new Set(server.TRAINING_LESSONS.filter((l) => l.track === 'owner').map((l) => l.id));
   assert.ok(
     staffState.assignments.every((a) => a.lesson_ids.every((id) => !ownerIds.has(id))),
@@ -704,7 +763,7 @@ test('join seed: promotion to manager re-seeds at the new level — one assignme
     method: 'PATCH', body: { role_id: 'preset-manager', role_name: 'Manager' }, cookie: ownerCookie,
   });
   assert.equal(promoted.status, 200);
-  assertSeeded(await state(account.cookie, business.id), await expectedSeedSet('manager', false), 'after promotion');
+  assertSeeded(await state(account.cookie, business.id), await expectedSeedSet('manager', false, 'preset-manager'), 'after promotion');
 });
 
 test('join seed: a suspended member is not seeded until they are really on the team', async () => {
