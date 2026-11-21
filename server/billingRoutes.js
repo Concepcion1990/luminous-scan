@@ -60,6 +60,11 @@ import {
   CANCELLATION_GRACE_DAYS,
   GRANDFATHERED_BUSINESS_ID,
 } from './billing.js';
+import {
+  activeCompEntryForEmail,
+  grantFoundingTester,
+  FOUNDING_TESTER_STATUS,
+} from './foundingTester.js';
 
 const PUBLISHER_OWNER_EMAIL = 'cperezcarrillo.1990@gmail.com';
 
@@ -199,6 +204,37 @@ export function createBillingRouter({ getPool: getPoolFn }) {
     const business = await requireOwnerBusiness(pool, req.user, businessId);
     if (business.id === GRANDFATHERED_BUSINESS_ID) {
       throw err(403, 'complimentary_business_account_protected', 'That workspace has complimentary access and is never charged.');
+    }
+    // Founding-tester comp (Nov 21, 2026): a workspace already
+    // carrying the founding-tester mark never reaches Stripe —
+    // there is nothing to check out, and no subscription may
+    // ever be created for it. And when the owner's email is on
+    // the operator's active comp list and they come through the
+    // Business door with no live subscription, the comp is
+    // granted here instead of a checkout — the backstop for a
+    // workspace created before its email was listed (the usual
+    // door grants at creation; see authRoutes). Either way the
+    // answer is the same plain shape and the client walks
+    // straight into the app. No Stripe customer, subscription,
+    // card, or trial is ever created on this path, and an
+    // unlisted owner notices nothing different.
+    const { rows: compEntRows } = await pool.query(
+      'SELECT status FROM entitlements WHERE business_id = $1 LIMIT 1',
+      [business.id],
+    );
+    if (compEntRows[0]?.status === FOUNDING_TESTER_STATUS) {
+      return res.json({ comped: true, state: 'comped', plan: 'business', already: true });
+    }
+    if (plan === 'business' && !['active', 'trialing', 'past_due'].includes(compEntRows[0]?.status)) {
+      const compEntry = await activeCompEntryForEmail(pool, req.user.email);
+      if (compEntry) {
+        await grantFoundingTester(pool, {
+          businessId: business.id,
+          ownerId: req.user.id,
+          ownerEmail: req.user.email,
+        });
+        return res.json({ comped: true, state: 'comped', plan: 'business' });
+      }
     }
     const readiness = requireReady();
     const mode = readiness.stripe_mode;

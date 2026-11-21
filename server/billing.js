@@ -19,6 +19,7 @@ import crypto from 'node:crypto';
 import { evidenceFromSubscription, stripeTsToIso, isFirstPaidCharge } from './stripeEvidence.js';
 import { consumeTrial } from './trialEligibility.js';
 import { priceForPlan } from './stripeCatalog.js';
+import { endCompEntriesForEmail } from './foundingTester.js';
 
 export const CANCELLATION_GRACE_DAYS = 15;
 /**
@@ -367,6 +368,13 @@ export async function runWipeSweep(pool, { now = new Date(), logger = console } 
         // a person's face dies with the business, never after it.
         await client.query('DELETE FROM profile_photos WHERE business_id = $1', [businessId]);
       }
+      // A founding-tester comp ends ONLY here (Nov 21, 2026):
+      // the account is being fully deleted, so its comp-list
+      // entry ends in the same transaction. (A comped account
+      // has no canceled subscription, so it never becomes a
+      // wipe candidate on its own — this covers an owner whose
+      // OTHER business lapsed past grace.)
+      if (email) await endCompEntriesForEmail(client, email);
       await client.query('DELETE FROM users WHERE id = $1', [ownerId]);
     });
     const entry = { ownerId, email, businessIds, wipedAt: now.toISOString() };

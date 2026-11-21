@@ -33,6 +33,12 @@ export default function SubscriptionAccessRoute() {
     (status === 'active' ||
       status === 'trialing' ||
       status === 'past_due' ||
+      // A founding tester's workspace (Nov 21, 2026): Business
+      // free for life by the operator's comp — no subscription
+      // behind it, no expiry. Unlike the publisher's
+      // grandfathered workspace it belongs to a real business,
+      // so its members enter like any Business workspace's.
+      (status === 'founding_tester' && planKey === 'business') ||
       (status === 'canceled' && withinPaidPeriod) ||
       (status === 'grandfathered' && isBoss(user, businessRecord) && planKey === 'business'));
 

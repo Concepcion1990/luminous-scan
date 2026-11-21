@@ -17,7 +17,7 @@
  * on their own business, including attacker-created ones.
  */
 import crypto from 'node:crypto';
-import { limitsForPlan, permissionsForPlan, planFor, staffLimitMessage } from './plans.js';
+import { limitsForPlan, permissionsForPlan, planFor, staffLimitMessage, isOperatingSite } from './plans.js';
 import { parseJsonArray } from './authz.js';
 import { ringBell, seedRoleTrainingForMember, userForStaffRow } from './trainingCore.js';
 import { personLevel } from './workforceRoutes.js';
@@ -30,6 +30,67 @@ export async function staffSeatCount(pool, businessId) {
     [businessId],
   );
   return rows[0]?.n ?? 0;
+}
+
+/**
+ * A person's store is a STORE-LEVEL location — never a shelf or
+ * a bin inside one (owner's ruling, Nov 21, 2026). These helpers
+ * resolve "their store" the one way the whole app agrees on:
+ *
+ *   singleStoreLocation — the business's one operating site, or
+ *     null when it has none or more than one. On Essentials
+ *     (single-site) this is THE store a member belongs to.
+ *   storeAncestorOf — walk a picked location up to its
+ *     top-level store; a pick that names a shelf resolves to
+ *     the store the shelf lives in.
+ */
+export async function singleStoreLocation(pool, businessId) {
+  const { rows } = await pool.query(
+    'SELECT * FROM locations WHERE business_id = $1 ORDER BY created_at ASC',
+    [businessId],
+  );
+  const sites = rows.filter((row) => isOperatingSite(row));
+  return sites.length === 1 ? sites[0] : null;
+}
+
+export async function storeAncestorOf(pool, businessId, locationId) {
+  if (!locationId) return null;
+  const { rows } = await pool.query(
+    'SELECT * FROM locations WHERE business_id = $1',
+    [businessId],
+  );
+  const byId = new Map(rows.map((row) => [row.id, row]));
+  let current = byId.get(locationId);
+  if (!current) return null;
+  const seen = new Set();
+  while (current.parent_id && byId.has(current.parent_id) && !seen.has(current.id)) {
+    seen.add(current.id);
+    current = byId.get(current.parent_id);
+  }
+  return isOperatingSite(current) ? current : null;
+}
+
+/**
+ * The store a staff row should carry, by the owner's ruling:
+ * - a pick that names a location resolves to its top-level
+ *   store (a shelf pick becomes the shelf's store);
+ * - no pick on ESSENTIALS auto-assigns the business's one
+ *   store — no picking, no "No store" (Nov 21, 2026);
+ * - no pick on Business stays empty: multi-store businesses
+ *   choose per person, exactly as before.
+ * Returns { id, name } with id null when nothing resolves.
+ */
+export async function resolveMemberStore(pool, { businessId, planKey, locationId, locationName }) {
+  if (locationId) {
+    const store = await storeAncestorOf(pool, businessId, locationId);
+    if (store) return { id: store.id, name: store.name || '' };
+    return { id: locationId, name: locationName || '' };
+  }
+  if (planKey === 'essentials') {
+    const store = await singleStoreLocation(pool, businessId);
+    if (store) return { id: store.id, name: store.name || '' };
+  }
+  return { id: null, name: locationName || '' };
 }
 
 /** A seat is held by an active member or a pending invitation, never by the owner. */
@@ -66,6 +127,16 @@ export async function createStaffMember(pool, { business, planKey, caller, membe
     });
   }
   const permissions = permissionsForPlan(planKey, member.permissions);
+  // Their store (owner's ruling, Nov 21, 2026): Essentials
+  // members are born assigned to the business's one store;
+  // a shelf pick resolves to its store; Business keeps the
+  // manual pick (empty stays empty).
+  const store = await resolveMemberStore(pool, {
+    businessId: business.id,
+    planKey,
+    locationId: member.location_id || null,
+    locationName: member.location_name || '',
+  });
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
   const { rows } = await pool.query(
@@ -85,8 +156,8 @@ export async function createStaffMember(pool, { business, planKey, caller, membe
       member.role_name || '',
       JSON.stringify(permissions),
       status,
-      member.location_id || null,
-      member.location_name || '',
+      store.id,
+      store.name,
       member.notes || '',
       // Personal contact details (owner ruling, Nov 19, 2026):
       // stored on the record; the entity reads strip them for

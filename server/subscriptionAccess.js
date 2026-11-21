@@ -15,6 +15,8 @@
  *
  * THE RULE (mirrors SubscriptionAccessRoute + cancellationGrace):
  *   full    — entitlement status active / trialing / past_due;
+ *             founding_tester on the Business plan (the operator's
+ *             comp — app data only, no Stripe object behind it);
  *             canceled while period_ends_at is still in the future;
  *             grandfathered ONLY for the publisher's own complimentary
  *             Business workspace (see isPublisherUser) — a
@@ -90,6 +92,17 @@ export function assessSubscriptionAccess(record, { user = null, business = null,
   };
   if (!record) return { ...base, state: 'denied', reason: 'no_entitlement' };
   if (FULL_STATUSES.has(record.status)) return { ...base, state: 'full', reason: 'ok' };
+  if (record.status === 'founding_tester') {
+    // A founding tester's workspace (Nov 21, 2026): Business free
+    // for life, granted by the operator's comp list and stored
+    // only in the app's data — there is no Stripe subscription
+    // behind it, no trial, and no period end. Full access for
+    // the workspace's members, exactly like a paid Business
+    // workspace; a row on any other plan grants nothing.
+    return record.plan === 'business'
+      ? { ...base, state: 'full', reason: 'ok' }
+      : { ...base, state: 'denied', reason: 'founding_tester_not_business' };
+  }
   if (record.status === 'grandfathered') {
     const ok =
       record.plan === 'business' &&

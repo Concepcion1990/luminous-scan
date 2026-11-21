@@ -50,7 +50,7 @@ import {
   customRolesBusinessOnlyMessage,
   BUNDLE_MOVEMENT_TYPES,
 } from './plans.js';
-import { createStaffMember, staffSeatCount } from './staff.js';
+import { createStaffMember, staffSeatCount, resolveMemberStore, singleStoreLocation } from './staff.js';
 import { memberLevel } from './staffWindow.js';
 import { ensureDefaultLocation } from './defaultLocation.js';
 import { rememberOrderAddress } from './customerAddresses.js';
@@ -1139,6 +1139,20 @@ export async function listEntities(pool, user, name, filter = {}, options = {}) 
         }),
       );
     }
+    if (name === 'StaffMember' && access.planKey === 'essentials') {
+      // One-store auto-assignment, read side (owner's ruling,
+      // Nov 21, 2026): an Essentials member whose pick is empty
+      // reads as assigned to the business's one store, so
+      // members added before the rule — or through any door —
+      // show their store without the owner re-editing everyone.
+      // Display only: the stored row is never rewritten here.
+      const store = await singleStoreLocation(pool, businessId);
+      if (store) {
+        businessRows = businessRows.map((row) => (row.location_id
+          ? row
+          : { ...row, location_id: store.id, location_name: store.name || row.location_name || '' }));
+      }
+    }
     if (!access.isOwner) {
       // Attribution fields carry names, never emails, to a
       // non-owner (rider + audit, Nov 21, 2026); the creator
@@ -1162,7 +1176,7 @@ export async function getEntity(pool, user, name, id) {
   const def = entityDef(name);
   if (!def) throw err(404, 'unknown_entity', `Unknown entity ${name}.`);
   const { rows } = await pool.query(`SELECT * FROM ${def.table} WHERE id = $1 LIMIT 1`, [id]);
-  const row = rows[0];
+  let row = rows[0];
   if (!row) throw err(404, 'not_found', 'Not found.');
   const access = await resolveAccess(pool, user, row.business_id);
   if (!access) throw err(403, 'forbidden', 'You do not have access to this workspace.');
@@ -1175,6 +1189,14 @@ export async function getEntity(pool, user, name, id) {
   }
   if (def.planGate && !featureAllowed(access.planKey, def.planGate)) {
     throw err(403, 'plan_gated', 'This feature is part of the Business plan.');
+  }
+  if (name === 'StaffMember' && access.planKey === 'essentials' && !row.location_id) {
+    // One-store auto-assignment, read side — same rule as the
+    // list path above (Nov 21, 2026): display only.
+    const store = await singleStoreLocation(pool, row.business_id);
+    if (store) {
+      row = { ...row, location_id: store.id, location_name: store.name || row.location_name || '' };
+    }
   }
   if (name === 'Product' && !featureAllowed(access.planKey, 'pricing')) {
     const shaped = publicRow(def, stripPricing(row));
@@ -1307,6 +1329,19 @@ export async function updateEntity(pool, user, name, id, patch) {
   // patcher's display name (rider + audit, Nov 21, 2026): a
   // "…by" field names the person who did it, never their email.
   patch = await stampAttribution(pool, access, name, patch);
+  if (name === 'StaffMember' && Object.hasOwn(patch, 'location_id')) {
+    // Their store resolves exactly as at creation (owner's
+    // ruling, Nov 21, 2026): a shelf pick becomes its store,
+    // and clearing the pick on Essentials re-assigns the one
+    // store instead of leaving the member store-less.
+    const store = await resolveMemberStore(pool, {
+      businessId: row.business_id,
+      planKey: access.planKey,
+      locationId: patch.location_id || null,
+      locationName: patch.location_name ?? publicExisting.location_name ?? '',
+    });
+    patch = { ...patch, location_id: store.id, location_name: store.name };
+  }
   // No cap check on a status change: an archived original never
   // left the count (owner's counting rule, Nov 14, 2026 — archive
   // is a shelf, not a shredder), so restoring it can never breach

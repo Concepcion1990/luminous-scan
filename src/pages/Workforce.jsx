@@ -1221,6 +1221,22 @@ function InboxTab({ businessId, ctx, people, onRead, onGoTab }) {
                         {message.mine && message.read_at ? ` · ${t('workforce.messages.readLabel')}` : ''}
                       </span>
                     </div>
+                    {/* The sender's own face beside their own
+                        sent bubbles (owner's ruling, Nov 21,
+                        2026): the received side has always shown
+                        the other person's photo; the sent side
+                        mirrors it — the person's approved photo,
+                        or their initials when they have none,
+                        exactly the header's fallback. */}
+                    {message.mine && sender ? (
+                      <ProfileAvatar
+                        businessId={businessId}
+                        personKey={sender.key}
+                        name={sender.name}
+                        hasPhoto={Boolean(sender.photo)}
+                        className="h-7 w-7 text-[10px]"
+                      />
+                    ) : null}
                   </li>
                   );
                 })}

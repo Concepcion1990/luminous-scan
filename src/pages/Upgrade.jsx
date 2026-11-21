@@ -189,9 +189,11 @@ export default function Upgrade() {
               <span className="font-medium text-foreground">{plan.name}</span>
               {status === 'grandfathered'
                 ? t('upgrade.introGrandfathered')
-                : status === 'trialing'
-                  ? t('upgrade.introTrial')
-                  : t('upgrade.introPeriod')}</>
+                : status === 'founding_tester'
+                  ? t('upgrade.introFoundingTester')
+                  : status === 'trialing'
+                    ? t('upgrade.introTrial')
+                    : t('upgrade.introPeriod')}</>
           )}
         </p>
       </div>
@@ -227,7 +229,12 @@ export default function Upgrade() {
           const isCanceled = status === 'canceled';
           const canUpgrade = entry.key === 'business' && plan.key === 'essentials' &&
             ['active', 'trialing', 'past_due'].includes(status);
-          const isDowngradeCard = entry.key === 'essentials' && plan.key === 'business';
+          // A founding tester's Business is free for life (Nov
+          // 21, 2026): there is no subscription to change, so the
+          // Essentials card never offers them a downgrade door —
+          // it tells them the truth instead.
+          const isComped = status === 'founding_tester';
+          const isDowngradeCard = entry.key === 'essentials' && plan.key === 'business' && !isComped;
           return (
             <div
               key={entry.key}
@@ -288,6 +295,10 @@ export default function Upgrade() {
                   <Button className="w-full" variant="outline" disabled>
                     {t('plans.currentPlan')}
                   </Button>
+                ) : isComped ? (
+                  <p className="text-xs leading-relaxed text-muted-foreground">
+                    {t('upgrade.foundingTesterNote')}
+                  </p>
                 ) : isCanceled && isOwner ? (
                   <>
                     <Button className="w-full min-h-11" type="button" asChild>

@@ -57,6 +57,7 @@ import { activateStaffRowsForEmail } from './staff.js';
 import { DEFAULT_LOCATION_NAME } from './defaultLocation.js';
 import { staffWindowState, autoLogoutAtFor, staffWelcomePending, markStaffWelcomeSeen, memberLevel } from './staffWindow.js';
 import { staffRowForEmail, parseJsonArray, isTrustedStaffRow } from './authz.js';
+import { activeCompEntryForEmail, grantFoundingTester } from './foundingTester.js';
 
 /**
  * Owner-granted Settings sections (Nov 19, 2026): which business
@@ -934,6 +935,21 @@ export function createAuthRouter({ getPool }) {
            VALUES ($1, $2, $3, 'store', $2)`,
           [`default-${id}`, id, (name || '').trim() || DEFAULT_LOCATION_NAME],
         );
+        // Founding-tester comp (Nov 21, 2026): when the creator's
+        // email is on the operator's active comp list, the
+        // workspace is BORN on Business with the founding-tester
+        // mark — in the same transaction, so there is never a
+        // moment where the workspace exists unentitled. No
+        // checkout, no trial, and no Stripe object is ever
+        // created for it; an unlisted creator notices nothing.
+        const compEntry = await activeCompEntryForEmail(client, req.user.email);
+        if (compEntry) {
+          await grantFoundingTester(client, {
+            businessId: id,
+            ownerId: req.user.id,
+            ownerEmail: req.user.email,
+          });
+        }
         return inserted.rows[0];
       });
       if (!business) {

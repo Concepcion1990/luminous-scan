@@ -58,31 +58,40 @@ export default function PhotoApprovalsCard({ isOwner }) {
         {pending.map((entry) => (
           <li
             key={entry.staff_id}
-            className="flex flex-wrap items-center gap-3 rounded-lg border border-border p-3"
+            className="flex flex-col gap-3 rounded-lg border border-border p-3 sm:flex-row sm:flex-wrap sm:items-center"
           >
-            <img
-              src={profilePhotoPendingUrl(activeId, entry.staff_id)}
-              alt=""
-              aria-hidden="true"
-              className="h-14 w-14 shrink-0 rounded-full object-cover"
-            />
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium">{entry.full_name}</p>
-              <p className="text-xs text-muted-foreground">
-                {entry.role_name ? `${entry.role_name} · ` : ''}
-                {t('profile.submittedOn', {
-                  date: new Date(entry.pending_at).toLocaleDateString(getLocale(), {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric',
-                  }),
-                })}
-              </p>
+            {/* Phone widths stack (Nov 21, 2026): the photo and
+                name keep their own row, the details sit under the
+                name, and the two buttons go full-width below —
+                the row layout crushed the name to a sliver and
+                stacked the date a word at a time. From sm up the
+                card is the original single row. */}
+            <div className="flex min-w-0 items-center gap-3 sm:flex-1">
+              <img
+                src={profilePhotoPendingUrl(activeId, entry.staff_id)}
+                alt=""
+                aria-hidden="true"
+                className="h-14 w-14 shrink-0 rounded-full object-cover"
+              />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium">{entry.full_name}</p>
+                <p className="text-xs text-muted-foreground">
+                  {entry.role_name ? `${entry.role_name} · ` : ''}
+                  {t('profile.submittedOn', {
+                    date: new Date(entry.pending_at).toLocaleDateString(getLocale(), {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                    }),
+                  })}
+                </p>
+              </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex w-full gap-2 sm:w-auto">
               <Button
                 type="button"
                 size="sm"
+                className="flex-1 sm:flex-none"
                 disabled={busyKey === entry.staff_id}
                 onClick={() => decide(entry.staff_id, 'approve')}
               >
@@ -97,6 +106,7 @@ export default function PhotoApprovalsCard({ isOwner }) {
                 type="button"
                 size="sm"
                 variant="outline"
+                className="flex-1 sm:flex-none"
                 disabled={busyKey === entry.staff_id}
                 onClick={() => decide(entry.staff_id, 'decline')}
               >

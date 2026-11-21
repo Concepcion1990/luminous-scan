@@ -48,6 +48,7 @@ import { createSupportRouter } from './supportRoutes.js';
 import { createBusinessPolicyRouter } from './businessPolicyRoutes.js';
 import { createPolicyQuizRouter } from './policyQuizRoutes.js';
 import { createProfilePhotoRouter } from './profilePhotoRoutes.js';
+import { createCompRouter } from './compRoutes.js';
 import { createDeletionRouter } from './deletionRoutes.js';
 import { assertSubscriptionAccess } from './subscriptionAccess.js';
 import { ocrAssetsHandler } from './ocrAssets.js';
@@ -257,6 +258,10 @@ export function createApp() {
   // (server/profilePhotoRoutes.js): owner-approved team photos
   // and the name that replaces "Owner".
   app.use('/api', createProfilePhotoRouter({ getPool }));
+  // Founding-tester comp list (server/compRoutes.js): operator
+  // only — the publisher identity is the only hand on it, and no
+  // customer surface links here.
+  app.use('/api', createCompRouter({ getPool }));
   app.use('/api', createShopRouter({ getPool }));
 
   app.use('/api', (_req, res) => {

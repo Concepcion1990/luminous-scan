@@ -29,6 +29,13 @@
  * retries it. Nothing is ever marked sent that did not go out, and no
  * email can be sent twice by repeated or overlapping sweeps.
  *
+ * FOUNDING TESTERS (Nov 21, 2026): a comped workspace has no
+ * subscriptions row at all — Business is free for life, no trial
+ * ever starts — so it can never be selected here. The sweep ALSO
+ * excludes any business whose entitlement carries the
+ * founding-tester mark, as defense in depth: even a stray
+ * trialing row on a comped business would draw no email.
+ *
  * Source of truth is the LIVE subscriptions row at sweep time:
  * status must be 'trialing' with a trial_ends_at in the future.
  * Upgrades that carry trial_end simply move the stored end, and the
@@ -104,6 +111,9 @@ export async function runTrialReminderSweep(pool, { now = new Date(), logger = c
        JOIN users u ON u.id = s.owner_id
        LEFT JOIN businesses b ON b.id = s.business_id
       WHERE s.status = 'trialing' AND s.trial_ends_at IS NOT NULL AND s.trial_ends_at > $1
+        AND s.business_id NOT IN (
+          SELECT business_id FROM entitlements WHERE status = 'founding_tester'
+        )
       ORDER BY s.trial_ends_at ASC`,
     [now.toISOString()],
   );

@@ -96,6 +96,13 @@ export default function Subscribe() {
         plan: planKey,
         business_id: activeId,
       });
+      // A founding tester never reaches Stripe: the server
+      // answers "comped" instead of a checkout URL (Nov 21,
+      // 2026), and the only door from here is into the app.
+      if (response?.data?.comped) {
+        window.location.assign('/');
+        return;
+      }
       const url = response?.data?.url;
       if (!url) throw new Error(t('subscribe.checkoutFailed'));
       window.location.assign(url);
@@ -140,7 +147,7 @@ export default function Subscribe() {
 
   const paidThrough = Date.parse(record?.period_ends_at || '');
   const hasExistingAccess =
-    ['active', 'trialing', 'past_due'].includes(status) ||
+    ['active', 'trialing', 'past_due', 'founding_tester'].includes(status) ||
     (status === 'canceled' && Number.isFinite(paidThrough) && paidThrough > Date.now());
   // The existing-access states below — "this account already has
   // subscription access", the past-due line — are the OWNER's
@@ -201,6 +208,11 @@ export default function Subscribe() {
           </div>
         ) : isLoading || workspaceLoading ? (
           <p className="mt-6 text-sm text-muted-foreground">{t('subscribe.loadingWorkspace')}</p>
+        ) : hasExistingAccess && boss && status === 'founding_tester' ? (
+          <div className="mt-6 rounded-xl border border-border bg-card p-5">
+            <p className="text-sm">{t('subscribe.foundingTesterNote')}</p>
+            <Button className="mt-4" asChild><Link to="/">{t('subscribe.memberOpenApp')}</Link></Button>
+          </div>
         ) : hasExistingAccess && boss ? (
           <div className="mt-6 rounded-xl border border-border bg-card p-5">
             {status === 'past_due' ? (

@@ -3,7 +3,7 @@ import { base44 } from '@/api/client';
 import { Loader2, TriangleAlert } from 'lucide-react';
 import { allRoles, BUSINESS_ONLY_PERMISSIONS, isLocationsGrant, isLowStockGrant, isMemberGrant, isProductsGrant, isReturnsGrant, isRosterGrant, isSettingsGrant, isTrainingGrant, LOCATIONS_GRANTS, LOW_STOCK_GRANTS, PRODUCTS_GRANTS, RETURNS_GRANTS, ROSTER_GRANTS, roleById, SETTINGS_GRANTS, STATUS_OPTIONS, TRAINING_GRANTS } from '@/lib/staff';
 import { Checkbox } from '@/components/ui/checkbox';
-import { createStaffMember } from '@/lib/entitlements';
+import { createStaffMember, isOperatingSite } from '@/lib/entitlements';
 import { fixStaffEmail } from '@/lib/recovery';
 import { listPayProfiles, savePayProfile } from '@/lib/workforce';
 import useStaffAccess from '@/hooks/useStaffAccess';
@@ -222,7 +222,11 @@ export default function StaffMemberDialog({
   }, [open, canHire, member?.id, businessId]);
 
   const roles = allRoles(customRoles);
-  const places = orderedLocations(locations);
+  // A person's store is a store-level location only (owner's
+  // ruling, Nov 21, 2026): shelves and bins inside a store are
+  // never offered here — the pick names the store they belong
+  // to, on either plan.
+  const places = orderedLocations(locations).filter(({ location }) => isOperatingSite(location));
 
   const chooseStore = (locationId) => {
     const chosen = places.find(({ location }) => location.id === locationId)?.location;

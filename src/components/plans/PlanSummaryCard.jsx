@@ -12,6 +12,7 @@ const STATUS_LABEL = {
   past_due: t('plans.status.pastDue'),
   canceled: t('plans.status.canceled'),
   grandfathered: t('plans.status.grandfathered'),
+  founding_tester: t('plans.status.foundingTester'),
   // A missing record resolves to pending_checkout in resolveEntitlement
   // (entitlements.js) — never to grandfathered, which would read "Full
   // access" on an Essentials-priced card (Finding 33).
@@ -66,7 +67,9 @@ export default function PlanSummaryCard() {
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
             {status === 'grandfathered'
               ? t('plans.priceNoteGrandfathered')
-              : t('plans.priceNoteStandard')}
+              : status === 'founding_tester'
+                ? t('plans.priceNoteFoundingTester')
+                : t('plans.priceNoteStandard')}
           </p>
         </div>
         <span className="rounded-full bg-secondary px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
