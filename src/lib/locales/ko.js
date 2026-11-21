@@ -5010,4 +5010,13 @@ export const ko = {
   "payroll.profile.noName": "아직 기록된 이름이 없습니다.",
   "apiErrors.forbidden.businessOwnerUpdateDetails": "이 정보를 수정할 수 있는 사람은 비즈니스 소유자뿐이에요.",
   "apiErrors.invalidValue.homeAddressThousandCharacters": "집 주소는 1000자 이내로 입력해 주세요.",
+  "plans.status.foundingTester": "창립 테스터",
+  "plans.priceNoteFoundingTester": "요금이 없어요 — 창립 테스터는 Business를 평생 무료로 유지해요.",
+  "subscribe.foundingTesterNote": "이 워크스페이스는 창립 테스터로서 Business를 사용해요 — 평생 무료예요. 카드도, 요금도, 영원히 없어요.",
+  "upgrade.introFoundingTester": " — 창립 테스터 워크스페이스로, 평생 무료이고 요금이 전혀 없어요.",
+  "upgrade.foundingTesterNote": "창립 테스터는 Business를 평생 무료로 유지해요 — 바꿀 요금제도, 취소할 구독도 없어요.",
+  "apiErrors.foundingTester.alreadyListed": "그 이메일은 이미 창립 테스터 목록에 있어요.",
+  "apiErrors.foundingTester.listFull": "창립 테스터 목록이 가득 찼어요.",
+  "apiErrors.foundingTester.notListed": "그 이메일은 창립 테스터 목록에 없어요.",
+  "apiErrors.foundingTester.capWholeNumber": "상한은 1 이상의 정수여야 해요.",
 };
