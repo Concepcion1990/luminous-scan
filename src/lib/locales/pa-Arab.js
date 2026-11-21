@@ -5010,4 +5010,13 @@ export const paArab = {
   "payroll.profile.noName": "اجے تک کوئی ناں درج نہیں اے۔",
   "apiErrors.forbidden.businessOwnerUpdateDetails": "صرف کاروبار دا مالک ایہہ ویرے اپڈیٹ کر سکدا اے۔",
   "apiErrors.invalidValue.homeAddressThousandCharacters": "اپنے گھر دے پتے نوں 1000 اکھراں یا ایس توں گھٹ تک رکھو۔",
+  "plans.status.foundingTester": "بانی آزمائش کار",
+  "plans.priceNoteFoundingTester": "کوئی چارج نہیں — بانی آزمائش کار Business نوں ہمیشہ لئی مفت رکھدے نیں۔",
+  "subscribe.foundingTesterNote": "ایس ورک سپیس کول بانی آزمائش کار وجوں Business اے — ہمیشہ لئی مفت۔ کوئی کارڈ نہیں، کوئی چارج نہیں، کدے نہیں۔",
+  "upgrade.introFoundingTester": " — اک بانی آزمائش کار ورک سپیس، ہمیشہ لئی مفت تے بغیر کسے چارج دے۔",
+  "upgrade.foundingTesterNote": "بانی آزمائش کار Business نوں ہمیشہ لئی مفت رکھدے نیں — ایتھے بدلن لئی کوئی پلان نہیں اے تے منسوخ کرن لئی کوئی سبسکرپشن نہیں اے۔",
+  "apiErrors.foundingTester.alreadyListed": "اوہ ای میل پہلاں ای بانی آزمائش کاراں دی فہرست وچ اے۔",
+  "apiErrors.foundingTester.listFull": "بانی آزمائش کاراں دی فہرست بھری ہوئی اے۔",
+  "apiErrors.foundingTester.notListed": "اوہ ای میل بانی آزمائش کاراں دی فہرست وچ نہیں اے۔",
+  "apiErrors.foundingTester.capWholeNumber": "حد 1 یا ایس توں وَدھ پوری گنتی ہونی چاہیدی اے۔",
 };
