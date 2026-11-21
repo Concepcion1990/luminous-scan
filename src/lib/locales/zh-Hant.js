@@ -5010,4 +5010,13 @@ export const zhHant = {
   "payroll.profile.noName": "尚未記錄姓名。",
   "apiErrors.forbidden.businessOwnerUpdateDetails": "只有企業擁有者可以更新這些資訊。",
   "apiErrors.invalidValue.homeAddressThousandCharacters": "請將您的住家地址控制在 1000 個字元以內。",
+  "plans.status.foundingTester": "創始測試者",
+  "plans.priceNoteFoundingTester": "不收費 — 創始測試者可終身免費保留 Business。",
+  "subscribe.foundingTesterNote": "此工作區以創始測試者身分使用 Business — 終身免費。無需銀行卡，永不收費。",
+  "upgrade.introFoundingTester": " — 創始測試者的工作區，終身免費，絕不收費。",
+  "upgrade.foundingTesterNote": "創始測試者可終身免費保留 Business — 這裡沒有可更改的套餐，也沒有可取消的訂閱。",
+  "apiErrors.foundingTester.alreadyListed": "該郵箱已在創始測試者名單中。",
+  "apiErrors.foundingTester.listFull": "創始測試者名單已滿。",
+  "apiErrors.foundingTester.notListed": "該郵箱不在創始測試者名單中。",
+  "apiErrors.foundingTester.capWholeNumber": "上限必須是 1 或更大的整數。",
 };
