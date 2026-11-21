@@ -5004,4 +5004,10 @@ export const tl = {
   "apiErrors.invalidValue.chooseSignatureStyle": "Pumili ng estilo ng lagda.",
   "apiErrors.invalidValue.noDdDetailsYet": "Hindi pa naipapadala ng miyembrong iyon ang kanilang mga detalye.",
   "training.lessons.owner-dd-setup.step5": "Ang dumarating ay isang selyado at nilagdaang form: mula sa hanay ng taong iyon sa Payroll maaari mo itong buksan para basahin ang buong numero, i-print ito, o mag-save ng kopya — hindi mo ito kailanman mae-edit. Kung may numerong mukhang mali, ipadala pabalik ang form: ang tao mismo ang magtutuwid nito at lalagda muli, ang kanilang itinuwid na form ang papalit sa luma, at ang dating form ay mananatili sa talaan kasama ang petsa ng pagpapalit nito.",
+  "payroll.profile.ownerNote": "Ito ang sarili mong mga detalye na nakatala, mula sa iyong account. Ikaw lang ang makakakita nito dito — at dahil sa iyo ito, maaari mo itong i-update dito mismo tuwing magbabago.",
+  "payroll.profile.edit": "I-edit ang iyong mga detalye",
+  "payroll.profile.cancel": "Kanselahin",
+  "payroll.profile.noName": "Wala pang pangalang nakatala.",
+  "apiErrors.forbidden.businessOwnerUpdateDetails": "Ang may-ari lamang ng negosyo ang maaaring mag-update ng mga detalyeng ito.",
+  "apiErrors.invalidValue.homeAddressThousandCharacters": "Panatilihing 1000 character o mas kaunti ang address ng iyong bahay.",
 };
