@@ -5010,4 +5010,13 @@ export const de = {
   "payroll.profile.noName": "Noch kein Name hinterlegt.",
   "apiErrors.forbidden.businessOwnerUpdateDetails": "Nur der Geschäftsinhaber kann diese Daten aktualisieren.",
   "apiErrors.invalidValue.homeAddressThousandCharacters": "Ihre Wohnadresse darf höchstens 1000 Zeichen lang sein.",
+  "plans.status.foundingTester": "Gründungstester",
+  "plans.priceNoteFoundingTester": "Keine Kosten — Gründungstester behalten Business lebenslang kostenlos.",
+  "subscribe.foundingTesterNote": "Dieser Arbeitsbereich hat Business als Gründungstester — lebenslang kostenlos. Keine Karte, keine Kosten, niemals.",
+  "upgrade.introFoundingTester": " — ein Gründungstester-Arbeitsbereich, lebenslang kostenlos und ohne Gebühren.",
+  "upgrade.foundingTesterNote": "Gründungstester behalten Business lebenslang kostenlos — es gibt keinen Tarif zum Wechseln und kein Abonnement zum Kündigen.",
+  "apiErrors.foundingTester.alreadyListed": "Diese E-Mail steht bereits auf der Liste der Gründungstester.",
+  "apiErrors.foundingTester.listFull": "Die Liste der Gründungstester ist voll.",
+  "apiErrors.foundingTester.notListed": "Diese E-Mail steht nicht auf der Liste der Gründungstester.",
+  "apiErrors.foundingTester.capWholeNumber": "Die Obergrenze muss eine ganze Zahl von 1 oder mehr sein.",
 };

@@ -5013,4 +5013,13 @@ export const enAU = {
   "payroll.profile.noName": "No name on file yet.",
   "apiErrors.forbidden.businessOwnerUpdateDetails": "Only the business owner can update these details.",
   "apiErrors.invalidValue.homeAddressThousandCharacters": "Keep your home address to 1000 characters or fewer.",
+  "plans.status.foundingTester": "Founding tester",
+  "plans.priceNoteFoundingTester": "No charge — founding testers keep Business free for life.",
+  "subscribe.foundingTesterNote": "This workspace has Business as a founding tester — free for life. No card, no charge, ever.",
+  "upgrade.introFoundingTester": " — a founding tester workspace, free for life at no charge.",
+  "upgrade.foundingTesterNote": "Founding testers keep Business free for life — there is no plan to change and no subscription to cancel.",
+  "apiErrors.foundingTester.alreadyListed": "That email is already on the founding tester list.",
+  "apiErrors.foundingTester.listFull": "The founding tester list is full.",
+  "apiErrors.foundingTester.notListed": "That email is not on the founding tester list.",
+  "apiErrors.foundingTester.capWholeNumber": "The cap must be a whole number of 1 or more.",
 };
