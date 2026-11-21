@@ -7,6 +7,8 @@ import { isBoss } from '@/lib/bossAuthority';
 import { memberLevelOf } from '@/lib/staff';
 import useStaffAccess from '@/hooks/useStaffAccess';
 import RenameBusinessDialog from '@/components/business/RenameBusinessDialog';
+import ProfileAvatar from '@/components/business/ProfileAvatar';
+import { useProfilePhotoSummary } from '@/lib/profilePhotos';
 import { Button } from '@/components/ui/button';
 import { t } from '@/lib/i18n';
 import { Input } from '@/components/ui/input';
@@ -48,6 +50,16 @@ export default function BusinessSwitcher({ compact = false }) {
   const boss = isBoss(user, record);
   const member = access.member;
   const memberName = member?.full_name || null;
+  // Profile photos (Nov 21, 2026): the person's APPROVED photo
+  // sits beside their name in this header block — the boss's
+  // display name (or "Owner" until they set one) beside theirs,
+  // a member's own name beside theirs. A photo still waiting for
+  // the owner's approval is not in the approved set, so it can
+  // never appear here.
+  const photoSummary = useProfilePhotoSummary(activeId);
+  const approvedPhotoKeys = new Set(photoSummary.data?.approved_keys || []);
+  const myPhotoKey = photoSummary.data?.me_key || null;
+  const bossName = photoSummary.data?.owner_name || t('workforce.messages.owner');
   const canRename =
     boss ||
     (memberLevelOf(member) === 'manager' &&
@@ -116,9 +128,30 @@ export default function BusinessSwitcher({ compact = false }) {
               })}
             </SelectContent>
           </Select>
+          {boss ? (
+            <div className="mt-1 flex items-center gap-1.5">
+              <ProfileAvatar
+                businessId={activeId}
+                personKey="owner"
+                name={bossName}
+                hasPhoto={approvedPhotoKeys.has('owner')}
+                className="h-5 w-5 text-[9px]"
+              />
+              <p className="truncate text-[11px] text-primary-foreground/70">{bossName}</p>
+            </div>
+          ) : null}
           {!boss && member ? (
             memberName ? (
-              <p className="mt-1 truncate text-[11px] text-primary-foreground/70">{memberName}</p>
+              <div className="mt-1 flex items-center gap-1.5">
+                <ProfileAvatar
+                  businessId={activeId}
+                  personKey={myPhotoKey}
+                  name={memberName}
+                  hasPhoto={Boolean(myPhotoKey && approvedPhotoKeys.has(myPhotoKey))}
+                  className="h-5 w-5 text-[9px]"
+                />
+                <p className="truncate text-[11px] text-primary-foreground/70">{memberName}</p>
+              </div>
             ) : null
           ) : activeTrial ? (
             <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.12em] text-primary-foreground/60">

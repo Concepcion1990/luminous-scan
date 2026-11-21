@@ -10,6 +10,7 @@ import { gs1LinksForLocale } from '@/lib/gs1Links';
 import LanguagePicker from '@/components/LanguagePicker';
 import SettingsSectionNav from './SettingsSectionNav';
 import BusinessPoliciesCard from './BusinessPoliciesCard';
+import ProfilePhotoCard from './ProfilePhotoCard';
 import PlatformPoliciesCard from './PlatformPoliciesCard';
 import SettingsCard from './SettingsCard';
 import SecurityCard from './SecurityCard';
@@ -36,6 +37,10 @@ const APPEARANCE_OPTIONS = [
  * recovery, Report a problem) for pages they could not open.
  *
  * Scope is personal, by the owner's rulings:
+ *   - their profile photo (ProfilePhotoCard — Nov 21, 2026: the
+ *     member picks a photo, the OWNER approves it, and until
+ *     then it shows nowhere; the decision and its wording live
+ *     on this card);
  *   - account + security (SecurityCard — the same verified
  *     machinery the owner uses: backup email, spare keys,
  *     change email, signed-in change password);
@@ -100,6 +105,7 @@ export default function PersonalSettings() {
   // sections appear under the same grants that render them,
   // and the policies chip follows the policies card itself.
   const sections = [
+    { id: 'settings-sec-profile', labelKey: 'profile.title' },
     { id: 'settings-sec-security', labelKey: 'settings.security.title' },
     { id: 'settings-sec-appearance', labelKey: 'settings.appearance.title' },
     { id: 'settings-sec-business', labelKey: 'settings.businessCard.title' },
@@ -136,6 +142,10 @@ export default function PersonalSettings() {
       </div>
 
       <SettingsSectionNav sections={sections} />
+
+      <div id="settings-sec-profile">
+        <ProfilePhotoCard isOwner={false} personName={member?.full_name || ''} />
+      </div>
 
       <div id="settings-sec-security">
         <SecurityCard />

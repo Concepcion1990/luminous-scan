@@ -192,7 +192,9 @@ export async function applyCounts({ session, lines, products, user }) {
     lines: lines.map((l) => (isCounted(l) ? { ...l, expected: Number(l.counted) } : l)),
     status: 'applied',
     applied_at: new Date().toISOString(),
-    applied_by: user?.full_name || user?.email || '',
+    // A name, never an email (owner's rider, Nov 21, 2026);
+    // the server stamps the applier's display name itself.
+    applied_by: user?.full_name || '',
   });
 
   return differing.length;

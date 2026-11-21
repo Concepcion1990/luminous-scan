@@ -195,7 +195,7 @@ export async function reserveOrder({ order, products, levels = [], user }) {
     // packing is not undone.
     status: order.status === 'packed' ? 'packed' : 'reserved',
     reserved_at: order.reserved_at || new Date().toISOString(),
-    reserved_by: order.reserved_by || user?.full_name || user?.email || '',
+    reserved_by: order.reserved_by || user?.full_name || '',
   });
 }
 
@@ -339,7 +339,7 @@ export async function shipOrder({ order, products, user }) {
     lines: updated,
     status: complete ? 'shipped' : order.status === 'new' ? 'pending' : order.status,
     shipped_at: complete ? new Date().toISOString() : order.shipped_at || '',
-    shipped_by: user?.full_name || user?.email || order.shipped_by || '',
+    shipped_by: user?.full_name || order.shipped_by || '',
   });
   return { shippedNow, complete };
 }

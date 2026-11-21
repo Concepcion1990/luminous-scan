@@ -343,7 +343,7 @@ export async function recordMovement({
     reference: reference || '',
     supplier_name: supplierName || '',
     unit_cost: Number(unitCost) || 0,
-    user_name: user?.full_name || user?.email || '',
+    user_name: user?.full_name || '',
   };
 
   await base44.entities.StockMovement.create({ ...base, type });
@@ -452,7 +452,7 @@ export async function setReserved({
     new_qty: next,
     reference: reference || '',
     note: note || '',
-    user_name: user?.full_name || user?.email || '',
+    user_name: user?.full_name || '',
     ...(reversalOf ? { reversal_of_id: reversalOf.id, reversal_of_label: reversalOf.label } : {}),
   });
 
@@ -560,7 +560,7 @@ export async function reverseMovement(movement, user, businessId = '') {
     new_qty: target,
     note: t('inventoryLib.reversesLabel', { label: link.label }),
     reference: movement.reference || '',
-    user_name: user?.full_name || user?.email || '',
+    user_name: user?.full_name || '',
     reversal_of_id: movement.id,
     reversal_of_label: link.label,
   });

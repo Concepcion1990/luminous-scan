@@ -21,6 +21,7 @@ import DetailsCard from '@/components/business/DetailsCard';
 import PersonalSettings from '@/components/business/PersonalSettings';
 import SettingsSectionNav from '@/components/business/SettingsSectionNav';
 import BusinessPoliciesCard from '@/components/business/BusinessPoliciesCard';
+import ProfilePhotoCard from '@/components/business/ProfilePhotoCard';
 import InstallAppCard from '@/components/business/InstallAppCard';
 import { isBoss } from '@/lib/bossAuthority';
 import SoftwareCard from '@/components/business/SoftwareCard';
@@ -436,6 +437,7 @@ function BossSettings() {
   // footer at the bottom is not a section and gets no chip.
   const sections = [
     { id: 'settings-sec-businesses', labelKey: 'settings.businesses.title' },
+    { id: 'settings-sec-profile', labelKey: 'profile.title' },
     { id: 'settings-sec-identity', labelKey: 'settings.identity.title' },
     { id: 'settings-sec-details', labelKey: 'settings.details.contactTitle' },
     { id: 'settings-sec-policies', labelKey: 'settings.policies.title' },
@@ -506,6 +508,10 @@ function BossSettings() {
             setSyncedName(name);
           }}
         />
+      </div>
+
+      <div id="settings-sec-profile">
+        <ProfilePhotoCard isOwner />
       </div>
 
       <div id="settings-sec-identity">

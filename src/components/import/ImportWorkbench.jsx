@@ -353,7 +353,7 @@ export default function ImportWorkbench({ businessId }) {
             new_qty: row.quantity,
             reference: 'CSV import',
             note: 'Opening stock from import',
-            user_name: user?.full_name || user?.email || '',
+            user_name: user?.full_name || '',
           });
         });
         if (levels.length) {

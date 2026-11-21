@@ -79,7 +79,7 @@ export async function applyReceipts({
   const updates = [];
   const creates = [];
   const movements = [];
-  const userName = user?.full_name || user?.email || '';
+  const userName = user?.full_name || '';
 
   rows.forEach((row) => {
     const level = levelByProduct.get(row.product.id);

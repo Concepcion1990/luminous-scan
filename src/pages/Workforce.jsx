@@ -30,6 +30,7 @@ import {
   voidReward,
 } from '@/lib/rewards';
 import { toLocalDate } from '@/lib/dates';
+import ProfileAvatar from '@/components/business/ProfileAvatar';
 import { buildVoiceWav, createPcmCapture } from '@/lib/voiceCapture';
 import {
   breakIn,
@@ -794,6 +795,17 @@ function InboxTab({ businessId, ctx, people, onRead, onGoTab }) {
       case 'stub_pushed':
         navigate('/payroll');
         break;
+      case 'photo_submitted':
+        // A photo waits for the owner's word — the decision
+        // lives on the Staff page (Nov 21, 2026).
+        navigate('/staff');
+        break;
+      case 'photo_approved':
+      case 'photo_declined':
+        // The person's own photo state lives on their Settings
+        // card, wording and all.
+        navigate('/settings');
+        break;
       case 'clock_in':
       case 'break_out':
       case 'break_in':
@@ -1054,7 +1066,7 @@ function InboxTab({ businessId, ctx, people, onRead, onGoTab }) {
                   <label className={labelCls}>{t('workforce.messages.to')}</label>
                   <select className={inputCls} value={pickerTarget} onChange={(e) => setPickerTarget(e.target.value)}>
                     <option value="">{t('workforce.messages.selectPerson')}</option>
-                    {!ctx.is_owner && <option value="owner">{t('workforce.messages.owner')}</option>}
+                    {!ctx.is_owner && <option value="owner">{ctx.owner_name || t('workforce.messages.owner')}</option>}
                     {pickerPeople.map((p) => (
                       <option key={p.id} value={p.id}>
                         {p.full_name} {p.role_name ? `(${p.role_name})` : ''}
@@ -1078,7 +1090,17 @@ function InboxTab({ businessId, ctx, people, onRead, onGoTab }) {
                       className="flex w-full items-center gap-3 py-3.5 text-left text-sm"
                       onClick={() => openThread(thread)}
                     >
-                      <MessageCircle className="h-4 w-4 shrink-0 text-muted-foreground" />
+                      {thread.other ? (
+                        <ProfileAvatar
+                          businessId={businessId}
+                          personKey={thread.other.key}
+                          name={thread.other.name}
+                          hasPhoto={Boolean(thread.other.photo)}
+                          className="h-9 w-9 text-xs"
+                        />
+                      ) : (
+                        <MessageCircle className="h-4 w-4 shrink-0 text-muted-foreground" />
+                      )}
                       <span className="min-w-0 flex-1">
                         <span className="font-medium">{threadTitle(thread)}</span>
                         {thread.oversight && (
@@ -1125,6 +1147,15 @@ function InboxTab({ businessId, ctx, people, onRead, onGoTab }) {
               <Button size="sm" variant="ghost" onClick={() => setActiveThread(null)}>
                 <ArrowLeft className="mr-1 h-4 w-4" /> {t('workforce.messages.back')}
               </Button>
+              {activeThread.other ? (
+                <ProfileAvatar
+                  businessId={businessId}
+                  personKey={activeThread.other.key}
+                  name={activeThread.other.name}
+                  hasPhoto={Boolean(activeThread.other.photo)}
+                  className="h-8 w-8 text-[11px]"
+                />
+              ) : null}
               <span className="text-sm font-medium">{threadTitle(activeThread)}</span>
             </div>
             {activeThread.oversight && (
@@ -1136,8 +1167,21 @@ function InboxTab({ businessId, ctx, people, onRead, onGoTab }) {
               <p className="py-4 text-sm text-muted-foreground">{t('workforce.messages.emptyThread')}</p>
             ) : (
               <ul className="space-y-3 py-1">
-                {threadMessages.map((message) => (
-                  <li key={message.id} className={`flex ${message.mine ? 'justify-end' : 'justify-start'}`}>
+                {threadMessages.map((message) => {
+                  const sender = (activeThread.participants ?? []).find(
+                    (p) => p.user_id === message.sender_user_id,
+                  );
+                  return (
+                  <li key={message.id} className={`flex items-end gap-2 ${message.mine ? 'justify-end' : 'justify-start'}`}>
+                    {!message.mine && sender ? (
+                      <ProfileAvatar
+                        businessId={businessId}
+                        personKey={sender.key}
+                        name={sender.name}
+                        hasPhoto={Boolean(sender.photo)}
+                        className="h-7 w-7 text-[10px]"
+                      />
+                    ) : null}
                     <div
                       className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
                         message.mine
@@ -1169,7 +1213,8 @@ function InboxTab({ businessId, ctx, people, onRead, onGoTab }) {
                       </span>
                     </div>
                   </li>
-                ))}
+                  );
+                })}
               </ul>
             )}
             {activeThread.can_post && (

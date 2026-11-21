@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { base44 } from '@/api/client';
 import { KeyRound, Mail, MailPlus, MapPin, Pencil, Trash2, UserCog } from 'lucide-react';
 import { permissionSummary, statusMeta } from '@/lib/staff';
+import { profilePhotoFileUrl } from '@/lib/profilePhotos';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import { t } from '@/lib/i18n';
@@ -17,7 +18,7 @@ function initials(name = '') {
   );
 }
 
-export default function StaffMemberCard({ member, locations = [], planKey = 'business', isOwner = false, readOnly = false, onEdit, onRemove, onSendReset }) {
+export default function StaffMemberCard({ member, locations = [], planKey = 'business', businessId = null, hasPhoto = false, isOwner = false, readOnly = false, onEdit, onRemove, onSendReset }) {
   const { toast } = useToast();
   const [resending, setResending] = useState(false);
   const [sendingReset, setSendingReset] = useState(false);
@@ -80,14 +81,31 @@ export default function StaffMemberCard({ member, locations = [], planKey = 'bus
   return (
     <div className="rounded-xl border border-border bg-card p-4">
       <div className="flex items-start gap-3">
-        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
-          {initials(member.full_name)}
-        </div>
+        {hasPhoto && businessId ? (
+          // The member's APPROVED profile photo (Nov 21, 2026) —
+          // the page passes hasPhoto only for approved keys, so a
+          // waiting photo can never render here.
+          <img
+            src={profilePhotoFileUrl(businessId, member.id)}
+            alt=""
+            aria-hidden="true"
+            className="h-10 w-10 shrink-0 rounded-full object-cover"
+          />
+        ) : (
+          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
+            {initials(member.full_name)}
+          </div>
+        )}
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold">{member.full_name}</p>
-          <p className="flex items-center gap-1 truncate text-[11px] text-muted-foreground">
-            <Mail className="h-3 w-3 shrink-0" /> {member.email}
-          </p>
+          {/* The email line renders only when the payload carries
+              it: roster-only viewers never receive other members'
+              addresses (owner's email-exposure rule, Nov 21, 2026). */}
+          {member.email ? (
+            <p className="flex items-center gap-1 truncate text-[11px] text-muted-foreground">
+              <Mail className="h-3 w-3 shrink-0" /> {member.email}
+            </p>
+          ) : null}
         </div>
       </div>
 

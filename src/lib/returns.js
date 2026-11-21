@@ -106,7 +106,7 @@ export async function approveReturn(ret, user) {
   await base44.entities.Return.update(ret.id, {
     status: 'approved',
     approved_at: ret.approved_at || new Date().toISOString(),
-    approved_by: ret.approved_by || user?.full_name || user?.email || '',
+    approved_by: ret.approved_by || user?.full_name || '',
   });
 }
 
@@ -239,7 +239,7 @@ export async function completeReturn({ ret, products, user, linkedOrder }) {
   await base44.entities.Return.update(ret.id, {
     status: 'completed',
     completed_at: new Date().toISOString(),
-    completed_by: user?.full_name || user?.email || '',
+    completed_by: user?.full_name || '',
   });
 
   if (linkedOrder && restocked) {

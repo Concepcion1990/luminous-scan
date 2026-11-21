@@ -77,7 +77,10 @@ export default function CountSessionDialog({ open, onOpenChange, products, locat
             lines,
             notes,
             started_at: new Date().toISOString(),
-            started_by: user?.full_name || user?.email || '',
+            // Attribution is a name, never an email (owner's
+            // rider, Nov 21, 2026) — and the server stamps the
+            // starter's display name itself regardless.
+            started_by: user?.full_name || '',
           },
           activeId
         )

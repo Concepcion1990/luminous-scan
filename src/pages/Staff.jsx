@@ -11,6 +11,8 @@ import { useToast } from '@/components/ui/use-toast';
 import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import StaffMemberCard from '@/components/staff/StaffMemberCard';
+import PhotoApprovalsCard from '@/components/business/PhotoApprovalsCard';
+import { useProfilePhotoSummary } from '@/lib/profilePhotos';
 import { sendStaffPasswordReset } from '@/lib/recovery';
 import StaffMemberDialog from '@/components/staff/StaffMemberDialog';
 import WelcomeScriptCard from '@/components/staff/WelcomeScriptCard';
@@ -40,6 +42,12 @@ export default function Staff() {
   // they cannot walk through off their wall.
   const { can } = useStaffAccess();
   const canManageStaff = isAdmin || can('staff.manage');
+  // Approved profile photos (Nov 21, 2026): the keys of people
+  // whose photo the owner has approved — the only photos a
+  // member card may show. The approval card itself renders for
+  // the owner alone (and the server refuses everyone else).
+  const photoSummary = useProfilePhotoSummary(activeId);
+  const approvedPhotoKeys = new Set(photoSummary.data?.approved_keys || []);
 
   const [members, setMembers] = useState([]);
   const [roles, setRoles] = useState([]);
@@ -234,6 +242,10 @@ export default function Staff() {
           the card renders nothing for anyone else). */}
       {activeId && <WelcomeScriptCard />}
 
+      {/* Profile photos waiting for the owner's approval
+          (owner-only; renders nothing when nobody waits). */}
+      {activeId && <PhotoApprovalsCard isOwner={isAdmin} />}
+
       {loading ? (
         <div className="flex items-center gap-2 py-8 text-sm text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" /> {t('staff.loading')}
@@ -286,6 +298,8 @@ export default function Staff() {
                     member={member}
                     locations={locations}
                     planKey={cardPlanKey}
+                    businessId={activeId}
+                    hasPhoto={approvedPhotoKeys.has(member.id)}
                     isOwner={isAdmin}
                     readOnly={!canManageStaff}
                     onEdit={openEdit}
