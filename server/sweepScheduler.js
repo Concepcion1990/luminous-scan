@@ -49,11 +49,12 @@
 import { runWipeSweep } from './billing.js';
 import { runCustomerAddressSweep } from './customerAddresses.js';
 import { runTrialReminderSweep } from './trialReminders.js';
+import { runFailedPaymentSweep } from './failedPayment.js';
 
 export const SWEEP_INTERVAL_MS = 6 * 60 * 60 * 1000;
 export const SWEEP_BOOT_DELAY_MS = 30 * 1000;
 
-const defaultSweeps = { runWipeSweep, runCustomerAddressSweep, runTrialReminderSweep };
+const defaultSweeps = { runWipeSweep, runCustomerAddressSweep, runTrialReminderSweep, runFailedPaymentSweep };
 
 /** The kill switch: only an exact 'false' turns the scheduler off. */
 export function sweepSchedulerDisabled(env = process.env) {
@@ -66,7 +67,7 @@ export function sweepSchedulerDisabled(env = process.env) {
  * summary in the job endpoints' shape. Never throws.
  */
 export async function runScheduledSweeps(pool, { now = new Date(), logger = console, sweeps = defaultSweeps } = {}) {
-  const summary = { ranAt: now.toISOString(), wipe: null, customerAddresses: null, trialReminders: null, failures: [] };
+  const summary = { ranAt: now.toISOString(), wipe: null, customerAddresses: null, trialReminders: null, failedPayments: null, failures: [] };
   try {
     summary.wipe = await sweeps.runWipeSweep(pool, { now, logger });
   } catch (error) {
@@ -84,6 +85,18 @@ export async function runScheduledSweeps(pool, { now = new Date(), logger = cons
   } catch (error) {
     summary.failures.push({ job: 'trialReminders', reason: error.message });
     logger.error(`[twin] scheduled trial reminder sweep failed: ${error.message}`);
+  }
+  // The failed-payment road (release 341): owner warnings 3 days
+  // before a payment grace ends + the day-15 transitions. Runs
+  // BEFORE the wipe job above on the NEXT tick — a business the
+  // road transitions today becomes a wipe candidate only when
+  // its view-only days end, and the wipe job's own state checks
+  // keep the order safe either way.
+  try {
+    summary.failedPayments = await sweeps.runFailedPaymentSweep(pool, { now, logger });
+  } catch (error) {
+    summary.failures.push({ job: 'failedPayments', reason: error.message });
+    logger.error(`[twin] scheduled failed-payment sweep failed: ${error.message}`);
   }
   return summary;
 }
