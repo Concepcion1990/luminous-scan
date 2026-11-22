@@ -96,6 +96,10 @@ export const LESSON_REQUIREMENTS = {
   // door — granting staff.clock assigns it, unticking mirrors
   // it out of future scope; completed history is never removed.
   'mgr-clock-callin': ['staff.clock'],
+  // The documents tick's lesson (Nov 21, 2026): same law —
+  // granting staff.documents assigns it, unticking mirrors it
+  // out of future scope; completed history is never removed.
+  'mgr-staff-documents': ['staff.documents'],
   'mgr-suppliers-orders': ['suppliers.manage'],
   'mgr-send-supplier-order': ['purchasing.manage'],
   'mgr-tax-rate': ['settings.taxRate', 'settings.manage'],

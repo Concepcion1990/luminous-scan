@@ -132,6 +132,7 @@ export const TRAINING_LESSONS = [
   { id: 'mgr-cash-up', track: 'manager', module: 'payroll', steps: 4 },
   { id: 'mgr-team-training', track: 'manager', module: 'training', steps: 4 },
   { id: 'mgr-staff-permissions', track: 'manager', module: 'staff', steps: 4 },
+  { id: 'mgr-staff-documents', track: 'manager', module: 'staff', steps: 4 },
   { id: 'mgr-cross-store', track: 'manager', module: 'cross-store', steps: 4, feature: 'crossStore' },
   { id: 'mgr-reports-alerts', track: 'manager', module: 'reports', steps: 4, feature: 'reports' },
   { id: 'mgr-suppliers-orders', track: 'manager', module: 'purchasing', steps: 4, feature: 'suppliers' },
@@ -145,6 +146,7 @@ export const TRAINING_LESSONS = [
   { id: 'owner-delete-account', track: 'owner', module: 'settings', steps: 4 },
   { id: 'owner-confidentiality', track: 'owner', module: 'staff', steps: 7 },
   { id: 'owner-staff-roles', track: 'owner', module: 'staff', steps: 4 },
+  { id: 'owner-staff-documents', track: 'owner', module: 'staff', steps: 4 },
   { id: 'owner-training-admin', track: 'owner', module: 'training', steps: 4 },
   { id: 'owner-workforce-settings', track: 'owner', module: 'workforce', steps: 4 },
   { id: 'owner-payroll-config', track: 'owner', module: 'payroll', steps: 4 },
@@ -258,6 +260,9 @@ export const MODULE_BY_PERMISSION = {
   ],
   "staff.clock": [
     "workforce"
+  ],
+  "staff.documents": [
+    "staff"
   ],
   "alerts.view": [
     "reports"
