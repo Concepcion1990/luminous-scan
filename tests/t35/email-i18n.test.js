@@ -16,8 +16,10 @@ import {
 test('item 2: email strings exist for all 52 locales, placeholders intact', () => {
   // 41 through release 287; the staff batch (Nov 19, 2026) added
   // invite.linkLine — the direct Create-account link in the
-  // invitation email — for 42.
-  assert.equal(EMAIL_STRING_KEYS.length, 42);
+  // invitation email — for 42. The failed-payment road (release
+  // 341, Nov 21, 2026) added payfail.subject + payfail.body —
+  // the owner's warning email — for 44.
+  assert.equal(EMAIL_STRING_KEYS.length, 44);
   assert.equal(Object.keys(EMAIL_STRINGS).length, 52);
   for (const [locale, row] of Object.entries(EMAIL_STRINGS)) {
     assert.deepEqual(Object.keys(row).sort(), [...EMAIL_STRING_KEYS].sort(), locale);
