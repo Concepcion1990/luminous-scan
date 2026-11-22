@@ -14,6 +14,10 @@
  *   POST  /api/businesses/:bid/workforce/clock/break-out     { break_type }
  *   POST  /api/businesses/:bid/workforce/clock/break-in
  *   GET   /api/businesses/:bid/workforce/entries
+ *   PATCH /api/businesses/:bid/workforce/entries/:entryId   owner / ticked manager
+ *   GET   /api/businesses/:bid/workforce/call-in             owner / ticked manager
+ *   POST  /api/businesses/:bid/workforce/call-in/:staffId    owner / ticked manager
+ *   DELETE /api/businesses/:bid/workforce/call-in/:staffId   owner / ticked manager
  *   GET   /api/businesses/:bid/workforce/notifications
  *   PATCH /api/businesses/:bid/workforce/notifications/:id
  *   GET   /api/businesses/:bid/workforce/time-off
@@ -64,7 +68,16 @@ import crypto from 'node:crypto';
 import { Router } from 'express';
 import { requireAuth } from './sessions.js';
 import { resolveAccess, staffRowForEmail, parseJsonArray } from './authz.js';
-import { startAutoLogout, cancelAutoLogout } from './staffWindow.js';
+import { startAutoLogout, cancelAutoLogout, zonedTimeToUtc } from './staffWindow.js';
+import {
+  CLOCK_ADMIN_TICK,
+  openCallInWindow,
+  openCallInWindows,
+  openCallIn,
+  closeCallIn,
+  missedClockOutInfo,
+  flagMissedClockOuts,
+} from './clockAdmin.js';
 import { assertNotInGrace, withTx } from './billing.js';
 import { parseVoiceDataUrl, convertVoiceToMp3, VOICE_MAX_DURATION_MS } from './voiceNote.js';
 import { approvedPhotoKeys, ownerDisplayName, ownerPublicName } from './profilePhotos.js';
@@ -76,7 +89,14 @@ function err(status, code, message) {
 
 function handleError(res, error) {
   if (error?.status) {
-    return res.status(error.status).json({ error: error.code || 'error', message: error.message });
+    // error.payload carries structured extras the client renders
+    // itself (the clock-in gate's next_shift_start, in the
+    // staff_outside_window shape).
+    return res.status(error.status).json({
+      error: error.code || 'error',
+      message: error.message,
+      ...(error.payload || {}),
+    });
   }
   console.error('[twin] workforce route failed:', error);
   return res.status(500).json({ error: 'server_error', message: 'Something went wrong.' });
@@ -210,6 +230,12 @@ function formatLocalTime(date, timeZone) {
     hour: 'numeric',
     minute: '2-digit',
   }).format(date);
+}
+
+/** A YYYY-MM-DD date shifted by whole days (UTC date math). */
+export function addDaysStr(dateStr, count) {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  return new Date(Date.UTC(year, month - 1, day + count)).toISOString().slice(0, 10);
 }
 
 /** Sunday (YYYY-MM-DD) of the week containing a YYYY-MM-DD date. */
@@ -545,6 +571,70 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
     return access.staffRow;
   }
 
+  // ---- Clock administration (the clock build, Nov 21, 2026) ---------------
+  // One tick (staff.clock, server/clockAdmin.js) covers call-in
+  // windows and time-entry corrections: the owner by birth, or a
+  // MANAGER the owner ticked — server-enforced here, never
+  // trusted from the client. The hierarchy mirrors schedules: a
+  // manager acts on staff only; a manager's own call-ins and
+  // entries are the owner's to manage.
+
+  function canClockAdmin(access, level) {
+    if (access.isOwner) return true;
+    return level === 'manager' && access.can(CLOCK_ADMIN_TICK);
+  }
+
+  function assertClockAdmin(access, level, target) {
+    if (!canClockAdmin(access, level)) {
+      throw err(403, 'clock_admin_not_granted', 'Only the owner, or a manager the owner has trusted with call-ins and clock corrections, can do that.');
+    }
+    if (level === 'manager' && personLevel(target) === 'manager') {
+      throw err(403, 'forbidden', 'Only the owner can manage a manager’s call-ins and time entries.');
+    }
+  }
+
+  /** The next scheduled shift start for a member (an instant),
+   *  or null when the week ahead holds none. */
+  async function nextShiftStartFor(business, memberId, now) {
+    const timeZone = businessTimezone(business);
+    const local = localParts(now, timeZone);
+    const { rows } = await pool().query(
+      'SELECT * FROM work_schedules WHERE business_id = $1 AND staff_member_id = $2',
+      [business.id, memberId],
+    );
+    const byWeekday = new Map(rows.map((shift) => [shift.weekday, shift]));
+    for (let offset = 0; offset <= 7; offset += 1) {
+      const dateStr = addDaysStr(local.dateStr, offset);
+      const weekday = new Date(`${dateStr}T12:00:00Z`).getUTCDay();
+      const shift = byWeekday.get(weekday);
+      if (!shift) continue;
+      const start = hhmmToMinutes(shift.start_time);
+      const end = hhmmToMinutes(shift.end_time);
+      if (start === null || end === null) continue;
+      if (zonedTimeToUtc(dateStr, end, timeZone).getTime() <= now.getTime()) continue;
+      return zonedTimeToUtc(dateStr, start, timeZone);
+    }
+    return null;
+  }
+
+  /** The name stamped on a call-in window record: the owner's
+   *  set name (or "Owner"), else the acting manager's staff
+   *  name — names, never emails (the Nov 21, 2026 rule). */
+  async function clockActorName(access, me) {
+    if (access.isOwner) return ownerPublicName(pool(), access.business);
+    return me?.full_name || '';
+  }
+
+  /** An entry as the clients render it: its breaks, plus the
+   *  live missed-clock-out fact (null when it is not missed). */
+  async function shapeEntry(business, entry, breaks) {
+    return {
+      ...entry,
+      breaks,
+      missed_clock_out: await missedClockOutInfo(pool(), business, entry),
+    };
+  }
+
   // ---- Context / people / settings -------------------------------------
 
   router.get(`${base}/context`, asyncHandler(async (req, res) => {
@@ -562,6 +652,11 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
       self_clock_enabled: settings.self_clock_enabled !== false,
       dd_enabled: settings.dd_enabled === true,
       plan: access.planKey,
+      // Clock administration (Nov 21, 2026): the owner, or a
+      // manager holding the staff.clock tick — the Staff page
+      // hangs its call-in + time-fix doors on this one boolean;
+      // the server re-checks on every write regardless.
+      clock_admin: canClockAdmin(access, level),
     });
   }));
 
@@ -714,17 +809,39 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
 
   router.get(`${base}/clock/status`, asyncHandler(async (req, res) => {
     const { access } = await ctx(req);
-    const me = requirePerson(access);
+    // A caller with no staff profile (the owner, most days) has
+    // no clock of their own: say so in the shape the tab already
+    // understands — self-clock off, nothing open — instead of
+    // refusing. The refusal left the Time clock tab on its
+    // loading line forever for exactly the person who comes to
+    // READ the team's entries (the clock build, Nov 21, 2026;
+    // the entries list below this status is the owner's view of
+    // the missed-clock-out flags). Members are untouched.
+    if (!access.staffRow) {
+      return res.json({
+        open_entry: null,
+        open_break: null,
+        today_shift: null,
+        call_in_open: false,
+        self_clock_enabled: false,
+        server_now: new Date().toISOString(),
+      });
+    }
+    const me = access.staffRow;
     const timeZone = businessTimezone(access.business);
     const now = localParts(new Date(), timeZone);
     const entry = await openEntry(req.params.bid, me.id);
     const brk = entry ? await openBreak(entry.id) : null;
     const shift = await shiftFor(pool(), req.params.bid, me.id, now.weekday);
     const settings = await workforceSettings(pool(), req.params.bid);
+    const callIn = await openCallInWindow(pool(), req.params.bid, me.id);
     return res.json({
       open_entry: entry,
       open_break: brk,
       today_shift: shift,
+      // The call-in window (Nov 21, 2026): open for this person
+      // right now — their door in, shift or no shift.
+      call_in_open: Boolean(callIn),
       self_clock_enabled: settings.self_clock_enabled !== false,
       server_now: new Date().toISOString(),
     });
@@ -741,17 +858,43 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
     const now = new Date();
     const local = localParts(now, timeZone);
     const shift = await shiftFor(pool(), businessId, me.id, local.weekday);
+    // THE CALL-IN GATE (owner's ruling, Nov 20, 2026; proven
+    // missing by her hand Nov 21, 2026, when Staff 1 clocked in
+    // on an unscheduled Saturday): clock-in needs a scheduled
+    // shift covering now — the same [start − 10, end] span the
+    // bracket uses — or an open call-in window. An open window
+    // admits even ahead of a later shift (the owner or a ticked
+    // manager opened the door on purpose); without one, the
+    // too-early refusal stands as before, and anything else is
+    // refused plainly, naming the next scheduled shift when the
+    // schedule knows one (the staff_outside_window shape).
+    const callInWindow = await openCallInWindow(pool(), businessId, me.id);
+    let shiftCoversNow = false;
     if (shift) {
       const start = hhmmToMinutes(shift.start_time);
-      if (local.minutes < start - 10) {
+      const end = hhmmToMinutes(shift.end_time);
+      shiftCoversNow =
+        start !== null && end !== null && local.minutes >= start - 10 && local.minutes <= end;
+      if (!callInWindow && start !== null && local.minutes < start - 10) {
         throw err(400, 'clock_too_early', 'You can clock in up to 10 minutes before your shift starts.');
       }
     }
+    if (!shiftCoversNow && !callInWindow) {
+      const refusal = err(
+        403,
+        'clock_in_not_scheduled',
+        'You are not scheduled to work right now, and no call-in window is open for you.',
+      );
+      const next = await nextShiftStartFor(access.business, me.id, now);
+      refusal.payload = { next_shift_start: next ? next.toISOString() : null };
+      throw refusal;
+    }
+    const calledIn = Boolean(callInWindow) && !shiftCoversNow;
     const id = crypto.randomUUID();
     const inserted = await pool().query(
-      `INSERT INTO time_entries (id, business_id, staff_member_id, clock_in_at, unscheduled)
-       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-      [id, businessId, me.id, now.toISOString(), !shift],
+      `INSERT INTO time_entries (id, business_id, staff_member_id, clock_in_at, unscheduled, called_in)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+      [id, businessId, me.id, now.toISOString(), !shift, calledIn],
     );
     // Clocking back in cancels the pending auto-logout (the
     // shift window, Nov 19, 2026 — server/staffWindow.js).
@@ -802,6 +945,15 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
     // gate refuses the owner), so this arms for staff and
     // managers alike — exactly the bracket the owner ruled.
     const autoLogoutAt = await startAutoLogout(pool(), businessId, me.id, now);
+    // A call-in window lives until this person clocks out
+    // (owner's ruling, Nov 20, 2026): the clock-out closes it,
+    // and the grace above is what follows.
+    await closeCallIn(pool(), businessId, me.id, {
+      byId: req.user.id,
+      byStaffId: me.id,
+      byName: me.full_name,
+      reason: 'clock_out',
+    });
     await notifyClockEvent(pool(), access.business, me, 'clock_out', entry.id, now, timeZone);
     return res.json({ entry: updated.rows[0], auto_logout_at: autoLogoutAt.toISOString() });
   }));
@@ -845,7 +997,16 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
   }));
 
   router.get(`${base}/entries`, asyncHandler(async (req, res) => {
-    const { level, me } = await ctx(req);
+    const { access, level, me } = await ctx(req);
+    // The missed-clock-out bell (Nov 21, 2026): when a clock
+    // admin is the one looking, any newly-missed entry is
+    // claimed and belled on the spot — the 15-minute sweep is
+    // the backstop for when nobody is looking. The claim makes
+    // the two paths race-safe; the flag itself is computed live
+    // below either way.
+    if (canClockAdmin(access, level)) {
+      await flagMissedClockOuts(pool(), access.business, {});
+    }
     let query = 'SELECT * FROM time_entries WHERE business_id = $1';
     const params = [req.params.bid];
     if (level === 'staff') {
@@ -870,9 +1031,156 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
         breaksByEntry.get(brk.entry_id).push(brk);
       }
     }
-    return res.json({
-      entries: rows.map((entry) => ({ ...entry, breaks: breaksByEntry.get(entry.id) || [] })),
+    const shaped = [];
+    for (const entry of rows) {
+      shaped.push(await shapeEntry(access.business, entry, breaksByEntry.get(entry.id) || []));
+    }
+    return res.json({ entries: shaped });
+  }));
+
+  // ---- Call-in windows + time-entry corrections -----------------------------
+  // The clock build (Nov 21, 2026). Windows are opened/closed by
+  // the owner or a ticked manager (assertClockAdmin); corrections
+  // live on the same tick. The Staff page hangs its doors on the
+  // context's clock_admin boolean; every write re-checks here.
+
+  router.get(`${base}/call-in`, asyncHandler(async (req, res) => {
+    const { access, level } = await ctx(req);
+    if (!canClockAdmin(access, level)) {
+      throw err(403, 'clock_admin_not_granted', 'Only the owner, or a manager the owner has trusted with call-ins and clock corrections, can do that.');
+    }
+    const windows = await openCallInWindows(pool(), req.params.bid);
+    return res.json({ windows });
+  }));
+
+  router.post(`${base}/call-in/:staffId`, asyncHandler(async (req, res) => {
+    const { access, level, me } = await ctx(req);
+    const target = await personOr404(pool(), req.params.bid, req.params.staffId);
+    assertClockAdmin(access, level, target);
+    await assertNotInGrace(pool(), req.params.bid);
+    const opened = await openCallIn(pool(), req.params.bid, target.id, {
+      userId: req.user.id,
+      staffId: me?.id || null,
+      name: await clockActorName(access, me),
     });
+    return res.status(201).json({ window: opened });
+  }));
+
+  router.delete(`${base}/call-in/:staffId`, asyncHandler(async (req, res) => {
+    const { access, level, me } = await ctx(req);
+    const target = await personOr404(pool(), req.params.bid, req.params.staffId);
+    assertClockAdmin(access, level, target);
+    await assertNotInGrace(pool(), req.params.bid);
+    const closed = await closeCallIn(pool(), req.params.bid, target.id, {
+      byId: req.user.id,
+      byStaffId: me?.id || null,
+      byName: await clockActorName(access, me),
+      reason: 'closed_early',
+    });
+    return res.json({ window: closed });
+  }));
+
+  // One correction door: set/change the clock-in, the clock-out
+  // (empty string clears it — the entry re-opens), and any of the
+  // entry's break out/in times. Times arrive as business-local
+  // wall clock ("YYYY-MM-DDTHH:MM") and are read in the business's
+  // own timezone, the same frame the schedule is written in.
+  router.patch(`${base}/entries/:entryId`, asyncHandler(async (req, res) => {
+    const { access, level, me } = await ctx(req);
+    const businessId = req.params.bid;
+    const { rows: entryRows } = await pool().query(
+      'SELECT * FROM time_entries WHERE id = $1 AND business_id = $2 LIMIT 1',
+      [req.params.entryId, businessId],
+    );
+    const entry = entryRows[0];
+    if (!entry) throw err(404, 'not_found', 'Time entry not found.');
+    const target = await personOr404(pool(), businessId, entry.staff_member_id);
+    assertClockAdmin(access, level, target);
+    await assertNotInGrace(pool(), businessId);
+    const timeZone = businessTimezone(access.business);
+    const parseLocal = (value) => {
+      if (value === '' || value === null || value === undefined) return null;
+      const match = String(value).match(/^(\d{4}-\d{2}-\d{2})T([01]\d|2[0-3]):([0-5]\d)(?::([0-5]\d))?$/);
+      if (!match || !isDateStr(match[1])) {
+        throw err(400, 'invalid_value', 'Send each time as a valid date and time.');
+      }
+      const minutes = Number(match[2]) * 60 + Number(match[3]);
+      return new Date(zonedTimeToUtc(match[1], minutes, timeZone).getTime() + Number(match[4] || 0) * 1000);
+    };
+    const body = req.body || {};
+    const wasOpen = !entry.clock_out_at;
+    const nextIn = body.clock_in_at === undefined ? new Date(entry.clock_in_at) : parseLocal(body.clock_in_at);
+    if (!nextIn) throw err(400, 'invalid_value', 'Send each time as a valid date and time.');
+    let nextOut;
+    if (body.clock_out_at === undefined) nextOut = entry.clock_out_at ? new Date(entry.clock_out_at) : null;
+    else nextOut = parseLocal(body.clock_out_at);
+    if (nextOut && nextOut.getTime() <= nextIn.getTime()) {
+      throw err(400, 'invalid_value', 'The clock-out time must be after the clock-in time.');
+    }
+    const { rows: breakRows } = await pool().query(
+      'SELECT * FROM time_breaks WHERE entry_id = $1 ORDER BY out_at ASC',
+      [entry.id],
+    );
+    const breakById = new Map(breakRows.map((brk) => [brk.id, brk]));
+    const breakUpdates = [];
+    if (body.breaks !== undefined) {
+      if (!Array.isArray(body.breaks)) {
+        throw err(400, 'invalid_value', 'Send each time as a valid date and time.');
+      }
+      for (const patch of body.breaks) {
+        const brk = breakById.get(String(patch?.id || ''));
+        if (!brk) throw err(400, 'invalid_value', 'Send each time as a valid date and time.');
+        const outAt = patch.out_at === undefined ? new Date(brk.out_at) : parseLocal(patch.out_at);
+        if (!outAt) throw err(400, 'invalid_value', 'Send each time as a valid date and time.');
+        let inAt;
+        if (patch.in_at === undefined) inAt = brk.in_at ? new Date(brk.in_at) : null;
+        else inAt = parseLocal(patch.in_at);
+        if (
+          outAt.getTime() < nextIn.getTime() ||
+          (inAt && inAt.getTime() < outAt.getTime()) ||
+          (nextOut && outAt.getTime() > nextOut.getTime()) ||
+          (nextOut && inAt && inAt.getTime() > nextOut.getTime())
+        ) {
+          throw err(400, 'invalid_value', 'Break times must fall between the clock-in and clock-out times.');
+        }
+        breakUpdates.push({ id: brk.id, out_at: outAt, in_at: inAt });
+      }
+    }
+    const updated = await withTx(pool(), async (client) => {
+      const { rows } = await client.query(
+        'UPDATE time_entries SET clock_in_at = $1, clock_out_at = $2 WHERE id = $3 RETURNING *',
+        [nextIn.toISOString(), nextOut ? nextOut.toISOString() : null, entry.id],
+      );
+      for (const patch of breakUpdates) {
+        await client.query('UPDATE time_breaks SET out_at = $1, in_at = $2 WHERE id = $3', [
+          patch.out_at.toISOString(),
+          patch.in_at ? patch.in_at.toISOString() : null,
+          patch.id,
+        ]);
+      }
+      return rows[0];
+    });
+    // The correction lands like the act it replaces: closing an
+    // open entry closes the person's call-in window and starts
+    // their 10-minute grace; re-opening a closed entry cancels a
+    // pending auto-logout, exactly as clocking back in does.
+    const isOpen = !updated.clock_out_at;
+    if (wasOpen && !isOpen) {
+      await closeCallIn(pool(), businessId, target.id, {
+        byId: req.user.id,
+        byStaffId: me?.id || null,
+        byName: await clockActorName(access, me),
+        reason: 'corrected',
+      });
+      await startAutoLogout(pool(), businessId, target.id, new Date());
+    } else if (!wasOpen && isOpen) {
+      await cancelAutoLogout(pool(), businessId, target.id);
+    }
+    const { rows: freshBreaks } = await pool().query(
+      'SELECT * FROM time_breaks WHERE entry_id = $1 ORDER BY out_at ASC',
+      [entry.id],
+    );
+    return res.json({ entry: await shapeEntry(access.business, updated, freshBreaks) });
   }));
 
   // ---- Notifications inbox ---------------------------------------------------
@@ -1287,6 +1595,22 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
       // Nov 21, 2026); the owner's payload is unchanged.
       const personView = publicPerson(person);
       if (!access.isOwner) delete personView.email;
+      // The missed clock-out flag rides the preview too (Nov 21,
+      // 2026): an open entry in this period whose scheduled
+      // shift has already ended. The hours keep counting to now
+      // either way — the flag is what says the number is not
+      // final until the entry is corrected from the Staff page.
+      const { rows: openRows } = await pool().query(
+        'SELECT * FROM time_entries WHERE business_id = $1 AND staff_member_id = $2 AND clock_out_at IS NULL',
+        [req.params.bid, person.id],
+      );
+      const missedClockOuts = [];
+      for (const openEntry of openRows) {
+        const info = await missedClockOutInfo(pool(), access.business, openEntry);
+        if (info && info.shift_date >= start && info.shift_date <= end) {
+          missedClockOuts.push({ entry_id: openEntry.id, clock_in_at: openEntry.clock_in_at, ...info });
+        }
+      }
       rows.push({
         person: personView,
         profile,
@@ -1295,6 +1619,7 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
         break_minutes: hours.breakMinutes,
         gross: math?.gross ?? null,
         net: math?.net ?? null,
+        missed_clock_outs: missedClockOuts,
       });
     }
     return res.json({ period: { start, end }, config, people: rows });

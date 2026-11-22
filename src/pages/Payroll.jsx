@@ -15,7 +15,7 @@ import { Landmark, PenLine, Printer, Send, Undo2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { useBusiness } from '@/hooks/useBusiness';
-import { t } from '@/lib/i18n';
+import { getLocale, t } from '@/lib/i18n';
 import {
   createCashUp,
   formatMoneyPlain,
@@ -268,7 +268,27 @@ function RunSection({ businessId, ctx, reloadRuns }) {
             <tbody>
               {preview.people.map((row) => (
                 <tr key={row.person.id} className="border-t border-border">
-                  <td className="py-1.5 pr-3 font-medium">{row.person.full_name}</td>
+                  <td className="py-1.5 pr-3 font-medium">
+                    {row.person.full_name}
+                    {(row.missed_clock_outs || []).map((missed) => (
+                      <span
+                        key={missed.entry_id}
+                        className="mt-0.5 block text-xs font-normal text-red-700 dark:text-red-300"
+                      >
+                        {t('workforce.entries.missedClockOut')} ·{' '}
+                        {t('workforce.entries.missedDetail', {
+                          start: new Intl.DateTimeFormat(getLocale(), {
+                            hour: 'numeric',
+                            minute: '2-digit',
+                          }).format(new Date(missed.shift_start)),
+                          end: new Intl.DateTimeFormat(getLocale(), {
+                            hour: 'numeric',
+                            minute: '2-digit',
+                          }).format(new Date(missed.shift_end)),
+                        })}
+                      </span>
+                    ))}
+                  </td>
                   <td className="py-1.5 pr-3">{row.regular_hours}</td>
                   <td className="py-1.5 pr-3">{row.overtime_hours}</td>
                   <td className="py-1.5 pr-3">{row.break_minutes}</td>

@@ -363,9 +363,38 @@ export function isTrainingGrant(key) {
   return TRAINING_GRANT_KEYS.includes(key);
 }
 
-/** Any per-member grant key (Settings sections + returns + products + locations + roster + low stock + policy trainings). */
+/**
+ * Owner-granted call-ins & clock corrections (the owner's
+ * rulings, Nov 20, 2026). ONE tick for the whole family — the
+ * owner was read back "one family" on Nov 21, 2026 and did not
+ * correct it. Same pattern as the grants above: the key lives
+ * in the member's own permissions array, deliberately NOT part
+ * of PERMISSION_GROUPS / ALL_PERMISSIONS / the preset roles,
+ * and is edited in the member dialog as its own tick, so the
+ * permission picker can never wipe it and no role carries it by
+ * default — a manager included. Holding it lets a MANAGER open
+ * and close call-in windows (the door that lets an unscheduled
+ * person sign in and clock in) and correct time entries from
+ * the Staff page (clock-in, clock-out, break times). Like the
+ * roster tick, it is offered for every role but takes effect
+ * only for a MANAGER-level member — a staff member's stored
+ * tick stays inert, enforced server-side
+ * (server/clockAdmin.js). Either plan: the time clock lives on
+ * both.
+ */
+export const CLOCK_GRANTS = [
+  { key: 'staff.clock', get label() { return t('staffLib.perm.staffClock'); } },
+];
+
+export const CLOCK_GRANT_KEYS = CLOCK_GRANTS.map((grant) => grant.key);
+
+export function isClockGrant(key) {
+  return CLOCK_GRANT_KEYS.includes(key);
+}
+
+/** Any per-member grant key (Settings sections + returns + products + locations + roster + low stock + policy trainings + clock). */
 export function isMemberGrant(key) {
-  return isSettingsGrant(key) || isReturnsGrant(key) || isProductsGrant(key) || isLocationsGrant(key) || isRosterGrant(key) || isLowStockGrant(key) || isTrainingGrant(key);
+  return isSettingsGrant(key) || isReturnsGrant(key) || isProductsGrant(key) || isLocationsGrant(key) || isRosterGrant(key) || isLowStockGrant(key) || isTrainingGrant(key) || isClockGrant(key);
 }
 
 /** A member row's level, mirroring the server's personLevel. */

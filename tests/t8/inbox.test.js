@@ -222,9 +222,17 @@ test('schedule set: the person scheduled is notified', async () => {
   const staff = await addTeamMember(business, owner.id, 'inbox-sched-staff@example.com');
   const staff2 = await addTeamMember(business, owner.id, 'inbox-sched-staff2@example.com', { name: 'Sue Staff' });
 
+  // The shifts cover today in the business's own timezone:
+  // since the clock build the sign-in bracket binds a scheduled
+  // member to their roster, and a Monday-only shift would lock
+  // the member out of the very inbox this test reads. The
+  // subject is the schedule_set notice, not the shift content.
+  const { rows: tzRows } = await pool.query('SELECT timezone FROM businesses WHERE id = $1', [business.id]);
+  const bizTz = tzRows[0].timezone || 'UTC';
+  const todayWeekday = new Date(new Date().toLocaleString('en-US', { timeZone: bizTz })).getDay();
   const byOwner = await req(`${WF(business.id)}/schedules/${staff.staffId}`, {
     method: 'PUT',
-    body: { shifts: [{ weekday: 1, start_time: '09:00', end_time: '17:00' }] },
+    body: { shifts: [{ weekday: todayWeekday, start_time: '00:00', end_time: '23:59' }] },
     cookie: ownerCookie,
   });
   assert.equal(byOwner.status, 200);
@@ -233,7 +241,7 @@ test('schedule set: the person scheduled is notified', async () => {
 
   const byManager = await req(`${WF(business.id)}/schedules/${staff2.staffId}`, {
     method: 'PUT',
-    body: { shifts: [{ weekday: 2, start_time: '10:00', end_time: '18:00' }] },
+    body: { shifts: [{ weekday: todayWeekday, start_time: '00:00', end_time: '23:59' }] },
     cookie: manager.cookie,
   });
   assert.equal(byManager.status, 200);

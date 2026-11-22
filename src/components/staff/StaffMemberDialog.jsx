@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/client';
 import { Loader2, TriangleAlert } from 'lucide-react';
-import { allRoles, BUSINESS_ONLY_PERMISSIONS, isLocationsGrant, isLowStockGrant, isMemberGrant, isProductsGrant, isReturnsGrant, isRosterGrant, isSettingsGrant, isTrainingGrant, LOCATIONS_GRANTS, LOW_STOCK_GRANTS, PRODUCTS_GRANTS, RETURNS_GRANTS, ROSTER_GRANTS, roleById, SETTINGS_GRANTS, STATUS_OPTIONS, TRAINING_GRANTS } from '@/lib/staff';
+import { allRoles, BUSINESS_ONLY_PERMISSIONS, CLOCK_GRANTS, isClockGrant, isLocationsGrant, isLowStockGrant, isMemberGrant, isProductsGrant, isReturnsGrant, isRosterGrant, isSettingsGrant, isTrainingGrant, LOCATIONS_GRANTS, LOW_STOCK_GRANTS, PRODUCTS_GRANTS, RETURNS_GRANTS, ROSTER_GRANTS, roleById, SETTINGS_GRANTS, STATUS_OPTIONS, TRAINING_GRANTS } from '@/lib/staff';
 import { Checkbox } from '@/components/ui/checkbox';
 import { createStaffMember, isOperatingSite } from '@/lib/entitlements';
 import { fixStaffEmail } from '@/lib/recovery';
@@ -87,6 +87,13 @@ const emptyForm = (customRoles, stripBusinessOnly = (permissions) => permissions
     // the documents stays core for everyone; the ticks assign
     // only the quiz trainings. Off by default for everyone.
     training_grants: [],
+    // Owner-granted call-ins & clock corrections (Nov 21, 2026):
+    // ONE per-member tick for the whole family — opening and
+    // closing call-in windows, and correcting time entries from
+    // the Staff page. Off by default for everyone. It takes
+    // effect only for a manager; a staff member's tick stays
+    // inert (the server enforces the same split).
+    clock_grants: [],
     status: 'invited',
     location_id: '',
     location_name: '',
@@ -181,6 +188,9 @@ export default function StaffMemberDialog({
             ),
             training_grants: (Array.isArray(member.permissions) ? member.permissions : []).filter(
               (key) => isTrainingGrant(key)
+            ),
+            clock_grants: (Array.isArray(member.permissions) ? member.permissions : []).filter(
+              (key) => isClockGrant(key)
             ),
             status: member.status || 'invited',
             location_id: member.location_id || '',
@@ -293,6 +303,7 @@ export default function StaffMemberDialog({
           ...(form.roster_grants || []),
           ...(form.lowstock_grants || []),
           ...(form.training_grants || []),
+          ...(form.clock_grants || []),
         ],
         status: form.status,
         location_id: form.location_id || '',
@@ -780,6 +791,41 @@ export default function StaffMemberDialog({
             </div>
             <p className="text-[11px] text-muted-foreground">
               {t('staff.memberDialog.trainingAccessHint')}
+            </p>
+          </div>
+
+          {/* Owner-granted call-ins & clock corrections (Nov 21,
+              2026): ONE tick for the whole family — opening and
+              closing call-in windows, and correcting time entries
+              from the Staff page. Managers only: the tick stays
+              inert on a staff row (the server enforces the same
+              split). Offered for every role, off by default, on
+              both plans. */}
+          <div className="space-y-1.5">
+            <Label>{t('staffLib.area.clockAccess')}</Label>
+            <div className="rounded-lg border border-border p-2.5">
+              <div className="grid gap-1.5">
+                {CLOCK_GRANTS.map((grant) => (
+                  <label key={grant.key} className="flex items-start gap-2 text-xs leading-snug">
+                    <Checkbox
+                      checked={(form.clock_grants || []).includes(grant.key)}
+                      onCheckedChange={(on) =>
+                        setForm((c) => ({
+                          ...c,
+                          clock_grants: on
+                            ? [...new Set([...(c.clock_grants || []), grant.key])]
+                            : (c.clock_grants || []).filter((key) => key !== grant.key),
+                        }))
+                      }
+                      className="mt-0.5"
+                    />
+                    <span>{grant.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            <p className="text-[11px] text-muted-foreground">
+              {t('staff.memberDialog.clockAccessHint')}
             </p>
           </div>
 

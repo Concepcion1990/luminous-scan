@@ -11,6 +11,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import StaffMemberCard from '@/components/staff/StaffMemberCard';
+import ClockAttentionCard from '@/components/staff/ClockAttentionCard';
 import PhotoApprovalsCard from '@/components/business/PhotoApprovalsCard';
 import { useProfilePhotoSummary } from '@/lib/profilePhotos';
 import { sendStaffPasswordReset } from '@/lib/recovery';
@@ -245,6 +246,13 @@ export default function Staff() {
       {/* Profile photos waiting for the owner's approval
           (owner-only; renders nothing when nobody waits). */}
       {activeId && <PhotoApprovalsCard isOwner={isAdmin} />}
+
+      {/* Call-ins & missed clock-outs (Nov 21, 2026): renders
+          only for a clock admin — the owner or a manager holding
+          the staff.clock tick — and only when there is something
+          to act on. The card self-gates on the workforce
+          context; the server enforces every write. */}
+      {activeId && <ClockAttentionCard />}
 
       {loading ? (
         <div className="flex items-center gap-2 py-8 text-sm text-muted-foreground">

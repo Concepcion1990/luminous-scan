@@ -28,6 +28,36 @@
  * open. No scheduled-end bracket was invented. (The clock itself
  * already refuses a self clock-out more than 10 minutes after
  * the shift ends and sends the member to a manager or the owner.)
+ * The missed clock-out FLAG and its bell live in
+ * server/clockAdmin.js (the clock build, Nov 21, 2026); the
+ * bracket rule itself is unchanged — an open entry still admits.
+ *
+ * THE CALL-IN WINDOW (the clock build, Nov 21, 2026 — owner's
+ * rulings Nov 20, 2026): a member with no shift covering now may
+ * still be let in when a call-in window is open for them (opened
+ * by the owner, or by a manager holding the staff.clock tick —
+ * server/clockAdmin.js). An open window admits exactly like an
+ * open clock-in entry: it is the person's sign-in path as well
+ * as their clock-in path. It closes when they clock out (the
+ * grace above then runs) or when the opener closes it early;
+ * nothing closes it automatically.
+ *
+ * WHICH BUSINESS JUDGES (the auto-logout defect, proven by the
+ * owner's hand Nov 21, 2026): the bracket used to be judged ONLY
+ * against users.active_business_id. That field is set only when
+ * the client explicitly switches workspaces — a member who
+ * enters through the invite door and works in the business
+ * client-side can carry a null (or stale) active id forever, so
+ * windowMember found nobody, the bracket silently never
+ * applied, and the promised 10-minute auto-logout never fired
+ * (she clocked out at 11:29 AM and was still signed in at
+ * 1:23 PM). The harness never saw it because it set the field
+ * by hand. Now: the active business still judges when it holds
+ * the member's row (the normal switched-in case, unchanged);
+ * otherwise the member's own staff businesses judge — a single
+ * one directly, several by "any open door admits" (the same
+ * philosophy as the business-switch escape hatch in
+ * sessions.js). A business the user OWNS never judges them.
  *
  * This module deliberately does NOT import workforceRoutes.js
  * (which imports sessions.js, which imports this module): the
@@ -52,7 +82,7 @@ export function autoLogoutGraceMs() {
 
 const WEEKDAY_INDEX = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
 
-function businessTimezone(business) {
+export function businessTimezone(business) {
   const tz = String(business?.timezone || '').trim();
   if (!tz) return 'UTC';
   try {
@@ -63,7 +93,7 @@ function businessTimezone(business) {
   }
 }
 
-function localParts(date, timeZone) {
+export function localParts(date, timeZone) {
   const fmt = new Intl.DateTimeFormat('en-US', {
     timeZone,
     weekday: 'short',
@@ -84,7 +114,7 @@ function localParts(date, timeZone) {
   };
 }
 
-function hhmmToMinutes(value) {
+export function hhmmToMinutes(value) {
   const match = String(value || '').match(/^([01]\d|2[0-3]):([0-5]\d)$/);
   if (!match) return null;
   return Number(match[1]) * 60 + Number(match[2]);
@@ -116,7 +146,7 @@ function tzOffsetMs(date, timeZone) {
 }
 
 /** The UTC instant of a business-local date (YYYY-MM-DD) + minutes into it. */
-function zonedTimeToUtc(dateStr, minutes, timeZone) {
+export function zonedTimeToUtc(dateStr, minutes, timeZone) {
   const [year, month, day] = dateStr.split('-').map(Number);
   const guess = Date.UTC(year, month - 1, day) + minutes * 60 * 1000;
   let utc = guess - tzOffsetMs(new Date(guess), timeZone);
@@ -135,34 +165,76 @@ function weekdayOfDateStr(dateStr) {
 }
 
 /**
- * The member row the window applies to, or null when the user
- * stands outside the bracket for their active business: no
- * active business, they own it, they have no trusted staff row
- * there, or their row is neither active nor invited (a suspended
- * member is governed by the seat block, not the window).
+ * The member row the window applies to in ONE business, or null
+ * when the user stands outside the bracket there: they own it,
+ * they have no trusted staff row there, or their row is neither
+ * active nor invited (a suspended member is governed by the
+ * seat block, not the window).
  */
-export async function windowMember(pool, user) {
-  const businessId = user?.active_business_id || null;
-  if (!businessId) return null;
-  const { rows } = await pool.query('SELECT * FROM businesses WHERE id = $1 LIMIT 1', [businessId]);
-  const business = rows[0];
+async function memberInBusiness(pool, user, business) {
   if (!business || business.owner_id === user.id) return null;
-  const row = await staffRowForEmail(pool, businessId, user.email);
+  const row = await staffRowForEmail(pool, business.id, user.email);
   if (!row || !['active', 'invited'].includes(row.status || 'active')) return null;
   if (!(await isTrustedStaffRow(pool, business, row))) return null;
   return { business, member: row };
 }
 
 /**
- * Full window state for the user's active business.
- * { applies: false } when the bracket does not apply; otherwise
- * { applies: true, allowed, nextShiftStart (Date|null),
- *   autoLogoutAt (Date|null), memberId, businessId }.
+ * Every business where this user is a bracketed member: their
+ * trusted, active-or-invited staff rows in businesses they do
+ * not own. The active business (when it is one of them) comes
+ * first. Small by construction — a person works at a handful of
+ * businesses at most.
  */
-export async function staffWindowState(pool, user, now = new Date()) {
-  const found = await windowMember(pool, user);
-  if (!found) return { applies: false };
-  const { business, member } = found;
+export async function windowCandidates(pool, user) {
+  if (!user?.email) return [];
+  const { rows } = await pool.query(
+    `SELECT * FROM staff_members
+      WHERE LOWER(email) = LOWER($1) AND status IN ('active', 'invited')`,
+    [user.email],
+  );
+  const out = [];
+  for (const row of rows) {
+    const { rows: bizRows } = await pool.query('SELECT * FROM businesses WHERE id = $1 LIMIT 1', [row.business_id]);
+    const found = await memberInBusiness(pool, user, bizRows[0]);
+    if (found) out.push(found);
+  }
+  const activeId = user.active_business_id || null;
+  out.sort((a, b) => (a.business.id === activeId ? -1 : 0) - (b.business.id === activeId ? -1 : 0));
+  return out;
+}
+
+/**
+ * The member row the window applies to, or null. The ACTIVE
+ * business judges when it holds the member's row (the normal
+ * switched-in case) and judges STRICTLY (the 314 law, schedule
+ * or no schedule); otherwise, when the person is a member of
+ * exactly one business, that business judges through the
+ * fallback the Nov 21, 2026 auto-logout defect demanded,
+ * because a member who never explicitly switched workspaces
+ * otherwise stood outside the bracket forever (see the header
+ * note) — the fallback binds only where the business holds a
+ * schedule, a deadline, an open entry, or an open window for
+ * them (see stateForMember).
+ */
+export async function windowMember(pool, user) {
+  const businessId = user?.active_business_id || null;
+  if (businessId) {
+    const { rows } = await pool.query('SELECT * FROM businesses WHERE id = $1 LIMIT 1', [businessId]);
+    const found = await memberInBusiness(pool, user, rows[0]);
+    if (found) return { ...found, strict: true };
+  }
+  const candidates = await windowCandidates(pool, user);
+  return candidates.length === 1 ? { ...candidates[0], strict: false } : null;
+}
+
+/**
+ * Full window state for ONE business + member: the shift bracket
+ * plus the call-in window. { applies: true, allowed,
+ * nextShiftStart (Date|null), autoLogoutAt (Date|null),
+ * callInOpen, hasOpenEntry, memberId, businessId }.
+ */
+async function stateForMember(pool, business, member, now, strict = false) {
   const businessId = business.id;
   const timeZone = businessTimezone(business);
   const local = localParts(now, timeZone);
@@ -184,7 +256,53 @@ export async function staffWindowState(pool, user, now = new Date()) {
   );
   const hasOpenEntry = openRows.length > 0;
 
+  // The call-in window (clock build, Nov 21, 2026): an open
+  // window admits exactly like an open entry — it is the
+  // person's sign-in path as well as their clock-in path.
+  const { rows: windowRows } = await pool.query(
+    `SELECT id FROM call_in_windows
+      WHERE business_id = $1 AND staff_member_id = $2 AND closed_at IS NULL
+      ORDER BY opened_at DESC LIMIT 1`,
+    [businessId, member.id],
+  );
+  const callInOpen = windowRows.length > 0;
+
   const deadline = member.auto_logout_at ? new Date(member.auto_logout_at) : null;
+
+  // The bracket binds a member to their SHIFTS — with one
+  // careful edge, settled against the 314 pins on both sides.
+  // Judged through the ACTIVE business (strict: the member is
+  // switched into the shop the bracket guards), the 314 law
+  // stands exactly: the bracket binds whenever a trusted row
+  // exists there, schedule or no schedule — no shift today
+  // refuses, and names no next shift. Judged only through the
+  // candidate fallback (the auto-logout defect shape: the
+  // member's active id is null or stale, so 314 never judged
+  // them at all), the bracket binds only when this business
+  // holds something to bind TO — a schedule row, an armed
+  // auto-logout deadline, an open entry, or an open call-in
+  // window. With none of those, the fallback member stands
+  // outside it: the invited hire's first sign-in IS their
+  // activation, a pre-roster member's welcome and training
+  // must stay reachable, and membership healing at sign-in
+  // must not be locked out by the very door it repairs (the
+  // t3 staff-entry invariants codify all three). An armed
+  // deadline binds in both modes regardless: the deadline is
+  // a promise made at clock-out, and a deleted schedule must
+  // not unmake it.
+  if (!strict && scheduleRows.length === 0 && !deadline && !hasOpenEntry && !callInOpen) {
+    return {
+      applies: false,
+      allowed: true,
+      nextShiftStart: null,
+      autoLogoutAt: null,
+      callInOpen,
+      hasOpenEntry,
+      insideShift: false,
+      memberId: member.id,
+      businessId,
+    };
+  }
 
   const todayShift = schedules.get(local.weekday) || null;
   let insideToday = false;
@@ -208,6 +326,7 @@ export async function staffWindowState(pool, user, now = new Date()) {
 
   const allowed =
     hasOpenEntry ||
+    callInOpen ||
     (deadline !== null && now.getTime() < deadline.getTime()) ||
     (insideToday && !consumedToday);
 
@@ -231,8 +350,65 @@ export async function staffWindowState(pool, user, now = new Date()) {
     allowed,
     nextShiftStart,
     autoLogoutAt: deadline,
+    callInOpen,
+    hasOpenEntry,
+    insideShift: insideToday && !consumedToday,
     memberId: member.id,
     businessId,
+  };
+}
+
+/**
+ * Full window state for the user. { applies: false } when the
+ * bracket does not apply anywhere; otherwise the state of the
+ * business that judges (see windowMember) — or, when the user
+ * is a member of several businesses and the active one is not
+ * among them, the merge of all of them: any open door admits,
+ * the refusal names the earliest next shift, and the surfaced
+ * auto-logout deadline is the earliest grace deadline only
+ * when grace is the sole thing keeping the session alive.
+ */
+export async function staffWindowState(pool, user, now = new Date()) {
+  const judged = await windowMember(pool, user);
+  if (judged) return stateForMember(pool, judged.business, judged.member, now, judged.strict);
+  const candidates = await windowCandidates(pool, user);
+  if (!candidates.length) return { applies: false };
+  const states = [];
+  for (const candidate of candidates) {
+    const state = await stateForMember(
+      pool, candidate.business, candidate.member, now,
+      candidate.business.id === (user?.active_business_id || null),
+    );
+    if (state.applies) states.push(state);
+  }
+  if (!states.length) return { applies: false };
+  const allowed = states.some((state) => state.allowed);
+  let nextShiftStart = null;
+  for (const state of states) {
+    if (state.nextShiftStart && (!nextShiftStart || state.nextShiftStart.getTime() < nextShiftStart.getTime())) {
+      nextShiftStart = state.nextShiftStart;
+    }
+  }
+  const admittedByWork = states.some((state) => state.hasOpenEntry || state.callInOpen || state.insideShift);
+  let autoLogoutAt = null;
+  if (allowed && !admittedByWork) {
+    for (const state of states) {
+      if (state.autoLogoutAt && state.autoLogoutAt.getTime() > now.getTime()) {
+        if (!autoLogoutAt || state.autoLogoutAt.getTime() < autoLogoutAt.getTime()) {
+          autoLogoutAt = state.autoLogoutAt;
+        }
+      }
+    }
+  }
+  return {
+    applies: true,
+    allowed,
+    nextShiftStart,
+    autoLogoutAt,
+    callInOpen: states.some((state) => state.callInOpen),
+    hasOpenEntry: states.some((state) => state.hasOpenEntry),
+    memberId: null,
+    businessId: null,
   };
 }
 

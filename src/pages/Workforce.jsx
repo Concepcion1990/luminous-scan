@@ -19,7 +19,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { useBusiness } from '@/hooks/useBusiness';
 import { useAuth } from '@/lib/AuthContext';
 import useEntitlements from '@/hooks/useEntitlements';
-import { t } from '@/lib/i18n';
+import { getLocale, t } from '@/lib/i18n';
 import {
   buildRewardSlipText,
   createReward,
@@ -163,6 +163,36 @@ function ClockTab({ businessId, ctx, peopleById, onEvent }) {
   const onBreak = Boolean(status.open_break);
   const selfOff = status.self_clock_enabled === false;
 
+  // The call-in gate (Nov 21, 2026): a refused clock-in names
+  // the next scheduled shift when the schedule knows one, in
+  // the reader's language — the staff_outside_window shape.
+  const gateMessage = (data) => {
+    if (data?.next_shift_start) {
+      const when = new Date(data.next_shift_start);
+      if (!Number.isNaN(when.getTime())) {
+        const formatted = new Intl.DateTimeFormat(getLocale(), {
+          weekday: 'long',
+          month: 'long',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+        }).format(when);
+        return t('workforce.clockGate.closedNext', { when: formatted });
+      }
+    }
+    return t('workforce.clockGate.closed');
+  };
+  const tryClockIn = async () => {
+    try {
+      await clockIn(businessId);
+    } catch (error) {
+      if (error?.data?.error === 'clock_in_not_scheduled') {
+        throw new Error(gateMessage(error.data));
+      }
+      throw error;
+    }
+  };
+
   return (
     <div className="space-y-4">
       <Section title={t('workforce.tab.clock')}>
@@ -178,6 +208,11 @@ function ClockTab({ businessId, ctx, peopleById, onEvent }) {
         ) : (
           <p className="text-sm text-muted-foreground">{t('workforce.noShiftToday')}</p>
         )}
+        {status.call_in_open && !open && (
+          <p className="mt-2 rounded-md bg-primary/10 px-3 py-2 text-sm">
+            {t('workforce.callIn.openForYou')}
+          </p>
+        )}
         <p className="mt-1 text-sm text-muted-foreground">
           {open
             ? onBreak
@@ -190,7 +225,7 @@ function ClockTab({ businessId, ctx, peopleById, onEvent }) {
         )}
         <div className="mt-4 flex flex-wrap gap-2">
           {!open && (
-            <Button disabled={busy || selfOff} onClick={() => act(() => clockIn(businessId), t('workforce.clockedInMsg'))}>
+            <Button disabled={busy || selfOff} onClick={() => act(tryClockIn, t('workforce.clockedInMsg'))}>
               <Clock3 className="mr-2 h-4 w-4" /> {t('workforce.clockIn')}
             </Button>
           )}
@@ -285,8 +320,15 @@ function ClockTab({ businessId, ctx, peopleById, onEvent }) {
                         </span>
                       )}
                     </span>
-                    {entry.unscheduled && (
+                    {entry.called_in ? (
+                      <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs">{t('workforce.entries.calledIn')}</span>
+                    ) : entry.unscheduled ? (
                       <span className="rounded-full bg-muted px-2 py-0.5 text-xs">{t('workforce.entries.unscheduled')}</span>
+                    ) : null}
+                    {entry.missed_clock_out && (
+                      <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs text-red-900 dark:bg-red-900/40 dark:text-red-100">
+                        {t('workforce.entries.missedClockOut')}
+                      </span>
                     )}
                     {entry.early_departure && (
                       <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-900 dark:bg-amber-900/40 dark:text-amber-100">
@@ -301,6 +343,14 @@ function ClockTab({ businessId, ctx, peopleById, onEvent }) {
                   </div>
                   {entry.early_note && (
                     <p className="mt-0.5 text-xs italic text-muted-foreground">“{entry.early_note}”</p>
+                  )}
+                  {entry.missed_clock_out && (
+                    <p className="mt-0.5 text-xs text-red-700 dark:text-red-300">
+                      {t('workforce.entries.missedDetail', {
+                        start: formatTime(entry.missed_clock_out.shift_start),
+                        end: formatTime(entry.missed_clock_out.shift_end),
+                      })}
+                    </p>
                   )}
                   {(entry.breaks || []).map((b) => (
                     <p key={b.id} className="text-xs text-muted-foreground">
@@ -820,6 +870,11 @@ function InboxTab({ businessId, ctx, people, onRead, onGoTab }) {
       case 'break_in':
       case 'clock_out':
         onGoTab('clock');
+        break;
+      case 'missed_clock_out':
+        // The fix lives on the Staff page, on the person's
+        // record (Nov 21, 2026).
+        navigate('/staff');
         break;
       default:
         // A notice type with no home of its own: the tap still

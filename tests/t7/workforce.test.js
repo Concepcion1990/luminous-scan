@@ -90,7 +90,14 @@ test('schedule permissions: owner sets the manager\u2019s, manager sets staff\u2
   const { cookie: ownerCookie, business, user: owner } = await ownerWithBusiness('wf-sched@example.com');
   const manager = await addTeamMember(business, owner.id, 'wf-sched-mgr@example.com', { manager: true });
   const staff = await addTeamMember(business, owner.id, 'wf-sched-staff@example.com');
-  const shift = [{ weekday: 1, start_time: '09:00', end_time: '17:00' }];
+  // The one shift covers today in the business's own timezone:
+  // since the clock build the sign-in bracket binds a scheduled
+  // member to their roster (a Monday-only shift locks the
+  // manager out on a Saturday), and this test is about WHO may
+  // set schedules, not about the bracket.
+  const { rows: tzRows } = await pool.query('SELECT timezone FROM businesses WHERE id = $1', [business.id]);
+  const { weekday: todayWeekday } = localNow(tzRows[0].timezone || 'UTC');
+  const shift = [{ weekday: todayWeekday, start_time: '00:00', end_time: '23:59' }];
 
   const byOwner = await setSchedule(ownerCookie, business.id, manager.staffId, shift);
   assert.equal(byOwner.status, 200);
@@ -120,8 +127,22 @@ test('clock windows: too-early in refused, early out needs a note, too-late out 
   await setTimezone(business.id, tz);
   const { weekday, minutes } = localNow(tz);
 
-  // Too-early: the shift starts an hour from now.
+  // Too-early: the shift starts an hour from now. Since the
+  // clock build, a member outside their bracket has no live
+  // session to refuse politely — the session door itself is
+  // shut — so the route's own too-early refusal is exercised
+  // through the clock-out grace: the member worked an earlier
+  // shift, clocked out (grace armed, session alive), the owner
+  // then posted the later shift, and the member tries to clock
+  // back in an hour ahead of it.
   const early = await addTeamMember(business, owner.id, 'wf-clock-early@example.com');
+  await setSchedule(ownerCookie, business.id, early.staffId, [
+    { weekday, start_time: hhmm(minutes - 30), end_time: hhmm(minutes + 30) },
+  ]);
+  const earlyFirst = await clock(early.cookie, business.id, 'in');
+  assert.equal(earlyFirst.status, 201);
+  const earlyOut = await clock(early.cookie, business.id, 'out', { note: 'First part done.' });
+  assert.equal(earlyOut.status, 200);
   await setSchedule(ownerCookie, business.id, early.staffId, [
     { weekday, start_time: hhmm(minutes + 60), end_time: hhmm(minutes + 240) },
   ]);
@@ -154,27 +175,56 @@ test('clock windows: too-early in refused, early out needs a note, too-late out 
   assert.equal(withNote.json.entry.early_departure, true);
   assert.match(withNote.json.entry.early_note, /Family emergency/);
 
-  // Too-late: the shift ended an hour ago; clocking in is allowed,
-  // clocking out is past the 10-minute window.
+  // Too-late: the shift ended an hour ago. The call-in gate
+  // (Nov 21, 2026) refuses that clock-in now — the shift no
+  // longer covers now and no call-in window is open; the old
+  // walk-in is gone. The too-late clock-out still stands for
+  // an entry opened during the shift: the fixture places that
+  // entry directly, and the out door refuses past the window.
   const late = await addTeamMember(business, owner.id, 'wf-clock-late@example.com');
   await setSchedule(ownerCookie, business.id, late.staffId, [
     { weekday, start_time: hhmm(minutes - 180), end_time: hhmm(minutes - 60) },
   ]);
-  const lateIn = await clock(late.cookie, business.id, 'in');
-  assert.equal(lateIn.status, 201);
+  // The gate at the sign-in door: with the shift over and no
+  // window open, the member cannot even sign in (the bracket
+  // refuses; the route-level 403 through a live grace session
+  // is pinned in t37).
+  const lateLogin = await req('/api/auth/login', {
+    method: 'POST',
+    body: { email: late.email, password: 'CorrectHorse123' },
+  });
+  assert.equal(lateLogin.status, 403);
+  assert.equal(lateLogin.json.error, 'staff_outside_window');
+  await pool.query(
+    `INSERT INTO time_entries (id, business_id, staff_member_id, clock_in_at, unscheduled)
+     VALUES ($1, $2, $3, $4, false)`,
+    [crypto.randomUUID(), business.id, late.staffId, new Date(Date.now() - 120 * 60000).toISOString()],
+  );
   const lateOut = await clock(late.cookie, business.id, 'out', { note: 'stayed late' });
   assert.equal(lateOut.status, 400);
   assert.equal(lateOut.json.error, 'clock_too_late');
 });
 
-test('unscheduled day: clocking works and is flagged; notifications reach owner + manager', async () => {
+test('unscheduled day: the gate refuses, a call-in window admits and flags; notifications reach owner + manager', async () => {
   const { cookie: ownerCookie, business, user: owner } = await ownerWithBusiness('wf-notify@example.com');
   const manager = await addTeamMember(business, owner.id, 'wf-notify-mgr@example.com', { manager: true });
   const staff = await addTeamMember(business, owner.id, 'wf-notify-staff@example.com');
 
+  // The call-in gate (owner's ruling, Nov 20, 2026): no shift
+  // covers now and no window is open — the unscheduled walk-in
+  // this test used to prove is refused now.
+  const refused = await clock(staff.cookie, business.id, 'in');
+  assert.equal(refused.status, 403);
+  assert.equal(refused.json.error, 'clock_in_not_scheduled');
+
+  // The owner opens the call-in window; the clock-in lands,
+  // flagged unscheduled AND called in.
+  const opened = await req(`${WF(business.id)}/call-in/${staff.staffId}`, { method: 'POST', body: {}, cookie: ownerCookie });
+  assert.equal(opened.status, 201);
   const inRes = await clock(staff.cookie, business.id, 'in');
   assert.equal(inRes.status, 201);
   assert.equal(inRes.json.entry.unscheduled, true);
+  assert.equal(inRes.json.entry.called_in, true);
   const outRes = await clock(staff.cookie, business.id, 'out');
   assert.equal(outRes.status, 200);
   assert.equal(outRes.json.entry.early_departure, false);
@@ -187,7 +237,17 @@ test('unscheduled day: clocking works and is flagged; notifications reach owner 
   assert.ok(managerInbox.json.notifications.some((n) => n.event === 'clock_in'));
 
   // A manager's own clock event notifies the owner only — not the manager.
-  const before = managerInbox.json.notifications.length;
+  // (The manager works a covering shift today, set by the owner,
+  // so their own clock-ins pass the gate like anyone's.)
+  const { rows: mgrTzRows } = await pool.query('SELECT timezone FROM businesses WHERE id = $1', [business.id]);
+  const { weekday: mgrWeekday } = localNow(mgrTzRows[0].timezone || 'UTC');
+  await setSchedule(ownerCookie, business.id, manager.staffId, [
+    { weekday: mgrWeekday, start_time: '00:00', end_time: '23:59' },
+  ]);
+  // Fresh count AFTER the schedule change (setting it notifies
+  // the manager — that notice is not a clock event).
+  const managerInboxFresh = await req(`${WF(business.id)}/notifications`, { cookie: manager.cookie });
+  const before = managerInboxFresh.json.notifications.length;
   await clock(manager.cookie, business.id, 'in');
   await clock(manager.cookie, business.id, 'out');
   const managerInboxAfter = await req(`${WF(business.id)}/notifications`, { cookie: manager.cookie });
@@ -201,6 +261,13 @@ test('unscheduled day: clocking works and is flagged; notifications reach owner 
 test('self-clock toggle off blocks clocking (owner setting)', async () => {
   const { cookie: ownerCookie, business, user: owner } = await ownerWithBusiness('wf-toggle@example.com');
   const staff = await addTeamMember(business, owner.id, 'wf-toggle-staff@example.com');
+  // A covering shift for today, so the gate admits the clock-in
+  // and the toggle is the only door being tested.
+  const { rows: togTzRows } = await pool.query('SELECT timezone FROM businesses WHERE id = $1', [business.id]);
+  const { weekday: togWeekday } = localNow(togTzRows[0].timezone || 'UTC');
+  await setSchedule(ownerCookie, business.id, staff.staffId, [
+    { weekday: togWeekday, start_time: '00:00', end_time: '23:59' },
+  ]);
   const on = await clock(staff.cookie, business.id, 'in');
   assert.equal(on.status, 201);
   await clock(staff.cookie, business.id, 'out');
