@@ -367,6 +367,10 @@ export async function runWipeSweep(pool, { now = new Date(), logger = console } 
         // Profile photos (migration 034) carry no FK cascade —
         // a person's face dies with the business, never after it.
         await client.query('DELETE FROM profile_photos WHERE business_id = $1', [businessId]);
+        // Staff documents (migration 039) carry no FK cascade —
+        // a person's paperwork (SSNs, birth dates) dies with the
+        // business, never after it.
+        await client.query('DELETE FROM staff_documents WHERE business_id = $1', [businessId]);
       }
       // A founding-tester comp ends ONLY here (Nov 21, 2026):
       // the account is being fully deleted, so its comp-list

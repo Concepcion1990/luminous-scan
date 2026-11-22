@@ -78,6 +78,7 @@ import {
   missedClockOutInfo,
   flagMissedClockOuts,
 } from './clockAdmin.js';
+import { STAFF_DOCUMENTS_TICK } from './staffDocuments.js';
 import { assertNotInGrace, withTx } from './billing.js';
 import { parseVoiceDataUrl, convertVoiceToMp3, VOICE_MAX_DURATION_MS } from './voiceNote.js';
 import { approvedPhotoKeys, ownerDisplayName, ownerPublicName } from './profilePhotos.js';
@@ -584,6 +585,16 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
     return level === 'manager' && access.can(CLOCK_ADMIN_TICK);
   }
 
+  // Staff documents (Nov 21, 2026): the same shape — the owner,
+  // or a manager holding the staff.documents tick. The Staff
+  // page hangs its documents area on this boolean; the document
+  // routes (server/staffDocumentRoutes.js) re-check on every
+  // read and write regardless.
+  function canDocumentsAdmin(access, level) {
+    if (access.isOwner) return true;
+    return level === 'manager' && access.can(STAFF_DOCUMENTS_TICK);
+  }
+
   function assertClockAdmin(access, level, target) {
     if (!canClockAdmin(access, level)) {
       throw err(403, 'clock_admin_not_granted', 'Only the owner, or a manager the owner has trusted with call-ins and clock corrections, can do that.');
@@ -657,6 +668,11 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
       // hangs its call-in + time-fix doors on this one boolean;
       // the server re-checks on every write regardless.
       clock_admin: canClockAdmin(access, level),
+      // Staff documents (Nov 21, 2026): the owner, or a manager
+      // holding the staff.documents tick — the Staff page hangs
+      // its documents area on this one boolean; the server
+      // re-checks on every document read/write regardless.
+      documents_admin: canDocumentsAdmin(access, level),
     });
   }));
 

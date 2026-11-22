@@ -354,7 +354,7 @@ test('the tick brings its training: catalog, module map, and lesson requirements
   assert.equal(lesson.track, 'manager');
   assert.deepEqual(MODULE_BY_PERMISSION['staff.clock'], ['workforce']);
   assert.deepEqual(LESSON_REQUIREMENTS['mgr-clock-callin'], ['staff.clock']);
-  assert.equal(TRAINING_LESSONS.length, 100, 'the catalog grew by exactly the one lesson');
+  assert.equal(TRAINING_LESSONS.length, 102, 'the catalog grew by exactly the one lesson in the clock build (100); the staff documents build (Nov 21, 2026) added two more (owner-staff-documents, mgr-staff-documents), for 102');
 });
 
 // ---- (b) missed clock-out + corrections ---------------------------------------
@@ -500,7 +500,7 @@ test('corrections: a break outside the entry range is refused; a valid break sav
 
 test('the Staff door hangs for a clock-tick holder (no dangling tick)', () => {
   const nav = fs.readFileSync(new URL('../../src/components/layout/navGroups.js', import.meta.url), 'utf8');
-  assert.match(nav, /anyPerm: \['staff\.roster', 'staff\.clock'\]/, 'the Staff nav item carries the clock alternative');
+  assert.match(nav, /anyPerm: \['staff\.roster', 'staff\.clock', 'staff\.documents'\]/, 'the Staff nav item carries the clock alternative (and, since the staff documents build, the documents tick — the documents area lives on this page)');
 });
 
 test('clock status: a profile-less owner gets the readable shape, not a refusal', async () => {

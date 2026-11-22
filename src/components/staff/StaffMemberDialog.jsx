@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/client';
 import { Loader2, TriangleAlert } from 'lucide-react';
-import { allRoles, BUSINESS_ONLY_PERMISSIONS, CLOCK_GRANTS, isClockGrant, isLocationsGrant, isLowStockGrant, isMemberGrant, isProductsGrant, isReturnsGrant, isRosterGrant, isSettingsGrant, isTrainingGrant, LOCATIONS_GRANTS, LOW_STOCK_GRANTS, PRODUCTS_GRANTS, RETURNS_GRANTS, ROSTER_GRANTS, roleById, SETTINGS_GRANTS, STATUS_OPTIONS, TRAINING_GRANTS } from '@/lib/staff';
+import { allRoles, BUSINESS_ONLY_PERMISSIONS, CLOCK_GRANTS, DOCUMENTS_GRANTS, isClockGrant, isDocumentsGrant, isLocationsGrant, isLowStockGrant, isMemberGrant, isProductsGrant, isReturnsGrant, isRosterGrant, isSettingsGrant, isTrainingGrant, LOCATIONS_GRANTS, LOW_STOCK_GRANTS, PRODUCTS_GRANTS, RETURNS_GRANTS, ROSTER_GRANTS, roleById, SETTINGS_GRANTS, STATUS_OPTIONS, TRAINING_GRANTS } from '@/lib/staff';
 import { Checkbox } from '@/components/ui/checkbox';
 import { createStaffMember, isOperatingSite } from '@/lib/entitlements';
 import { fixStaffEmail } from '@/lib/recovery';
@@ -94,6 +94,14 @@ const emptyForm = (customRoles, stripBusinessOnly = (permissions) => permissions
     // effect only for a manager; a staff member's tick stays
     // inert (the server enforces the same split).
     clock_grants: [],
+    // Owner-granted staff documents (Nov 21, 2026): its own
+    // per-member tick, off by default for everyone — the most
+    // confidential door in the app. Turning it ON raises the
+    // owner's red warning first (her exact words, facts only);
+    // turning it off is instant, no dialog. It takes effect
+    // only for a manager; a staff member's tick stays inert
+    // (the server enforces the same split).
+    documents_grants: [],
     status: 'invited',
     location_id: '',
     location_name: '',
@@ -148,6 +156,11 @@ export default function StaffMemberDialog({
   const [form, setForm] = useState(() => emptyForm(customRoles, stripBusinessOnly));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  // The staff-documents red warning (Nov 21, 2026): ticking the
+  // documents grant ON never applies it directly — the warning
+  // opens first, and only "Yes, I understand" lands the tick.
+  // Cancel (or closing the warning) leaves the tick OFF.
+  const [documentsWarningOpen, setDocumentsWarningOpen] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -192,6 +205,9 @@ export default function StaffMemberDialog({
             clock_grants: (Array.isArray(member.permissions) ? member.permissions : []).filter(
               (key) => isClockGrant(key)
             ),
+            documents_grants: (Array.isArray(member.permissions) ? member.permissions : []).filter(
+              (key) => isDocumentsGrant(key)
+            ),
             status: member.status || 'invited',
             location_id: member.location_id || '',
             location_name: member.location_name || '',
@@ -203,6 +219,7 @@ export default function StaffMemberDialog({
     );
     setError('');
     setBusy(false);
+    setDocumentsWarningOpen(false);
     setPayForm({ pay_type: 'hourly', hourly_rate: '', annual_salary: '' });
     setPayTouched(false);
   }, [open, member, customRoles]);
@@ -304,6 +321,7 @@ export default function StaffMemberDialog({
           ...(form.lowstock_grants || []),
           ...(form.training_grants || []),
           ...(form.clock_grants || []),
+          ...(form.documents_grants || []),
         ],
         status: form.status,
         location_id: form.location_id || '',
@@ -408,6 +426,7 @@ export default function StaffMemberDialog({
     })();
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
@@ -829,6 +848,50 @@ export default function StaffMemberDialog({
             </p>
           </div>
 
+          {/* Owner-granted staff documents (Nov 21, 2026): the
+              most confidential tick in the app — it opens each
+              staff member's documents file (W-4s, applications,
+              ID copies). Turning it ON raises the red warning
+              first (her exact words, facts only, below); only
+              "Yes, I understand" lands the tick, and Cancel
+              leaves it OFF. Turning it OFF is instant — no
+              dialog. Managers only in effect: the tick stays
+              inert on a staff row (the server enforces the same
+              split). Offered for every role, off by default, on
+              both plans. */}
+          <div className="space-y-1.5">
+            <Label>{t('staffLib.area.documentsAccess')}</Label>
+            <div className="rounded-lg border border-border p-2.5">
+              <div className="grid gap-1.5">
+                {DOCUMENTS_GRANTS.map((grant) => (
+                  <label key={grant.key} className="flex items-start gap-2 text-xs leading-snug">
+                    <Checkbox
+                      checked={(form.documents_grants || []).includes(grant.key)}
+                      onCheckedChange={(on) => {
+                        if (on) {
+                          // Never straight on: the red warning
+                          // decides. The form is untouched until
+                          // the owner confirms.
+                          setDocumentsWarningOpen(true);
+                          return;
+                        }
+                        setForm((c) => ({
+                          ...c,
+                          documents_grants: (c.documents_grants || []).filter((key) => key !== grant.key),
+                        }));
+                      }}
+                      className="mt-0.5"
+                    />
+                    <span>{grant.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            <p className="text-[11px] text-muted-foreground">
+              {t('staff.memberDialog.documentsAccessHint')}
+            </p>
+          </div>
+
           {canHire && (
             <>
               <div className="grid gap-1.5">
@@ -958,5 +1021,41 @@ export default function StaffMemberDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    {/* The red warning (the owner's ruling, Nov 20, 2026):
+        granting the staff documents tick is the one grant that
+        stops and says what it means first — FACTS ONLY, her
+        exact words, in red. "Yes, I understand" lands the
+        tick; Cancel (or any other close) leaves it OFF. A real
+        nested Radix Dialog, per the 326/328 lesson — never a
+        window.confirm inside another dialog. */}
+    <Dialog open={documentsWarningOpen} onOpenChange={setDocumentsWarningOpen}>
+      <DialogContent className="border-destructive/50 sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="text-destructive">{t('staffLib.perm.staffDocuments')}</DialogTitle>
+        </DialogHeader>
+        <div className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2.5 text-sm leading-relaxed text-destructive">
+          {t('staff.documentsWarning.body')}
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setDocumentsWarningOpen(false)}>
+            {t('staff.memberDialog.cancel')}
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={() => {
+              setForm((c) => ({
+                ...c,
+                documents_grants: [...new Set([...(c.documents_grants || []), 'staff.documents'])],
+              }));
+              setDocumentsWarningOpen(false);
+            }}
+          >
+            {t('staff.documentsWarning.confirm')}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }

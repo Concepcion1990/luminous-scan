@@ -392,9 +392,38 @@ export function isClockGrant(key) {
   return CLOCK_GRANT_KEYS.includes(key);
 }
 
-/** Any per-member grant key (Settings sections + returns + products + locations + roster + low stock + policy trainings + clock). */
+/**
+ * Owner-granted staff documents (the owner's rulings, Nov 19 +
+ * Nov 20, 2026). Same pattern as the grants above: the key lives
+ * in the member's own permissions array, deliberately NOT part
+ * of PERMISSION_GROUPS / ALL_PERMISSIONS / the preset roles, and
+ * is edited in the member dialog as its own tick, so the
+ * permission picker can never wipe it and no role carries it by
+ * default — a manager included. Holding it lets a MANAGER open
+ * a staff member's documents file (the W-4s, applications, tax
+ * forms and ID copies the owner keeps) — the most confidential
+ * door in the app, which is why granting it raises the owner's
+ * red warning first (her exact words, facts only) and why the
+ * server enforces it on every document read and write. Like the
+ * roster and clock ticks, it is offered for every role but
+ * takes effect only for a MANAGER-level member — a staff
+ * member's stored tick stays inert, enforced server-side
+ * (server/staffDocuments.js). The document's own subject has no
+ * door at all. Either plan: the Staff page lives on both.
+ */
+export const DOCUMENTS_GRANTS = [
+  { key: 'staff.documents', get label() { return t('staffLib.perm.staffDocuments'); } },
+];
+
+export const DOCUMENTS_GRANT_KEYS = DOCUMENTS_GRANTS.map((grant) => grant.key);
+
+export function isDocumentsGrant(key) {
+  return DOCUMENTS_GRANT_KEYS.includes(key);
+}
+
+/** Any per-member grant key (Settings sections + returns + products + locations + roster + low stock + policy trainings + clock + documents). */
 export function isMemberGrant(key) {
-  return isSettingsGrant(key) || isReturnsGrant(key) || isProductsGrant(key) || isLocationsGrant(key) || isRosterGrant(key) || isLowStockGrant(key) || isTrainingGrant(key) || isClockGrant(key);
+  return isSettingsGrant(key) || isReturnsGrant(key) || isProductsGrant(key) || isLocationsGrant(key) || isRosterGrant(key) || isLowStockGrant(key) || isTrainingGrant(key) || isClockGrant(key) || isDocumentsGrant(key);
 }
 
 /** A member row's level, mirroring the server's personLevel. */

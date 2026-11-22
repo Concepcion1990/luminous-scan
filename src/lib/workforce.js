@@ -92,6 +92,40 @@ export function fixTimeEntry(businessId, entryId, values) {
   });
 }
 
+// Staff documents (Nov 21, 2026): each member's paperwork file.
+// Every door is owner / staff.documents-ticked-manager only; the
+// server decides (server/staffDocumentRoutes.js), these only
+// carry the calls. The routes live outside the workforce base —
+// their own /staff-documents stem, like the policy files.
+const documentsBase = (businessId) =>
+  `/api/businesses/${encodeURIComponent(businessId)}/staff-documents`;
+
+export function listDocumentMembers(businessId) {
+  return apiRequest(`${documentsBase(businessId)}/members`);
+}
+
+export function listStaffDocuments(businessId, memberId) {
+  return apiRequest(`${documentsBase(businessId)}/${encodeURIComponent(memberId)}`);
+}
+
+export function uploadStaffDocument(businessId, memberId, values) {
+  return apiRequest(`${documentsBase(businessId)}/${encodeURIComponent(memberId)}`, {
+    method: 'POST',
+    body: values,
+  });
+}
+
+export function removeStaffDocument(businessId, memberId, docId) {
+  return apiRequest(
+    `${documentsBase(businessId)}/${encodeURIComponent(memberId)}/${encodeURIComponent(docId)}`,
+    { method: 'DELETE' },
+  );
+}
+
+export function staffDocumentFileUrl(businessId, memberId, docId) {
+  return `${documentsBase(businessId)}/${encodeURIComponent(memberId)}/${encodeURIComponent(docId)}/file`;
+}
+
 export function listNotifications(businessId) {
   return apiRequest(`${base(businessId)}/notifications`);
 }
