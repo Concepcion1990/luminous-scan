@@ -250,7 +250,7 @@ test('the server split sits in the entity reads, manager-level, and the contact 
 
 test('the Staff door follows the tick and the page renders read-only for a roster holder', () => {
   const nav = read('../../src/components/layout/navGroups.js');
-  assert.match(nav, /anyPerm: \['staff\.roster'\]/, 'the Staff nav item carries the roster alternative');
+  assert.match(nav, /anyPerm: \['staff\.roster', 'staff\.clock'\]/, 'the Staff nav item carries the roster alternative (and, since the clock build, the clock tick — corrections live on this page)');
   const layout = read('../../src/components/Layout.jsx');
   assert.match(layout, /\(item\.anyPerm \|\| \[\]\)\.some/, 'Layout honors anyPerm on the nav list');
   assert.match(layout, /doorOpens\(current\)/, 'and on the route gate');

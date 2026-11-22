@@ -70,12 +70,15 @@ test('plan-visible counts: Business whole, Essentials without the Business subje
   // The profile photos batch (Nov 21, 2026) adds one both-plans
   // lesson per affected track (staff your-profile-photo, owner
   // owner-profile-photos): staff 39/34, owner 41/23.
+  // The clock build (Nov 21, 2026) adds the call-ins and clock
+  // corrections lesson (manager track, both plans, riding the
+  // staff.clock tick): manager 19/13.
   assert.equal(count('owner', true), 41);
-  assert.equal(count('manager', true), 18);
+  assert.equal(count('manager', true), 19);
   assert.equal(count('staff', true), 39);
   // Essentials: 19 owner subjects hidden, owner-import in their place.
   assert.equal(count('owner', false), 23); // +1 confidentiality lesson (Nov 19, 2026)
-  assert.equal(count('manager', false), 12);
+  assert.equal(count('manager', false), 13);
   assert.equal(count('staff', false), 34);
   // Payroll / workforce / direct-deposit lessons stay on Essentials.
   const essentialsStaff = client.visibleLessonsForTrack('staff', false).map((l) => l.id);

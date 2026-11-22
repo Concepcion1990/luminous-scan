@@ -126,6 +126,7 @@ export const TRAINING_LESSONS = [
   { id: 'mgr-tasks-assign', track: 'manager', module: 'workforce', steps: 4 },
   { id: 'mgr-give-rewards', track: 'manager', module: 'rewards', steps: 4, feature: 'rewards' },
   { id: 'mgr-clock-oversight', track: 'manager', module: 'workforce', steps: 4 },
+  { id: 'mgr-clock-callin', track: 'manager', module: 'workforce', steps: 5 },
   { id: 'mgr-payroll-preview', track: 'manager', module: 'payroll', steps: 4 },
   { id: 'mgr-stub-push', track: 'manager', module: 'payroll', steps: 4 },
   { id: 'mgr-cash-up', track: 'manager', module: 'payroll', steps: 4 },
@@ -254,6 +255,9 @@ export const MODULE_BY_PERMISSION = {
   ],
   "staff.roster": [
     "staff"
+  ],
+  "staff.clock": [
+    "workforce"
   ],
   "alerts.view": [
     "reports"

@@ -92,6 +92,10 @@ export const LESSON_REQUIREMENTS = {
   'mgr-reports-alerts': ['reports.view'],
   'staff-builds': ['builds.manage'],
   'mgr-staff-permissions': ['staff.manage', 'staff.roster'],
+  // The clock tick's lesson (Nov 21, 2026): the tick IS the
+  // door — granting staff.clock assigns it, unticking mirrors
+  // it out of future scope; completed history is never removed.
+  'mgr-clock-callin': ['staff.clock'],
   'mgr-suppliers-orders': ['suppliers.manage'],
   'mgr-send-supplier-order': ['purchasing.manage'],
   'mgr-tax-rate': ['settings.taxRate', 'settings.manage'],

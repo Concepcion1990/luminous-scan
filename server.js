@@ -19,6 +19,7 @@ import { config, configuredSecretNames } from './server/config.js';
 import { runMigrations } from './server/migrate.js';
 import { setPoolOverride, getPool } from './server/db.js';
 import { startSweepScheduler } from './server/sweepScheduler.js';
+import { startMissedClockOutScheduler } from './server/clockAdmin.js';
 
 const app = createApp();
 
@@ -57,6 +58,11 @@ async function main() {
     // POST /api/billing/trial-reminder-sweep stay as the manual
     // door either way.
     startSweepScheduler({ getPoolFn: getPool });
+    // The missed-clock-out bell watch (Nov 21, 2026): rings the
+    // owner and ticked managers once when a scheduled shift ends
+    // with no clock-out. The flag itself is computed live on
+    // every entries read; this only lands the bell.
+    startMissedClockOutScheduler({ getPoolFn: getPool });
   });
 }
 

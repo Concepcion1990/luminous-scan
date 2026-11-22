@@ -124,8 +124,12 @@ export const NAV_GROUPS = [
       // gave the roster opens the page read-only, so the door
       // must hang for them too (Layout honors anyPerm beside
       // perm). The server scopes what they can read; the page
-      // hides its manage furniture for them.
-      { to: '/staff', label: 'Staff', labelKey: 'nav.staff', icon: Users, perm: 'staff.manage', anyPerm: ['staff.roster'] },
+      // hides its manage furniture for them. The clock build
+      // (Nov 21, 2026) adds the staff.clock tick the same way:
+      // corrections live on this page, so a manager holding
+      // only the clock tick must be able to open it — their
+      // clock card renders, the manage furniture stays hidden.
+      { to: '/staff', label: 'Staff', labelKey: 'nav.staff', icon: Users, perm: 'staff.manage', anyPerm: ['staff.roster', 'staff.clock'] },
       // Workforce + Payroll carry no `perm`: every team member needs
       // the time clock and their own stubs. The server enforces the
       // owner > manager > staff hierarchy on every call.

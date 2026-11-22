@@ -65,6 +65,33 @@ export function listEntries(businessId) {
   return apiRequest(`${base(businessId)}/entries`);
 }
 
+// Call-in windows + time-entry corrections (the clock build,
+// Nov 21, 2026). Every door is owner / ticked-manager only; the
+// server decides, these only carry the calls.
+export function listCallInWindows(businessId) {
+  return apiRequest(`${base(businessId)}/call-in`);
+}
+
+export function openCallInWindow(businessId, staffId) {
+  return apiRequest(`${base(businessId)}/call-in/${encodeURIComponent(staffId)}`, {
+    method: 'POST',
+    body: {},
+  });
+}
+
+export function closeCallInWindow(businessId, staffId) {
+  return apiRequest(`${base(businessId)}/call-in/${encodeURIComponent(staffId)}`, {
+    method: 'DELETE',
+  });
+}
+
+export function fixTimeEntry(businessId, entryId, values) {
+  return apiRequest(`${base(businessId)}/entries/${encodeURIComponent(entryId)}`, {
+    method: 'PATCH',
+    body: values,
+  });
+}
+
 export function listNotifications(businessId) {
   return apiRequest(`${base(businessId)}/notifications`);
 }
