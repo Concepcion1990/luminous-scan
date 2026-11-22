@@ -230,6 +230,13 @@ export const stripeApi = {
   updateSubscription: (subscriptionId, params, options) =>
     stripePost(`/subscriptions/${encodeURIComponent(subscriptionId)}`, params, options),
 
+  // Immediate cancel (DELETE /subscriptions/:id) — the failed-
+  // payment road's day-15 backstop (release 341). TEST mode in
+  // practice: the live guard in stripeRequest refuses live calls
+  // unless STRIPE_LIVE_ENABLED is exactly 'true'.
+  cancelSubscription: (subscriptionId) =>
+    stripeRequest(`/subscriptions/${encodeURIComponent(subscriptionId)}`, { method: 'DELETE' }),
+
   updateCustomer: (customerId, params, options) =>
     stripePost(`/customers/${encodeURIComponent(customerId)}`, params, options),
 
