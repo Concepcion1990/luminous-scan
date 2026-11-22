@@ -309,6 +309,26 @@ export function trialReminderFinalEmail({ to, plan, trialEndsAt, cancelAtPeriodE
 }
 
 /**
+ * The failed-payment warning email (release 341, owner's ruling
+ * Nov 19, 2026): sent ONCE per failed-payment episode, 3 days
+ * before the 14-day full-use grace ends, to the OWNER only, in
+ * the owner's own language. Scheduling + the claim ledger live in
+ * server/failedPayment.js (runFailedPaymentSweep). Like the trial
+ * reminders, this is the app writing to its own subscriber about
+ * their subscription, so the app's name is correct here.
+ */
+export function paymentFailedWarningEmail({ to, plan, graceEndsAt, lang }) {
+  const s = emailStringsFor(lang);
+  const planName = plan === 'business' ? 'Business' : 'Essentials';
+  const dateLine = trialDateLine(graceEndsAt, lang);
+  return {
+    to,
+    subject: s['payfail.subject'],
+    text: fillEmail(s['payfail.body'], { planName, date: dateLine }),
+  };
+}
+
+/**
  * Support report email (Support phase) — a copy of a "Report a
  * problem" note filed from inside the app, sent to the owner's
  * support inbox. OPERATOR MAIL: this goes to the platform operator's

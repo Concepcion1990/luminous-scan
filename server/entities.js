@@ -1098,7 +1098,7 @@ export async function listEntities(pool, user, name, filter = {}, options = {}) 
         if (wantedIds.length) throw subscriptionDeniedError(gate, user);
         continue;
       }
-      if (gate.state === 'grace' && !GRACE_READABLE_ENTITIES.has(name)) {
+      if (gate.state === 'grace' && gate.reason !== 'failed_payment_view_only' && !GRACE_READABLE_ENTITIES.has(name)) {
         if (wantedIds.length) throw graceReadOnlyError(gate, user);
         continue;
       }
@@ -1185,6 +1185,7 @@ export async function getEntity(pool, user, name, id) {
   if (name !== 'Entitlement') {
     await assertSubscriptionAccess(pool, user, row.business_id, {
       graceRead: GRACE_READABLE_ENTITIES.has(name),
+      broadRead: true,
     });
   }
   if (def.planGate && !featureAllowed(access.planKey, def.planGate)) {

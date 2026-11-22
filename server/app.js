@@ -210,7 +210,12 @@ export function createApp() {
       const loaded = await loadSessionUser(pool, cookies[SESSION_COOKIE]);
       if (!loaded || loaded.scope === 'recovery') return next();
       const write = !['GET', 'HEAD'].includes(req.method);
-      await assertSubscriptionAccess(pool, loaded.user, match[1], { write });
+      // broadRead: during the failed-payment road's view-only
+      // days every read stays open (owner's ruling, Nov 20,
+      // 2026 — staff can reach their own pay stubs); writes are
+      // still refused. The flag changes nothing for any other
+      // state (see assertSubscriptionAccess).
+      await assertSubscriptionAccess(pool, loaded.user, match[1], { write, broadRead: true });
       return next();
     } catch (error) {
       if (error && error.status === 403) {

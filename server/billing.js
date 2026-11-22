@@ -20,6 +20,7 @@ import { evidenceFromSubscription, stripeTsToIso, isFirstPaidCharge } from './st
 import { consumeTrial } from './trialEligibility.js';
 import { priceForPlan } from './stripeCatalog.js';
 import { endCompEntriesForEmail } from './foundingTester.js';
+import { clearPaymentRoad } from './failedPayment.js';
 
 export const CANCELLATION_GRACE_DAYS = 15;
 /**
@@ -190,6 +191,15 @@ export async function grantFromEvidence(pool, { businessId, ownerId, ownerEmail,
     }
     const subscriptionRow = await upsertSubscription(client, { businessId, ownerId, ownerEmail, evidence, sessionId: session?.id || null });
     const entitlement = await upsertEntitlement(client, { businessId, ownerId, ownerEmail, evidence });
+    // Failed-payment road recovery (release 341): a verified
+    // grant at active/trialing means the money is good again —
+    // every road marker clears inside this same transaction,
+    // whether the workspace was in its 14-day grace or already
+    // in the view-only days. No trace remains for staff (they
+    // never saw the road at all).
+    if (evidence.status === 'active' || evidence.status === 'trialing') {
+      await clearPaymentRoad(client, businessId);
+    }
     // Mark the pending purchase completed (join key: session id or subscription id).
     if (session?.id || evidence.subscriptionId) {
       await client.query(

@@ -208,6 +208,22 @@ export function createMockStripe() {
       if (cancelAtPeriodEnd !== null && cancelAtPeriodEnd !== undefined) {
         sub.cancel_at_period_end = cancelAtPeriodEnd === 'true';
       }
+      // The failed-payment road (release 341) sets cancel_at to
+      // the grace end so Stripe itself cancels on day 15.
+      const cancelAt = get('cancel_at');
+      if (cancelAt !== null && cancelAt !== undefined) {
+        sub.cancel_at = Number(cancelAt);
+      }
+      return jsonResponse(200, { ...sub });
+    }
+
+    // DELETE /v1/subscriptions/:id — immediate cancel (the
+    // failed-payment sweep's day-15 backstop, release 341).
+    if (method === 'DELETE' && subGet) {
+      const sub = subscriptions.get(decodeURIComponent(subGet[1]));
+      if (!sub) return stripeError(404, 'No such subscription.');
+      sub.status = 'canceled';
+      sub.canceled_at = nowSec();
       return jsonResponse(200, { ...sub });
     }
 

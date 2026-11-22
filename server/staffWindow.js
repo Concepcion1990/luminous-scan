@@ -65,6 +65,7 @@
  * enforce the window without an import cycle.
  */
 import { staffRowForEmail, isTrustedStaffRow } from './authz.js';
+import { businessInFailedPaymentViewOnly } from './failedPayment.js';
 
 export const WINDOW_EARLY_MINUTES = 10;
 const GRACE_DEFAULT_MS = 10 * 60 * 1000;
@@ -369,12 +370,22 @@ async function stateForMember(pool, business, member, now, strict = false) {
  * when grace is the sole thing keeping the session alive.
  */
 export async function staffWindowState(pool, user, now = new Date()) {
+  // The failed-payment view-only days (owner's ruling Nov 20,
+  // 2026; release 341): while a business sits in its 15 view-only
+  // days, the bracket does NOT gate its people — staff can sign
+  // in outside any shift to look and to retrieve their own pay
+  // stubs and information. A business in view-only simply stands
+  // outside the bracket, like a business the user owns.
   const judged = await windowMember(pool, user);
-  if (judged) return stateForMember(pool, judged.business, judged.member, now, judged.strict);
+  if (judged) {
+    if (await businessInFailedPaymentViewOnly(pool, judged.business.id, now)) return { applies: false };
+    return stateForMember(pool, judged.business, judged.member, now, judged.strict);
+  }
   const candidates = await windowCandidates(pool, user);
   if (!candidates.length) return { applies: false };
   const states = [];
   for (const candidate of candidates) {
+    if (await businessInFailedPaymentViewOnly(pool, candidate.business.id, now)) continue;
     const state = await stateForMember(
       pool, candidate.business, candidate.member, now,
       candidate.business.id === (user?.active_business_id || null),

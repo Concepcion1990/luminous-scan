@@ -42,6 +42,7 @@ import {
 } from './stripeCatalog.js';
 import { checkTrialEligibility, reserveTrial } from './trialEligibility.js';
 import { runTrialReminderSweep } from './trialReminders.js';
+import { recordPaymentFailure, clearPaymentRoad, runFailedPaymentSweep } from './failedPayment.js';
 import { runCustomerAddressSweep } from './customerAddresses.js';
 import {
   evidenceFromSubscription,
@@ -725,6 +726,21 @@ export function createBillingRouter({ getPool: getPoolFn }) {
     return res.json(summary);
   }));
 
+  // ---- Failed-payment sweep (job endpoint; job-secret protected) ---------
+  router.post('/billing/failed-payment-sweep', asyncHandler(async (req, res) => {
+    const pool = getPoolFn();
+    const jobSecret = process.env.BILLING_JOB_SECRET;
+    if (!jobSecret) {
+      return res.status(503).json({ error: 'failed_payment_job_not_configured', message: 'The failed-payment sweep is not configured.' });
+    }
+    const provided = req.get('x-job-secret');
+    if (!provided || provided !== jobSecret) {
+      return res.status(401).json({ error: 'not_authorized', message: 'A valid job secret is required.' });
+    }
+    const summary = await runFailedPaymentSweep(pool, { now: new Date() });
+    return res.json(summary);
+  }));
+
   return router;
 }
 
@@ -878,7 +894,21 @@ async function handleStripeEvent(pool, event) {
                cancel_at_period_end = $4, updated_at = NOW() WHERE business_id = $5`,
             [subscription.status, stripeTsToIso(subscription.trial_end), subscriptionPeriodEndsAt(subscription), subscription.cancel_at_period_end === true, business.id],
           );
-          if (subscription.status === 'canceled' || subscription.cancel_at_period_end === true) {
+          // The failed-payment road governs while it runs
+          // (release 341): a cancel_at_period_end flag arriving
+          // on a past_due subscription that is on the road does
+          // NOT flip the workspace onto the voluntary-cancel
+          // road — the road's earlier end already governs, and
+          // the two roads never double-apply. The owner's cancel
+          // request itself stands in Stripe and takes its normal
+          // course if the payment is later fixed.
+          const onFailedPaymentRoad = Boolean(record?.payment_failed_at) && subscription.status === 'past_due';
+          if (subscription.status === 'active' || subscription.status === 'trialing') {
+            // Recovery: the money is good again — every road
+            // marker clears in this same transaction.
+            await clearPaymentRoad(client, business.id);
+          }
+          if (subscription.status === 'canceled' || (subscription.cancel_at_period_end === true && !onFailedPaymentRoad)) {
             const periodEndsAt = subscriptionPeriodEndsAt(subscription);
             const graceEndsAt = periodEndsAt
               ? new Date(Date.parse(periodEndsAt) + CANCELLATION_GRACE_DAYS * 86_400_000).toISOString()
@@ -914,7 +944,21 @@ async function handleStripeEvent(pool, event) {
       }
       const { business } = await businessAndOwnerFor(pool, subscription.metadata || {});
       if (!business) return { handled: false, reason: 'unknown_business' };
-      const periodEndsAt = subscriptionPeriodEndsAt(subscription);
+      let periodEndsAt = subscriptionPeriodEndsAt(subscription);
+      // The failed-payment road (release 341): when Stripe
+      // cancels at the road's cancel_at, the deleted subscription
+      // may carry no period end of its own — the road's grace end
+      // IS the cancellation instant, and the view-only window
+      // runs from it.
+      if (!periodEndsAt) {
+        const { rows: roadRows } = await pool.query(
+          'SELECT payment_grace_ends_at FROM subscriptions WHERE business_id = $1 LIMIT 1',
+          [business.id],
+        );
+        if (roadRows[0]?.payment_grace_ends_at) {
+          periodEndsAt = new Date(roadRows[0].payment_grace_ends_at).toISOString();
+        }
+      }
       const graceEndsAt = periodEndsAt
         ? new Date(Date.parse(periodEndsAt) + CANCELLATION_GRACE_DAYS * 86_400_000).toISOString()
         : null;
@@ -976,7 +1020,30 @@ async function handleStripeEvent(pool, event) {
         `UPDATE entitlements SET status = 'past_due', updated_at = NOW() WHERE business_id = $1`,
         [business.id],
       );
-      return { handled: true };
+      // The failed-payment road (owner's ruling Nov 19, 2026;
+      // release 341): the FIRST verified failure starts a 14-day
+      // full-use grace. Stripe is configured to match (TEST mode):
+      // the subscription's cancel_at is set to the grace end, so
+      // Stripe itself cancels on day 15 and its webhook confirms
+      // the transition; the sweep is the backstop. A repeat
+      // failure while the road is live moves nothing — the clock
+      // runs from the first failure. A business with no
+      // subscription row (a founding-tester comp) can never enter
+      // the road: recordPaymentFailure returns null there.
+      const road = await recordPaymentFailure(pool, business.id);
+      if (road && !road.alreadyOnRoad && subscription.id) {
+        try {
+          await stripeApi.updateSubscription(subscription.id, {
+            cancel_at: Math.floor(Date.parse(road.graceEndsAt) / 1000),
+          }, { idempotencyKey: idempotencyKey(business.id, subscription.id, 'failed-payment-cancel-at') });
+        } catch (error) {
+          // The road is app-side state from a verified event; a
+          // failed cancel_at write is logged and the sweep's
+          // day-15 transition remains the backstop.
+          console.error(`[twin] failed-payment road: could not set Stripe cancel_at for business ${business.id}: ${error.message}`);
+        }
+      }
+      return { handled: true, failed_payment_road: road ? road.graceEndsAt : null };
     }
 
     case 'customer.subscription.trial_will_end': {

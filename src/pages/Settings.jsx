@@ -130,6 +130,18 @@ function BossSettings() {
   // there is a live paid or trial subscription to cancel. The
   // complimentary (grandfathered) workspace is never cancellable.
   const canCancel = isOwner && ['active', 'trialing', 'past_due'].includes(entitlementStatus);
+  // The failed-payment road's fix-by date (release 341): the
+  // owner's warning card names the exact day full use ends. The
+  // entitlement record carries the mirrored road markers; this
+  // card renders only in the boss's room, so the date — like
+  // everything about money — stays the owner's alone.
+  const pastDueGraceEndsOn = (() => {
+    if (entitlementStatus !== 'past_due' || !entitlementRecord?.payment_grace_ends_at) return null;
+    const date = new Date(entitlementRecord.payment_grace_ends_at);
+    return Number.isFinite(date.getTime())
+      ? date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+      : null;
+  })();
   const cancelEndsOn = (() => {
     if (entitlementStatus !== 'canceled' || !entitlementRecord?.period_ends_at) return null;
     const date = new Date(entitlementRecord.period_ends_at);
@@ -663,6 +675,11 @@ function BossSettings() {
               <p className="mt-1 text-muted-foreground">
                 {t('settings.pastDue.body')}
               </p>
+              {pastDueGraceEndsOn && (
+                <p className="mt-1 font-medium">
+                  {t('settings.pastDue.fixBy', { date: pastDueGraceEndsOn })}
+                </p>
+              )}
               <Button type="button" variant="outline" className="mt-3 min-h-11" asChild>
                 <Link to="/upgrade">{t('settings.pastDue.updateButton')}</Link>
               </Button>
