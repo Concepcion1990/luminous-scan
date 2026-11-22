@@ -55,8 +55,9 @@ export const STOCKHAVEN_SUBSCRIPTION_POLICY_DE = Object.freeze({
     {
       id: 'failed-payments', title: '6. Fehlgeschlagene Zahlungen',
       paragraphs: [
-        'Wenn eine wiederkehrende Zahlung erfolglos ist, können wir Sie benachrichtigen und Ihnen eine Gelegenheit geben, Ihre Zahlungsmethode zu aktualisieren.',
-        'Bezahlte Funktionen können eingeschränkt werden, wenn eine Zahlung aussteht, vorbehaltlich der in Abschnitt 3 beschriebenen 15-tägigen Nur-Lesen-Kulanzzeit und des anwendbaren Rechts. Wir behandeln eine unbestätigte Zahlung nicht als Nachweis, dass bezahlte Dienste verlängert wurden.',
+        'Wenn eine wiederkehrende Zahlung erfolglos ist, tritt Ihr Abonnement in eine 14-tägige Kulanzzeit ein. Während dieser 14 Tage bleiben Ihre bezahlten Funktionen vollständig verfügbar, und für Ihr Team ändert sich nichts. Wir benachrichtigen den Kontoinhaber, bevor die Kulanzzeit endet, und geben ihm die Gelegenheit, seine Zahlungsmethode zu aktualisieren.',
+        'Wenn die Zahlung nicht innerhalb der 14 Tage korrigiert wird, wird das Abonnement gekündigt. Für 15 Tage nach der Kündigung können Sie sich weiterhin anmelden und Ihre Informationen ansehen — einschließlich, für Teammitglieder, ihrer eigenen Lohnunterlagen — aber es können keine Änderungen vorgenommen werden. Nach diesen 15 Tagen werden Ihr Konto und alle seine Informationen dauerhaft gelöscht und können nicht wiederhergestellt werden, wie in Abschnitt 3 beschrieben.',
+        'Wenn die Zahlung während der 14-tägigen Kulanzzeit oder während des 15-tägigen Zeitraums mit nur Lesezugriff korrigiert wird, werden Ihr Abonnement und Ihr vollständiger Zugang wiederhergestellt. Wir behandeln eine unbestätigte Zahlung nicht als Nachweis, dass bezahlte Dienste verlängert wurden.',
       ],
     },
     {

@@ -55,8 +55,9 @@ export const STOCKHAVEN_SUBSCRIPTION_POLICY_PCM = Object.freeze({
     {
       id: 'failed-payments', title: '6. Payment dem wey no succeed',
       paragraphs: [
-        'If recurring payment no succeed, we fit tell you and give you chance make you update your payment method.',
-        'Paid features fit dey restricted if payment remain outstanding, subject to di 15-day read-only grace period wey dem describe for section 3 and applicable law. We no go treat payment wey dem never verify as proof say paid services don renew.',
+        'If recurring payment no succeed, your subscription go enter 14-day grace period. For dose 14 days, your paid features go remain fully available, and nothing go change for your team. We go tell di account owner before di grace period finish and give chance make dem update di payment method.',
+        'If dem no correct di payment within di 14 days, dem go cancel di subscription. For 15 days after cancellation, you still fit sign in and view your information — including, for team member dem, dem own pay records — but dem no fit make any changes. After dose 15 days, your account and all im information go delete permanently and dem no fit recover am, as dem describe am for section 3.',
+        'If dem correct di payment during di 14-day grace period or di 15-day view-only period, your subscription and full access go come back. We no go treat payment wey dem never verify as proof say paid services don renew.',
       ],
     },
     {

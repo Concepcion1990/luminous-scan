@@ -55,8 +55,9 @@ export const STOCKHAVEN_SUBSCRIPTION_POLICY_IT = Object.freeze({
     {
       id: 'failed-payments', title: '6. Mancati pagamenti',
       paragraphs: [
-        'Se un pagamento ricorrente non va a buon fine, possiamo avvisarti e darti l\'opportunità di aggiornare il tuo metodo di pagamento.',
-        'Le funzionalità a pagamento possono essere limitate se il pagamento resta in sospeso, nel rispetto del periodo di tolleranza in sola lettura di 15 giorni descritto nella sezione 3 e della legge applicabile. Non tratteremo un pagamento non verificato come prova che i servizi a pagamento si sono rinnovati.',
+        'Se un pagamento ricorrente non va a buon fine, il tuo abbonamento entra in un periodo di tolleranza di 14 giorni. Durante quei 14 giorni le tue funzionalità a pagamento restano completamente disponibili e non cambia nulla per il tuo team. Avviseremo il titolare dell\'account prima della fine del periodo di tolleranza e gli daremo l\'opportunità di aggiornare il suo metodo di pagamento.',
+        'Se il pagamento non viene corretto entro i 14 giorni, l\'abbonamento viene annullato. Per 15 giorni dopo l\'annullamento puoi ancora accedere e visualizzare le tue informazioni — incluse, per i membri del team, le loro buste paga — ma non è possibile apportare modifiche. Dopo quei 15 giorni, il tuo account e tutte le sue informazioni vengono eliminati in modo permanente e non possono essere recuperati, come descritto nella sezione 3.',
+        'Se il pagamento viene corretto durante il periodo di tolleranza di 14 giorni o durante il periodo di sola visualizzazione di 15 giorni, il tuo abbonamento e il tuo accesso completo vengono ripristinati. Non tratteremo un pagamento non verificato come prova che i servizi a pagamento si sono rinnovati.',
       ],
     },
     {

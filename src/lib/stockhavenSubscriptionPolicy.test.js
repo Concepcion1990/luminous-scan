@@ -9,13 +9,13 @@ const read = path => fs.readFileSync(path, 'utf8');
 
 test('StockHaven policy is effective, names Stripe billing, and never names Wix',()=>{
   assert.equal(p.status,'effective');
-  assert.equal(p.version,'2026-11-09-v5');
+  assert.equal(p.version,'2026-11-22-v6');
   assert.equal(p.effectiveDate,'November 9, 2026');
-  assert.equal(p.lastReviewed,'November 9, 2026');
+  assert.equal(p.lastReviewed,'November 22, 2026');
   // T1 twin: the "switching to Stripe" launchNotice is REMOVED entirely.
   assert.equal(p.launchNotice, undefined, 'no launchNotice on the twin');
   assert.doesNotMatch(JSON.stringify(p), /launchNotice|being switched to Stripe|subscriptions will be back soon/i);
-  assert.match(body,/15-day read-only grace period/i);
+  assert.match(body,/14-day grace period/i);
   assert.doesNotMatch(p.scope,/proposed policy/i);
   assert.doesNotMatch(body,/Wix/i);
   assert.doesNotMatch(body,/draft|not yet effective/i);
@@ -45,7 +45,7 @@ test('customer can cancel future renewals but existing period is preserved when 
   assert.match(body,/cancellation stops future automatic renewals/i);
   assert.match(body,/end of the month you already paid for/i);
   assert.ok(body.includes(CANCELLATION_WIPE_SENTENCE),'cancellation states the canonical wipe sentence');
-  assert.match(body,/15-day read-only grace period/i);
+  assert.match(body,/15 days to view your products only/i);
 });
 test('voluntary cancellation retains only the ALREADY paid period, not an extra month',()=>{
   assert.match(body,/cancel at any time/i);
@@ -103,7 +103,26 @@ test('cancellation copy is the canonical grace + wipe copy (audit findings 1/34)
   assert.doesNotMatch(body,/no longer accessible until you subscribe again/i);
   assert.doesNotMatch(body,/Data is never deleted/i);
   const failed = p.sections.find(s => s.id === 'failed-payments');
-  assert.match(failed.paragraphs.join('\n'),/15-day read-only grace period described in section 3/i);
+  assert.ok(failed.paragraphs.join('\n').includes('your account and all its information are permanently deleted and cannot be recovered, as described in section 3'),
+    'section 6 hands off to the section 3 deletion after its view-only days');
+});
+test('failed payments state the built road: 14 full days, cancel, 15 view-only days, restore on correction (release 343)',()=>{
+  const failed = p.sections.find(s => s.id === 'failed-payments');
+  assert.ok(failed, 'section 6 exists');
+  assert.equal(failed.paragraphs.length, 3, 'section 6 has exactly three paragraphs');
+  const [p1, p2, p3] = failed.paragraphs;
+  assert.match(p1, /enters a 14-day grace period/);
+  assert.match(p1, /paid features remain fully available/);
+  assert.match(p1, /notify the account owner before the grace period ends/);
+  assert.match(p1, /update the payment method/);
+  assert.match(p2, /not corrected within the 14 days, the subscription is canceled/);
+  assert.match(p2, /For 15 days after cancellation you can still sign in and view your information/);
+  assert.match(p2, /their own pay records/);
+  assert.match(p2, /no changes can be made/);
+  assert.match(p3, /corrected during the 14-day grace period or the 15-day view-only period/);
+  assert.match(p3, /full access are restored/);
+  assert.match(p3, /We will not treat an unverified payment as proof that paid services have renewed\./);
+  assert.doesNotMatch(failed.paragraphs.join('\n'), /we may notify you/i);
 });
 test('policy links are reachable from plans, settings and upgrade',()=>{
   for(const name of ['Plans','Settings','Upgrade']){

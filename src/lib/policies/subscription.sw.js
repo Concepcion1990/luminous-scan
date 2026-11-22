@@ -55,8 +55,9 @@ export const STOCKHAVEN_SUBSCRIPTION_POLICY_SW = Object.freeze({
     {
       id: 'failed-payments', title: '6. Malipo yaliyoshindwa',
       paragraphs: [
-        'Ikiwa malipo yanayojirudia hayakufanikiwa, tunaweza kukuarifu na kukupa fursa ya kusasisha njia yako ya malipo.',
-        'Vipengele vilivyolipwa vinaweza kuzuiwa ikiwa malipo yanabaki hayajalipwa, kwa kuzingatia kipindi cha neema cha kusoma tu cha siku 15 kilichoelezwa katika sehemu ya 3 na sheria inayotumika. Hatutachukulia malipo ambayo hayajathibitishwa kama uthibitisho kwamba huduma zilizolipwa zimehuishwa.',
+        'Ikiwa malipo yanayojirudia hayakufanikiwa, usajili wako unaingia katika kipindi cha neema cha siku 14. Katika siku hizo 14 vipengele vyako vilivyolipwa vinabaki vinapatikana kikamilifu, na hakuna kinachobadilika kwa timu yako. Tutamwarifu mmiliki wa akaunti kabla ya kipindi cha neema kuisha na kumpa fursa ya kusasisha njia ya malipo.',
+        'Ikiwa malipo hayakurekebishwa ndani ya siku 14, usajili unaghairiwa. Kwa siku 15 baada ya kughairiwa bado unaweza kuingia na kuona taarifa zako — ikiwa ni pamoja na, kwa wanachama wa timu, rekodi zao wenyewe za malipo — lakini hakuna mabadiliko yanayoweza kufanywa. Baada ya siku hizo 15, akaunti yako na taarifa zake zote hufutwa kabisa na haziwezi kurejeshwa, kama ilivyoelezwa katika sehemu ya 3.',
+        'Ikiwa malipo yanarekebishwa wakati wa kipindi cha neema cha siku 14 au kipindi cha kuona tu cha siku 15, usajili wako na ufikiaji kamili vinarejeshwa. Hatutachukulia malipo ambayo hayajathibitishwa kama uthibitisho kwamba huduma zilizolipwa zimehuishwa.',
       ],
     },
     {

@@ -55,8 +55,9 @@ export const STOCKHAVEN_SUBSCRIPTION_POLICY_FR_CA = Object.freeze({
     {
       id: 'failed-payments', title: '6. Paiements non réussis',
       paragraphs: [
-        'Si un paiement récurrent n’est pas réussi, nous pouvons vous en aviser et vous donner une occasion de mettre à jour votre mode de paiement.',
-        'Les fonctions payées peuvent être restreintes si un paiement demeure en souffrance, sous réserve de la période de grâce en lecture seule de 15 jours décrite à la section 3 et de la loi applicable. Nous ne traiterons pas un paiement non vérifié comme une preuve que les services payés se sont renouvelés.',
+        'Si un paiement récurrent n’est pas réussi, votre abonnement entre dans une période de grâce de 14 jours. Pendant ces 14 jours, vos fonctions payées restent entièrement disponibles, et rien ne change pour votre équipe. Nous aviserons le titulaire du compte avant la fin de la période de grâce et lui donnerons une occasion de mettre à jour son mode de paiement.',
+        'Si le paiement n’est pas corrigé dans les 14 jours, l’abonnement est annulé. Pendant 15 jours après l’annulation, vous pouvez encore ouvrir une session et voir vos renseignements — y compris, pour les membres de l’équipe, leurs propres dossiers de paie — mais aucun changement ne peut être fait. Après ces 15 jours, votre compte et tous ses renseignements sont supprimés de façon permanente et ne peuvent pas être récupérés, comme décrit à la section 3.',
+        'Si le paiement est corrigé pendant la période de grâce de 14 jours ou pendant la période de lecture seule de 15 jours, votre abonnement et votre accès complet sont rétablis. Nous ne traiterons pas un paiement non vérifié comme une preuve que les services payés se sont renouvelés.',
       ],
     },
     {

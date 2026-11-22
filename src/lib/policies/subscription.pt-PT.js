@@ -55,8 +55,9 @@ export const STOCKHAVEN_SUBSCRIPTION_POLICY_PT_PT = Object.freeze({
     {
       id: 'failed-payments', title: '6. Pagamentos falhados',
       paragraphs: [
-        'Se um pagamento recorrente não tiver sucesso, podemos avisá-lo e oferecer-lhe uma oportunidade de atualizar o seu método de pagamento.',
-        'As funcionalidades pagas podem ser restringidas se o pagamento continuar em falta, sujeitas ao período de tolerância só de leitura de 15 dias descrito na secção 3 e à lei aplicável. Não trataremos um pagamento não verificado como prova de que os serviços pagos foram renovados.',
+        'Se um pagamento recorrente não tiver sucesso, a sua subscrição entra num período de tolerância de 14 dias. Durante esses 14 dias, as suas funcionalidades pagas continuam totalmente disponíveis, e nada muda para a sua equipa. Podemos avisar o proprietário da conta antes de o período de tolerância terminar e oferecer-lhe uma oportunidade de atualizar o seu método de pagamento.',
+        'Se o pagamento não for corrigido dentro dos 14 dias, a subscrição é cancelada. Por 15 dias após o cancelamento, ainda pode iniciar sessão e ver as suas informações — incluindo, para os membros da equipa, os seus próprios registos de pagamento —, mas não podem ser feitas alterações. Depois desses 15 dias, a sua conta e todas as suas informações são eliminadas permanentemente e não podem ser recuperadas, como descrito na secção 3.',
+        'Se o pagamento for corrigido durante o período de tolerância de 14 dias ou o período só de leitura de 15 dias, a sua subscrição e o seu acesso completo são restaurados. Não trataremos um pagamento não verificado como prova de que os serviços pagos foram renovados.',
       ],
     },
     {

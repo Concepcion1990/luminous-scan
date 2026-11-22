@@ -55,8 +55,9 @@ export const STOCKHAVEN_SUBSCRIPTION_POLICY_ID = Object.freeze({
     {
       id: 'failed-payments', title: '6. Pembayaran gagal',
       paragraphs: [
-        'Jika pembayaran berulang tidak berhasil, kami dapat memberi tahu Anda dan memberikan kesempatan untuk memperbarui metode pembayaran Anda.',
-        'Fitur berbayar dapat dibatasi jika pembayaran masih tertunggak, tunduk pada masa tenggang hanya-baca 15 hari yang dijelaskan di bagian 3 dan hukum yang berlaku. Kami tidak akan memperlakukan pembayaran yang belum terverifikasi sebagai bukti bahwa layanan berbayar telah diperpanjang.',
+        'Jika pembayaran berulang tidak berhasil, langganan Anda memasuki masa tenggang 14 hari. Selama 14 hari tersebut fitur berbayar Anda tetap tersedia sepenuhnya, dan tidak ada yang berubah untuk tim Anda. Kami akan memberi tahu pemilik akun sebelum masa tenggang berakhir dan memberikan kesempatan untuk memperbarui metode pembayaran.',
+        'Jika pembayaran tidak diperbaiki dalam 14 hari, langganan dibatalkan. Selama 15 hari setelah pembatalan Anda masih dapat masuk dan melihat informasi Anda — termasuk, untuk anggota tim, catatan gaji mereka sendiri — tetapi tidak ada perubahan yang dapat dibuat. Setelah 15 hari tersebut, akun Anda dan semua informasinya dihapus secara permanen dan tidak dapat dipulihkan, seperti yang dijelaskan di bagian 3.',
+        'Jika pembayaran diperbaiki selama masa tenggang 14 hari atau periode hanya-lihat 15 hari, langganan dan akses penuh Anda dipulihkan. Kami tidak akan memperlakukan pembayaran yang belum terverifikasi sebagai bukti bahwa layanan berbayar telah diperpanjang.',
       ],
     },
     {

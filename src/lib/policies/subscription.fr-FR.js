@@ -55,8 +55,9 @@ export const STOCKHAVEN_SUBSCRIPTION_POLICY_FR_FR = Object.freeze({
     {
       id: 'failed-payments', title: '6. Paiements échoués',
       paragraphs: [
-        'Si un paiement récurrent échoue, nous pouvons vous en informer et vous donner la possibilité de mettre à jour votre moyen de paiement.',
-        'Les fonctionnalités payées peuvent être restreintes si le paiement reste en souffrance, sous réserve du délai de grâce en lecture seule de 15 jours décrit à la section 3 et de la loi applicable. Nous ne traiterons pas un paiement non vérifié comme la preuve que les services payés ont été renouvelés.',
+        'Si un paiement récurrent échoue, votre abonnement entre dans un délai de grâce de 14 jours. Pendant ces 14 jours, vos fonctionnalités payées restent entièrement disponibles, et rien ne change pour votre équipe. Nous informerons le titulaire du compte avant la fin du délai de grâce et lui donnerons la possibilité de mettre à jour son moyen de paiement.',
+        'Si le paiement n\'est pas corrigé dans les 14 jours, l\'abonnement est annulé. Pendant 15 jours après l\'annulation, vous pouvez encore vous connecter et consulter vos informations — y compris, pour les membres de l\'équipe, leurs propres relevés de paie — mais aucune modification ne peut être apportée. Après ces 15 jours, votre compte et toutes ses informations sont définitivement supprimés et ne peuvent pas être récupérés, comme décrit à la section 3.',
+        'Si le paiement est corrigé pendant le délai de grâce de 14 jours ou pendant la période de consultation seule de 15 jours, votre abonnement et votre accès complet sont rétablis. Nous ne traiterons pas un paiement non vérifié comme la preuve que les services payés ont été renouvelés.',
       ],
     },
     {

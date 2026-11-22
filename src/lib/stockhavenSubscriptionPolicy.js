@@ -17,10 +17,10 @@
  */
 export const STOCKHAVEN_SUBSCRIPTION_POLICY = Object.freeze({
   id: 'stockhaven-website-subscription-cancellation-refunds',
-  version: '2026-11-09-v5',
+  version: '2026-11-22-v6',
   status: 'effective',
   effectiveDate: 'November 9, 2026',
-  lastReviewed: 'November 9, 2026',
+  lastReviewed: 'November 22, 2026',
   owner: 'The Luminous Book Shop, LLC',
   application: 'Luminous StockHaven',
   title: 'Subscription, Cancellation & Refund Policy',
@@ -74,8 +74,9 @@ export const STOCKHAVEN_SUBSCRIPTION_POLICY = Object.freeze({
     {
       id: 'failed-payments', title: '6. Failed payments',
       paragraphs: [
-        'If a recurring payment is unsuccessful, we may notify you and provide an opportunity to update your payment method.',
-        'Paid features may be restricted if payment remains outstanding, subject to the 15-day read-only grace period described in section 3 and applicable law. We will not treat an unverified payment as proof that paid services have renewed.',
+        'If a recurring payment is unsuccessful, your subscription enters a 14-day grace period. During those 14 days your paid features remain fully available, and nothing changes for your team. We will notify the account owner before the grace period ends and provide an opportunity to update the payment method.',
+        'If the payment is not corrected within the 14 days, the subscription is canceled. For 15 days after cancellation you can still sign in and view your information — including, for team members, their own pay records — but no changes can be made. After those 15 days, your account and all its information are permanently deleted and cannot be recovered, as described in section 3.',
+        'If the payment is corrected during the 14-day grace period or the 15-day view-only period, your subscription and full access are restored. We will not treat an unverified payment as proof that paid services have renewed.',
       ],
     },
     {

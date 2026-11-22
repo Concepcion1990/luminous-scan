@@ -55,8 +55,9 @@ export const STOCKHAVEN_SUBSCRIPTION_POLICY_TR = Object.freeze({
     {
       id: 'failed-payments', title: '6. Başarısız ödemeler',
       paragraphs: [
-        'Yinelenen bir ödeme başarısız olursa, sizi bilgilendirebilir ve ödeme yönteminizi güncelleme fırsatı verebiliriz.',
-        'Ödeme ödenmemiş kalırsa, 3. bölümde açıklanan 15 günlük salt okunur ek süreye ve geçerli yasaya tabi olarak ücretli özellikler kısıtlanabilir. Doğrulanmamış bir ödemeyi, ücretli hizmetlerin yenilendiğinin kanıtı olarak ele almayacağız.',
+        'Yinelenen bir ödeme başarısız olursa, aboneliğiniz 14 günlük bir ek süreye girer. Bu 14 gün boyunca ücretli özellikleriniz tamamen kullanılabilir kalır ve ekibiniz için hiçbir şey değişmez. Ek süre sona ermeden önce hesap sahibini bilgilendireceğiz ve ödeme yöntemini güncelleme fırsatı vereceğiz.',
+        'Ödeme 14 gün içinde düzeltilmezse, abonelik iptal edilir. İptalden sonraki 15 gün boyunca yine de oturum açabilir ve bilgilerinizi görüntüleyebilirsiniz — ekip üyeleri için kendi ücret kayıtları da dahil — ancak hiçbir değişiklik yapılamaz. Bu 15 günün ardından hesabınız ve tüm bilgileri kalıcı olarak silinir ve kurtarılamaz, 3. bölümde açıklandığı gibi.',
+        'Ödeme 14 günlük ek süre veya 15 günlük salt görüntüleme süresi içinde düzeltilirse, aboneliğiniz ve tam erişiminiz geri yüklenir. Doğrulanmamış bir ödemeyi, ücretli hizmetlerin yenilendiğinin kanıtı olarak ele almayacağız.',
       ],
     },
     {

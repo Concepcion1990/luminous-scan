@@ -55,8 +55,9 @@ export const STOCKHAVEN_SUBSCRIPTION_POLICY_HA = Object.freeze({
     {
       id: 'failed-payments', title: '6. Biyan da bai yi nasara ba',
       paragraphs: [
-        'Idan biyan maimaitawa bai yi nasara ba, za mu iya sanar da kai kuma mu ba ka damar sabunta hanyar biyanka.',
-        'Ana iya ƙuntata fasalolin da aka biya idan biya ya ci gaba da kasancewa, gwargwadon lokacin alheri na karatu kawai na kwana 15 da aka bayyana a sashe na 3 da doka mai aiki. Ba za mu ɗauki biyan da ba a tabbatar ba a matsayin shaida cewa an sabunta ayyukan da aka biya.',
+        'Idan biyan maimaitawa bai yi nasara ba, rajistarka tana shiga lokacin alheri na kwana 14. A cikin waɗannan kwana 14 fasalolinka da aka biya suna ci gaba da samuwa cikakke, kuma babu abin da ke canzawa ga ƙungiyarka. Za mu sanar da mai asusun kafin lokacin alheri ya ƙare kuma mu ba da damar sabunta hanyar biyan.',
+        'Idan ba a gyara biyan ba cikin kwana 14, ana soke rajistar. Har kwana 15 bayan sokewar za ka iya shiga ka duba bayananka — ciki har da, ga membobin ƙungiya, bayanan albashinsu na kansu — amma ba za a iya yin canje-canje ba. Bayan waɗannan kwana 15, ana share asusunka da duk bayanansa har abada kuma ba za a iya dawo da su ba, kamar yadda aka bayyana a sashe na 3.',
+        'Idan an gyara biyan a lokacin alheri na kwana 14 ko lokacin duba kawai na kwana 15, ana dawo da rajistarka da cikakken damarka. Ba za mu ɗauki biyan da ba a tabbatar ba a matsayin shaida cewa an sabunta ayyukan da aka biya.',
       ],
     },
     {

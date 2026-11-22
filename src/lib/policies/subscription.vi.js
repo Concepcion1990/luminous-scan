@@ -55,8 +55,9 @@ export const STOCKHAVEN_SUBSCRIPTION_POLICY_VI = Object.freeze({
     {
       id: 'failed-payments', title: '6. Thanh toán thất bại',
       paragraphs: [
-        'Nếu một khoản thanh toán định kỳ không thành công, chúng tôi có thể thông báo cho bạn và cung cấp cơ hội cập nhật phương thức thanh toán của bạn.',
-        'Các tính năng đã trả phí có thể bị hạn chế nếu thanh toán vẫn còn tồn đọng, tuân theo thời gian ân hạn chỉ đọc 15 ngày được mô tả trong mục 3 và luật áp dụng. Chúng tôi sẽ không coi một khoản thanh toán chưa xác minh là bằng chứng rằng dịch vụ trả phí đã gia hạn.',
+        'Nếu một khoản thanh toán định kỳ không thành công, đăng ký của bạn sẽ bước vào thời gian ân hạn 14 ngày. Trong 14 ngày đó, các tính năng đã trả phí của bạn sẽ vẫn khả dụng đầy đủ, và không có gì thay đổi đối với nhóm của bạn. Chúng tôi sẽ thông báo cho chủ tài khoản trước khi thời gian ân hạn kết thúc và cung cấp cơ hội cập nhật phương thức thanh toán.',
+        'Nếu khoản thanh toán không được sửa chữa trong vòng 14 ngày, đăng ký sẽ bị hủy bỏ. Trong 15 ngày sau khi hủy bỏ, bạn vẫn có thể đăng nhập và xem thông tin của mình — bao gồm, đối với các thành viên nhóm, hồ sơ lương của chính họ — nhưng không thể thực hiện thay đổi nào. Sau 15 ngày đó, tài khoản của bạn và mọi thông tin của nó bị xóa vĩnh viễn và không thể khôi phục, như được mô tả trong mục 3.',
+        'Nếu khoản thanh toán được sửa chữa trong thời gian ân hạn 14 ngày hoặc thời gian chỉ xem 15 ngày, đăng ký và quyền truy cập đầy đủ của bạn sẽ được khôi phục. Chúng tôi sẽ không coi một khoản thanh toán chưa xác minh là bằng chứng rằng dịch vụ trả phí đã gia hạn.',
       ],
     },
     {

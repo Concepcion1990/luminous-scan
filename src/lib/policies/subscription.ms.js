@@ -55,8 +55,9 @@ export const STOCKHAVEN_SUBSCRIPTION_POLICY_MS = Object.freeze({
     {
       id: 'failed-payments', title: '6. Bayaran gagal',
       paragraphs: [
-        'Jika bayaran berulang tidak berjaya, kami mungkin memberitahu anda dan memberikan peluang untuk mengemas kini kaedah bayaran anda.',
-        'Ciri berbayar mungkin disekat jika bayaran kekal tertunggak, tertakluk pada tempoh ihsan baca sahaja 15 hari yang diterangkan dalam bahagian 3 dan undang-undang yang berkenaan. Kami tidak akan menganggap bayaran yang tidak disahkan sebagai bukti bahawa perkhidmatan berbayar telah diperbaharui.',
+        'Jika bayaran berulang tidak berjaya, langganan anda memasuki tempoh ihsan 14 hari. Sepanjang 14 hari tersebut ciri berbayar anda kekal tersedia sepenuhnya, dan tiada apa-apa berubah untuk pasukan anda. Kami akan memberitahu pemilik akaun sebelum tempoh ihsan berakhir dan memberikan peluang untuk mengemas kini kaedah bayaran.',
+        'Jika bayaran tidak dibetulkan dalam masa 14 hari, langganan dibatalkan. Selama 15 hari selepas pembatalan anda masih boleh log masuk dan melihat maklumat anda — termasuk, untuk ahli pasukan, rekod gaji mereka sendiri — tetapi tiada perubahan boleh dibuat. Selepas 15 hari itu, akaun anda dan semua maklumatnya dipadamkan secara kekal dan tidak boleh dipulihkan, seperti yang diterangkan dalam bahagian 3.',
+        'Jika bayaran dibetulkan semasa tempoh ihsan 14 hari atau tempoh lihat sahaja 15 hari, langganan dan capaian penuh anda dipulihkan. Kami tidak akan menganggap bayaran yang tidak disahkan sebagai bukti bahawa perkhidmatan berbayar telah diperbaharui.',
       ],
     },
     {

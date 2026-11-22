@@ -55,8 +55,9 @@ export const STOCKHAVEN_SUBSCRIPTION_POLICY_TL = Object.freeze({
     {
       id: 'failed-payments', title: '6. Mga nabigong bayad',
       paragraphs: [
-        'Kung hindi matagumpay ang isang paulit-ulit na bayad, maaari ka naming abisuhan at bigyan ng pagkakataong i-update ang iyong paraan ng pagbabayad.',
-        'Maaaring higpitan ang mga bayad na feature kung mananatiling hindi bayad ang bayad, na napapailalim sa 15 araw na read-only na palugit na inilarawan sa seksyon 3 at sa naaangkop na batas. Hindi namin ituturing ang isang hindi na-verify na bayad bilang patunay na nag-renew ang mga bayad na serbisyo.',
+        'Kung hindi matagumpay ang isang paulit-ulit na bayad, papasok ang iyong subscription sa 14 na araw na palugit. Sa loob ng 14 na araw na iyon, mananatiling ganap na available ang iyong mga bayad na feature, at walang magbabago para sa iyong koponan. Aabisuhan namin ang may-ari ng account bago matapos ang palugit at bibigyan ng pagkakataong i-update ang paraan ng pagbabayad.',
+        'Kung hindi maitama ang bayad sa loob ng 14 na araw, makakansela ang subscription. Sa loob ng 15 araw pagkatapos ng pagkansela, maaari ka pa ring mag-sign in at tingnan ang iyong impormasyon — kabilang, para sa mga miyembro ng koponan, ang kanilang sariling mga rekord ng sahod — ngunit walang maaaring gawing pagbabago. Pagkatapos ng 15 araw na iyon, permanenteng mabubura ang iyong account at lahat ng impormasyon nito at hindi na mababawi, gaya ng inilarawan sa seksyon 3.',
+        'Kung maitama ang bayad sa panahon ng 14 na araw na palugit o ng 15 araw na panahon ng pagtingin lamang, maipanunumbalik ang iyong subscription at ganap na access. Hindi namin ituturing ang isang hindi na-verify na bayad bilang patunay na nag-renew ang mga bayad na serbisyo.',
       ],
     },
     {

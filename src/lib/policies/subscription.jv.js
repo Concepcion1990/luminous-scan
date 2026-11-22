@@ -55,8 +55,9 @@ export const STOCKHAVEN_SUBSCRIPTION_POLICY_JV = Object.freeze({
     {
       id: 'failed-payments', title: '6. Pembayaran gagal',
       paragraphs: [
-        'Menawi pembayaran ambalan mboten kasil, kula saged maringi pirsa dhateng Panjenengan lan maringi kalodhangan kangge nganyari cara pembayaran Panjenengan.',
-        'Fitur ingkang dipunbayar saged dipunwatesi menawi pembayaran taksih dereng rampung, adhedhasar wekdal luwih namung-waos 15 dinten ingkang dipunjlentrehaken ing perangan 3 lan hukum ingkang lumaku. Kula mboten badhé nganggep pembayaran ingkang dereng kaverifikasi dados bukti bilih layanan ingkang dipunbayar sampun anyar.',
+        'Menawi pembayaran ambalan mboten kasil, langganan Panjenengan mlebet wekdal luwih 14 dinten. Salebeting 14 dinten punika fitur ingkang dipunbayar Panjenengan tetep cumawis kanthi jangkep, lan mboten wonten ingkang ewah kangge tim Panjenengan. Kula badhé maringi pirsa dhateng ingkang gadhah akun sadèrèngipun wekdal luwih pungkasan lan maringi kalodhangan kangge nganyari cara pembayaran.',
+        'Menawi pembayaran mboten dipunleresaken salebeting 14 dinten, langganan dipunbatalaken. Salebeting 15 dinten sasampunipun pambatalan Panjenengan taksih saged mlebet lan mirsani informasi Panjenengan — kalebet, kangge anggota tim, cathetan bayaranipun piyambak — nanging mboten saged damel pangowahan. Sasampunipun 15 dinten punika, akun Panjenengan lan sedaya informasinipun dipunbusak kanthi permanen lan mboten saged dipunwangsulaken, kados ingkang dipunjlentrehaken ing perangan 3.',
+        'Menawi pembayaran dipunleresaken salebeting wekdal luwih 14 dinten utawi wekdal namung-mirsani 15 dinten, langganan lan akses jangkep Panjenengan dipunwangsulaken. Kula mboten badhé nganggep pembayaran ingkang dereng kaverifikasi dados bukti bilih layanan ingkang dipunbayar sampun anyar.',
       ],
     },
     {

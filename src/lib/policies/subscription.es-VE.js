@@ -55,8 +55,9 @@ export const STOCKHAVEN_SUBSCRIPTION_POLICY_ES_VE = Object.freeze({
     {
       id: 'failed-payments', title: '6. Pagos fallidos',
       paragraphs: [
-        'Si un pago recurrente no tiene éxito, podemos avisarte y darte una oportunidad de actualizar tu método de pago.',
-        'Las funciones pagadas pueden restringirse si el pago sigue pendiente, sujeto al período de gracia de solo lectura de 15 días descrito en la sección 3 y a la ley aplicable. No trataremos un pago no verificado como prueba de que los servicios pagados se renovaron.',
+        'Si un pago recurrente no tiene éxito, tu suscripción entra en un período de gracia de 14 días. Durante esos 14 días tus funciones pagadas siguen totalmente disponibles, y nada cambia para tu equipo. Avisaremos al propietario de la cuenta antes de que termine el período de gracia y le daremos una oportunidad de actualizar tu método de pago.',
+        'Si el pago no se corrige dentro de los 14 días, la suscripción se cancela. Durante 15 días después de la cancelación aún puedes iniciar sesión y ver tu información —incluidos, para los miembros del equipo, sus propios registros de pago—, pero no se pueden hacer cambios. Después de esos 15 días, tu cuenta y toda su información se borran permanentemente y no se pueden recuperar, como se describe en la sección 3.',
+        'Si el pago se corrige durante el período de gracia de 14 días o el período de solo lectura de 15 días, tu suscripción y tu acceso completo se restablecen. No trataremos un pago no verificado como prueba de que los servicios pagados se renovaron.',
       ],
     },
     {

@@ -55,8 +55,9 @@ export const STOCKHAVEN_SUBSCRIPTION_POLICY_YO = Object.freeze({
     {
       id: 'failed-payments', title: '6. Àwọn ìsanwó tí ó kùnà',
       paragraphs: [
-        'Tí ìsanwó tí ń tún ṣẹlẹ̀ kò bá ṣàṣeyọrí, a lè fún ọ ní ìfitónilétí, a ó sì fún ọ ní àǹfààní láti ṣe àtúnṣe ọ̀nà ìsanwó rẹ.',
-        'A lè dín àwọn ẹ̀yà tí a sanwó fún kù tí ìsanwó bá ṣì kù, ní ìbámu pẹ̀lú àkókò oore-ọ̀fẹ́ ọjọ́ 15 kíkà nìkan tí a ṣàlàyé ní apá 3 àti òfin tí ó wúlò. A kì yóò ka ìsanwó tí a kò jẹ́rìí sí gẹ́gẹ́ bí ẹ̀rí pé a ti tún àwọn iṣẹ́ tí a sanwó fún ṣe.',
+        'Tí ìsanwó tí ń tún ṣẹlẹ̀ kò bá ṣàṣeyọrí, ìforúkọsílẹ̀ rẹ wọ àkókò oore-ọ̀fẹ́ ọjọ́ 14. Láàrin ọjọ́ 14 náà àwọn ẹ̀yà tí o sanwó fún dúró ní wíwà ní kíkún, kò sì sí ohun tí ó yípadà fún ẹgbẹ́ rẹ. A ó fún ẹni tí ó ni àkọọ́lẹ̀ náà ní ìfitónilétí ṣáájú kí àkókò oore-ọ̀fẹ́ tó parí, a ó sì fún un ní àǹfààní láti ṣe àtúnṣe ọ̀nà ìsanwó.',
+        'Tí a kò bá ṣàtúnṣe ìsanwó náà láàrin ọjọ́ 14, a ó fagilé ìforúkọsílẹ̀ náà. Fún ọjọ́ 15 lẹ́yìn fífagilé o sì le wọlé, kí o sì wo ìsọfúnni rẹ — pẹ̀lú, fún àwọn ọmọ ẹgbẹ́, àwọn ìgbàsílẹ̀ owó iṣẹ́ tiwọn fúnra wọn — ṣùgbọ́n a kò le ṣe àwọn ìyípadà kankan. Lẹ́yìn ọjọ́ 15 náà, a ó pa àkọọ́lẹ̀ rẹ àti gbogbo ìsọfúnni rẹ̀ rẹ́ pátápátá, a kò sì le gba wọ́n padà, gẹ́gẹ́ bí a ṣe ṣàlàyé ní apá 3.',
+        'Tí a bá ṣàtúnṣe ìsanwó náà láàrin àkókò oore-ọ̀fẹ́ ọjọ́ 14 tàbí àkókò wíwo nìkan ọjọ́ 15, a ó mú ìforúkọsílẹ̀ rẹ àti ìwọlé kíkún rẹ padà bọ̀. A kì yóò ka ìsanwó tí a kò jẹ́rìí sí gẹ́gẹ́ bí ẹ̀rí pé a ti tún àwọn iṣẹ́ tí a sanwó fún ṣe.',
       ],
     },
     {
