@@ -14,7 +14,7 @@
     "lint:fix": "eslint . --fix",
     "preview": "vite preview",
     "start": "node server.js",
-    "test": "npm run test:t1 && npm run test:t2 && npm run test:t3 && npm run test:t4 && npm run test:t5 && npm run test:t6 && npm run test:t7 && npm run test:t8 && npm run test:t9 && npm run test:t10 && npm run test:t11 && npm run test:t12 && npm run test:t13 && npm run test:t14 && npm run test:t15 && npm run test:t16 && npm run test:t17 && npm run test:t18 && npm run test:t19 && npm run test:t20 && npm run test:t21 && npm run test:t22 && npm run test:t23 && npm run test:t24 && npm run test:t25 && npm run test:t26 && npm run test:t27 && npm run test:t28 && npm run test:t29 && npm run test:t30 && npm run test:t31 && npm run test:t32 && npm run test:t33 && npm run test:t34 && npm run test:t35 && npm run test:t36 && npm run test:t37 && npm run test:t38",
+    "test": "npm run test:t1 && npm run test:t2 && npm run test:t3 && npm run test:t4 && npm run test:t5 && npm run test:t6 && npm run test:t7 && npm run test:t8 && npm run test:t9 && npm run test:t10 && npm run test:t11 && npm run test:t12 && npm run test:t13 && npm run test:t14 && npm run test:t15 && npm run test:t16 && npm run test:t17 && npm run test:t18 && npm run test:t19 && npm run test:t20 && npm run test:t21 && npm run test:t22 && npm run test:t23 && npm run test:t24 && npm run test:t25 && npm run test:t26 && npm run test:t27 && npm run test:t28 && npm run test:t29 && npm run test:t30 && npm run test:t31 && npm run test:t32 && npm run test:t33 && npm run test:t34 && npm run test:t35 && npm run test:t36 && npm run test:t37 && npm run test:t38 && npm run test:t39",
     "test:t1": "node --test src/lib/stockhavenSubscriptionPolicy.test.js src/lib/stockhavenTermsOfService.test.js src/lib/stockhavenPrivacyPolicy.test.js src/lib/trademarkNotice.test.js src/lib/aboutFounder.test.js",
     "test:t2": "node --test tests/t2/*.test.js",
     "test:t3": "node --test tests/t3/*.test.js src/lib/xlsx.test.js src/lib/isbn.test.js",
@@ -52,7 +52,8 @@
     "test:t35": "node --test tests/t35/*.test.js",
     "test:t36": "node --test tests/t36/*.test.js",
     "test:t37": "node --test tests/t37/*.test.js",
-    "test:t38": "node --test tests/t38/*.test.js"
+    "test:t38": "node --test tests/t38/*.test.js",
+    "test:t39": "node --test tests/t39/*.test.js"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^17.0.0",
