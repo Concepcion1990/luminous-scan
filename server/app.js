@@ -49,6 +49,7 @@ import { createBusinessPolicyRouter } from './businessPolicyRoutes.js';
 import { createPolicyQuizRouter } from './policyQuizRoutes.js';
 import { createProfilePhotoRouter } from './profilePhotoRoutes.js';
 import { createCompRouter } from './compRoutes.js';
+import { createBlocklistRouter } from './blocklistRoutes.js';
 import { createStaffDocumentRouter } from './staffDocumentRoutes.js';
 import { createDeletionRouter } from './deletionRoutes.js';
 import { assertSubscriptionAccess } from './subscriptionAccess.js';
@@ -268,6 +269,10 @@ export function createApp() {
   // only — the publisher identity is the only hand on it, and no
   // customer surface links here.
   app.use('/api', createCompRouter({ getPool }));
+  // Signup domain blocklist (server/blocklistRoutes.js):
+  // operator only — the publisher identity is the only hand on
+  // it, and no customer surface links here.
+  app.use('/api', createBlocklistRouter({ getPool }));
   // Staff documents (server/staffDocumentRoutes.js): each
   // member's paperwork file — owner + staff.documents-ticked
   // managers only, every version kept.

@@ -58,6 +58,7 @@ import { DEFAULT_LOCATION_NAME } from './defaultLocation.js';
 import { staffWindowState, autoLogoutAtFor, staffWelcomePending, markStaffWelcomeSeen, memberLevel } from './staffWindow.js';
 import { staffRowForEmail, parseJsonArray, isTrustedStaffRow } from './authz.js';
 import { activeCompEntryForEmail, grantFoundingTester } from './foundingTester.js';
+import { signupBlockedForEmail } from './domainBlocklist.js';
 
 /**
  * Owner-granted Settings sections (Nov 19, 2026): which business
@@ -424,6 +425,20 @@ export function createAuthRouter({ getPool }) {
         }
         let user = existing;
         if (!user) {
+          // The signup domain blocklist (owner's design, Nov 19,
+          // 2026 — server/domainBlocklist.js): the operator can
+          // refuse NEW accounts by email domain. The check runs
+          // only here, at the moment a new account would be
+          // created, and before anything is written or mailed —
+          // a refused signup leaves no row and sends no code.
+          // Existing accounts (the rows above) are never subject
+          // to it, and an email with a pending staff invite is
+          // exempt: invites are owner-chosen, not public signups.
+          // The refusal is plain and neutral — it never names
+          // the list (apiErrors.signupEmailUnavailable, x52).
+          if (await signupBlockedForEmail(client, email)) {
+            return { status: 400, body: { error: 'signup_email_unavailable', message: "An account can't be created with this email address. Please use a different email address." } };
+          }
           const passwordHash = await hashPassword(password);
           const id = crypto.randomUUID();
           const inserted = await client.query(
