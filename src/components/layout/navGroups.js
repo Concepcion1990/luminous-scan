@@ -129,7 +129,12 @@ export const NAV_GROUPS = [
       // corrections live on this page, so a manager holding
       // only the clock tick must be able to open it — their
       // clock card renders, the manage furniture stays hidden.
-      { to: '/staff', label: 'Staff', labelKey: 'nav.staff', icon: Users, perm: 'staff.manage', anyPerm: ['staff.roster', 'staff.clock'] },
+      // The staff documents build (Nov 21, 2026) adds the
+      // staff.documents tick the same way: the documents area
+      // lives on this page, so a manager holding only that tick
+      // must be able to open it — their documents card renders,
+      // the manage furniture stays hidden.
+      { to: '/staff', label: 'Staff', labelKey: 'nav.staff', icon: Users, perm: 'staff.manage', anyPerm: ['staff.roster', 'staff.clock', 'staff.documents'] },
       // Workforce + Payroll carry no `perm`: every team member needs
       // the time clock and their own stubs. The server enforces the
       // owner > manager > staff hierarchy on every call.
