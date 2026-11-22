@@ -12,6 +12,7 @@ import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import StaffMemberCard from '@/components/staff/StaffMemberCard';
 import ClockAttentionCard from '@/components/staff/ClockAttentionCard';
+import StaffDocumentsCard from '@/components/staff/StaffDocumentsCard';
 import PhotoApprovalsCard from '@/components/business/PhotoApprovalsCard';
 import { useProfilePhotoSummary } from '@/lib/profilePhotos';
 import { sendStaffPasswordReset } from '@/lib/recovery';
@@ -253,6 +254,13 @@ export default function Staff() {
           to act on. The card self-gates on the workforce
           context; the server enforces every write. */}
       {activeId && <ClockAttentionCard />}
+
+      {/* Staff documents (Nov 21, 2026): renders only for a
+          documents admin — the owner or a manager holding the
+          staff.documents tick — and nothing at all for anyone
+          else. The card self-gates on the workforce context;
+          the server enforces every document read and write. */}
+      {activeId && <StaffDocumentsCard />}
 
       {loading ? (
         <div className="flex items-center gap-2 py-8 text-sm text-muted-foreground">

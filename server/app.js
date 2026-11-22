@@ -49,6 +49,7 @@ import { createBusinessPolicyRouter } from './businessPolicyRoutes.js';
 import { createPolicyQuizRouter } from './policyQuizRoutes.js';
 import { createProfilePhotoRouter } from './profilePhotoRoutes.js';
 import { createCompRouter } from './compRoutes.js';
+import { createStaffDocumentRouter } from './staffDocumentRoutes.js';
 import { createDeletionRouter } from './deletionRoutes.js';
 import { assertSubscriptionAccess } from './subscriptionAccess.js';
 import { ocrAssetsHandler } from './ocrAssets.js';
@@ -262,6 +263,10 @@ export function createApp() {
   // only — the publisher identity is the only hand on it, and no
   // customer surface links here.
   app.use('/api', createCompRouter({ getPool }));
+  // Staff documents (server/staffDocumentRoutes.js): each
+  // member's paperwork file — owner + staff.documents-ticked
+  // managers only, every version kept.
+  app.use('/api', createStaffDocumentRouter({ getPool }));
   app.use('/api', createShopRouter({ getPool }));
 
   app.use('/api', (_req, res) => {
