@@ -49,6 +49,7 @@
 import { entitlementFor } from './plans.js';
 import { loadBusiness } from './authz.js';
 import { GRANDFATHERED_BUSINESS_ID, CANCELLATION_GRACE_DAYS, NEUTRAL_STOP_MESSAGE } from './billing.js';
+import { failedPaymentRoadState } from './failedPayment.js';
 
 /** The publisher/admin login — mirrors src/lib/publisherAccess.js. */
 export const PUBLISHER_OWNER_EMAIL = 'cperezcarrillo.1990@gmail.com';
@@ -91,6 +92,27 @@ export function assessSubscriptionAccess(record, { user = null, business = null,
     graceEndsAt: null,
   };
   if (!record) return { ...base, state: 'denied', reason: 'no_entitlement' };
+  if (record.status === 'past_due') {
+    // The failed-payment road (release 341): a past_due record
+    // carrying road markers (migration 040, mirrored here from
+    // the subscriptions row) runs the road's clock — full use
+    // inside the 14-day payment grace, VIEW-ONLY (state 'grace'
+    // with the failed_payment_view_only reason, so read surfaces
+    // can tell it from the voluntary-cancel grace) inside the
+    // 15 days after, denied past them (the wipe sweep owns the
+    // account by then). A past_due record WITHOUT markers is a
+    // legacy row from before the road existed: Stripe's retry
+    // window, full use, exactly as before this release.
+    const road = failedPaymentRoadState(record, now);
+    if (road.state === 'grace') return { ...base, state: 'full', reason: 'ok', paymentGraceEndsAt: road.graceEndsAt };
+    if (road.state === 'view_only') {
+      return { ...base, state: 'grace', reason: 'failed_payment_view_only', paidThrough: road.graceEndsAt, graceEndsAt: road.viewOnlyEndsAt };
+    }
+    if (road.state === 'deletion_due') {
+      return { ...base, state: 'denied', reason: 'past_grace', paidThrough: road.graceEndsAt, graceEndsAt: road.viewOnlyEndsAt };
+    }
+    return { ...base, state: 'full', reason: 'ok' };
+  }
   if (FULL_STATUSES.has(record.status)) return { ...base, state: 'full', reason: 'ok' };
   if (record.status === 'founding_tester') {
     // A founding tester's workspace (Nov 21, 2026): Business free
@@ -120,6 +142,18 @@ export function assessSubscriptionAccess(record, { user = null, business = null,
     }
     const paidThrough = new Date(paidThroughMs).toISOString();
     const graceEndsAt = new Date(paidThroughMs + GRACE_MS).toISOString();
+    // The failed-payment road's view-only days (release 341):
+    // the day-15 transition (Stripe's own cancel webhook, or the
+    // sweep's backstop) lands the entitlement here — canceled,
+    // paid-through = the payment grace end — with the road
+    // markers still on the record. Those 15 days keep the
+    // road's broader read state, told apart by the reason, so
+    // staff can still reach their own pay stubs until the
+    // view-only window ends.
+    const road = failedPaymentRoadState(record, now);
+    if (road.state === 'view_only' && paidThroughMs === Date.parse(road.graceEndsAt)) {
+      return { ...base, state: 'grace', reason: 'failed_payment_view_only', paidThrough, graceEndsAt: road.viewOnlyEndsAt };
+    }
     if (now.getTime() < paidThroughMs) return { ...base, state: 'full', reason: 'ok', paidThrough, graceEndsAt };
     if (now.getTime() < paidThroughMs + GRACE_MS) return { ...base, state: 'grace', reason: 'in_grace', paidThrough, graceEndsAt };
     return { ...base, state: 'denied', reason: 'past_grace', paidThrough, graceEndsAt };
@@ -194,11 +228,17 @@ export function graceReadOnlyError(gate, user) {
  * in grace, only the grace view's own reads are open.
  * Returns the gate assessment when access is allowed.
  */
-export async function assertSubscriptionAccess(pool, user, businessId, { write = false, graceRead = false } = {}) {
+export async function assertSubscriptionAccess(pool, user, businessId, { write = false, graceRead = false, broadRead = false } = {}) {
   const gate = await subscriptionAccessFor(pool, user, businessId);
   if (gate.state === 'full') return gate;
   if (gate.state === 'grace') {
     if (!write && graceRead) return gate;
+    // The failed-payment view-only days (release 341) are broader
+    // than the voluntary grace view by the owner's ruling: every
+    // READ stays open (a staffer can reach their own pay stubs);
+    // only writes are refused. broadRead opens reads for that
+    // state alone — the voluntary grace keeps its narrow view.
+    if (!write && broadRead && gate.reason === 'failed_payment_view_only') return gate;
     throw graceReadOnlyError(gate, user);
   }
   throw subscriptionDeniedError(gate, user);

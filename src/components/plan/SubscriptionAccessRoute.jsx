@@ -1,7 +1,7 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useBusiness } from '@/hooks/useBusiness';
 import useEntitlements from '@/hooks/useEntitlements';
-import { assessCancellationGrace } from '@/lib/cancellationGrace';
+import { assessCancellationGrace, failedPaymentRoadState } from '@/lib/cancellationGrace';
 import { isBoss } from '@/lib/bossAuthority';
 
 /**
@@ -28,11 +28,20 @@ export default function SubscriptionAccessRoute() {
 
   const paidThrough = Date.parse(record?.period_ends_at || '');
   const withinPaidPeriod = Number.isFinite(paidThrough) && paidThrough > Date.now();
+  // The failed-payment road (release 341): while the road runs,
+  // the workspace stays OPEN — full use inside the 14-day payment
+  // grace, and view-only inside the 15 days after cancellation
+  // (the server refuses every write there; staff can still look
+  // and reach their own pay stubs). Only when the view-only days
+  // are over does the road close the door like any ended account.
+  const road = failedPaymentRoadState(record);
+  const onRoad = road.state === 'grace' || road.state === 'view_only';
   const allowed =
     Boolean(activeId) &&
     (status === 'active' ||
       status === 'trialing' ||
-      status === 'past_due' ||
+      (status === 'past_due' && road.state !== 'deletion_due') ||
+      (status === 'canceled' && onRoad) ||
       // A founding tester's workspace (Nov 21, 2026): Business
       // free for life by the operator's comp — no subscription
       // behind it, no expiry. Unlike the publisher's

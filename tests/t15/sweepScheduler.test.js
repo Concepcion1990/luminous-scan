@@ -8,9 +8,10 @@
  * unless the flag is exactly 'false'.
  *
  * Proven here:
- *   one scheduler run invokes all three sweeps, composed as the
+ *   one scheduler run invokes all four sweeps, composed as the
  *   job endpoints compose them (wipe, then the address purge
- *   riding it, then trial reminders);
+ *   riding it, then trial reminders, then — since release 341 —
+ *   the failed-payment road sweep);
  *   a failing sweep never blocks the others or escapes;
  *   the overlap guard admits one run at a time;
  *   the boot/interval timers fire and stop() silences them;
@@ -49,18 +50,20 @@ function stubSweeps(calls, overrides = {}) {
     async runWipeSweep() { calls.push('wipe'); return { wiped: [], skipped: [], candidateCount: 0 }; },
     async runCustomerAddressSweep() { calls.push('addresses'); return { purged: 0 }; },
     async runTrialReminderSweep() { calls.push('trial'); return { sent: [], pending: [], skipped: 0, trialCount: 0 }; },
+    async runFailedPaymentSweep() { calls.push('failedpay'); return { warned: [], transitioned: [], failures: [] }; },
     ...overrides,
   };
 }
 
-test('one scheduler run invokes all three sweeps in the endpoints order', async () => {
+test('one scheduler run invokes all four sweeps in the endpoints order', async () => {
   const calls = [];
   const summary = await runScheduledSweeps({}, { logger: silent, sweeps: stubSweeps(calls) });
-  assert.deepEqual(calls, ['wipe', 'addresses', 'trial']);
+  assert.deepEqual(calls, ['wipe', 'addresses', 'trial', 'failedpay']);
   assert.deepEqual(summary.failures, []);
   assert.ok(summary.wipe);
   assert.deepEqual(summary.customerAddresses, { purged: 0 });
   assert.ok(summary.trialReminders);
+  assert.ok(summary.failedPayments);
 });
 
 test('a failing sweep never blocks the others and never escapes', async () => {
@@ -69,7 +72,7 @@ test('a failing sweep never blocks the others and never escapes', async () => {
     async runWipeSweep() { calls.push('wipe'); throw new Error('boom'); },
   });
   const summary = await runScheduledSweeps({}, { logger: silent, sweeps });
-  assert.deepEqual(calls, ['wipe', 'addresses', 'trial'], 'later sweeps still ran');
+  assert.deepEqual(calls, ['wipe', 'addresses', 'trial', 'failedpay'], 'later sweeps still ran');
   assert.equal(summary.wipe, null);
   assert.ok(summary.trialReminders, 'trial reminders still ran');
   assert.deepEqual(summary.failures, [{ job: 'wipe', reason: 'boom' }]);

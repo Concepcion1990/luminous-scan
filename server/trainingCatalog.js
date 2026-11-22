@@ -153,7 +153,7 @@ export const TRAINING_LESSONS = [
   { id: 'owner-payroll-runs', track: 'owner', module: 'payroll', steps: 4 },
   { id: 'owner-irs-box', track: 'owner', module: 'payroll', steps: 4 },
   { id: 'owner-dd-setup', track: 'owner', module: 'direct-deposit', steps: 5 },
-  { id: 'owner-billing', track: 'owner', module: 'billing', steps: 4 },
+  { id: 'owner-billing', track: 'owner', module: 'billing', steps: 5 },
   { id: 'owner-trial-reminders', track: 'owner', module: 'billing', steps: 4 },
   { id: 'owner-printing', track: 'owner', module: 'printing', steps: 5 },
   { id: 'owner-import', track: 'owner', module: 'import', steps: 2, essentialsOnly: true },
