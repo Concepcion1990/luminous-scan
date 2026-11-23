@@ -75,6 +75,35 @@ export function attributionName(map, value) {
 }
 
 /**
+ * Trail actor name map (release 357, Nov 23, 2026): user id →
+ * CURRENT display name for everyone in one business — the owner
+ * under their set name (or "Owner"), each member under their
+ * staff name (users link to staff rows by email, the same join
+ * the attribution map above is built from). Time-trail reads
+ * resolve a stage's stored actor id through this map, so a name
+ * edited later reads edited, and an actor whose account is gone
+ * resolves to NOBODY — the caller renders the neutral fallback
+ * (trail.actorGone) instead of a stale name or, ever, an email.
+ */
+export async function trailActorNameMap(pool, business) {
+  const map = new Map();
+  const { rows } = await pool.query(
+    `SELECT u.id AS user_id, sm.full_name AS full_name
+       FROM staff_members sm
+       JOIN users u ON LOWER(u.email) = LOWER(sm.email)
+      WHERE sm.business_id = $1`,
+    [business.id],
+  );
+  for (const row of rows) {
+    if (row.user_id && row.full_name) map.set(row.user_id, row.full_name);
+  }
+  if (business.owner_id) {
+    map.set(business.owner_id, await ownerPublicName(pool, business));
+  }
+  return map;
+}
+
+/**
  * Which people in one business hold an APPROVED photo, as a Set of
  * person keys ('owner' or a staff member id). One query for the
  * whole business, so list surfaces (Messages threads, the Staff

@@ -566,6 +566,13 @@ export function createShopRouter({ getPool: getPoolFn }) {
     // (the movements "By" and PO "Received by" columns); the
     // owner's own export is unchanged (Nov 21, 2026).
     const exportNameMap = access.isOwner ? null : await attributionNameMap(pool(), access.business);
+    // Time trails (release 357): every exported file carries
+    // its Exported-at stamp INSIDE the file — one instant for
+    // the whole response. XLSX: a trailing footer row per sheet
+    // (server/xlsxExport.js). CSV: a trailing stamp line after
+    // the last data row — never a leading line, which a
+    // header-first reader would mistake for the header row.
+    const exportedAt = new Date().toISOString();
     if (dataset === 'inventory-workbook') {
       if (format !== 'xlsx') throw err(400, 'invalid_format', 'The full inventory workbook is Excel-only.');
       const sheets = [];
@@ -573,7 +580,7 @@ export function createShopRouter({ getPool: getPoolFn }) {
         const built = await EXPORTS[id].build(pool(), req.params.bid, exportNameMap);
         sheets.push({ name: EXPORTS[id].title, columns: built.columns, rows: built.rows });
       }
-      const buffer = await buildWorkbookBuffer(sheets);
+      const buffer = await buildWorkbookBuffer(sheets, { exportedAt });
       const filename = `${fileSlug(access.business.name)}-inventory-workbook-${fileStamp()}.xlsx`;
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
       res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
@@ -590,13 +597,13 @@ export function createShopRouter({ getPool: getPoolFn }) {
     const filename = `${truncatedFilename(base, built.truncated)}.${format}`;
     res.setHeader('X-Export-Rows', String(built.rows.length));
     if (format === 'xlsx') {
-      const buffer = await buildWorkbookBuffer([{ name: def.title, columns: built.columns, rows: built.rows }]);
+      const buffer = await buildWorkbookBuffer([{ name: def.title, columns: built.columns, rows: built.rows }], { exportedAt });
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
       res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
       if (built.truncated) res.setHeader('X-Export-Truncated', '1');
       return res.send(buffer);
     }
-    const csv = `\uFEFF${toCsv(built.columns, built.rows)}`;
+    const csv = `\uFEFF${toCsv(built.columns, built.rows)}\r\nExported at: ${exportedAt}`;
     res.setHeader('Content-Type', 'text/csv;charset=utf-8');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     if (built.truncated) res.setHeader('X-Export-Truncated', '1');

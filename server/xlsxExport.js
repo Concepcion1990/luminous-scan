@@ -34,8 +34,13 @@ function columnWidth(column, rows) {
   return Math.min(Math.max(width, 9), 44);
 }
 
-/** sheets: [{ name, columns, rows }] — one worksheet each. */
-export async function buildWorkbookBuffer(sheets) {
+/** sheets: [{ name, columns, rows }] — one worksheet each.
+ *  `exportedAt` (release 357): when given, every sheet gains a
+ *  trailing footer row — "Exported at" + the ISO instant —
+ *  appended AFTER the data rows and outside the header's
+ *  auto-filter range, so the stamp sits inside the file without
+ *  touching the grid a reader (or a re-import) parses. */
+export async function buildWorkbookBuffer(sheets, { exportedAt = null } = {}) {
   const workbook = new ExcelJS.Workbook();
   sheets.forEach((sheet, index) => {
     const ws = workbook.addWorksheet(safeSheetName(sheet.name, index));
@@ -63,6 +68,9 @@ export async function buildWorkbookBuffer(sheets) {
     });
     if (sheet.rows.length) {
       ws.autoFilter = { from: 'A1', to: ws.getRow(1).getCell(sheet.columns.length).address };
+    }
+    if (exportedAt) {
+      ws.addRow(['Exported at', exportedAt]);
     }
   });
   return workbook.xlsx.writeBuffer();

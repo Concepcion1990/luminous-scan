@@ -39,7 +39,7 @@ import {
   isTrustedStaffRow,
   parseJsonArray,
 } from './authz.js';
-import { ownerPublicName, attributionNameMap, attributionName } from './profilePhotos.js';
+import { ownerPublicName, attributionNameMap, attributionName, trailActorNameMap } from './profilePhotos.js';
 import {
   limitsForPlan,
   planFor,
@@ -245,6 +245,7 @@ export function toDbValues(def, values, { isCreate = false } = {}) {
   const out = {};
   for (const [key, value] of Object.entries(values || {})) {
     if (key === 'id' || key === 'created_date' || key === 'updated_date' || key === 'created_at' || key === 'updated_at') continue;
+    if (key === 'trail_actors') continue; // output-only (release 357): resolved actor names, never a column
     if (key === 'allow_zero_cost') continue; // acknowledgement flag, never a column
     if (key === 'business_id' && !isCreate) continue; // business never moves
     if (def.json.includes(key)) {
@@ -332,6 +333,163 @@ async function stampAttribution(pool, access, entityName, values) {
   const out = { ...values };
   for (const field of present) out[field] = name;
   return out;
+}
+
+/**
+ * Time trails (release 357, Nov 23, 2026 — the owner's spec:
+ * every record that moves through stages carries DATE + TIME
+ * stamps, and orders record WHO performed each stage). The
+ * stage stamps live on the record itself (migration 045) and
+ * are written ONLY here, at the transition, from the server's
+ * own clock and the caller's session — a stamp the browser
+ * sends is stripped, never trusted (the pre-357 client wrote
+ * shipped_at / approved_at / applied_at itself, and Packed /
+ * Delivered / Rejected / Sent-for-review / Saved / Cancelled
+ * had no stamp at all). A stamp fires when a write moves the
+ * record INTO the stage (patch.status differs from the stored
+ * status); re-saving the same status never re-stamps. A count
+ * write that carries lines without entering Applied/Cancelled
+ * is a draft save — the save event the count lifecycle already
+ * distinguishes — and stamps the Saved stage (the submit and
+ * reopen writes carry lines too, and stamp it alongside).
+ * Existing records keep honest history: nothing is backfilled,
+ * and a trail shows the stamps it truly has.
+ */
+const TRAIL_STAGES = {
+  Order: [
+    { key: 'packed', at: 'packed_at', by: 'packed_by', byId: 'packed_by_id', status: 'packed' },
+    { key: 'shipped', at: 'shipped_at', by: 'shipped_by', byId: 'shipped_by_id', status: 'shipped' },
+    { key: 'delivered', at: 'delivered_at', by: 'delivered_by', byId: 'delivered_by_id', status: 'delivered' },
+    { key: 'cancelled', at: 'cancelled_at', by: 'cancelled_by', byId: 'cancelled_by_id', status: 'cancelled' },
+  ],
+  Return: [
+    { key: 'approved', at: 'approved_at', by: 'approved_by', byId: 'approved_by_id', status: 'approved' },
+    { key: 'completed', at: 'completed_at', by: 'completed_by', byId: 'completed_by_id', status: 'completed' },
+    { key: 'rejected', at: 'rejected_at', by: 'rejected_by', byId: 'rejected_by_id', status: 'rejected' },
+  ],
+  CountSession: [
+    { key: 'review', at: 'review_at', by: 'review_by', byId: 'review_by_id', status: 'review' },
+    { key: 'applied', at: 'applied_at', by: 'applied_by', byId: 'applied_by_id', status: 'applied' },
+    { key: 'cancelled', at: 'cancelled_at', by: 'cancelled_by', byId: 'cancelled_by_id', status: 'cancelled' },
+  ],
+};
+const TRAIL_SAVED_STAGE = { key: 'saved', at: 'saved_at', by: 'saved_by', byId: 'saved_by_id' };
+/** Every client-writable field the trail owns, per entity —
+ *  stripped from any incoming write before stamping. */
+const TRAIL_FIELDS = Object.fromEntries(
+  Object.entries(TRAIL_STAGES).map(([name, stages]) => [
+    name,
+    [
+      ...stages.flatMap((stage) => [stage.at, stage.by, stage.byId]),
+      ...(name === 'CountSession' ? [TRAIL_SAVED_STAGE.at, TRAIL_SAVED_STAGE.by, TRAIL_SAVED_STAGE.byId] : []),
+    ],
+  ]),
+);
+/** The actor id field per trail stage, for read-time name
+ *  resolution (the created stage rides the creator audit id). */
+const TRAIL_ACTOR_IDS = Object.fromEntries(
+  Object.entries(TRAIL_STAGES).map(([name, stages]) => [
+    name,
+    [
+      ['created', 'created_by_id'],
+      ...stages.map((stage) => [stage.key, stage.byId]),
+      ...(name === 'CountSession' ? [[TRAIL_SAVED_STAGE.key, TRAIL_SAVED_STAGE.byId]] : []),
+    ],
+  ]),
+);
+
+function stripTrailFields(entityName, values) {
+  const fields = TRAIL_FIELDS[entityName];
+  if (!fields || !values) return values;
+  if (!fields.some((field) => field in values)) return values;
+  const out = { ...values };
+  for (const field of fields) delete out[field];
+  return out;
+}
+
+/** Stamp the stages an UPDATE enters (see the block comment
+ *  above). `row` is the stored row (public shape) before the
+ *  write; `patch` is already trail-stripped. */
+async function stampTrailUpdate(pool, access, entityName, row, patch, user) {
+  const stages = TRAIL_STAGES[entityName];
+  if (!stages || !patch) return patch;
+  const entering = patch.status && patch.status !== row.status ? patch.status : null;
+  const stage = entering ? stages.find((s) => s.status === entering) : null;
+  const isSave =
+    entityName === 'CountSession'
+    && patch.lines !== undefined
+    && entering !== 'applied'
+    && entering !== 'cancelled';
+  if (!stage && !isSave) return patch;
+  const name = await countActorName(pool, access);
+  const now = new Date().toISOString();
+  const out = { ...patch };
+  const put = (s) => {
+    out[s.at] = now;
+    out[s.by] = name;
+    out[s.byId] = user.id;
+  };
+  if (stage) put(stage);
+  if (isSave) put(TRAIL_SAVED_STAGE);
+  return out;
+}
+
+/** Stamp a CREATE that is born past stage zero: a return the
+ *  owner (or a returns.complete holder) brings into the world
+ *  already approved or completed (the guardCreate force) passed
+ *  its approval in the same act, so the trail says so, with the
+ *  creator as the actor. */
+async function stampTrailCreate(pool, access, entityName, values, user) {
+  const stages = TRAIL_STAGES[entityName];
+  if (!stages || entityName !== 'Return' || !values) return values;
+  const born = values.status;
+  if (born !== 'approved' && born !== 'completed') return values;
+  const name = await countActorName(pool, access);
+  const now = new Date().toISOString();
+  const out = { ...values };
+  const put = (s) => {
+    out[s.at] = now;
+    out[s.by] = name;
+    out[s.byId] = user.id;
+  };
+  put(stages.find((s) => s.key === 'approved'));
+  if (born === 'completed') put(stages.find((s) => s.key === 'completed'));
+  return out;
+}
+
+/**
+ * Read-time actor resolution (release 357): each row of a
+ * trailed entity gains `trail_actors` — per stage, the actor's
+ * CURRENT display name resolved from the stored user id (the
+ * owner under their set name, a member under their staff name),
+ * '' when an actor was recorded but their account is gone (the
+ * client renders the neutral "Former team member" fallback),
+ * or null when no actor id was recorded (legacy rows: the
+ * client falls back to the stored "…by" name where one exists).
+ * Runs for every viewer, owner included — it is freshness, not
+ * exposure: a name is not an address, and the creator email
+ * itself stays stripped for non-owners exactly as before.
+ * `trail_actors` is an output-only field: toDbValues skips it,
+ * like created_date / updated_date.
+ */
+async function shapeTrailActors(pool, access, entityName, rows) {
+  const spec = TRAIL_ACTOR_IDS[entityName];
+  if (!spec || !rows.length) return rows;
+  let map = null;
+  for (const row of rows) {
+    const actors = {};
+    for (const [key, idField] of spec) {
+      const id = row[idField];
+      if (!id) {
+        actors[key] = null;
+        continue;
+      }
+      if (!map) map = await trailActorNameMap(pool, access.business);
+      actors[key] = map.get(id) ?? '';
+    }
+    row.trail_actors = actors;
+  }
+  return rows;
 }
 
 /**
@@ -1169,6 +1327,10 @@ export async function listEntities(pool, user, name, filter = {}, options = {}) 
           : { ...row, location_id: store.id, location_name: store.name || row.location_name || '' }));
       }
     }
+    // Time-trail actors resolve to current display names for
+    // every viewer (release 357) — before the creator strip
+    // below, which removes the id this resolution reads.
+    businessRows = await shapeTrailActors(pool, access, name, businessRows);
     if (!access.isOwner) {
       // Attribution fields carry names, never emails, to a
       // non-owner (rider + audit, Nov 21, 2026); the creator
@@ -1244,10 +1406,13 @@ export async function getEntity(pool, user, name, id) {
   }
   if (!access.isOwner) {
     const shaped = publicRow(def, row);
+    await shapeTrailActors(pool, access, name, [shaped]);
     await shapeAttribution(pool, access, name, [shaped]);
     return stripCreatedBy(shaped);
   }
-  return publicRow(def, row);
+  const shaped = publicRow(def, row);
+  await shapeTrailActors(pool, access, name, [shaped]);
+  return shaped;
 }
 
 export async function createEntity(pool, user, name, values) {
@@ -1276,6 +1441,11 @@ export async function createEntity(pool, user, name, values) {
     return publicRow(def, row);
   }
   await guardCreate(pool, def, name, access, values);
+  // Trail stamps are the server's alone (release 357): a stamp
+  // field in the create body is stripped, and a return born
+  // approved/completed is stamped with its creator at creation.
+  values = stripTrailFields(name, values);
+  values = await stampTrailCreate(pool, access, name, values, user);
   if (name === 'CountSession') {
     // Attribution is stamped by the server, never taken from
     // the client (rider, Nov 21, 2026): the starter's display
@@ -1285,6 +1455,7 @@ export async function createEntity(pool, user, name, values) {
     values = await stampAttribution(pool, access, name, values);
   }
   const createdRow = await insertRow(pool, def, businessId, user, values);
+  await shapeTrailActors(pool, access, name, [createdRow]);
   // The 90-day customer address book: an order save remembers /
   // refreshes the customer's reusable ship-to address. Never
   // allowed to fail the order itself.
@@ -1323,10 +1494,14 @@ export async function bulkCreateEntities(pool, user, name, rows) {
   const created = [];
   for (const row of rows) {
     await guardCreate(pool, def, name, access, row);
+    const stripped = stripTrailFields(name, row);
+    const trailStamped = await stampTrailCreate(pool, access, name, stripped, user);
     const stamped = name === 'CountSession'
-      ? { ...row, started_by: await countActorName(pool, access) }
-      : await stampAttribution(pool, access, name, row);
-    created.push(await insertRow(pool, def, businessId, user, stamped));
+      ? { ...trailStamped, started_by: await countActorName(pool, access) }
+      : await stampAttribution(pool, access, name, trailStamped);
+    const inserted = await insertRow(pool, def, businessId, user, stamped);
+    await shapeTrailActors(pool, access, name, [inserted]);
+    created.push(inserted);
   }
   return created;
 }
@@ -1342,6 +1517,14 @@ export async function updateEntity(pool, user, name, id, patch) {
   await assertSubscriptionAccess(pool, user, row.business_id, { write: true });
   const publicExisting = publicRow(def, row);
   await guardUpdate(pool, def, name, access, publicExisting, patch);
+  // Trail stamps are the server's alone (release 357): any
+  // stamp field the client sent is stripped, then the stages
+  // this write ENTERS are stamped from the server's clock and
+  // the caller's session. Runs before the attribution stamp so
+  // the trail's "…by" fields are never double-handled (they are
+  // gone from the patch by the time attribution looks).
+  patch = stripTrailFields(name, patch);
+  patch = await stampTrailUpdate(pool, access, name, publicExisting, patch, user);
   // Attribution fields in any patch are stamped with the
   // patcher's display name (rider + audit, Nov 21, 2026): a
   // "…by" field names the person who did it, never their email.
@@ -1394,6 +1577,7 @@ export async function updateEntity(pool, user, name, id, patch) {
       /* the address book is a convenience, never a blocker */
     }
   }
+  await shapeTrailActors(pool, access, name, [result]);
   if (!access.isOwner) {
     // The update response obeys the same read rule: attribution
     // resolved to names, creator stamp withheld (Nov 21, 2026).

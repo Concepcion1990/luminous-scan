@@ -108,11 +108,10 @@ export async function approveReturn(ret, user) {
   if (!['new', 'approved'].includes(ret.status)) {
     throw new Error(t('returnsLib.onlyNewCanApprove'));
   }
-  await base44.entities.Return.update(ret.id, {
-    status: 'approved',
-    approved_at: ret.approved_at || new Date().toISOString(),
-    approved_by: ret.approved_by || user?.full_name || '',
-  });
+  // The approved stamp is the server's to write (release 357):
+  // it stamps the transition into 'approved' from its own clock
+  // and session, so no approved_at / approved_by rides here.
+  await base44.entities.Return.update(ret.id, { status: 'approved' });
 }
 
 export async function rejectReturn(ret) {
@@ -241,11 +240,8 @@ export async function completeReturn({ ret, products, user, linkedOrder }) {
     replaced += qty;
   }
 
-  await base44.entities.Return.update(ret.id, {
-    status: 'completed',
-    completed_at: new Date().toISOString(),
-    completed_by: user?.full_name || '',
-  });
+  // The completed stamp is written by the server (release 357).
+  await base44.entities.Return.update(ret.id, { status: 'completed' });
 
   if (linkedOrder && restocked) {
     const shipped = (linkedOrder.lines || []).reduce((s, l) => s + (Number(l.shipped) || 0), 0);

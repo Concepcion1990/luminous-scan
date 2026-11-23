@@ -98,6 +98,21 @@ function sheetTable(worksheet) {
     .filter((row) => row.some(Boolean))
     .map((row) => Array.from({ length: width }, (_, index) => decodeHtmlEntities(row[index] ?? '')));
 
+  // An exported workbook's trailing "Exported at" footer row
+  // (release 357) is file metadata, not data: when a sheet this
+  // app exported is re-imported, the footer never becomes a
+  // row. The match is deliberately exact — the label cell plus
+  // an ISO timestamp in the next cell — so a user's own sheet
+  // can only lose a row that is the stamp itself.
+  const lastRow = rows[rows.length - 1];
+  if (
+    lastRow
+    && lastRow[0] === 'Exported at'
+    && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(lastRow[1] || '')
+  ) {
+    rows.pop();
+  }
+
   return { name, headers, rows, warnings: ambiguityWarnings(worksheet, name) };
 }
 
@@ -147,8 +162,12 @@ function columnWidth(column, rows) {
   return Math.min(Math.max(width, 9), 44);
 }
 
-/** One worksheet: header row, typed cells, sensible widths and a filter row. */
-function worksheetFor(workbook, { columns, rows }, index, name) {
+/** One worksheet: header row, typed cells, sensible widths and a filter row.
+ *  `exportedAt` (release 357): a trailing "Exported at" footer
+ *  row inside the file, appended after the data rows and
+ *  outside the auto-filter range — see sheetTable for the
+ *  matching re-import rule. */
+function worksheetFor(workbook, { columns, rows }, index, name, exportedAt = null) {
   const ws = workbook.addWorksheet(safeSheetName(name, index));
   ws.columns = columns.map((column) => ({ width: columnWidth(column, rows) }));
   ws.addRow(columns.map((column) => String(column.label ?? '')));
@@ -177,14 +196,17 @@ function worksheetFor(workbook, { columns, rows }, index, name) {
   if (rows.length) {
     ws.autoFilter = { from: 'A1', to: ws.getRow(1).getCell(Math.max(columns.length, 1)).address };
   }
+  if (exportedAt) {
+    ws.addRow(['Exported at', exportedAt]);
+  }
   return ws;
 }
 
 /** sheets: [{ name, columns, rows }] — one worksheet each. Returns an ExcelJS Workbook. */
-export function buildWorkbook(sheets) {
+export function buildWorkbook(sheets, { exportedAt = null } = {}) {
   const workbook = new ExcelJS.Workbook();
   sheets.forEach((sheet, index) => {
-    worksheetFor(workbook, sheet, index, sheet.name);
+    worksheetFor(workbook, sheet, index, sheet.name, exportedAt);
   });
   return workbook;
 }
@@ -208,8 +230,8 @@ export async function downloadWorkbook(workbook, filename) {
  * synchronously (the download itself completes async) so existing
  * call sites that use the return value keep working.
  */
-export function downloadSheets(sheets, filename) {
-  const workbook = buildWorkbook(sheets);
+export function downloadSheets(sheets, filename, { exportedAt = null } = {}) {
+  const workbook = buildWorkbook(sheets, { exportedAt });
   downloadWorkbook(workbook, filename).catch(() => {
     // The download failed in this browser; the caller already has
     // the filename and can offer a retry. Never throw from a click.

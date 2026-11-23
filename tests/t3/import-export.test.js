@@ -143,7 +143,10 @@ test('export is refused on Essentials (403) and works on Business', async () => 
   assert.match(csv.headers.get('content-disposition'), /\.csv/);
   const lines = csv.text.replace(/^\uFEFF/, '').split('\r\n');
   assert.equal(lines[0].split(',')[0], 'Product ID');
-  assert.equal(lines.length, 3, 'header + 2 products');
+  // Release 357: the file also carries its Exported-at stamp as
+  // a trailing line inside the file — header + 2 products + it.
+  assert.equal(lines.length, 4, 'header + 2 products + the Exported-at stamp line');
+  assert.match(lines[3], /^Exported at: \d{4}-\d{2}-\d{2}T/, 'the stamp trails the data');
   assert.ok(lines[1].includes('Bookmark'));
   // The leading-zero SKU survives as a quoted text formula guard in CSV.
   assert.ok(lines[1].includes('"=""00123"""'), 'leading-zero code is protected in CSV');

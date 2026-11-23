@@ -191,10 +191,9 @@ export async function applyCounts({ session, lines, products, user }) {
   await base44.entities.CountSession.update(session.id, {
     lines: lines.map((l) => (isCounted(l) ? { ...l, expected: Number(l.counted) } : l)),
     status: 'applied',
-    applied_at: new Date().toISOString(),
-    // A name, never an email (owner's rider, Nov 21, 2026);
-    // the server stamps the applier's display name itself.
-    applied_by: user?.full_name || '',
+    // The applied stamp is the server's to write (release 357):
+    // it stamps the transition into 'applied' from its own clock
+    // and session — a name, never an email, as ever.
   });
 
   return differing.length;

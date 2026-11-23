@@ -3,6 +3,8 @@ import { t } from '@/lib/i18n';
 
 import { Button } from '@/components/ui/button';
 import { countSummary, COUNT_STATUS } from '@/lib/counts';
+import { countTrail } from '@/lib/trail';
+import TrailList from '@/components/trail/TrailList';
 
 const PILL = {
   muted: 'bg-muted text-muted-foreground',
@@ -80,6 +82,8 @@ export default function CountCard({ session, canManage, expanded, onToggle, onCa
           </Button>
         )}
       </div>
+
+      <TrailList stages={countTrail(session)} />
 
       {expanded && children}
     </div>

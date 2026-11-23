@@ -335,11 +335,12 @@ export async function shipOrder({ order, products, user }) {
   if (!shippedNow) throw new Error(t('ordersLib.nothingLeftToShip'));
 
   const complete = updated.every((l) => (Number(l.shipped) || 0) >= (Number(l.quantity) || 0));
+  // The shipped stamp is the server's to write (release 357):
+  // the trail stamps the transition into 'shipped' from its own
+  // clock and session, so no shipped_at / shipped_by rides here.
   await base44.entities.Order.update(order.id, {
     lines: updated,
     status: complete ? 'shipped' : order.status === 'new' ? 'pending' : order.status,
-    shipped_at: complete ? new Date().toISOString() : order.shipped_at || '',
-    shipped_by: user?.full_name || order.shipped_by || '',
   });
   return { shippedNow, complete };
 }
@@ -349,10 +350,8 @@ export async function cancelOrder({ order, products, user }) {
     throw new Error(t('ordersLib.stockLeftRecordReturn'));
   }
   if (heldUnits(order) > 0) await releaseHolds({ order, products, user });
-  await base44.entities.Order.update(order.id, {
-    status: 'cancelled',
-    cancelled_at: new Date().toISOString(),
-  });
+  // The cancelled stamp is written by the server (release 357).
+  await base44.entities.Order.update(order.id, { status: 'cancelled' });
 }
 
 export async function markPacked(order) {

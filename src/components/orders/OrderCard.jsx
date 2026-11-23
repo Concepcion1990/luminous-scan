@@ -1,6 +1,8 @@
 import { Pencil, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { channelLabel, heldUnits, ORDER_STATUS, orderShipAddressLines } from '@/lib/orders';
+import { orderTrail } from '@/lib/trail';
+import TrailList from '@/components/trail/TrailList';
 import { money } from '@/lib/purchasing';
 import { t } from '@/lib/i18n';
 
@@ -79,6 +81,8 @@ export default function OrderCard({ order, currency, busy, onEdit, onAction }) {
             : order.notes}
         </p>
       )}
+
+      <TrailList stages={orderTrail(order)} />
 
       <div className="mt-3 flex flex-wrap gap-1.5">
         {holdable && !held && (

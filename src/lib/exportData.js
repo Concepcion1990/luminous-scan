@@ -488,11 +488,18 @@ export const EXPORTS = [
  */
 export async function exportDataset(dataset, { businessId, businessName, profile }, format = 'csv') {
   const base = `${fileSlug(businessName) || 'business'}-${dataset.id}-${fileStamp()}`;
+  // Time trails (release 357): every exported file carries its
+  // Exported-at stamp INSIDE the file — one instant for the
+  // whole export. CSV: a trailing stamp line after the last
+  // data row (never leading — a header-first reader would
+  // mistake it for the header; src/lib/csvImport.js drops it on
+  // re-import). XLSX: a trailing footer row on every sheet.
+  const exportedAt = new Date().toISOString();
 
   if (dataset.buildSheets) {
     const { downloadSheets } = await import('@/lib/xlsx');
     const { sheets, truncated } = await dataset.buildSheets({ businessId, businessName, profile });
-    const filename = downloadSheets(sheets, `${truncatedFilename(base, truncated)}.xlsx`);
+    const filename = downloadSheets(sheets, `${truncatedFilename(base, truncated)}.xlsx`, { exportedAt });
     return {
       count: sheets.reduce((sum, sheet) => sum + sheet.rows.length, 0),
       filename,
@@ -506,13 +513,14 @@ export async function exportDataset(dataset, { businessId, businessName, profile
     const { downloadSheets } = await import('@/lib/xlsx');
     const filename = downloadSheets(
       [{ name: dataset.title, columns, rows }],
-      `${truncatedFilename(base, truncated)}.xlsx`
+      `${truncatedFilename(base, truncated)}.xlsx`,
+      { exportedAt }
     );
     return { count: rows.length, filename, truncated };
   }
 
   const filename = `${truncatedFilename(base, truncated)}.csv`;
-  downloadCsv(filename, toCsv(columns, rows));
+  downloadCsv(filename, `${toCsv(columns, rows)}\r\nExported at: ${exportedAt}`);
   return { count: rows.length, filename, truncated };
 }
 
@@ -625,7 +633,9 @@ export async function downloadBackupWorkbook({ businessId, businessName, profile
 
   const { downloadSheets } = await import('@/lib/xlsx');
   const filename = `${truncatedFilename(`${fileSlug(businessName) || 'business'}-backup-${fileStamp()}`, truncated)}.xlsx`;
-  downloadSheets(sheets, filename);
+  // The Exported-at stamp rides every sheet (release 357); the
+  // JSON backup has carried its generated_at from birth.
+  downloadSheets(sheets, filename, { exportedAt: new Date().toISOString() });
   return {
     counts: Object.fromEntries(entries.map(([key, rows]) => [key, rows.length])),
     filename,

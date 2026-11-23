@@ -157,6 +157,23 @@ export function parseCsv(text) {
   }
 
   const nonEmpty = records.filter((cells) => cells.some((cell) => String(cell).trim()));
+  // An exported CSV's trailing "Exported at: <ISO>" stamp line
+  // (release 357) is file metadata, not data: it is dropped
+  // before the header/body split, so re-importing a file this
+  // app exported stays exactly as clean as before. The match
+  // is deliberately narrow — a FINAL record of one cell holding
+  // the stamp and nothing else — so a user's own sheet can only
+  // lose a row that is the stamp itself. (A leading line would
+  // have been mistaken for the header row; that is why the
+  // stamp trails the data instead.)
+  const lastRecord = nonEmpty[nonEmpty.length - 1];
+  if (
+    lastRecord
+    && lastRecord.length === 1
+    && /^Exported at: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(String(lastRecord[0]).trim())
+  ) {
+    nonEmpty.pop();
+  }
   const [headerRow = [], ...body] = nonEmpty;
   return {
     headers: headerRow.map((header) => decodeHtmlEntities(String(header).trim())),

@@ -1,6 +1,7 @@
 import DocHeader from './DocHeader';
 import { DecoFooter, DecoHeader, DocFrame, PrintedAt } from './DocChrome';
 import { conditionLabel, reasonLabel } from '@/lib/returns';
+import { formatTrailStamp, returnTrail } from '@/lib/trail';
 import { formatMoney } from '@/lib/inventory';
 import { docRootClass, docRootStyle } from '@/lib/docStyle';
 import { t } from '@/lib/i18n';
@@ -150,6 +151,25 @@ export default function ReturnDoc({ ret, business, docStyle }) {
         </div>
         {ret.refund_note && <p className="py-1 text-[7.5pt] text-black/70">{ret.refund_note}</p>}
       </div>
+
+      {/* The return's time trail prints with the document
+          (release 357): the stages it has truly passed, each
+          with its DATE + TIME and who performed it — the same
+          trail the card shows, so preview = print. */}
+      {returnTrail(ret).length > 0 && (
+        <div className="mt-3 border-t border-black/25 pt-2">
+          <p className="font-mono text-[6.5pt] uppercase tracking-wide text-black/60">{t('trail.title')}</p>
+          <ul className="mt-1 space-y-0.5 text-[8pt]">
+            {returnTrail(ret).map((s) => (
+              <li key={s.key} className="flex flex-wrap gap-x-2">
+                <span className="font-medium">{s.label}</span>
+                <span>{formatTrailStamp(s.at)}</span>
+                {s.actor ? <span>· {s.actor}</span> : null}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <p className="mt-3 border-t border-black/25 pt-2 font-mono text-[6.5pt] uppercase tracking-wide text-black/60">
         {t('print.returnFooter')}

@@ -375,8 +375,8 @@ test('Part C: the invite lessons carry the single-use step, and the quiz machine
 test('pins: keyset, registry, and the kind message', async () => {
   const { en } = await import('../../src/lib/locales/en.js');
   const { esMX } = await import('../../src/lib/locales/es-MX.js');
-  assert.equal(Object.keys(en).length, 5130);
-  assert.equal(Object.keys(esMX).length, 5130);
+  assert.equal(Object.keys(en).length, 5136);
+  assert.equal(Object.keys(esMX).length, 5136);
   assert.equal(en['apiErrors.inviteLinkUsed'], KIND);
   assert.notEqual(esMX['apiErrors.inviteLinkUsed'], KIND);
   assert.equal(en['register.inviteConnected'], "You're connected — your account is now linked to the business that invited you.");

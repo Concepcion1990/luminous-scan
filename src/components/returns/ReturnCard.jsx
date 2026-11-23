@@ -1,6 +1,8 @@
 import { Pencil, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { conditionLabel, reasonLabel, RETURN_STATUS } from '@/lib/returns';
+import { returnTrail } from '@/lib/trail';
+import TrailList from '@/components/trail/TrailList';
 import { money } from '@/lib/purchasing';
 import { t } from '@/lib/i18n';
 
@@ -69,6 +71,8 @@ export default function ReturnCard({ record, currency, canComplete = false, busy
       </ul>
 
       {record.notes && <p className="mt-2 text-xs text-muted-foreground">{record.notes}</p>}
+
+      <TrailList stages={returnTrail(record)} />
 
       {/* The approval stop (owner ruling, Nov 19, 2026): Approve
           and Complete & apply render only for the owner or a
