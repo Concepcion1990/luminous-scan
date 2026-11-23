@@ -4099,6 +4099,7 @@ export const prs = {
   "plansLib.includes.docStyle": "اسناد با سبک خودتان — لوگو، رنگ، قلم، قاب و تصاویر",
   'plansLib.includes.taxRate': 'نرخ مالیات شما، یک بار تنظیم می‌شود — سفارش‌های جدید مالیاتشان را خودشان پر می‌کنند',
   "plansLib.includes.taxAuto": "مالیه خودکار بر اساس ایالت مشتری شما (نرخ‌های اساسی ایالت‌های آمریکا)",
+  "plansLib.includes.listPrices": "قیمت هر محصول پهلوی تعدادش",
   'plansLib.includes.codeGenerator': "کدساز — کدهای تازهٔ UPC و SKU و بارکد و QR برای محصولات خودتان",
   'plansLib.includes.gs1Codes': "کدهای واقعی خرده‌فروشی UPC و EAN از پیش‌شماره GS1 خودتان",
   "plansLib.includes.bulkEdit": "ویرایش و حذف گروهی — بسیاری از محصولات را یکجا به‌روز یا حذف کنید",
