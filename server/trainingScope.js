@@ -237,6 +237,11 @@ export function buildQuiz(lesson, visibleSteps, { personKey = '', isBusiness = f
   for (let i = 0; i < target; i += 1) {
     let kind = kinds[i % kinds.length];
     if (kind === 'order' && own.length < 4) kind = 'belongs';
+    // Release 360 (Nov 23, 2026): a lesson with fewer than 3
+    // visible steps cannot offer 3 distinct own options for
+    // notBelongs, so it asks belongs instead; question count is
+    // unchanged, so an in-flight attempt cannot hit quiz_changed.
+    if (kind === 'notBelongs' && own.length < 3) kind = 'belongs';
     if (kind === 'belongs') {
       const correct = takeOwn();
       const options = shuffled([correct, ...takeForeign(3)], rand);

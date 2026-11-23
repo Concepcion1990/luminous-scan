@@ -13,18 +13,9 @@
  * (server/trainingCatalog.js) holds the same shape and the t10
  * suite proves the two agree.
  *
- * The `visuals` arrays are CLIENT-only and hand-maintained here
- * (the generator predates them): one entry per step — a live
- * picture of the app's own page ({ route, target?, door? }) or
- * null for a step with no screen action. `door: true` marks a
- * step whose screen exists only mid-flow: the visual shows the
- * page and the button that starts the flow.
- *
- * Owner ruling (Nov 18, 2026): the visuals on `owner-tax-rate`
- * ("Your tax rate, set once") and `owner-setup` ("Setting up
- * your business") were REMOVED at her word — those two lessons
- * are words-only now. Do not re-add visuals to them; the other
- * lessons' visuals are untouched.
+ * Owner ruling (Nov 23, 2026): ALL lessons' visuals were
+ * REMOVED at her word — lessons are words-only now. Do not
+ * re-add visuals to any lesson.
  */
 export const TRAINING_TRACKS = ['owner', 'manager', 'staff'];
 
@@ -60,95 +51,24 @@ export const TRAINING_MODULES = [
 ];
 
 export const TRAINING_LESSONS = [
-  { id: 'welcome-basics', track: 'staff', module: 'getting-started', steps: 6 , visuals: [
-      { route: '/', target: '[data-tour="overview"]' },
-      { route: '/', target: '[data-tour="all-screens"]', door: true },
-      { route: '/', target: '[data-tour="all-screens"]', door: true },
-      null,
-      { route: '/settings' },
-      null,
-    ] },
+  { id: 'welcome-basics', track: 'staff', module: 'getting-started', steps: 6 },
   { id: 'your-language', track: 'staff', module: 'language', steps: 4 },
-  { id: 'scanner-lookup', track: 'staff', module: 'scanner', steps: 4 , visuals: [
-      { route: '/scan', target: '[data-tour="scan-start"]' },
-      { route: '/scan', target: '[data-tour="scan-shelf"]' },
-      null,
-      { route: '/scan', target: '[data-tour="scan-start"]' },
-    ] },
-  { id: 'scanner-website-qr', track: 'staff', module: 'scanner', steps: 4 , visuals: [
-      null,
-      { route: '/scan', target: '[data-tour="scan-start"]', door: true },
-      null,
-      { route: '/scan', target: '[data-tour="scan-start"]', door: true },
-    ] },
-  { id: 'scanner-shelf-counts', track: 'staff', module: 'scanner', steps: 4 , visuals: [
-      { route: '/counts', target: '[data-tour="count-start"]', door: true },
-      { route: '/counts', target: '[data-tour="count-start"]', door: true },
-      { route: '/counts', target: '[data-tour="count-start"]', door: true },
-      null,
-    ] },
-  { id: 'scanner-receiving', track: 'staff', module: 'scanner', steps: 4 , visuals: [
-      { route: '/scan', target: '[data-tour="scan-start"]', door: true },
-      { route: '/scan', target: '[data-tour="scan-start"]', door: true },
-      null,
-      { route: '/scan', target: '[data-tour="scan-start"]', door: true },
-    ] },
-  { id: 'scanner-move-stock', track: 'staff', module: 'scanner', steps: 4 , visuals: [
-      { route: '/scan', target: '[data-tour="scan-start"]', door: true },
-      { route: '/scan', target: '[data-tour="scan-start"]', door: true },
-      { route: '/scan', target: '[data-tour="scan-start"]', door: true },
-      null,
-    ] },
-  { id: 'scanner-name-lookup', track: 'staff', module: 'scanner', steps: 4 , visuals: [
-      { route: '/scan', target: '[data-tour="scan-code"]' },
-      { route: '/scan', target: '[data-tour="scan-code"]' },
-      { route: '/scan', target: '[data-tour="scan-shelf"]' },
-      null,
-    ] },
-  { id: 'scanner-damaged', track: 'staff', module: 'scanner', steps: 4 , visuals: [
-      { route: '/scan', target: '[data-tour="scan-start"]', door: true },
-      { route: '/scan', target: '[data-tour="scan-start"]', door: true },
-      null,
-      { route: '/movements', target: '[data-tour="movements-list"]' },
-    ] },
+  { id: 'scanner-lookup', track: 'staff', module: 'scanner', steps: 4 },
+  { id: 'scanner-website-qr', track: 'staff', module: 'scanner', steps: 4 },
+  { id: 'scanner-shelf-counts', track: 'staff', module: 'scanner', steps: 4 },
+  { id: 'scanner-receiving', track: 'staff', module: 'scanner', steps: 4 },
+  { id: 'scanner-move-stock', track: 'staff', module: 'scanner', steps: 4 },
+  { id: 'scanner-name-lookup', track: 'staff', module: 'scanner', steps: 4 },
+  { id: 'scanner-damaged', track: 'staff', module: 'scanner', steps: 4 },
   { id: 'print-shelf-tag', track: 'staff', module: 'printing', steps: 4 },
-  { id: 'products-find-edit', track: 'staff', module: 'products', steps: 11 , visuals: [
-      { route: '/products', target: '[data-tour="products-search"]' },
-      { route: '/products', target: '[data-tour="products-list"]' },
-      { route: '/products', target: '[data-tour="products-list"]', door: true },
-      { route: '/products', target: '[data-tour="product-add"]', door: true },
-      { route: '/products', target: '[data-tour="product-add"]', door: true },
-      { route: '/products', target: '[data-tour="products-list"]' },
-      { route: '/products', target: '[data-tour="products-list"]', door: true },
-      { route: '/products', target: '[data-tour="products-list"]' },
-      { route: '/products', target: '[data-tour="product-add"]', door: true },
-      { route: '/settings' },
-      { route: '/products', target: '[data-tour="products-list"]', door: true },
-    ] },
-  { id: 'owner-pricing', track: 'owner', module: 'products', steps: 4, feature: 'pricing' , visuals: [
-      { route: '/products', target: '[data-tour="product-add"]', door: true },
-      { route: '/products', target: '[data-tour="products-list"]' },
-      { route: '/products', target: '[data-tour="products-list"]' },
-      { route: '/plans' },
-    ] },
+  { id: 'products-find-edit', track: 'staff', module: 'products', steps: 11 },
+  { id: 'owner-pricing', track: 'owner', module: 'products', steps: 4, feature: 'pricing' },
   { id: 'mgr-pricing', track: 'manager', module: 'products', steps: 4, feature: 'pricing' },
   { id: 'categories-basics', track: 'staff', module: 'categories', steps: 4 },
   { id: 'locations-basics', track: 'staff', module: 'locations', steps: 4 },
   { id: 'movements-what', track: 'staff', module: 'movements', steps: 4 },
-  { id: 'counts-run', track: 'staff', module: 'counts', steps: 4 , visuals: [
-      { route: '/counts', target: '[data-tour="count-start"]', door: true },
-      { route: '/counts', target: '[data-tour="count-start"]', door: true },
-      null,
-      { route: '/counts', target: '[data-tour="count-start"]', door: true },
-    ] },
-  { id: 'orders-basics', track: 'staff', module: 'orders', steps: 6 , visuals: [
-      { route: '/orders', target: '[data-tour="orders-list"]' },
-      { route: '/orders', target: '[data-tour="orders-list"]' },
-      { route: '/orders', target: '[data-tour="orders-list"]', door: true },
-      null,
-      { route: '/orders', target: '[data-tour="order-new"]', door: true },
-      { route: '/orders', target: '[data-tour="orders-list"]', door: true },
-    ] },
+  { id: 'counts-run', track: 'staff', module: 'counts', steps: 4 },
+  { id: 'orders-basics', track: 'staff', module: 'orders', steps: 6 },
   { id: 'owner-tax-rate', track: 'owner', module: 'orders', steps: 4 },
   { id: 'mgr-tax-rate', track: 'manager', module: 'orders', steps: 5 },
   { id: 'returns-basics', track: 'staff', module: 'returns', steps: 4 },
@@ -194,18 +114,8 @@ export const TRAINING_LESSONS = [
   { id: 'mgr-report-problem', track: 'manager', module: 'settings', steps: 4 },
   { id: 'owner-setup', track: 'owner', module: 'getting-started', steps: 4 },
   { id: 'owner-white-label', track: 'owner', module: 'settings', steps: 5 },
-  { id: 'owner-store-policies', track: 'owner', module: 'settings', steps: 4 , visuals: [
-      { route: '/settings' },
-      { route: '/settings' },
-      null,
-      null,
-    ] },
-  { id: 'owner-profile-photos', track: 'owner', module: 'settings', steps: 4 , visuals: [
-      null,
-      { route: '/staff' },
-      { route: '/staff' },
-      { route: '/settings' },
-    ] },
+  { id: 'owner-store-policies', track: 'owner', module: 'settings', steps: 4 },
+  { id: 'owner-profile-photos', track: 'owner', module: 'settings', steps: 4 },
   { id: 'owner-report-problem', track: 'owner', module: 'settings', steps: 4 },
   { id: 'owner-delete-account', track: 'owner', module: 'settings', steps: 4 },
   { id: 'owner-confidentiality', track: 'owner', module: 'staff', steps: 7 },

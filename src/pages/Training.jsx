@@ -16,7 +16,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AlarmClock, BellRing, Check, ChevronDown, Flag, GraduationCap, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import StepVisual from '@/components/training/StepVisual';
 import { useToast } from '@/components/ui/use-toast';
 import { useBusiness } from '@/hooks/useBusiness';
 import { apiRequest } from '@/api/client';
@@ -293,9 +292,6 @@ function LessonCard({ businessId, lesson, visibleSteps, done, completedAt, open,
                   </span>
                   <span className="min-w-0 flex-1 pt-0.5">
                     {stepText}
-                    {lesson.visuals?.[i] ? (
-                      <StepVisual visual={lesson.visuals[i]} title={lessonTitle(lesson)} />
-                    ) : null}
                   </span>
                 </li>
               );
@@ -344,7 +340,7 @@ function MyAssignments({ businessId, assignments, completedSet, completedAtById,
                 ? t('training.sourceRole')
                 : t('training.assignedBy', { name: assignment.assigned_by_name || '' })}
             </p>
-            {/* Assigned lessons OPEN here, in full — steps, visuals
+            {/* Assigned lessons OPEN here, in full — steps
                 and the finish button — even when the lesson's track
                 sits above the assignee's current role (owner ruling,
                 Nov 15, 2026: assign everything, and what is assigned
