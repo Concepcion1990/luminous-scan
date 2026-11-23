@@ -4102,6 +4102,7 @@ export const enGB = {
   "plansLib.includes.docStyle": "Documents in your own style — logo, color, font, frame and pictures",
   'plansLib.includes.taxRate': 'Your tax rate, set once — new orders fill in their own tax',
   "plansLib.includes.taxAuto": "Automatic tax by your customer's state (US state base rates)",
+  "plansLib.includes.listPrices": "Each product's price beside its count",
   'plansLib.includes.codeGenerator': "Code generator — fresh UPC, SKU, barcode and QR codes for your own products",
   'plansLib.includes.gs1Codes': "True retail UPC and EAN codes from your own GS1 prefix",
   "plansLib.includes.bulkEdit": "Bulk edit and bulk delete — update or remove many products at once",
