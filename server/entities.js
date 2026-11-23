@@ -186,7 +186,7 @@ const DEFS = {
   Return: {
     table: 'returns',
     json: ['lines', 'exchange_lines'],
-    numeric: ['refund_amount'],
+    numeric: ['refund_amount', 'tax_amount'],
     bool: [],
     required: [],
     writePerm: 'returns.manage',

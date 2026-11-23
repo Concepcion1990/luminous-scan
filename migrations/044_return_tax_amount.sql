@@ -1,0 +1,16 @@
+-- 044_return_tax_amount.sql — the tax on a return (owner-approved
+-- Nov 18, 2026; built in release 349). A return now carries the
+-- tax on its returned goods as its own stored figure, beside
+-- refund_amount: the returns form works it out from the ORIGINAL
+-- order's own tax (the order's stored tax against its goods,
+-- applied to the returned goods, so a part-return carries its
+-- proportional share), the "Amount refunded" pre-fills with
+-- goods + tax, and both figures stay hand-editable — a typed
+-- value wins and is never overwritten. With no original order
+-- (or no tax recorded on it) the form falls back to the
+-- business's current tax setting — the state base rate in
+-- Automatic mode when the order's state resolves (release 347),
+-- otherwise the fixed set-once rate — and says so on the form.
+-- Existing returns default to 0: nothing was recorded for them,
+-- and nothing is invented for them now.
+ALTER TABLE returns ADD COLUMN tax_amount NUMERIC NOT NULL DEFAULT 0;
