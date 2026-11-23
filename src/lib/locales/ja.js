@@ -4099,6 +4099,7 @@ export const ja = {
   "plansLib.includes.docStyle": "あなた自身のスタイルのドキュメント — ロゴ、色、フォント、枠、画像",
   'plansLib.includes.taxRate': '税率は一度の設定 — 新しい注文が税額を自動入力',
   "plansLib.includes.taxAuto": "お客様の州に応じた自動税金（米国の州の基本税率）",
+  "plansLib.includes.listPrices": "商品ごとの価格が数量の横に",
   'plansLib.includes.codeGenerator': "コード生成 — 自社製品向けの新しいUPC、SKU、バーコード、QRコード",
   'plansLib.includes.gs1Codes': "ご自身のGS1プレフィックスから発行する本物の小売用UPC・EANコード",
   "plansLib.includes.bulkEdit": "一括編集と一括削除 — 多くの商品を一度に更新または削除",

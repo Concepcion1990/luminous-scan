@@ -4099,6 +4099,7 @@ export const jv = {
   "plansLib.includes.docStyle": "Dokumen kanthi gaya panjenengan dhewe — logo, warna, huruf, pigura, lan gambar",
   'plansLib.includes.taxRate': 'Tarif pajek sampeyan, disetel sepisan — pesenan anyar ngisi pajeke dhewe',
   "plansLib.includes.taxAuto": "Pajek otomatis miturut negara bagean pelangganmu (tarif dhasar negara bagean AS)",
+  "plansLib.includes.listPrices": "Regane saben produk ing sandhinge cacahé",
   'plansLib.includes.codeGenerator': "Panggawé kode — kode UPC, SKU, barcode lan QR anyar kanggo produkmu dhewe",
   'plansLib.includes.gs1Codes': "Kode UPC lan EAN eceran asli saka ater-ater GS1 sampeyan dhewe",
   "plansLib.includes.bulkEdit": "Sunting massal lan busak massal — nganyari utawa mbusak akeh produk bebarengan",
