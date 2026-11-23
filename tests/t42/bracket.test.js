@@ -38,6 +38,27 @@
  *
  * Real Express app over HTTP against pg-mem, same as every
  * phase; timezone trick shared with t37.
+ *
+ * Fixture note (Nov 23, 2026, the tzfix): plantStaleDeadlineShape
+ * used to compute "yesterday" by instant arithmetic — noon UTC
+ * of today's LOCAL date string, minus one UTC day, reformatted
+ * in the zone. In zones at UTC+12 or further ahead (Kiritimati
+ * +14, Auckland +13 — the first two pickTimezone candidates),
+ * that noon-UTC instant is already TOMORROW local, so stepping
+ * back one UTC day lands on TODAY: the "prior-day" entry and
+ * its deadline were planted on the current day, the deadline
+ * still in the future, and /auth/me correctly served it — the
+ * two 345-shape tests failed whenever the suite ran in the UTC
+ * 18:00–21:00 window (grid proof: ~/workspace/publish-nov23-tzfix/
+ * grid-proof.mjs — old formula wrong 48/48 runs in both zones,
+ * calendar subtraction wrong 0/864). The SERVER was never
+ * flawed: the deadline path (autoLogoutAtFor, stateForMember)
+ * compares stored instants to now and never passes a deadline
+ * through date-string arithmetic. Yesterday is now computed by
+ * calendar subtraction on the date string — the server's own
+ * addDays shape — and the plant asserts the deadline it made
+ * is genuinely lapsed, so a future date-math slip fails at the
+ * plant, loudly, instead of masquerading as a server bug.
  */
 import { test, after, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
@@ -114,6 +135,23 @@ function localDateStr(tz, when = new Date()) {
   return `${parts.year}-${parts.month}-${parts.day}`;
 }
 
+/**
+ * The calendar day before a YYYY-MM-DD date string — pure
+ * calendar subtraction on the string (the server's addDays
+ * shape in server/staffWindow.js). NEVER derive a prior local
+ * day by subtracting 24h from an instant and reformatting:
+ * in zones at UTC+12 or further ahead the instant lands on
+ * the wrong local date (see the header's fixture note).
+ */
+function dayBeforeStr(dateStr) {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  return new Date(Date.UTC(year, month - 1, day - 1)).toISOString().slice(0, 10);
+}
+function weekdayOfStr(dateStr) {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  return new Date(Date.UTC(year, month - 1, day)).getUTCDay();
+}
+
 async function setup(tz, emailPrefix) {
   const { cookie: ownerCookie, business, user: owner } = await ownerWithBusiness(`${emailPrefix}@example.com`);
   await pool.query('UPDATE businesses SET timezone = $1 WHERE id = $2', [tz, business.id]);
@@ -139,10 +177,9 @@ async function setShift(businessId, staffId, weekday, startMins, endMins) {
 async function plantStaleDeadlineShape(tz, business, staff) {
   const { weekday, minutes } = localNow(tz);
   const todayStr = localDateStr(tz);
-  const yesterday = new Date(`${todayStr}T12:00:00Z`);
-  yesterday.setUTCDate(yesterday.getUTCDate() - 1);
-  const yesterdayStr = localDateStr(tz, yesterday);
-  const yesterdayWeekday = (weekday + 6) % 7;
+  const yesterdayStr = dayBeforeStr(todayStr);
+  const yesterdayWeekday = weekdayOfStr(yesterdayStr);
+  assert.notEqual(yesterdayStr, todayStr, 'fixture: yesterday is a different calendar day than today');
 
   await setShift(business.id, staff.staffId, yesterdayWeekday, 540, 1020);
   const clockInAt = zonedTimeToUtc(yesterdayStr, 600, tz);
@@ -153,6 +190,10 @@ async function plantStaleDeadlineShape(tz, business, staff) {
     [crypto.randomUUID(), business.id, staff.staffId, clockInAt.toISOString(), clockOutAt.toISOString()],
   );
   const deadline = new Date(clockOutAt.getTime() + 10 * 60_000);
+  assert.ok(
+    deadline.getTime() < Date.now(),
+    'fixture: the planted deadline is genuinely lapsed — a future deadline is a live grace, and /auth/me would be RIGHT to serve it',
+  );
   await pool.query('UPDATE staff_members SET auto_logout_at = $1 WHERE id = $2', [deadline.toISOString(), staff.staffId]);
 
   await setShift(business.id, staff.staffId, weekday, minutes - 30, minutes + 180);
