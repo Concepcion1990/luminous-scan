@@ -12,8 +12,10 @@ import { scoped, withBusiness } from '@/lib/scoped';
 import { createProducts } from '@/lib/entitlements';
 import { findProductsByCode, recordMovement } from '@/lib/inventory';
 import { judgeVocabularyValue } from '@/lib/vocabulary';
+import { qrMatrix } from '@/lib/qr';
 import BarcodeScanner from '@/components/scan/BarcodeScanner';
 import IsbnReader from '@/components/scan/IsbnReader';
+import QrSvg from '@/components/print/QrSvg';
 import VocabularyCombobox from './VocabularyCombobox';
 import AddVocabularyDialog from './AddVocabularyDialog';
 import { Image } from '@/components/ui/image';
@@ -758,6 +760,17 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
     }
   };
 
+  // The QR row carries a live picture of the code itself (her
+  // ask, Nov 23, 2026): drawn from the value in the box — typed,
+  // pasted, scanned or minted — by the same QrSvg renderer the
+  // printed labels use, so the picture she sees is the code that
+  // prints. The saved value is the trimmed one, so the preview
+  // follows the trimmed value too. An empty box, or a value the
+  // encoder cannot hold, shows no picture at all — never a QR of
+  // the wrong value, never a broken image.
+  const qrPreviewValue = (form.qr_code || '').trim();
+  const qrPreviewMatrix = qrPreviewValue ? qrMatrix(qrPreviewValue) : null;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
@@ -909,6 +922,11 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
                   }}
                   className="min-w-0 flex-1 font-mono"
                 />
+                {qrPreviewMatrix && (
+                  <span data-tour="product-qr-preview" className="h-10 w-10 shrink-0 overflow-hidden rounded-md border border-border">
+                    <QrSvg value={qrPreviewValue} className="block h-full w-full" />
+                  </span>
+                )}
                 <Button type="button" variant="outline" className="shrink-0" onClick={() => openCodeScanner('qr_code')} aria-label={t('productForm.scanCode')}>
                   <ScanBarcode className="h-4 w-4" />
                 </Button>
