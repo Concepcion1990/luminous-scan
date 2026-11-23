@@ -2982,6 +2982,15 @@ export const en = {
   "inventoryLib.reversesLabel": "Reverses {label}",
   "inventoryLib.showingOfTotal": "Showing {shown} of {total} — refine your search",
 
+  // src/lib/trail.js — time trails (release 357): the trail's
+  // own words; the stage names themselves ride the standing
+  // status vocabularies (ordersLib / returnsLib / countsLib).
+  "trail.title": "History",
+  "trail.created": "Created",
+  "trail.saved": "Saved",
+  "trail.logged": "Logged",
+  "trail.sentForReview": "Sent for review",
+  "trail.actorGone": "Former team member",
   // src/lib/counts.js — COUNT_STATUS labels
   "countsLib.statusCounting": "Counting",
   "countsLib.statusInReview": "In review",
