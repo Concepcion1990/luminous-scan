@@ -28,6 +28,7 @@ import AddLocationInline from '@/components/locations/AddLocationInline';
 import { useCarrierLabel } from '@/components/print/CarrierLabelPanel';
 import OrderLabelField from '@/components/orders/OrderLabelField';
 import { blankLine, CHANNELS, orderNumber, orderTotals } from '@/lib/orders';
+import { firstShipFromLocation, shipFromLocations } from '@/lib/locations';
 import { money, todayIso } from '@/lib/purchasing';
 import { computeOrderTax, formatTaxRate, parseTaxRate } from '@/lib/taxRate';
 import { resolveStateTaxRate } from '@/lib/stateTaxRates';
@@ -176,7 +177,7 @@ export default function OrderFormDialog({ open, onOpenChange, order, products, l
         ship_country: order.ship_country || '',
         channel: order.channel || 'manual',
         order_date: order.order_date || todayIso(),
-        location_id: order.location_id || locations[0]?.id || '',
+        location_id: order.location_id || firstShipFromLocation(locations)?.id || '',
         discount: order.discount ?? '',
         shipping: order.shipping ?? '',
         tax: order.tax ?? '',
@@ -199,7 +200,7 @@ export default function OrderFormDialog({ open, onOpenChange, order, products, l
         ship_country: '',
         channel: 'manual',
         order_date: todayIso(),
-        location_id: locations[0]?.id || '',
+        location_id: firstShipFromLocation(locations)?.id || '',
         discount: '',
         shipping: '',
         tax: '',
@@ -230,6 +231,15 @@ export default function OrderFormDialog({ open, onOpenChange, order, products, l
   if (!form) return null;
 
   const totals = orderTotals(form);
+  // Ships from (owner ruling, Nov 23, 2026): the picker offers
+  // the business's operating sites ONLY — stores, warehouses,
+  // other top-level places. A shelf nested inside a store is
+  // never a shipping origin, so it never appears here (it stays
+  // in the stock and count pickers, where it belongs). In edit
+  // mode a legacy order's stored value rides along even when it
+  // names a shelf, so the order keeps showing and saving what
+  // it already holds until the owner picks a site instead.
+  const shipFromOptions = shipFromLocations(localLocations, order ? form.location_id : '');
   const updateLine = (index, patch) =>
     setForm((f) => ({
       ...f,
@@ -406,11 +416,11 @@ export default function OrderFormDialog({ open, onOpenChange, order, products, l
 
           <div className="grid gap-1" ref={shipsFromRef}>
             <Label className="text-xs">{t('orders.shipsFrom')}</Label>
-            {localLocations.length === 0 ? (
+            {shipFromOptions.length === 0 ? (
               <AddLocationInline
                 businessId={activeId}
                 onCreated={(place) => {
-                  setLocalLocations([place]);
+                  setLocalLocations((prev) => [...prev, place]);
                   setForm({ ...form, location_id: place.id });
                 }}
               />
@@ -424,7 +434,7 @@ export default function OrderFormDialog({ open, onOpenChange, order, products, l
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">{t('orders.chooseLocation')}</SelectItem>
-                  {localLocations.map((l) => (
+                  {shipFromOptions.map((l) => (
                     <SelectItem key={l.id} value={l.id}>
                       {l.name}
                     </SelectItem>

@@ -74,3 +74,42 @@ export function parentCandidates(locations = [], locationId = '') {
   const blocked = new Set(descendantIds(locations, locationId));
   return orderedLocations(locations).filter(({ location }) => !blocked.has(location.id));
 }
+
+/**
+ * Shipping origins (owner ruling, Nov 23, 2026): an order ships
+ * FROM a place the business operates — a store, warehouse or
+ * other top-level site — never from a shelf, bin or van nested
+ * inside one. "It should only be their business name on there."
+ * The kind list mirrors OPERATING_SITE_KINDS in
+ * src/lib/entitlements.js (isOperatingSite, the one site
+ * predicate); the two are pinned against each other in
+ * tests/t49 so they cannot drift apart. The helpers live here,
+ * beside the other nesting helpers, so the rule stays
+ * importable without the app client.
+ */
+const SHIP_FROM_KINDS = ['store', 'warehouse', 'other'];
+
+export function isShipFromLocation(location) {
+  if (!location) return false;
+  return !location.parent_id && SHIP_FROM_KINDS.includes(location.kind || 'store');
+}
+
+/** The first shipping origin in list order — a new order's default. */
+export function firstShipFromLocation(locations = []) {
+  return locations.find(isShipFromLocation) || null;
+}
+
+/**
+ * The Ships-from picker's options: every operating site, in list
+ * order. A stored value that is no longer a site (a legacy order
+ * whose ships-from names a shelf) is appended once, so the order
+ * keeps showing — and saving — exactly what it already holds
+ * until the owner picks a site instead. Nothing is rewritten
+ * behind the owner's back.
+ */
+export function shipFromLocations(locations = [], storedId = '') {
+  const sites = locations.filter(isShipFromLocation);
+  const stored = storedId ? locations.find((location) => location.id === storedId) : null;
+  if (stored && !sites.some((location) => location.id === stored.id)) return [...sites, stored];
+  return sites;
+}
