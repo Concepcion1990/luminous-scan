@@ -4099,6 +4099,7 @@ export const ar = {
   "plansLib.includes.docStyle": "مستندات بأسلوبك الخاص — الشعار واللون والخط والإطار والصور",
   'plansLib.includes.taxRate': 'معدل الضريبة الخاص بك، يُعيَّن مرة واحدة — الطلبات الجديدة تملأ ضريبتها بنفسها',
   "plansLib.includes.taxAuto": "ضريبة تلقائية حسب ولاية عميلك (معدلات الولايات الأمريكية الأساسية)",
+  "plansLib.includes.listPrices": "سعر كل منتج بجانب عدده",
   'plansLib.includes.codeGenerator': "منشئ الرموز — رموز UPC وSKU ورموز شريطية وQR جديدة لمنتجاتك الخاصة",
   'plansLib.includes.gs1Codes': "رموز UPC وEAN تجارية حقيقية من بادئة GS1 الخاصة بك",
   "plansLib.includes.bulkEdit": "التحرير والحذف بالجملة — حدّث أو أزل العديد من المنتجات دفعة واحدة",

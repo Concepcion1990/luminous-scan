@@ -4099,6 +4099,7 @@ export const am = {
   "plansLib.includes.docStyle": "በራስዎ ዘይቤ ሰነዶች — አርማ፣ ቀለም፣ ቅርጸ-ፊደል፣ ክፈፍ እና ስዕሎች",
   'plansLib.includes.taxRate': 'የግብር ተመንዎ፣ አንድ ጊዜ ይዋቀራል — አዳዲስ ትዕዛዞች ግብራቸውን ራሳቸው ይሞላሉ',
   "plansLib.includes.taxAuto": "በደንበኛዎ ግዛት መሰረት ራስ-ሰር ግብር (የአሜሪካ ግዛቶች መሰረታዊ ተመኖች)",
+  "plansLib.includes.listPrices": "የእያንዳንዱ ምርት ዋጋ ከቁጥሩ ጎን",
   'plansLib.includes.codeGenerator': "የኮድ ጀነሬተር — ለራስዎ ምርቶች አዲስ የUPC፣ SKU፣ ባርኮድ እና QR ኮዶች",
   'plansLib.includes.gs1Codes': "ከራስዎ የGS1 ቅድመ-ቁጥር እውነተኛ የችርቻሮ UPC እና EAN ኮዶች",
   "plansLib.includes.bulkEdit": "በጅምላ አርትዕ እና በጅምላ ሰርዝ — ብዙ ምርቶችን በአንድ ጊዜ አዘምን ወይም አስወግድ",

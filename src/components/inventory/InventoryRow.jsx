@@ -1,5 +1,7 @@
 import { SlidersHorizontal } from 'lucide-react';
 import { t } from '@/lib/i18n';
+import { formatMoney } from '@/lib/inventory';
+import { listPrice } from '@/lib/pricing';
 
 import ProductThumb from '@/components/products/ProductThumb';
 import { Button } from '@/components/ui/button';
@@ -10,8 +12,12 @@ import { Button } from '@/components/ui/button';
  * (owner ruling, Nov 20, 2026): the caller passes showReorder only
  * when the plan carries alerts; otherwise the row reads exactly as
  * it does for a product with no reorder point.
+ * The price line under the count is release 348 (owner-approved
+ * Nov 18, 2026): each product's own price beside its count, in the
+ * business's currency. A product with no price set shows no line.
  */
-export default function InventoryRow({ product, levels = [], locations = [], onAdjust, canAdjust = false, showReorder = false }) {
+export default function InventoryRow({ product, levels = [], locations = [], onAdjust, canAdjust = false, showReorder = false, currency = 'USD' }) {
+  const price = listPrice(product);
   const total = levels.reduce((sum, level) => sum + (level.quantity || 0), 0);
   const held = levels.reduce((sum, level) => sum + (level.reserved || 0), 0);
   const placed = locations
@@ -57,6 +63,11 @@ export default function InventoryRow({ product, levels = [], locations = [], onA
           <p className="font-mono text-[9px] uppercase tracking-wide text-muted-foreground">
             {atReorder ? t('inventory.reorderAt', { point: product.reorder_point }) : held ? t('inventory.heldCount', { count: held }) : t('inventory.onHand')}
           </p>
+          {price !== null && (
+            <p className="numeric mt-0.5 text-xs text-muted-foreground">
+              {formatMoney(price, currency, 2)}
+            </p>
+          )}
         </div>
         {/* The Adjust door is catalog stock editing (products.edit,
             owner catch Nov 19, 2026): without the permission the
