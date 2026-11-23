@@ -10,6 +10,9 @@
  *    their NATURAL proportions (contain, never stretched), sized
  *    by the owner's new Studio width/length controls; unset
  *    sizes render exactly as documents always have.
+ *    (Superseded in part by release 353, Nov 23, 2026: a SIZED
+ *    banner now stretches to fill the band — see t50. The
+ *    unsized shape pinned here is unchanged.)
  *  - The bottom decoration anchors at the page bottom on paper
  *    (its wrapper is print-fixed to the sheet's bottom edge).
  *  - A printed-at stamp (date + time, the reader's locale) prints
@@ -125,18 +128,25 @@ test('frame: the root no longer carries the border — the overlay spec does', (
   assert.equal(docRootStyle(DEFAULT_DOC_STYLE).padding, undefined);
 });
 
-test('banners: natural proportions, full width by default, owner sizes apply', () => {
+test('banners: unsized renders as always; owner sizes stretch to the band (353)', () => {
   const plain = { ...DEFAULT_DOC_STYLE, headerImage: PHOTO_URL };
   assert.deepEqual(decoImageStyle(plain, 'header'), {
     display: 'block', width: '100%', maxHeight: '24mm', objectFit: 'contain', marginInline: 'auto',
   });
   // The receipt's own long-standing cap is the default there.
   assert.equal(decoImageStyle(plain, 'header', 18).maxHeight, '18mm');
+  // Release 353 (her ruling, Nov 23, 2026): a sized banner
+  // STRETCHES to fill the exact band — width as set, length as
+  // an exact height, object-fit fill. (350 pinned contain here;
+  // her hand-proof — a square picture letterboxed to a small
+  // centered square at width 100% / length 10mm — superseded
+  // it. The full size matrix lives in t50.)
   const sized = { ...plain, headerWidth: 50, headerLength: 40 };
   const applied = decoImageStyle(sized, 'header');
   assert.equal(applied.width, '50%');
-  assert.equal(applied.maxHeight, '40mm');
-  assert.equal(applied.objectFit, 'contain', 'a banner is contained, never stretched');
+  assert.equal(applied.height, '40mm');
+  assert.equal(applied.maxHeight, undefined, 'a set length is the exact band height, not a cap');
+  assert.equal(applied.objectFit, 'fill', 'a sized banner stretches to fill its band');
 });
 
 test('stamp words: date + time in the reader’s own locale', () => {

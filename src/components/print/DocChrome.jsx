@@ -15,11 +15,13 @@ import { getLocale, t } from '@/lib/i18n';
  * The 80mm receipt is the one exception: it is a slip, so its
  * frame (page={false}) stays around the slip itself.
  *
- * THE BANNERS print at their natural proportions inside the
- * owner's chosen width/length (see decoImageStyle). The bottom
- * banner ANCHORS at the page bottom on paper — the print
- * stylesheet fixes its wrapper to the bottom of the sheet; on
- * screen, and on the receipt slip, it simply follows the words.
+ * THE BANNERS: unsized, they print at their natural
+ * proportions; sized in the Studio, they STRETCH to fill the
+ * exact band the owner set (see decoImageStyle — her ruling,
+ * Nov 23, 2026). The bottom banner ANCHORS at the page bottom
+ * on paper — the print stylesheet fixes its wrapper to the
+ * bottom of the sheet; on screen, and on the receipt slip, it
+ * simply follows the words.
  *
  * THE STAMP prints on every Studio document — and nowhere else:
  * the 4×6 shipping label never carries it.

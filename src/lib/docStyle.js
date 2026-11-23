@@ -140,23 +140,47 @@ export function docFrameStyle(style, brandColor) {
 }
 
 /**
- * Inline style for one decoration banner (release 350). The
- * banner spans the owner's chosen width of the document (full
- * width when unset) and prints at its NATURAL proportions —
- * object-fit: contain inside a box whose height is capped at the
- * owner's chosen length, or at the document's own long-standing
- * cap (capMm) when no length is set. Nothing is ever stretched
- * or squashed to fit: a capped banner letterboxes, honestly.
+ * Inline style for one decoration banner (release 350; stretch
+ * ruled by the owner Nov 23, 2026, release 353). Two shapes:
+ *
+ * NEVER SIZED (width and length both unset): exactly as
+ * documents have always rendered — full width, NATURAL
+ * proportions (object-fit: contain) under the document's own
+ * long-standing height cap (capMm). Nothing about the unsized
+ * banner changed in 353.
+ *
+ * SIZED (the owner set a width and/or a length in the Studio):
+ * the picture STRETCHES to fill the exact band she set — the
+ * chosen share of the page width, the chosen length tall —
+ * the whole picture pulled to fit, edges never trimmed
+ * (object-fit: fill). Her words: the numbers belong to the
+ * owner; "it'll really be up to them how wide they want it."
+ * (350 shipped contain for the sized case too, so a square
+ * picture letterboxed into a small centered square however
+ * wide she asked the band to be — her hand-proof caught it.)
+ * When only the width is set, the document's standing cap
+ * still bounds the band's height and the picture fills that
+ * box; when only the length is set, the band runs full width
+ * at exactly that height.
  */
 export function decoImageStyle(style, slot, capMm = 24) {
   const resolved = style ?? DEFAULT_DOC_STYLE;
   const width = resolved[`${slot}Width`];
   const length = resolved[`${slot}Length`];
+  if (!width && !length) {
+    return {
+      display: 'block',
+      width: '100%',
+      maxHeight: `${capMm}mm`,
+      objectFit: 'contain',
+      marginInline: 'auto',
+    };
+  }
   return {
     display: 'block',
-    width: width ? `${width}%` : '100%',
-    maxHeight: `${length ?? capMm}mm`,
-    objectFit: 'contain',
+    width: `${width ?? 100}%`,
+    ...(length ? { height: `${length}mm` } : { maxHeight: `${capMm}mm` }),
+    objectFit: 'fill',
     marginInline: 'auto',
   };
 }

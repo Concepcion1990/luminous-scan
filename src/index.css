@@ -113,6 +113,22 @@
     display: none !important;
   }
 
+  /* A document's own header is content, not chrome (owner's
+     hand-proof, Nov 23, 2026, release 353): the blanket header
+     rule above exists to hide the app shell's top bar, but a
+     Studio document's header — its logo, business name and
+     title (DocHeader) — is a semantic <header> living inside
+     the print area, and it was being hidden with the chrome,
+     so the printed page started bare where the preview showed
+     the full header. Her standing rule is preview = print:
+     whatever the preview shows is what prints. Headers inside
+     the print area therefore print. (The direct-deposit form
+     and the pay-stub page share .print-area and contain no
+     <header> element, so their printouts are unchanged.) */
+  .print-area header {
+    display: block !important;
+  }
+
   body {
     background: #fff;
   }

@@ -609,8 +609,11 @@ export default function Layout() {
               page, directly above the © footer, for EVERY role —
               one tap, the complete logout, no hunting through
               pages. She asked for it while literally stuck in a
-              staff account that had no sign out anywhere. */}
-          <div className="flex justify-center pt-3">
+              staff account that had no sign out anywhere. It is
+              app chrome, never a document: no-print keeps it off
+              the paper (her hand-proof, Nov 23, 2026 — it printed
+              inside a stock count sheet's frame; release 353). */}
+          <div className="no-print flex justify-center pt-3">
             <button
               type="button"
               onClick={() => logout()}
