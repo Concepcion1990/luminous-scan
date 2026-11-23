@@ -30,6 +30,7 @@ import OrderLabelField from '@/components/orders/OrderLabelField';
 import { blankLine, CHANNELS, orderNumber, orderTotals } from '@/lib/orders';
 import { money, todayIso } from '@/lib/purchasing';
 import { computeOrderTax, formatTaxRate, parseTaxRate } from '@/lib/taxRate';
+import { resolveStateTaxRate } from '@/lib/stateTaxRates';
 import { useBusiness } from '@/hooks/useBusiness';
 import { withBusiness } from '@/lib/scoped';
 import { t } from '@/lib/i18n';
@@ -43,6 +44,20 @@ export default function OrderFormDialog({ open, onOpenChange, order, products, l
   // rules this order, and the setting is never written back.
   const [taxTouched, setTaxTouched] = useState(false);
   const taxRate = parseTaxRate(record?.tax_rate);
+  // Automatic tax (owner rulings, Nov 19, 2026; release 347):
+  // in Automatic mode a NEW order's rate comes from the
+  // customer's state the moment the state is on the order, and
+  // re-fills when the state changes — resolved live from the
+  // ship-to region + country through the built-in state table
+  // (state base rates only). No resolvable state — blank,
+  // unknown, or a non-US country — falls back to the fixed
+  // rate. A hand-typed Tax still wins in both modes: the
+  // pre-fill below stops forever at taxTouched.
+  const taxMode = record?.tax_mode === 'automatic' ? 'automatic' : 'fixed';
+  const stateEntry = !order && taxMode === 'automatic' && form
+    ? resolveStateTaxRate(form.ship_region, form.ship_country)
+    : null;
+  const effectiveTaxRate = stateEntry ? stateEntry.rate : taxRate;
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [addressOnFile, setAddressOnFile] = useState(false);
@@ -200,13 +215,17 @@ export default function OrderFormDialog({ open, onOpenChange, order, products, l
   // items subtotal × rate — shipping is NOT in the taxed base.
   // Recomputes as lines change; stops forever at the first
   // hand-typed value. Edit mode never auto-fills: a saved order's
-  // tax is its own.
+  // tax is its own. The rate is the EFFECTIVE rate: in Automatic
+  // mode the customer's state rate when the state resolves, the
+  // fixed rate otherwise — so a state change re-fills the tax
+  // through this same effect, but only while the box is
+  // untouched (release 347 design, pinned in tests/t44).
   useEffect(() => {
-    if (!open || order || !form || taxTouched || taxRate == null) return;
-    const computed = computeOrderTax(orderTotals(form).subtotal, taxRate);
+    if (!open || order || !form || taxTouched || effectiveTaxRate == null) return;
+    const computed = computeOrderTax(orderTotals(form).subtotal, effectiveTaxRate);
     const next = computed ? computed.toFixed(2) : '';
     setForm((f) => (f && String(f.tax ?? '') !== next ? { ...f, tax: next } : f));
-  }, [open, order, form, taxTouched, taxRate]);
+  }, [open, order, form, taxTouched, effectiveTaxRate]);
 
   if (!form) return null;
 
@@ -539,7 +558,25 @@ export default function OrderFormDialog({ open, onOpenChange, order, products, l
                 }}
               />
               <p className="text-[11px] text-muted-foreground">
-                {taxRate != null ? (
+                {!order && taxMode === 'automatic' ? (
+                  stateEntry ? (
+                    <>
+                      {t('orders.taxStateRate', {
+                        state: stateEntry.name,
+                        rate: formatTaxRate(stateEntry.rate),
+                      })}
+                    </>
+                  ) : taxRate != null ? (
+                    <>
+                      {t('orders.taxAutoNoState')} —{' '}
+                      <Link to="/settings" className="underline">
+                        {t('orders.taxRateChange')}
+                      </Link>
+                    </>
+                  ) : (
+                    <>{t('orders.taxAutoAddState')}</>
+                  )
+                ) : taxRate != null ? (
                   <>
                     {t('orders.taxRateSet', { rate: formatTaxRate(record?.tax_rate) })} —{' '}
                     <Link to="/settings" className="underline">

@@ -105,6 +105,22 @@ export default function DetailsCard({ values, onChange, onPreferenceChange }) {
             <p className="text-xs text-muted-foreground">{t('settings.details.taxRateHint')}</p>
           </div>
           <div className="space-y-2">
+            <Label htmlFor="business-tax-mode">{t('settings.details.taxMode')}</Label>
+            <Select
+              value={values.tax_mode === 'automatic' ? 'automatic' : 'fixed'}
+              onValueChange={pick('tax_mode')}
+            >
+              <SelectTrigger id="business-tax-mode">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="fixed">{t('settings.details.taxModeFixed')}</SelectItem>
+                <SelectItem value="automatic">{t('settings.details.taxModeAutomatic')}</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">{t('settings.details.taxModeHint')}</p>
+          </div>
+          <div className="space-y-2">
             <Label htmlFor="business-gs1-prefix">{t('settings.details.gs1Prefix')}</Label>
             <Input
               id="business-gs1-prefix"

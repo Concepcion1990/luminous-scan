@@ -71,6 +71,10 @@ import { signupBlockedForEmail } from './domainBlocklist.js';
  */
 const SETTINGS_GRANT_BY_FIELD = {
   tax_rate: 'settings.taxRate',
+  // The tax MODE rides the same tick (release 347): whoever may
+  // keep the rate may choose Fixed vs Automatic — one section,
+  // one grant, exactly as the owner's Nov 19, 2026 ruling drew it.
+  tax_mode: 'settings.taxRate',
   gs1_prefix: 'settings.gs1',
   // The business NAME has its own tick (the header ruling,
   // Nov 19, 2026): "edit business name" governs the name wherever
@@ -219,6 +223,11 @@ function publicBusiness(row) {
     // The set-once sales tax rate (migration 027): the typed
     // decimal percent text, '' when unset.
     tax_rate: row.tax_rate || '',
+    // The tax mode (migration 043): 'fixed' (the 027 behavior)
+    // or 'automatic' (a new order fills from the customer's
+    // state base rate). Rows predating the migration read as
+    // 'fixed' — nothing changes until someone opts in.
+    tax_mode: row.tax_mode === 'automatic' ? 'automatic' : 'fixed',
     // The owner's own GS1 company prefix (migration 028): the
     // typed digits, '' when unset. Hers from her GS1 license —
     // the app never invents one.
@@ -236,7 +245,7 @@ function publicBusiness(row) {
 const BUSINESS_UPDATE_FIELDS = [
   'name', 'tagline', 'logo_url', 'brand_color', 'contact_email',
   'contact_phone', 'website', 'address', 'currency', 'timezone',
-  'date_format', 'unit_system', 'language', 'doc_style', 'tax_rate', 'gs1_prefix',
+  'date_format', 'unit_system', 'language', 'doc_style', 'tax_rate', 'tax_mode', 'gs1_prefix',
   'staff_welcome_script',
 ];
 const SUPPORTED_LANGUAGES = ['am', 'ar', 'bho', 'bn', 'de', 'en', 'en-AU', 'en-CA', 'en-GB', 'en-IN', 'es-CU', 'es-ES', 'es-MX', 'es-PR', 'es-US', 'es-VE', 'fa', 'fr-CA', 'fr-FR', 'gu', 'ha', 'hi', 'id', 'it', 'ja', 'jv', 'kn', 'ko', 'mr', 'ms', 'pa-Arab', 'pa-Guru', 'pcm', 'prs', 'pt-BR', 'pt-PT', 'ru', 'sw', 'ta', 'te', 'tg', 'th', 'tl', 'tr', 'uk', 'ur', 'vi', 'wuu', 'yo', 'yue', 'zh-Hans', 'zh-Hant'];
@@ -324,6 +333,14 @@ function validateBusinessPatch(patch) {
         return { error: 'Enter a tax rate between 0 and 100, with up to 4 decimal places — or leave it blank.' };
       }
       clean.tax_rate = text;
+    } else if (key === 'tax_mode') {
+      // Tax mode (migration 043, release 347): exactly two
+      // values exist. Anything else is refused whole — a mode
+      // is never guessed into being.
+      if (!['fixed', 'automatic'].includes(text)) {
+        return { error: 'Choose how orders get their tax: your fixed rate, or automatic by the customer\u2019s state.' };
+      }
+      clean.tax_mode = text;
     } else if (key === 'staff_welcome_script') {
       // The owner's welcome script (migration 029): her own
       // words, stored as written (owner-written text is custom

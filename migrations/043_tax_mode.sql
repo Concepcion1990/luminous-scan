@@ -1,0 +1,17 @@
+-- 043_tax_mode.sql — the tax-rate MODE (owner rulings, Nov 19,
+-- 2026; built in release 347). Beside the set-once fixed rate
+-- (migration 027) a business now chooses HOW new sales orders
+-- get their tax:
+--   'fixed'     — the 027 behavior, unchanged: every new order
+--                 pre-fills from the business's own tax_rate.
+--   'automatic' — a new order pre-fills from the CUSTOMER'S
+--                 STATE base rate (the built-in US state table,
+--                 src/lib/stateTaxRates.js) the moment the state
+--                 is on the order, re-filling when the state
+--                 changes; orders with no state, or outside the
+--                 US, fall back to the fixed tax_rate.
+-- Default 'fixed': nothing changes for any business until the
+-- owner (or a member holding the settings.taxRate tick) opts in.
+-- The order's own Tax stays hand-editable in both modes; a typed
+-- value wins on that order and never writes back here.
+ALTER TABLE businesses ADD COLUMN tax_mode TEXT NOT NULL DEFAULT 'fixed';

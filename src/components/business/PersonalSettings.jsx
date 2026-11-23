@@ -20,6 +20,13 @@ import InstallAppCard from './InstallAppCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useToast } from '@/components/ui/use-toast';
 import { t, useLocale } from '@/lib/i18n';
 
@@ -316,13 +323,20 @@ function GrantedTaxRateCard({ businessId, profile, onSaved }) {
   useEffect(() => {
     setValue(profile?.tax_rate ?? '');
   }, [profile?.tax_rate]);
+  // The tax mode rides the same card and the same tick
+  // (release 347): the granted member keeps the rate AND
+  // chooses Fixed vs Automatic, saved through the same door.
+  const [mode, setMode] = useState(profile?.tax_mode === 'automatic' ? 'automatic' : 'fixed');
+  useEffect(() => {
+    setMode(profile?.tax_mode === 'automatic' ? 'automatic' : 'fixed');
+  }, [profile?.tax_mode]);
   const { save, saving, saved, error } = useSectionSave(businessId, onSaved);
   return (
     <SettingsCard title={t('settings.details.taxRate')} description={t('settings.details.taxRateHint')}>
       <form
         onSubmit={(event) => {
           event.preventDefault();
-          save({ tax_rate: value });
+          save({ tax_rate: value, tax_mode: mode });
         }}
         className="space-y-3"
       >
@@ -341,6 +355,19 @@ function GrantedTaxRateCard({ businessId, profile, onSaved }) {
               %
             </span>
           </div>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="granted-tax-mode">{t('settings.details.taxMode')}</Label>
+          <Select value={mode} onValueChange={setMode}>
+            <SelectTrigger id="granted-tax-mode" className="max-w-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="fixed">{t('settings.details.taxModeFixed')}</SelectItem>
+              <SelectItem value="automatic">{t('settings.details.taxModeAutomatic')}</SelectItem>
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground">{t('settings.details.taxModeHint')}</p>
         </div>
         <SectionError error={error} />
         <SaveRow saving={saving} saved={saved} />

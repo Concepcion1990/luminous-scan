@@ -141,6 +141,7 @@ export async function saveBusiness(record, values) {
     unit_system: values.unit_system || 'imperial',
     language: values.language || 'en',
     tax_rate: values.tax_rate?.trim() || '',
+    tax_mode: values.tax_mode === 'automatic' ? 'automatic' : 'fixed',
     gs1_prefix: values.gs1_prefix?.trim() || '',
   };
   return record?.id
