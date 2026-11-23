@@ -69,6 +69,7 @@ export const MODULE_LABELS = {
   "reports": "Reports & alerts",
   "purchasing": "Suppliers & purchasing",
   "settings": "Settings",
+  "restaurant": "Restaurant",
   "billing": "Plan & billing",
   "exports": "Exports",
   "builds": "Bundles & builds",
@@ -179,6 +180,17 @@ export const TRAINING_LESSONS = [
   { id: 'owner-pos-sales-list', track: 'owner', module: 'pos', steps: 4, feature: 'pos' },
   { id: 'print-shipping-label', track: 'staff', module: 'printing', steps: 5 },
   { id: 'owner-shipping-labels', track: 'owner', module: 'printing', steps: 5 },
+  // The restaurant corner (release 359, Nov 23, 2026): five
+  // lessons under the Business-only restaurant feature, so
+  // Essentials never sees one of them. The three manager
+  // lessons are scoped to the owner's matching tick in
+  // trainingScope.js (LESSON_REQUIREMENTS) — the ticks bring
+  // their training, per the owner's standing pattern.
+  { id: 'owner-restaurant', track: 'owner', module: 'restaurant', steps: 5, feature: 'restaurant' },
+  { id: 'staff-restaurant-view', track: 'staff', module: 'restaurant', steps: 4, feature: 'restaurant' },
+  { id: 'mgr-restaurant-build', track: 'manager', module: 'restaurant', steps: 4, feature: 'restaurant' },
+  { id: 'mgr-restaurant-pars', track: 'manager', module: 'restaurant', steps: 4, feature: 'restaurant' },
+  { id: 'mgr-restaurant-money', track: 'manager', module: 'restaurant', steps: 4, feature: 'restaurant' },
 ];
 
 /** permission -> the training modules gaining it should teach. */
@@ -269,6 +281,15 @@ export const MODULE_BY_PERMISSION = {
   ],
   "products.reorder": [
     "products"
+  ],
+  "restaurant.build": [
+    "restaurant"
+  ],
+  "restaurant.pars": [
+    "restaurant"
+  ],
+  "restaurant.money": [
+    "restaurant"
   ]
 };
 

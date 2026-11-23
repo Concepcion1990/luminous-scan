@@ -17,6 +17,7 @@ import {
   ShoppingBag,
   Undo2,
   ClipboardCheck,
+  ChefHat,
   Boxes,
   LayoutGrid,
   Store,
@@ -84,6 +85,21 @@ export const NAV_GROUPS = [
       { to: '/pos', label: 'Till connections', labelKey: 'nav.pos', icon: Receipt, feature: 'pos' },
       { to: '/returns', label: 'Returns', labelKey: 'nav.returns', icon: Undo2, perm: 'returns.manage' },
       { to: '/listings', label: 'Listings', labelKey: 'nav.listings', icon: Store, perm: 'listings.manage' },
+    ],
+  },
+  // The restaurant corner (the owner's ruling, Nov 21, 2026):
+  // its own subheading, Business only. Both entries carry the
+  // restaurant feature, so on Essentials the group is empty
+  // and never renders — the corner leaves no trace. Its pages
+  // read the shared app's products, locations, suppliers and
+  // purchase orders — no silo. Looking is free for every
+  // member (no perm on either door); the doing splits inside
+  // the pages on the owner's three ticks.
+  {
+    label: 'Restaurant', labelKey: 'nav.group.restaurant',
+    items: [
+      { to: '/restaurant', label: 'Recipes & dishes', labelKey: 'nav.recipes', icon: ChefHat, feature: 'restaurant' },
+      { to: '/restaurant/order-guide', label: 'Order guide', labelKey: 'nav.orderGuide', icon: ClipboardList, feature: 'restaurant' },
     ],
   },
   {

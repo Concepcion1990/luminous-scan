@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/client';
 import { Loader2, TriangleAlert } from 'lucide-react';
-import { allRoles, BUSINESS_ONLY_PERMISSIONS, CLOCK_GRANTS, DOCUMENTS_GRANTS, isClockGrant, isDocumentsGrant, isLocationsGrant, isLowStockGrant, isMemberGrant, isProductsGrant, isReturnsGrant, isRosterGrant, isSettingsGrant, isTrainingGrant, LOCATIONS_GRANTS, LOW_STOCK_GRANTS, PRODUCTS_GRANTS, RETURNS_GRANTS, ROSTER_GRANTS, roleById, SETTINGS_GRANTS, STATUS_OPTIONS, TRAINING_GRANTS } from '@/lib/staff';
+import { allRoles, BUSINESS_ONLY_PERMISSIONS, CLOCK_GRANTS, DOCUMENTS_GRANTS, isClockGrant, isDocumentsGrant, isLocationsGrant, isLowStockGrant, isMemberGrant, isProductsGrant, isRestaurantGrant, isReturnsGrant, isRosterGrant, isSettingsGrant, isTrainingGrant, LOCATIONS_GRANTS, LOW_STOCK_GRANTS, PRODUCTS_GRANTS, RESTAURANT_GRANTS, RETURNS_GRANTS, ROSTER_GRANTS, roleById, SETTINGS_GRANTS, STATUS_OPTIONS, TRAINING_GRANTS } from '@/lib/staff';
 import { Checkbox } from '@/components/ui/checkbox';
 import { createStaffMember, isOperatingSite } from '@/lib/entitlements';
 import { fixStaffEmail } from '@/lib/recovery';
@@ -81,6 +81,14 @@ const emptyForm = (customRoles, stripBusinessOnly = (permissions) => permissions
     // ride the save either way, so an Essentials edit never
     // wipes a tick stored earlier.
     lowstock_grants: [],
+    // Owner-granted restaurant corner (Nov 23, 2026): THREE
+    // sibling per-member ticks — building recipes, setting
+    // pars, and seeing dish money. Off by default for
+    // everyone. The tick block renders only on Business (the
+    // corner does not exist on Essentials); the stored values
+    // ride the save either way, so an Essentials edit never
+    // wipes a tick stored earlier.
+    restaurant_grants: [],
     // Owner-granted policy trainings (Nov 20, 2026): TWO sibling
     // per-member ticks — the quiz training on the owner's Store
     // Policies, and the one on her Terms & Conditions. Reading
@@ -198,6 +206,9 @@ export default function StaffMemberDialog({
             ),
             lowstock_grants: (Array.isArray(member.permissions) ? member.permissions : []).filter(
               (key) => isLowStockGrant(key)
+            ),
+            restaurant_grants: (Array.isArray(member.permissions) ? member.permissions : []).filter(
+              (key) => isRestaurantGrant(key)
             ),
             training_grants: (Array.isArray(member.permissions) ? member.permissions : []).filter(
               (key) => isTrainingGrant(key)
@@ -319,6 +330,7 @@ export default function StaffMemberDialog({
           ...(form.locations_grants || []),
           ...(form.roster_grants || []),
           ...(form.lowstock_grants || []),
+          ...(form.restaurant_grants || []),
           ...(form.training_grants || []),
           ...(form.clock_grants || []),
           ...(form.documents_grants || []),
@@ -775,6 +787,43 @@ export default function StaffMemberDialog({
               </div>
               <p className="text-[11px] text-muted-foreground">
                 {t('staff.memberDialog.lowStockAccessHint')}
+              </p>
+            </div>
+          )}
+
+          {/* Owner-granted restaurant corner (Nov 23, 2026):
+              THREE sibling ticks, Business only — the corner
+              does not exist on Essentials, so on Essentials this
+              block does not render at all. Looking at the corner
+              is free for everyone; the ticks hand over building
+              recipes, setting pars, and seeing dish money.
+              Offered for every role, off by default. */}
+          {!entitlementLoading && !isEssentials && (
+            <div className="space-y-1.5">
+              <Label>{t('staffLib.area.restaurantAccess')}</Label>
+              <div className="rounded-lg border border-border p-2.5">
+                <div className="grid gap-1.5">
+                  {RESTAURANT_GRANTS.map((grant) => (
+                    <label key={grant.key} className="flex items-start gap-2 text-xs leading-snug">
+                      <Checkbox
+                        checked={(form.restaurant_grants || []).includes(grant.key)}
+                        onCheckedChange={(on) =>
+                          setForm((c) => ({
+                            ...c,
+                            restaurant_grants: on
+                              ? [...new Set([...(c.restaurant_grants || []), grant.key])]
+                              : (c.restaurant_grants || []).filter((key) => key !== grant.key),
+                          }))
+                        }
+                        className="mt-0.5"
+                      />
+                      <span>{grant.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                {t('staff.memberDialog.restaurantAccessHint')}
               </p>
             </div>
           )}

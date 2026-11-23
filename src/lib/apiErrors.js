@@ -479,6 +479,15 @@ export const API_ERROR_MESSAGE_KEYS = {
   "Choose a signature style.": "apiErrors.invalidValue.chooseSignatureStyle",
   "That team member has not sent their details yet.": "apiErrors.invalidValue.noDdDetailsYet",
   "Custom roles are a Business feature. Essentials uses the five built-in roles — Owner, Manager, Stock clerk, Sales clerk, Viewer. Move to Business to create your own roles.": "apiErrors.customRolesBusinessOnly",
+  "A recipe must make at least a little of the dish.": "apiErrors.recipeYield",
+  "The Q factor is a percentage between 0 and 100.": "apiErrors.recipeQFactor",
+  "A recipe cannot use itself as an ingredient.": "apiErrors.recipeSelf",
+  "A dish cannot be an ingredient of its own recipe.": "apiErrors.recipeOwnDish",
+  "These recipes would form a circle — a dish cannot be an ingredient of itself, even through other dishes.": "apiErrors.recipeCircle",
+  "That dish already has an active recipe. Set the other recipe back to draft first.": "apiErrors.recipeAlreadyActive",
+  "That product already has a par level here. Edit the one that is there.": "apiErrors.parExists",
+  "A par level cannot be negative.": "apiErrors.parNegative",
+  "A pack size must be greater than zero.": "apiErrors.packSize",
 };
 
 export const API_ERROR_PATTERNS = [

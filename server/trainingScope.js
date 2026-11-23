@@ -100,6 +100,12 @@ export const LESSON_REQUIREMENTS = {
   // granting staff.documents assigns it, unticking mirrors it
   // out of future scope; completed history is never removed.
   'mgr-staff-documents': ['staff.documents'],
+  // The restaurant ticks' lessons (Nov 23, 2026): same law —
+  // granting the tick assigns the lesson, unticking mirrors
+  // it out of future scope; completed history is never removed.
+  'mgr-restaurant-build': ['restaurant.build'],
+  'mgr-restaurant-pars': ['restaurant.pars'],
+  'mgr-restaurant-money': ['restaurant.money'],
   'mgr-suppliers-orders': ['suppliers.manage'],
   'mgr-send-supplier-order': ['purchasing.manage'],
   'mgr-tax-rate': ['settings.taxRate', 'settings.manage'],

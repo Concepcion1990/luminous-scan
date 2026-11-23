@@ -13,6 +13,7 @@
  */
 import crypto from 'node:crypto';
 import { featureAllowed, BUNDLE_MOVEMENT_TYPES } from './plans.js';
+import { depleteForSaleTx, restoreDepletionsTx } from './recipes.js';
 
 export const MOVEMENT_TYPES = {
   receive: { label: 'Received', direction: 'in' },
@@ -203,6 +204,24 @@ export async function recordMovementTx(client, {
       to_location_name: location.name,
     }, caller);
   }
+  // Restaurant depletion (release 359, Nov 23, 2026): a SALE
+  // of a dish takes its recipe's ingredients off the same
+  // shelf, in the same transaction — so every door that sells
+  // through this funnel (tills, sync replay, the scan and
+  // adjustment doors) depletes alike, and a sale that rolls
+  // back takes its depletion with it. Drafts never deplete
+  // and a shortage never blocks the sale (server/recipes.js).
+  if (type === 'sale' && featureAllowed(planKey, 'restaurant')) {
+    await depleteForSaleTx(client, {
+      businessId,
+      saleMovement: movement,
+      product,
+      location,
+      quantity: qty,
+      userName,
+      caller,
+    });
+  }
   return { previous: current, next, movement };
 }
 
@@ -322,6 +341,14 @@ export async function reverseMovementTx(client, { businessId, movement, userName
     reversal_of_id: movement.id,
     reversal_of_label: link.label,
   }, caller);
+  // Restaurant depletion (release 359): reversing a SALE puts
+  // its ingredients back — each consume row the sale caused is
+  // restored once, as its own correction naming it. A returned
+  // dish never does this (the food was made); only a reversed
+  // sale restores.
+  if (movement.type === 'sale') {
+    await restoreDepletionsTx(client, { businessId, saleMovement: movement, userName, caller });
+  }
   return { previous: current, next: target, movement: mirror };
 }
 

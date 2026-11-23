@@ -28,6 +28,9 @@ import Inventory from '@/pages/Inventory';
 import InventoryCategories from '@/pages/InventoryCategories';
 import Categories from '@/pages/Categories';
 import Materials from '@/pages/Materials';
+import Restaurant from '@/pages/Restaurant';
+import RecipeDetail from '@/pages/RecipeDetail';
+import OrderGuide from '@/pages/OrderGuide';
 import Listings from '@/pages/Listings';
 import Locations from '@/pages/Locations';
 import Movements from '@/pages/Movements';
@@ -138,6 +141,30 @@ const AuthenticatedApp = () => {
             element={
               <PlanRedirect feature="builds">
                 <Materials />
+              </PlanRedirect>
+            }
+          />
+          <Route
+            path="/restaurant"
+            element={
+              <PlanRedirect feature="restaurant">
+                <Restaurant />
+              </PlanRedirect>
+            }
+          />
+          <Route
+            path="/restaurant/recipes/:id"
+            element={
+              <PlanRedirect feature="restaurant">
+                <RecipeDetail />
+              </PlanRedirect>
+            }
+          />
+          <Route
+            path="/restaurant/order-guide"
+            element={
+              <PlanRedirect feature="restaurant">
+                <OrderGuide />
               </PlanRedirect>
             }
           />

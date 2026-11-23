@@ -52,6 +52,7 @@ import {
   entitlementInheritance,
 } from './plans.js';
 import { createStaffMember, staffSeatCount, resolveMemberStore, singleStoreLocation } from './staff.js';
+import { recipeCostPerMake, recipeCostPerUnit, depleteForSaleTx, restoreDepletionsTx } from './recipes.js';
 import { memberLevel } from './staffWindow.js';
 import { ensureDefaultLocation } from './defaultLocation.js';
 import { rememberOrderAddress } from './customerAddresses.js';
@@ -166,6 +167,33 @@ const DEFS = {
     // Business-only (plan §2.11): bundles & builds.
     planGate: 'business',
     writePerm: 'builds.manage',
+  },
+  // The restaurant corner (release 359, Nov 23, 2026):
+  // Business-only, under its own plan gate so Essentials lists
+  // skip it silently and single reads refuse — no trace. Reads
+  // are the free view base (any trusted member); WRITES ride
+  // the owner's enrollment ticks, which live in the member's
+  // permissions array exactly where access.can looks (the
+  // owner's can() is always true). Recipe money is shaped at
+  // read time (shapeRecipeMoney): cost figures ride the row
+  // only for the owner or a restaurant.money tick holder.
+  Recipe: {
+    table: 'recipes',
+    json: ['lines'],
+    numeric: ['yield_qty', 'q_factor_pct'],
+    bool: [],
+    required: ['name'],
+    planGate: 'restaurant',
+    writePerm: 'restaurant.build',
+  },
+  Par: {
+    table: 'pars',
+    json: [],
+    numeric: ['par_qty', 'pack_size'],
+    bool: [],
+    required: ['product_id'],
+    planGate: 'restaurant',
+    writePerm: 'restaurant.pars',
   },
   AlertRule: {
     table: 'alert_rules',
@@ -634,6 +662,232 @@ async function validatePoLines(pool, business, values, { allowZeroCost }) {
 }
 
 /** Shared checks for a build list (create + update). */
+/**
+ * Restaurant recipe validation (release 359, Nov 23, 2026).
+ * The candidate is the full would-be row (create values, or
+ * the stored row merged with the patch); selfId is the row's
+ * own id on update, null on create. The rules keep the graph
+ * a kitchen can actually cook from: everything named belongs
+ * to the business, no recipe uses itself — directly or
+ * through other dishes — no dish is its own ingredient, and
+ * at most ONE active recipe covers a dish (the one depletion
+ * follows when it sells).
+ */
+async function validateRecipe(pool, business, candidate, selfId) {
+  const lines = Array.isArray(candidate.lines) ? candidate.lines : [];
+  if (candidate.product_id) {
+    const dish = (
+      await pool.query('SELECT id FROM products WHERE id = $1 AND business_id = $2', [candidate.product_id, business.id])
+    ).rows[0];
+    if (!dish) throw err(400, 'invalid_reference', 'The product must belong to this business.');
+  }
+  if (candidate.location_id) {
+    const zone = (
+      await pool.query('SELECT id FROM locations WHERE id = $1 AND business_id = $2', [candidate.location_id, business.id])
+    ).rows[0];
+    if (!zone) throw err(400, 'invalid_reference', 'The location must belong to this business.');
+  }
+  if (candidate.yield_qty !== undefined && candidate.yield_qty !== null && !(Number(candidate.yield_qty) > 0)) {
+    throw err(400, 'invalid_value', 'A recipe must make at least a little of the dish.');
+  }
+  if (
+    candidate.q_factor_pct !== undefined
+    && candidate.q_factor_pct !== null
+    && !(Number(candidate.q_factor_pct) >= 0 && Number(candidate.q_factor_pct) <= 100)
+  ) {
+    throw err(400, 'invalid_value', 'The Q factor is a percentage between 0 and 100.');
+  }
+  for (const line of lines) {
+    if (!(Number(line?.quantity) > 0)) {
+      throw err(400, 'invalid_quantity', 'Every component needs a quantity greater than zero.');
+    }
+    if (line.kind === 'recipe') {
+      if (!line.recipe_id) throw err(400, 'invalid_reference', 'Every line must name a product in this business.');
+      if (selfId && line.recipe_id === selfId) {
+        throw err(400, 'recipe_self_ingredient', 'A recipe cannot use itself as an ingredient.');
+      }
+    } else if (line.product_id && candidate.product_id && line.product_id === candidate.product_id) {
+      throw err(400, 'recipe_self_ingredient', 'A dish cannot be an ingredient of its own recipe.');
+    }
+  }
+  await assertProductsInBusiness(
+    pool,
+    business.id,
+    lines.filter((line) => line.kind !== 'recipe').map((line) => line.product_id),
+  );
+  const { rows: allRecipes } = await pool.query(
+    'SELECT id, lines FROM recipes WHERE business_id = $1',
+    [business.id],
+  );
+  const graph = new Map(allRecipes.map((row) => [row.id, parseJsonArray(row.lines)]));
+  if (selfId) graph.set(selfId, lines);
+  for (const line of lines) {
+    if (line.kind !== 'recipe') continue;
+    if (!graph.has(line.recipe_id)) {
+      throw err(400, 'invalid_reference', 'Every line must name a product in this business.');
+    }
+  }
+  // The graph must stay acyclic: walk every recipe line's
+  // subtree looking for the candidate itself.
+  if (selfId) {
+    const stack = lines.filter((line) => line.kind === 'recipe').map((line) => line.recipe_id);
+    const seen = new Set();
+    while (stack.length) {
+      const id = stack.pop();
+      if (id === selfId) {
+        throw err(400, 'recipe_circle', 'These recipes would form a circle — a dish cannot be an ingredient of itself, even through other dishes.');
+      }
+      if (seen.has(id)) continue;
+      seen.add(id);
+      for (const sub of graph.get(id) || []) {
+        if (sub.kind === 'recipe') stack.push(sub.recipe_id);
+      }
+    }
+  }
+  if (candidate.status === 'active' && candidate.product_id) {
+    const clash = (
+      await pool.query(
+        `SELECT id FROM recipes WHERE business_id = $1 AND product_id = $2 AND status = 'active' AND id <> $3 LIMIT 1`,
+        [business.id, candidate.product_id, selfId || ''],
+      )
+    ).rows[0];
+    if (clash) {
+      throw err(400, 'recipe_already_active', 'That dish already has an active recipe. Set the other recipe back to draft first.');
+    }
+  }
+  return lines;
+}
+
+/** Par validation (release 359): one par per product per
+ *  place — a second row for the same shelf would split the
+ *  order guide's math, so it refuses and names the fix. */
+async function validatePar(pool, business, candidate, selfId) {
+  const product = (
+    await pool.query('SELECT id FROM products WHERE id = $1 AND business_id = $2', [candidate.product_id, business.id])
+  ).rows[0];
+  if (!product) throw err(400, 'invalid_reference', 'The product must belong to this business.');
+  if (candidate.location_id) {
+    const zone = (
+      await pool.query('SELECT id FROM locations WHERE id = $1 AND business_id = $2', [candidate.location_id, business.id])
+    ).rows[0];
+    if (!zone) throw err(400, 'invalid_reference', 'The location must belong to this business.');
+  }
+  if (candidate.supplier_id) {
+    const supplier = (
+      await pool.query('SELECT id FROM suppliers WHERE id = $1 AND business_id = $2', [candidate.supplier_id, business.id])
+    ).rows[0];
+    if (!supplier) throw err(400, 'invalid_reference', 'The supplier must belong to this business.');
+  }
+  if (candidate.par_qty !== undefined && candidate.par_qty !== null && !(Number(candidate.par_qty) >= 0)) {
+    throw err(400, 'invalid_quantity', 'A par level cannot be negative.');
+  }
+  if (candidate.pack_size !== undefined && candidate.pack_size !== null && !(Number(candidate.pack_size) > 0)) {
+    throw err(400, 'invalid_quantity', 'A pack size must be greater than zero.');
+  }
+  const clash = (
+    await pool.query(
+      `SELECT id FROM pars WHERE business_id = $1 AND product_id = $2
+       AND COALESCE(location_id, '') = COALESCE($3, '') AND id <> $4 LIMIT 1`,
+      [business.id, candidate.product_id, candidate.location_id || null, selfId || ''],
+    )
+  ).rows[0];
+  if (clash) {
+    throw err(400, 'par_exists', 'That product already has a par level here. Edit the one that is there.');
+  }
+}
+
+/**
+ * Recipe money shaping (release 359): dish money is money —
+ * the owner-only money rule applied to a recipe read. The
+ * computed cost figures (per make, per dish, and the food
+ * cost percentage against the dish's price) ride the row
+ * ONLY for the owner or a member holding the restaurant.money
+ * tick; for everyone else the keys never exist on the row.
+ * Recipe lines never store costs, so nothing else can leak.
+ */
+async function shapeRecipeMoney(pool, access, name, rows) {
+  if (name !== 'Recipe' || !rows.length) return rows;
+  const canSeeMoney = access.isOwner || access.can('restaurant.money');
+  if (!canSeeMoney) {
+    for (const row of rows) {
+      delete row.true_cost;
+      delete row.cost_per_make;
+      delete row.food_cost_pct;
+    }
+    return rows;
+  }
+  const businessId = access.business.id;
+  const [{ rows: recipeRows }, { rows: productRows }] = await Promise.all([
+    pool.query('SELECT * FROM recipes WHERE business_id = $1', [businessId]),
+    pool.query('SELECT id, cost, price FROM products WHERE business_id = $1', [businessId]),
+  ]);
+  const recipesById = new Map(recipeRows.map((row) => [row.id, row]));
+  const productsById = new Map(productRows.map((row) => [row.id, row]));
+  const round2 = (value) => Math.round((Number(value) || 0) * 100) / 100;
+  for (const row of rows) {
+    const recipe = recipesById.get(row.id) || row;
+    row.cost_per_make = round2(recipeCostPerMake(recipesById, productsById, recipe));
+    row.true_cost = round2(recipeCostPerUnit(recipesById, productsById, recipe));
+    const price = Number(productsById.get(row.product_id)?.price) || 0;
+    row.food_cost_pct = price > 0 ? Math.round((row.true_cost / price) * 1000) / 10 : null;
+  }
+  return rows;
+}
+
+/**
+ * The generic layer's half of restaurant depletion (release
+ * 359): the client funnel (orders shipping, an exchange going
+ * out, the Movements page's own reversal button) writes sale
+ * movements and sale reversals as plain entity rows, so the
+ * follow-the-sale work happens here, once, keyed on the new
+ * row's id. The server funnel (recordMovementTx) carries its
+ * own hook for the till/sync/door sales. Depletion follows
+ * the sale — it is never allowed to fail it (the order
+ * address book's house pattern).
+ */
+async function followSaleMovement(pool, access, row, user) {
+  try {
+    if (row.type === 'sale' && access.planKey === 'business') {
+      const product = (
+        await pool.query('SELECT * FROM products WHERE id = $1 AND business_id = $2', [row.product_id, row.business_id])
+      ).rows[0];
+      const location = (
+        await pool.query('SELECT * FROM locations WHERE id = $1 AND business_id = $2', [row.location_id, row.business_id])
+      ).rows[0];
+      if (product && location) {
+        await withTx(pool, (client) =>
+          depleteForSaleTx(client, {
+            businessId: row.business_id,
+            saleMovement: row,
+            product,
+            location,
+            quantity: row.quantity,
+            userName: row.user_name || '',
+            caller: user,
+          }),
+        );
+      }
+    }
+    if (row.reversal_of_id) {
+      const original = (
+        await pool.query('SELECT * FROM stock_movements WHERE id = $1 AND business_id = $2', [row.reversal_of_id, row.business_id])
+      ).rows[0];
+      if (original?.type === 'sale') {
+        await withTx(pool, (client) =>
+          restoreDepletionsTx(client, {
+            businessId: row.business_id,
+            saleMovement: original,
+            userName: row.user_name || '',
+            caller: user,
+          }),
+        );
+      }
+    }
+  } catch {
+    /* depletion follows the sale; it never blocks it */
+  }
+}
+
 async function validateBom(pool, business, productId, kind, lines) {
   if (!['bundle', 'recipe'].includes(kind || 'bundle')) {
     throw err(400, 'invalid_value', 'A build list is a bundle or a recipe.');
@@ -970,6 +1224,21 @@ async function guardCreate(pool, def, name, access, values) {
     values.kind = values.kind || 'bundle';
     await validateBom(pool, business, values.product_id, values.kind, values.lines);
   }
+  if (name === 'Recipe') {
+    values.status = values.status === 'active' ? 'active' : 'draft';
+    await validateRecipe(pool, business, values, null);
+  }
+  if (name === 'Par') {
+    await validatePar(pool, business, values, null);
+  }
+  if (name === 'StockMovement') {
+    // The cause link is the server's alone (release 359): a
+    // depletion row names the sale that caused it, and that
+    // link is written by the depletion code, never taken
+    // from the client — the trail-stamp rule (357) applied
+    // to the restaurant corner.
+    delete values.cause_movement_id;
+  }
   if (name === 'Return') {
     // Returns approval gate (owner ruling, Nov 19, 2026): a
     // return is BORN waiting. Only the owner, or a member the
@@ -1157,6 +1426,17 @@ async function guardUpdate(pool, def, name, access, row, patch) {
       patch.lines ?? row.lines,
     );
   }
+  if (name === 'Recipe') {
+    await validateRecipe(pool, access.business, { ...row, ...patch }, row.id);
+  }
+  if (name === 'Par') {
+    await validatePar(pool, access.business, { ...row, ...patch }, row.id);
+  }
+  if (name === 'StockMovement') {
+    // The cause link is the server's alone (release 359) — a
+    // patch that round-trips the row simply loses the field.
+    delete patch.cause_movement_id;
+  }
   if (name === 'Return') {
     // Returns approval gate (owner ruling, Nov 19, 2026):
     // logging a return is returns.manage work, but APPROVING or
@@ -1331,6 +1611,9 @@ export async function listEntities(pool, user, name, filter = {}, options = {}) 
     // every viewer (release 357) — before the creator strip
     // below, which removes the id this resolution reads.
     businessRows = await shapeTrailActors(pool, access, name, businessRows);
+    // Recipe money rides the row only for money holders
+    // (release 359) — computed here, absent for everyone else.
+    businessRows = await shapeRecipeMoney(pool, access, name, businessRows);
     if (!access.isOwner) {
       // Attribution fields carry names, never emails, to a
       // non-owner (rider + audit, Nov 21, 2026); the creator
@@ -1407,11 +1690,13 @@ export async function getEntity(pool, user, name, id) {
   if (!access.isOwner) {
     const shaped = publicRow(def, row);
     await shapeTrailActors(pool, access, name, [shaped]);
+    await shapeRecipeMoney(pool, access, name, [shaped]);
     await shapeAttribution(pool, access, name, [shaped]);
     return stripCreatedBy(shaped);
   }
   const shaped = publicRow(def, row);
   await shapeTrailActors(pool, access, name, [shaped]);
+  await shapeRecipeMoney(pool, access, name, [shaped]);
   return shaped;
 }
 
@@ -1465,6 +1750,16 @@ export async function createEntity(pool, user, name, values) {
     } catch {
       /* the address book is a convenience, never a blocker */
     }
+  }
+  if (name === 'StockMovement') {
+    // Restaurant depletion (release 359): a sale written
+    // through the client funnel depletes its recipe's
+    // ingredients, and a reversal of a sale restores them —
+    // inside followSaleMovement, which never fails the write.
+    await followSaleMovement(pool, access, createdRow, user);
+  }
+  if (name === 'Recipe') {
+    await shapeRecipeMoney(pool, access, name, [createdRow]);
   }
   return createdRow;
 }
@@ -1578,6 +1873,9 @@ export async function updateEntity(pool, user, name, id, patch) {
     }
   }
   await shapeTrailActors(pool, access, name, [result]);
+  if (name === 'Recipe') {
+    await shapeRecipeMoney(pool, access, name, [result]);
+  }
   if (!access.isOwner) {
     // The update response obeys the same read rule: attribution
     // resolved to names, creator stamp withheld (Nov 21, 2026).
