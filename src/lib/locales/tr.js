@@ -4099,6 +4099,7 @@ export const tr = {
   "plansLib.includes.docStyle": "Kendi stilinizde belgeler — logo, renk, yazı tipi, çerçeve ve resimler",
   'plansLib.includes.taxRate': 'Vergi oranınız, bir kez ayarlanır — yeni siparişler vergilerini kendileri doldurur',
   "plansLib.includes.taxAuto": "Müşterinizin eyaletine göre otomatik vergi (ABD eyalet temel oranları)",
+  "plansLib.includes.listPrices": "Her ürünün fiyatı, sayısının yanında",
   'plansLib.includes.codeGenerator': "Kod oluşturucu — kendi ürünleriniz için yeni UPC, SKU, barkod ve QR kodları",
   'plansLib.includes.gs1Codes': "Kendi GS1 önekınızdan gerçek perakende UPC ve EAN kodları",
   "plansLib.includes.bulkEdit": "Toplu düzenleme ve toplu silme — birçok ürünü tek seferde güncelleyin veya kaldırın",

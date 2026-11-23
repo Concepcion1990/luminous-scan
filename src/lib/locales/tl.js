@@ -4099,6 +4099,7 @@ export const tl = {
   "plansLib.includes.docStyle": "Mga dokumento sa sarili mong estilo — logo, kulay, font, frame, at mga larawan",
   'plansLib.includes.taxRate': 'Ang rate ng buwis mo, isang beses lang itakda — ang mga bagong order ay kusang naglalagay ng kanilang buwis',
   "plansLib.includes.taxAuto": "Awtomatikong buwis ayon sa estado ng iyong customer (mga base rate ng estado sa US)",
+  "plansLib.includes.listPrices": "Presyo ng bawat produkto sa tabi ng bilang nito",
   'plansLib.includes.codeGenerator': "Code generator — mga bagong UPC, SKU, barcode at QR code para sa sarili mong mga produkto",
   'plansLib.includes.gs1Codes': "Tunay na tinging UPC at EAN code mula sa sarili mong GS1 prefix",
   "plansLib.includes.bulkEdit": "Maramihang pag-edit at maramihang pagtanggal — i-update o alisin ang maraming produkto nang sabay-sabay",
