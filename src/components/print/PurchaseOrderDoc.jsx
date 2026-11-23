@@ -1,21 +1,35 @@
 import DocHeader from './DocHeader';
+import { DecoFooter, DecoHeader, DocFrame, PrintedAt } from './DocChrome';
 import { formatMoney } from '@/lib/inventory';
+import { docRootClass, docRootStyle } from '@/lib/docStyle';
 import { t } from '@/lib/i18n';
 
 /**
  * Purchase order and its packing slip. The packing slip deliberately carries no
  * prices, so it can travel inside the box.
+ *
+ * The purchase order wears the Document Style Studio like the
+ * rest of the letter-size family (owner ruling, Nov 20, 2026;
+ * built release 350): the business's logo, its page frame, its
+ * decoration pictures and the printed-at stamp — the frame
+ * dresses the page only, the facts print exactly as they are.
  */
-export default function PurchaseOrderDoc({ order, business, mode = 'po' }) {
+export default function PurchaseOrderDoc({ order, business, mode = 'po', docStyle }) {
   const packing = mode === 'packing';
   const lines = order.lines || [];
   // Exact prices on paper (Nov 14, 2026): cents always, never rounded.
   const money = (value) => formatMoney(value || 0, business?.currency, 2);
 
   return (
-    <div className="print-label print-page-break w-[180mm] bg-white p-2 text-black">
+    <div
+      className={`print-label print-page-break doc-root w-[180mm] bg-white p-2 text-black ${docRootClass(docStyle)}`}
+      style={docRootStyle(docStyle, business?.brand_color)}
+    >
+      <DocFrame style={docStyle} brandColor={business?.brand_color} />
+      <DecoHeader style={docStyle} className="mb-2" />
       <DocHeader
         business={business}
+        logoUrl={business?.logo_url || ''}
         title={packing ? t('print.packingSlipTitle') : t('print.purchaseOrderTitle')}
         subtitle={[order.number, order.supplier_name, order.status].filter(Boolean).join(' · ')}
         fields={[
@@ -110,6 +124,8 @@ export default function PurchaseOrderDoc({ order, business, mode = 'po' }) {
       <p className="mt-3 border-t border-black/25 pt-2 font-mono text-[6.5pt] uppercase tracking-wide text-black/60">
         {packing ? t('print.poFooterPacking') : t('print.poFooter')}
       </p>
+      <PrintedAt className="mt-1" />
+      <DecoFooter style={docStyle} className="mt-3" />
     </div>
   );
 }

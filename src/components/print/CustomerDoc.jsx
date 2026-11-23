@@ -1,4 +1,5 @@
 import DocHeader from './DocHeader';
+import { DecoFooter, DecoHeader, DocFrame, PrintedAt } from './DocChrome';
 import { channelLabel, orderShipAddressLines } from '@/lib/orders';
 import { formatMoney } from '@/lib/inventory';
 import { docRootClass, docRootStyle } from '@/lib/docStyle';
@@ -64,12 +65,11 @@ export default function CustomerDoc({ order, business, mode = 'invoice', docStyl
   if (receipt) {
     return (
       <div
-        className={`print-label print-page-break mx-auto w-[80mm] bg-white p-3 text-black ${docRootClass(docStyle)}`}
+        className={`print-label print-page-break doc-root mx-auto w-[80mm] bg-white p-3 text-black ${docRootClass(docStyle)}`}
         style={docRootStyle(docStyle, business?.brand_color)}
       >
-        {docStyle?.headerImage && (
-          <img src={docStyle.headerImage} alt="" className="doc-deco mb-2 max-h-[18mm] w-full object-contain" />
-        )}
+        <DocFrame style={docStyle} brandColor={business?.brand_color} page={false} />
+        <DecoHeader style={docStyle} capMm={18} className="mb-2" />
         {business?.logo_url && (
           <img
             src={business.logo_url}
@@ -128,21 +128,19 @@ export default function CustomerDoc({ order, business, mode = 'invoice', docStyl
         <p className="mt-2 border-t border-dashed border-black/50 pt-2 text-center font-mono text-[6.5pt] uppercase tracking-wide text-black/60">
           {t('print.footerReceipt')}
         </p>
-        {docStyle?.footerImage && (
-          <img src={docStyle.footerImage} alt="" className="doc-deco mt-2 max-h-[18mm] w-full object-contain" />
-        )}
+        <PrintedAt className="mt-1 text-center" />
+        <DecoFooter style={docStyle} capMm={18} anchor={false} className="mt-2" />
       </div>
     );
   }
 
   return (
     <div
-      className={`print-label print-page-break w-[180mm] bg-white p-2 text-black ${docRootClass(docStyle)}`}
+      className={`print-label print-page-break doc-root w-[180mm] bg-white p-2 text-black ${docRootClass(docStyle)}`}
       style={docRootStyle(docStyle, business?.brand_color)}
     >
-      {docStyle?.headerImage && (
-        <img src={docStyle.headerImage} alt="" className="doc-deco mb-2 max-h-[24mm] w-full object-contain" />
-      )}
+      <DocFrame style={docStyle} brandColor={business?.brand_color} />
+      <DecoHeader style={docStyle} className="mb-2" />
       <DocHeader
         business={business}
         logoUrl={business?.logo_url || ''}
@@ -261,9 +259,8 @@ export default function CustomerDoc({ order, business, mode = 'invoice', docStyl
             ? t('print.footerReceipt')
             : t('print.footerInvoice')}
       </p>
-      {docStyle?.footerImage && (
-        <img src={docStyle.footerImage} alt="" className="doc-deco mt-3 max-h-[24mm] w-full object-contain" />
-      )}
+      <PrintedAt className="mt-1" />
+      <DecoFooter style={docStyle} className="mt-3" />
     </div>
   );
 }

@@ -217,6 +217,44 @@
   filter: grayscale(1);
 }
 
+/* Document frames and anchored banners (release 350, Nov 23,
+   2026): the Studio's frame is an overlay inside the document
+   root. On screen it frames the document block; on paper the
+   page frame is promoted to a fixed overlay at the very edge of
+   the printed page's printable area, so the frame frames the
+   FULL page — and repeats on every sheet of a long document,
+   letterhead-style. The receipt slip's frame (doc-frame-box)
+   stays around the slip. The bottom decoration's wrapper is
+   likewise fixed to the bottom of the printed page, so the
+   picture anchors at the page bottom however short the words
+   above it run. */
+.doc-root {
+  position: relative;
+}
+
+.doc-frame {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  /* Above the decorations, so the frame's bottom line stays
+     visible where the anchored footer banner meets the edge. */
+  z-index: 2;
+}
+
+@media print {
+  .doc-frame-page {
+    position: fixed;
+    inset: 0;
+  }
+
+  .doc-deco-bottom {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
+}
+
 @media print {
   .doc-color-on {
     -webkit-print-color-adjust: exact;

@@ -6,6 +6,7 @@ import { toLabel } from '@/lib/labelPayload';
 import { t } from '@/lib/i18n';
 import BarcodeSvg from './BarcodeSvg';
 import QrSvg from './QrSvg';
+import { DecoFooter, DecoHeader, DocFrame, PrintedAt } from './DocChrome';
 
 export const TEMPLATES = [
   { key: 'price', label: 'Price tag', labelKey: 'print.templatePrice', hint: 'Large price with name, UPC barcode and SKU', hintKey: 'print.templatePriceHint', width: 'w-[52mm]' },
@@ -247,12 +248,11 @@ export default function LabelCard({ template, product: productProp, label, busin
 
   return (
     <div
-      className={`${shell} print-page-break w-[180mm] gap-3 p-4 ${docRootClass(docStyle)}`}
+      className={`${shell} doc-root print-page-break w-[180mm] gap-3 p-4 ${docRootClass(docStyle)}`}
       style={docRootStyle(docStyle, business?.brand_color)}
     >
-      {docStyle?.headerImage && (
-        <img src={docStyle.headerImage} alt="" className="doc-deco max-h-[24mm] w-full object-contain" />
-      )}
+      <DocFrame style={docStyle} brandColor={business?.brand_color} />
+      <DecoHeader style={docStyle} />
       <div className="flex items-start justify-between gap-4 border-b border-black/20 pb-2">
         <div className="flex items-center gap-3">
           {business?.logo_url && (
@@ -298,9 +298,8 @@ export default function LabelCard({ template, product: productProp, label, busin
         </div>
         <QrSvg value={qr} className="h-[22mm] w-[22mm] shrink-0" />
       </div>
-      {docStyle?.footerImage && (
-        <img src={docStyle.footerImage} alt="" className="doc-deco max-h-[24mm] w-full object-contain" />
-      )}
+      <PrintedAt />
+      <DecoFooter style={docStyle} />
     </div>
   );
 }

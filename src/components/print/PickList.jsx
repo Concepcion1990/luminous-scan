@@ -1,16 +1,16 @@
 import DocHeader from './DocHeader';
+import { DecoFooter, DecoHeader, DocFrame, PrintedAt } from './DocChrome';
 import { docRootClass, docRootStyle } from '@/lib/docStyle';
 import { t } from '@/lib/i18n';
 
 export default function PickList({ products, business, docStyle }) {
   return (
     <div
-      className={`print-label print-page-break w-[180mm] bg-white p-2 text-black ${docRootClass(docStyle)}`}
+      className={`print-label print-page-break doc-root w-[180mm] bg-white p-2 text-black ${docRootClass(docStyle)}`}
       style={docRootStyle(docStyle, business?.brand_color)}
     >
-      {docStyle?.headerImage && (
-        <img src={docStyle.headerImage} alt="" className="doc-deco mb-2 max-h-[24mm] w-full object-contain" />
-      )}
+      <DocFrame style={docStyle} brandColor={business?.brand_color} />
+      <DecoHeader style={docStyle} className="mb-2" />
       <DocHeader
         business={business}
         logoUrl={business?.logo_url || ''}
@@ -74,9 +74,8 @@ export default function PickList({ products, business, docStyle }) {
           <span className="inline-block w-[32mm] border-b border-dotted border-black/60">&nbsp;</span>
         </p>
       </footer>
-      {docStyle?.footerImage && (
-        <img src={docStyle.footerImage} alt="" className="doc-deco mt-3 max-h-[24mm] w-full object-contain" />
-      )}
+      <PrintedAt className="mt-2" />
+      <DecoFooter style={docStyle} className="mt-3" />
     </div>
   );
 }

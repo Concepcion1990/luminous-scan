@@ -146,6 +146,10 @@ export const DEFAULT_DOC_STYLE = {
   border: 'none',
   headerImage: '',
   footerImage: '',
+  headerWidth: null,
+  headerLength: null,
+  footerWidth: null,
+  footerLength: null,
 };
 
 export function sanitizeDocStyle(value) {
@@ -170,12 +174,32 @@ export function sanitizeDocStyle(value) {
   const headerImage = image(parsed.headerImage);
   const footerImage = image(parsed.footerImage);
   if (headerImage === null || footerImage === null) return null;
+  // Decoration sizes (release 350, Nov 23, 2026): the owner's
+  // width (percent of the document width) and length (millimetres)
+  // for each picture, set in the Studio. Absent or null = unset
+  // (the document's own long-standing rendering); a present value
+  // must be a whole number inside the sane range or the WHOLE
+  // style is refused, like every other off-whitelist value here.
+  // The ranges mirror src/lib/docStyle.js exactly.
+  const size = (entry, min, max) => {
+    if (entry === undefined || entry === null) return null;
+    return Number.isInteger(entry) && entry >= min && entry <= max ? entry : undefined;
+  };
+  const headerWidth = size(parsed.headerWidth, 10, 100);
+  const headerLength = size(parsed.headerLength, 4, 100);
+  const footerWidth = size(parsed.footerWidth, 10, 100);
+  const footerLength = size(parsed.footerLength, 4, 100);
+  if ([headerWidth, headerLength, footerWidth, footerLength].includes(undefined)) return null;
   return {
     color: parsed.color === true,
     font: parsed.font ?? 'default',
     border: parsed.border ?? 'none',
     headerImage,
     footerImage,
+    headerWidth,
+    headerLength,
+    footerWidth,
+    footerLength,
   };
 }
 

@@ -1,4 +1,5 @@
 import DocHeader from './DocHeader';
+import { DecoFooter, DecoHeader, DocFrame, PrintedAt } from './DocChrome';
 import { conditionLabel, reasonLabel } from '@/lib/returns';
 import { formatMoney } from '@/lib/inventory';
 import { docRootClass, docRootStyle } from '@/lib/docStyle';
@@ -25,12 +26,11 @@ export default function ReturnDoc({ ret, business, docStyle }) {
 
   return (
     <div
-      className={`print-label print-page-break w-[180mm] bg-white p-2 text-black ${docRootClass(docStyle)}`}
+      className={`print-label print-page-break doc-root w-[180mm] bg-white p-2 text-black ${docRootClass(docStyle)}`}
       style={docRootStyle(docStyle, business?.brand_color)}
     >
-      {docStyle?.headerImage && (
-        <img src={docStyle.headerImage} alt="" className="doc-deco mb-2 max-h-[24mm] w-full object-contain" />
-      )}
+      <DocFrame style={docStyle} brandColor={business?.brand_color} />
+      <DecoHeader style={docStyle} className="mb-2" />
       <DocHeader
         business={business}
         logoUrl={business?.logo_url || ''}
@@ -154,9 +154,8 @@ export default function ReturnDoc({ ret, business, docStyle }) {
       <p className="mt-3 border-t border-black/25 pt-2 font-mono text-[6.5pt] uppercase tracking-wide text-black/60">
         {t('print.returnFooter')}
       </p>
-      {docStyle?.footerImage && (
-        <img src={docStyle.footerImage} alt="" className="doc-deco mt-3 max-h-[24mm] w-full object-contain" />
-      )}
+      <PrintedAt className="mt-1" />
+      <DecoFooter style={docStyle} className="mt-3" />
     </div>
   );
 }

@@ -3,8 +3,17 @@ import { Link } from 'react-router-dom';
 import { Check, Loader2, Upload, X } from 'lucide-react';
 import { base44 } from '@/api/client';
 import { t } from '@/lib/i18n';
-import { DOC_BORDERS, docFontFamily, resolveDocStyle } from '@/lib/docStyle';
+import {
+  DECO_LENGTH_MAX,
+  DECO_LENGTH_MIN,
+  DECO_WIDTH_MAX,
+  DECO_WIDTH_MIN,
+  DOC_BORDERS,
+  docFontFamily,
+  resolveDocStyle,
+} from '@/lib/docStyle';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 
@@ -90,23 +99,76 @@ export default function DocStyleStudio({ business, style, onChange, onSaved }) {
     }
   };
 
+  // Decoration sizes (release 350): a width and a length per
+  // picture, typed as plain numbers — percent of the document
+  // width, millimetres tall. An empty box means "the usual size"
+  // and stores null; the server refuses a whole save that carries
+  // a size outside the sane range, like every Studio value.
+  const sizeField = (slot, kind, labelKey, unit, min, max, placeholder) => {
+    const field = `${slot.replace(/Image$/, '')}${kind}`;
+    const value = style[field];
+    return (
+      <div className="space-y-1">
+        <Label htmlFor={`doc-style-${field}`} className="text-[11px]">
+          {t(labelKey)}
+        </Label>
+        <div className="flex items-center gap-1">
+          <Input
+            id={`doc-style-${field}`}
+            type="number"
+            inputMode="numeric"
+            min={min}
+            max={max}
+            placeholder={placeholder}
+            value={value ?? ''}
+            onChange={(event) => {
+              const raw = event.target.value.trim();
+              if (raw === '') return set({ [field]: null });
+              const parsed = Number.parseInt(raw, 10);
+              set({ [field]: Number.isNaN(parsed) ? null : parsed });
+            }}
+            className="h-8 w-20 text-xs"
+          />
+          <span className="text-[11px] text-muted-foreground">{unit}</span>
+        </div>
+      </div>
+    );
+  };
+
   const imageSlot = (slot, labelKey, inputRef) => (
     <div className="space-y-1.5">
       <Label className="text-xs">{t(labelKey)}</Label>
       {style[slot] ? (
-        <div className="flex items-center gap-2">
-          <img
-            src={style[slot]}
-            alt=""
-            className="h-10 max-w-[120px] border border-border bg-white object-contain"
-          />
-          <Button size="sm" variant="outline" onClick={() => inputRef.current?.click()} disabled={imageBusy === slot}>
-            {imageBusy === slot ? <Loader2 className="h-4 w-4 animate-spin" /> : t('print.style.replaceImage')}
-          </Button>
-          <Button size="sm" variant="ghost" onClick={() => set({ [slot]: '' })}>
-            <X className="mr-1 h-4 w-4" /> {t('print.style.removeImage')}
-          </Button>
-        </div>
+        <>
+          <div className="flex items-center gap-2">
+            <img
+              src={style[slot]}
+              alt=""
+              className="h-10 max-w-[120px] border border-border bg-white object-contain"
+            />
+            <Button size="sm" variant="outline" onClick={() => inputRef.current?.click()} disabled={imageBusy === slot}>
+              {imageBusy === slot ? <Loader2 className="h-4 w-4 animate-spin" /> : t('print.style.replaceImage')}
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() =>
+                set({
+                  [slot]: '',
+                  [`${slot.replace(/Image$/, '')}Width`]: null,
+                  [`${slot.replace(/Image$/, '')}Length`]: null,
+                })
+              }
+            >
+              <X className="mr-1 h-4 w-4" /> {t('print.style.removeImage')}
+            </Button>
+          </div>
+          <div className="flex flex-wrap items-end gap-3">
+            {sizeField(slot, 'Width', 'print.style.imageWidth', '%', DECO_WIDTH_MIN, DECO_WIDTH_MAX, '100')}
+            {sizeField(slot, 'Length', 'print.style.imageLength', 'mm', DECO_LENGTH_MIN, DECO_LENGTH_MAX, '24')}
+          </div>
+          <p className="text-[11px] leading-relaxed text-muted-foreground">{t('print.style.imageSizeHint')}</p>
+        </>
       ) : (
         <Button size="sm" variant="outline" onClick={() => inputRef.current?.click()} disabled={imageBusy === slot}>
           {imageBusy === slot ? (
