@@ -98,6 +98,7 @@ export const PLANS = {
         t('plansLib.includes.documents'),
         t('plansLib.businessIncludes.restaurant'),
         t('plansLib.businessIncludes.orderGuide'),
+        t('plansLib.businessIncludes.xstoreMessages'),
       ];
     },
   },
@@ -117,6 +118,7 @@ export const FEATURES = {
   get crossStore() { return t('plansLib.feature.crossStore'); },
   get pricing() { return t('plansLib.feature.pricing'); },
   get restaurant() { return t('plansLib.businessIncludes.restaurant'); },
+  get xstoreMessages() { return t('plansLib.businessIncludes.xstoreMessages'); },
   get rewards() { return t('plansLib.businessIncludes.rewards'); },
   get pos() { return t('plansLib.businessIncludes.tillConnections'); },
 };
@@ -344,6 +346,7 @@ export const WELCOME_OPTIONS = [
         t('plansLib.includes.documents'),
         t('plansLib.businessIncludes.restaurant'),
         t('plansLib.businessIncludes.orderGuide'),
+        t('plansLib.businessIncludes.xstoreMessages'),
       ];
     },
   },
@@ -425,6 +428,7 @@ export const COMPARISON_ROWS = [
   { get label() { return t('plansLib.includes.crossStore'); }, mobile: false, essentials: false, business: true },
   { get label() { return t('plansLib.businessIncludes.restaurant'); }, get mobile() { return t('plansLib.unset'); }, essentials: false, business: true },
   { get label() { return t('plansLib.businessIncludes.orderGuide'); }, get mobile() { return t('plansLib.unset'); }, essentials: false, business: true },
+  { get label() { return t('plansLib.businessIncludes.xstoreMessages'); }, mobile: false, essentials: false, business: true },
   { get label() { return t('plansLib.includes.pricing'); }, mobile: false, essentials: false, business: true },
   { get label() { return t('plansLib.includes.sendPo'); }, mobile: false, essentials: false, business: true },
   { get label() { return t('plansLib.includes.documents'); }, mobile: false, essentials: false, business: true },

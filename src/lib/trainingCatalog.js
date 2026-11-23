@@ -160,6 +160,11 @@ export const TRAINING_LESSONS = [
   { id: 'mgr-restaurant-build', track: 'manager', module: 'restaurant', steps: 4, feature: 'restaurant' },
   { id: 'mgr-restaurant-pars', track: 'manager', module: 'restaurant', steps: 4, feature: 'restaurant' },
   { id: 'mgr-restaurant-money', track: 'manager', module: 'restaurant', steps: 4, feature: 'restaurant' },
+  // Cross-store messages (Nov 23, 2026) — mirrors the server
+  // catalog (t10 proves the two agree).
+  { id: 'owner-xstore-messages', track: 'owner', module: 'messaging', steps: 5, feature: 'xstoreMessages' },
+  { id: 'mgr-xstore-messages', track: 'manager', module: 'messaging', steps: 4, feature: 'xstoreMessages' },
+  { id: 'staff-xstore-messages', track: 'staff', module: 'messaging', steps: 4, feature: 'xstoreMessages' },
 ];
 
 export const lessonById = (id) => TRAINING_LESSONS.find((lesson) => lesson.id === id) || null;
