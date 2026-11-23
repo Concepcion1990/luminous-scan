@@ -162,6 +162,14 @@ function ClockTab({ businessId, ctx, peopleById, onEvent }) {
   const open = status.open_entry;
   const onBreak = Boolean(status.open_break);
   const selfOff = status.self_clock_enabled === false;
+  // Door 1 (owner's ruling, Nov 23, 2026): a caller with no
+  // staff profile has no clock of their own, and the server
+  // says so with the explicit no_clock marker. Their Time clock
+  // view is the team's entries alone — none of the worker
+  // furniture below renders for them. Members key on
+  // self_clock_enabled exactly as before; the marker is never
+  // inferred from it.
+  const noClock = status.no_clock === true;
 
   // The call-in gate (Nov 21, 2026): a refused clock-in names
   // the next scheduled shift when the schedule knows one, in
@@ -195,6 +203,7 @@ function ClockTab({ businessId, ctx, peopleById, onEvent }) {
 
   return (
     <div className="space-y-4">
+      {!noClock && (
       <Section title={t('workforce.tab.clock')}>
         {selfOff && (
           <p className="mb-3 rounded-md bg-amber-100 px-3 py-2 text-sm text-amber-900 dark:bg-amber-900/40 dark:text-amber-100">
@@ -291,6 +300,7 @@ function ClockTab({ businessId, ctx, peopleById, onEvent }) {
           </div>
         )}
       </Section>
+      )}
 
       <Section title={t('workforce.entries.title')}>
         {entries.length === 0 ? (

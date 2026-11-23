@@ -833,6 +833,11 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
     // READ the team's entries (the clock build, Nov 21, 2026;
     // the entries list below this status is the owner's view of
     // the missed-clock-out flags). Members are untouched.
+    // Release 351 (owner's Door 1 ruling, Nov 23, 2026): the
+    // stand-in now carries the EXPLICIT no_clock marker. The
+    // client keys the owner's entries-only view on that marker
+    // alone — never on self_clock_enabled, which is a real
+    // setting for members and must keep meaning exactly that.
     if (!access.staffRow) {
       return res.json({
         open_entry: null,
@@ -840,6 +845,7 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
         today_shift: null,
         call_in_open: false,
         self_clock_enabled: false,
+        no_clock: true,
         server_now: new Date().toISOString(),
       });
     }
@@ -859,6 +865,7 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
       // right now — their door in, shift or no shift.
       call_in_open: Boolean(callIn),
       self_clock_enabled: settings.self_clock_enabled !== false,
+      no_clock: false,
       server_now: new Date().toISOString(),
     });
   }));
