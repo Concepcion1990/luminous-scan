@@ -4099,6 +4099,7 @@ export const yo = {
   "plansLib.includes.docStyle": "Àwọn ìwé ní àṣà tìrẹ — àmì ìdánimọ̀, àwọ̀, lẹ́tà, férémù, àti àwọn àwòrán",
   'plansLib.includes.taxRate': 'Ìwọ̀n owó orí rẹ, a ṣètò rẹ̀ lẹ́ẹ̀kan — àwọn àṣẹ tuntun ń fi owó orí wọn kún fúnra wọn',
   "plansLib.includes.taxAuto": "Owó-orí aláìfọwọ́yí gẹ́gẹ́ bí ìpínlẹ̀ oníbàárà rẹ (àwọn iye ìpìlẹ̀ ìpínlẹ̀ Amẹ́ríkà)",
+  "plansLib.includes.listPrices": "Iye ọjà kọ̀ọ̀kan lẹ́gbẹ̀ẹ́ iye rẹ̀",
   'plansLib.includes.codeGenerator': "Ẹ̀rọ aṣẹ̀dá kóòdù — àwọn kóòdù UPC, SKU, bàákóòdù àti QR tuntun fún àwọn ọjà tìrẹ",
   'plansLib.includes.gs1Codes': "Kóòdù UPC àti EAN soobu tòótọ́ láti ìbẹ̀rẹ̀ GS1 tìrẹ",
   "plansLib.includes.bulkEdit": "Ṣàtúnṣe lọ́pọ̀ àti pípa lọ́pọ̀ — ṣe ìmúdójúìwọ̀n tàbí yọ ọ̀pọ̀ ọjà kúrò ní ẹ̀ẹ̀kan",

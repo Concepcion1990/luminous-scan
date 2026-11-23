@@ -4099,6 +4099,7 @@ export const yue = {
   "plansLib.includes.docStyle": "您自己的文档样式 — 标志、颜色、字体、边框和图片",
   'plansLib.includes.taxRate': '你嘅稅率，只需設定一次 — 新訂單自動填入稅額',
   "plansLib.includes.taxAuto": "按顧客所在州自動計稅（美國各州基本稅率）",
+  "plansLib.includes.listPrices": "每個產品嘅價錢喺數量旁邊",
   'plansLib.includes.codeGenerator': "代碼產生器 — 為你自己嘅產品產生新嘅 UPC、SKU、條碼同 QR 碼",
   'plansLib.includes.gs1Codes': "由你自己嘅 GS1 前綴產生嘅真正零售 UPC 同 EAN 代碼",
   "plansLib.includes.bulkEdit": "批量編輯同批量刪除 — 一次過更新或移除好多產品",
