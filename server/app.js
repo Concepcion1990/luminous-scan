@@ -48,6 +48,7 @@ import { createSupportRouter } from './supportRoutes.js';
 import { createBusinessPolicyRouter } from './businessPolicyRoutes.js';
 import { createPolicyQuizRouter } from './policyQuizRoutes.js';
 import { createProfilePhotoRouter } from './profilePhotoRoutes.js';
+import { createXstoreMessageRouter } from './xstoreMessageRoutes.js';
 import { createCompRouter } from './compRoutes.js';
 import { createBlocklistRouter } from './blocklistRoutes.js';
 import { createStaffDocumentRouter } from './staffDocumentRoutes.js';
@@ -265,6 +266,11 @@ export function createApp() {
   // (server/profilePhotoRoutes.js): owner-approved team photos
   // and the name that replaces "Owner".
   app.use('/api', createProfilePhotoRouter({ getPool }));
+  // Cross-store messages (server/xstoreMessageRoutes.js): the
+  // account-scoped messaging door — everyone under one owner,
+  // across all their businesses. Business-only; the in-store
+  // inbox above is untouched by it.
+  app.use('/api', createXstoreMessageRouter({ getPool }));
   // Founding-tester comp list (server/compRoutes.js): operator
   // only — the publisher identity is the only hand on it, and no
   // customer surface links here.

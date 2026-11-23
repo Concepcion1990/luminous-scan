@@ -191,6 +191,16 @@ export const TRAINING_LESSONS = [
   { id: 'mgr-restaurant-build', track: 'manager', module: 'restaurant', steps: 4, feature: 'restaurant' },
   { id: 'mgr-restaurant-pars', track: 'manager', module: 'restaurant', steps: 4, feature: 'restaurant' },
   { id: 'mgr-restaurant-money', track: 'manager', module: 'restaurant', steps: 4, feature: 'restaurant' },
+  // Cross-store messages (Nov 23, 2026): three lessons in the
+  // messaging module under the Business-only xstoreMessages
+  // feature, so Essentials never sees one of them. The door
+  // hangs on no permission — every member of a Business
+  // account can message — so no LESSON_REQUIREMENTS entry:
+  // the lessons follow plan visibility alone, like the
+  // cross-store inbox's.
+  { id: 'owner-xstore-messages', track: 'owner', module: 'messaging', steps: 5, feature: 'xstoreMessages' },
+  { id: 'mgr-xstore-messages', track: 'manager', module: 'messaging', steps: 4, feature: 'xstoreMessages' },
+  { id: 'staff-xstore-messages', track: 'staff', module: 'messaging', steps: 4, feature: 'xstoreMessages' },
 ];
 
 /** permission -> the training modules gaining it should teach. */

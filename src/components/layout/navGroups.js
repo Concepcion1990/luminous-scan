@@ -24,6 +24,7 @@ import {
   FileUp,
   Users,
   CalendarClock,
+  MessagesSquare,
   GraduationCap,
   Wallet,
   CreditCard,
@@ -155,6 +156,14 @@ export const NAV_GROUPS = [
       // the time clock and their own stubs. The server enforces the
       // owner > manager > staff hierarchy on every call.
       { to: '/workforce', label: 'Workforce', labelKey: 'nav.workforce', icon: CalendarClock },
+      // Cross-store messages (the owner's ruling, Nov 23,
+      // 2026): the second messaging door — everyone on the
+      // account, across all their businesses. Business only
+      // via the feature tag, so on Essentials the door never
+      // renders and the route bounces quietly; the in-store
+      // Messages inside Workforce are untouched by it. No
+      // perm: every team member can reach their own people.
+      { to: '/cross-store-messages', label: 'Cross-store messages', labelKey: 'nav.xstoreMessages', icon: MessagesSquare, feature: 'xstoreMessages' },
       // Training likewise: every team member has lessons matched to
       // their role, and role grants assign more. No perm, both plans.
       { to: '/training', label: 'Training', labelKey: 'nav.training', icon: GraduationCap },

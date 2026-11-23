@@ -49,6 +49,7 @@ import Counts from '@/pages/Counts';
 import CrossStoreInbox from '@/pages/CrossStoreInbox';
 import PosConnections from '@/pages/PosConnections';
 import Workforce from '@/pages/Workforce';
+import CrossStoreMessages from '@/pages/CrossStoreMessages';
 import Training from '@/pages/Training';
 import Payroll from '@/pages/Payroll';
 import DirectDepositForm from '@/pages/DirectDepositForm';
@@ -176,6 +177,14 @@ const AuthenticatedApp = () => {
             element={
               <PlanRedirect feature="crossStore">
                 <CrossStoreInbox />
+              </PlanRedirect>
+            }
+          />
+          <Route
+            path="/cross-store-messages"
+            element={
+              <PlanRedirect feature="xstoreMessages">
+                <CrossStoreMessages />
               </PlanRedirect>
             }
           />
