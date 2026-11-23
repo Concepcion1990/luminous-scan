@@ -4099,6 +4099,7 @@ export const th = {
   "plansLib.includes.docStyle": "เอกสารในรูปแบบของคุณเอง — โลโก้ สี แบบอักษร กรอบ และรูปภาพ",
   'plansLib.includes.taxRate': 'อัตราภาษีของคุณ ตั้งครั้งเดียว — คำสั่งใหม่กรอกภาษีของตัวเอง',
   "plansLib.includes.taxAuto": "ภาษีอัตโนมัติตามรัฐของลูกค้าของคุณ (อัตราพื้นฐานของรัฐในสหรัฐฯ)",
+  "plansLib.includes.listPrices": "ราคาของสินค้าแต่ละชิ้นอยู่ข้างจำนวนของมัน",
   'plansLib.includes.codeGenerator': "ตัวสร้างรหัส — รหัส UPC, SKU, บาร์โค้ด และ QR ใหม่สำหรับสินค้าของคุณเอง",
   'plansLib.includes.gs1Codes': "รหัส UPC และ EAN สำหรับค้าปลีกจริงจากรหัสนำหน้า GS1 ของคุณเอง",
   "plansLib.includes.bulkEdit": "แก้ไขและลบจำนวนมาก — อัปเดตหรือลบสินค้าหลายรายการในคราวเดียว",
