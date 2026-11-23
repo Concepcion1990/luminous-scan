@@ -54,6 +54,8 @@ import {
   parseCookies,
 } from './sessions.js';
 import { activateStaffRowsForEmail } from './staff.js';
+import { openInviteLink, bindInviteAtRegister, INVITE_LINK_USED_MESSAGE } from './inviteLinks.js';
+import { loadSessionUser } from './sessions.js';
 import { DEFAULT_LOCATION_NAME } from './defaultLocation.js';
 import { staffWindowState, autoLogoutAtFor, staffWelcomePending, markStaffWelcomeSeen, memberLevel } from './staffWindow.js';
 import { staffRowForEmail, parseJsonArray, isTrustedStaffRow } from './authz.js';
@@ -396,6 +398,41 @@ export function createAuthRouter({ getPool }) {
     return requireAuth(pool)(req, res, next);
   };
 
+  // ---- Single-use invite links: the open door -----------------------
+  // The Register page calls this once when it lands with an
+  // invite token (owner's single-use ruling, Nov 22, 2026 —
+  // server/inviteLinks.js). Public: the token IS the credential.
+  // A signed-in caller whose account email is the invited
+  // address completes the link here (that is also the recovery
+  // road when a mail scanner pre-opened the link). The session
+  // is loaded SOFTLY — no shift-window check, no revocation:
+  // opening an invite must never sign anybody out.
+  router.post('/auth/invite/open', requireDb, async (req, res) => {
+    const pool = getPool();
+    const ip = req.ip || '';
+    const limited = checkLimit(`invite-open:ip:${ip}`, 60, 60 * 60 * 1000);
+    if (!limited.allowed) return rateLimited(res, limited.retryAfterSeconds);
+    try {
+      let user = null;
+      try {
+        const cookies = parseCookies(req);
+        const loaded = await loadSessionUser(pool, cookies[SESSION_COOKIE]);
+        if (loaded?.user) user = { ...loaded.user, scope: loaded.scope };
+      } catch {
+        user = null;
+      }
+      const result = await openInviteLink(pool, {
+        token: String(req.body?.token || ''),
+        claim: req.body?.claim ? String(req.body.claim) : null,
+        user,
+      });
+      return res.status(result.status).json(result.body);
+    } catch (error) {
+      console.error('[twin] invite open failed:', error.message);
+      return res.status(500).json({ error: 'invite_open_failed', message: 'Registration failed. Please try again.' });
+    }
+  });
+
   // ---- Registration -------------------------------------------------
   router.post('/auth/register', requireDb, async (req, res) => {
     const pool = getPool();
@@ -432,13 +469,35 @@ export function createAuthRouter({ getPool }) {
           // created, and before anything is written or mailed —
           // a refused signup leaves no row and sends no code.
           // Existing accounts (the rows above) are never subject
-          // to it, and an email with a pending staff invite is
-          // exempt: invites are owner-chosen, not public signups.
+          // to it. Staff invites are NOT exempt (the owner's
+          // reversal, Nov 22, 2026): the block stops invited
+          // signups at a listed domain exactly like public ones.
           // The refusal is plain and neutral — it never names
           // the list (apiErrors.signupEmailUnavailable, x52).
           if (await signupBlockedForEmail(client, email)) {
             return { status: 400, body: { error: 'signup_email_unavailable', message: "An account can't be created with this email address. Please use a different email address." } };
           }
+        }
+        // Single-use invite links (owner's ruling, Nov 22, 2026
+        // — server/inviteLinks.js): when this signup arrives
+        // from a tokened invite link, the link must be the one
+        // this browser session claimed at first open. A live
+        // claim binds here — the link is marked 'used' inside
+        // this transaction, so the staff row may flip when the
+        // code verifies. A spent / used / foreign-claimed link
+        // refuses the signup BEFORE anything is created, with
+        // the kind message (apiErrors.inviteLinkUsed, x52).
+        // The bind runs after the blocklist check so a refused
+        // signup never consumes a link.
+        const inviteBind = await bindInviteAtRegister(client, {
+          token: req.body?.inviteToken,
+          claim: req.body?.inviteClaim,
+          email,
+        });
+        if (inviteBind.refused) {
+          return { status: 410, body: { error: 'invite_link_used', message: INVITE_LINK_USED_MESSAGE } };
+        }
+        if (!user) {
           const passwordHash = await hashPassword(password);
           const id = crypto.randomUUID();
           const inserted = await client.query(

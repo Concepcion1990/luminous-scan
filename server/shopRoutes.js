@@ -54,6 +54,7 @@ import { toCsv, fileSlug, fileStamp } from './csv.js';
 import { buildWorkbookBuffer } from './xlsxExport.js';
 import { EXPORTS, buildValuation, truncatedFilename, EXPORT_ROW_CAP } from './exportData.js';
 import { createStaffMember } from './staff.js';
+import { mintInviteToken } from './inviteLinks.js';
 import { ownerPublicName, attributionNameMap, attributionName } from './profilePhotos.js';
 import { assertNotInGrace } from './billing.js';
 import { assertSubscriptionAccess } from './subscriptionAccess.js';
@@ -1174,12 +1175,22 @@ export function createShopRouter({ getPool: getPoolFn }) {
       [req.params.bid, email],
     );
     if (!rows.length) throw err(404, 'not_found', 'No staff record for that email on this business.');
+    // Single-use invite links (owner's ruling, Nov 22, 2026 —
+    // server/inviteLinks.js): EVERY send of this email mints a
+    // fresh token for the row, superseding any earlier link.
+    // This endpoint is both the first send (StaffMemberDialog)
+    // and the resend (StaffMemberCard's Resend invite), so a
+    // resend always issues a working fresh link and kills the
+    // old one. Minting happens whether or not the mailer is
+    // configured: the link state is the truth, the email is
+    // its courier.
+    const inviteToken = await mintInviteToken(pool(), rows[0].id);
     // Best-effort invite email: the StaffMember row IS the invite, so a
     // missing mailer never blocks the invite itself (T3 sends no real
     // email in tests; the mailer fails closed for auth codes only).
     try {
       const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'https';
-      const registerUrl = `${protocol}://${req.get('host')}/register?email=${encodeURIComponent(email)}`;
+      const registerUrl = `${protocol}://${req.get('host')}/register?email=${encodeURIComponent(email)}&invite=${encodeURIComponent(inviteToken)}`;
       await sendMail(staffInviteEmail({ to: email, businessName: access.business.name, inviterName: req.user.email, lang: access.business.language, registerUrl }));
     } catch (error) {
       if (!(error instanceof EmailNotConfigured)) console.error('[twin] staff invite email failed:', error.message);

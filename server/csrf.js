@@ -54,6 +54,11 @@ export const CSRF_EXEMPT_PATHS = [
   '/api/auth/reset-password',
   '/api/auth/recover',
   '/api/auth/recover/verify',
+  // The invite-link open door (Nov 22, 2026): pre-auth by
+  // design — the single-use token in the body is the
+  // credential, and it keeps its own defenses (rate limit,
+  // atomic claim, one-use states) like the other doors here.
+  '/api/auth/invite/open',
   '/api/billing/wipe-sweep',
   '/api/billing/trial-reminder-sweep',
 ];

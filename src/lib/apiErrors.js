@@ -197,6 +197,7 @@ export const API_ERROR_MESSAGE_KEYS = {
   "That email is not on the founding tester list.": "apiErrors.foundingTester.notListed",
   "The cap must be a whole number of 1 or more.": "apiErrors.foundingTester.capWholeNumber",
   "An account can't be created with this email address. Please use a different email address.": "apiErrors.signupEmailUnavailable",
+  "This invite link has already been used. Ask the owner of the business to send you a new invite.": "apiErrors.inviteLinkUsed",
   "Enter a valid domain, like example.com.": "apiErrors.invalidDomain",
   "That domain is already on the list.": "apiErrors.domainAlreadyListed",
   "That domain is not on the list.": "apiErrors.domainNotListed",

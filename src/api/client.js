@@ -218,8 +218,14 @@ export const base44 = {  entities: Object.fromEntries(
     me: () => request('/api/auth/me'),
     // The reader's current language rides along so the verification
     // email itself arrives in their language (leftovers sweep).
-    register: ({ email, password, language }) =>
-      request('/api/auth/register', { method: 'POST', body: { email, password, language: language || getLocale() } }),
+    register: ({ email, password, language, inviteToken, inviteClaim }) =>
+      request('/api/auth/register', { method: 'POST', body: { email, password, language: language || getLocale(), inviteToken: inviteToken || undefined, inviteClaim: inviteClaim || undefined } }),
+    // Single-use invite links (Nov 22, 2026): the Register page
+    // opens the tokened link once on landing; the server claims
+    // it for this browser session or refuses it (410) with the
+    // kind message the page shows in the reader's language.
+    openInviteLink: ({ token, claim }) =>
+      request('/api/auth/invite/open', { method: 'POST', body: { token, claim: claim || undefined } }),
     verifyOtp: ({ email, otpCode }) =>
       request('/api/auth/verify', { method: 'POST', body: { email, otpCode } }),
     resendOtp: (email) =>

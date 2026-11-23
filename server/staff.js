@@ -185,7 +185,11 @@ export async function createStaffMember(pool, { business, planKey, caller, membe
  * When a user signs in (login or OTP verify) with an email that has
  * an Invited staff row anywhere, the row becomes Active — the invite
  * is accepted by signing in. No email is needed for the flip; the
- * row's provenance (owner-created) is what trusted it.
+ * row's provenance (owner-created) is what trusted it. Since Nov
+ * 22, 2026 that holds for LEGACY rows (no invite token); a row
+ * governed by a single-use invite link flips only when its link
+ * has completed ('used') — see the guard in the UPDATE below and
+ * server/inviteLinks.js.
  */
 /**
  * The workspace-list link (owner catch, Nov 15, 2026): the SPA's
@@ -258,8 +262,15 @@ export async function ensureStaffMemberships(pool, email) {
 
 export async function activateStaffRowsForEmail(pool, email) {
   if (!email) return 0;
+  // The invite-link guard (Nov 22, 2026): a row governed by a
+  // single-use invite link (migration 042 — a token was minted
+  // for it) flips ONLY once its link reads 'used'. Rows with
+  // no token are legacy invites and keep the plain email-match
+  // flip below. Without this guard the single-use rule would
+  // be decorative: any bare signup with the address would
+  // activate the row whether the link was used or not.
   const { rows } = await pool.query(
-    "UPDATE staff_members SET status = 'active', joined_at = NOW(), updated_at = NOW() WHERE LOWER(email) = LOWER($1) AND status = 'invited' RETURNING *",
+    "UPDATE staff_members SET status = 'active', joined_at = NOW(), updated_at = NOW() WHERE LOWER(email) = LOWER($1) AND status = 'invited' AND (invite_token_hash IS NULL OR invite_link_state = 'used') RETURNING *",
     [email],
   );
   // The join seed rides the flip: rows created before the seed

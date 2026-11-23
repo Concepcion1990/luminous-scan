@@ -414,11 +414,14 @@ export function staffInviteEmail({ to, businessName, inviterName, lang, register
   // person to "create your account with this email address" and
   // take them NOWHERE — they had to hunt from the sign-in page.
   // Now the email carries a link straight to the Create your
-  // account page with their invited email pre-filled. The link
-  // carries NO secret: the staff invite itself is the staff_members
-  // row matched by email, and creating the account still requires
-  // setting a password and entering the verification code sent to
-  // that same inbox — exactly the activation path as before.
+  // account page with their invited email pre-filled. Since Nov
+  // 22, 2026 the link also carries the row's single-use invite
+  // token (server/inviteLinks.js): the first open claims the
+  // link for that browser session, and the staff row activates
+  // only when the link completes — the owner's single-use
+  // ruling. Creating the account still requires setting a
+  // password and entering the verification code sent to that
+  // same inbox.
   const linkLine = registerUrl ? fillEmail(s['invite.linkLine'], { registerUrl }) : '';
   return {
     to,

@@ -22,10 +22,12 @@
  *   only at the moment a new account would be created. An
  *   account that already exists with a listed domain signs in,
  *   verifies and re-registers exactly as before.
- * - INVITES ARE EXEMPT: an email with a pending staff invite
- *   (a staff_members row in 'invited' status for that address)
- *   was personally chosen by a business owner — it is not a
- *   public signup, so the block does not apply to it.
+ * - INVITES ARE NOT EXEMPT (owner's reversal, Nov 22, 2026):
+ *   as first shipped, an email with a pending staff invite
+ *   bypassed the block, on the reasoning that an invite is
+ *   owner-chosen rather than a public signup. The owner
+ *   reversed that the same day — "stop invites too" — so the
+ *   block now applies to EVERY new account, invited or not.
  */
 
 /**
@@ -79,32 +81,15 @@ export async function isDomainBlocked(db, domain) {
 }
 
 /**
- * Does this email carry a pending staff invite? Mirrors the
- * invite flip in server/staff.js (activateStaffRowsForEmail):
- * a staff_members row in 'invited' status for the address.
- */
-export async function hasPendingStaffInvite(db, email) {
-  const normalized = String(email || '').trim().toLowerCase();
-  if (!normalized) return false;
-  const { rows } = await db.query(
-    `SELECT 1 FROM staff_members
-      WHERE LOWER(email) = $1 AND status = 'invited' LIMIT 1`,
-    [normalized],
-  );
-  return rows.length > 0;
-}
-
-/**
  * The one enforcement question the register door asks when —
  * and only when — it is about to CREATE a new account: is this
- * signup refused by the blocklist? True only when the email's
- * domain is actively listed AND the email carries no pending
- * staff invite.
+ * signup refused by the blocklist? True when the email's
+ * domain is actively listed — for every new account, staff
+ * invites included (the owner's Nov 22, 2026 reversal; the
+ * invite exemption this function originally carried is gone).
  */
 export async function signupBlockedForEmail(db, email) {
   const domain = emailDomainOf(email);
   if (!domain) return false;
-  if (!(await isDomainBlocked(db, domain))) return false;
-  if (await hasPendingStaffInvite(db, email)) return false;
-  return true;
+  return isDomainBlocked(db, domain);
 }
