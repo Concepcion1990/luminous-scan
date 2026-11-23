@@ -4099,6 +4099,7 @@ export const sw = {
   "plansLib.includes.docStyle": "Hati kwa mtindo wako mwenyewe — nembo, rangi, fonti, fremu, na picha",
   'plansLib.includes.taxRate': 'Kiwango chako cha kodi, kimewekwa mara moja — maagizo mapya hujaza kodi yao wenyewe',
   "plansLib.includes.taxAuto": "Kodi ya kiotomatiki kulingana na jimbo la mteja wako (viwango vya msingi vya majimbo ya Marekani)",
+  "plansLib.includes.listPrices": "Bei ya kila bidhaa karibu na idadi yake",
   'plansLib.includes.codeGenerator': "Kitengeneza misimbo — misimbo mipya ya UPC, SKU, msimbopau na QR kwa bidhaa zako mwenyewe",
   'plansLib.includes.gs1Codes': "Misimbо halisi ya rejareja ya UPC na EAN kutoka kiambishi awali chako cha GS1",
   "plansLib.includes.bulkEdit": "Hariri kwa wingi na futa kwa wingi — sasisha au ondoa bidhaa nyingi mara moja",
