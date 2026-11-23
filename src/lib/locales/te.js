@@ -4099,6 +4099,7 @@ export const te = {
   "plansLib.includes.docStyle": "మీ స్వంత శైలిలో పత్రాలు — లోగో, రంగు, ఫాంట్, ఫ్రేమ్ మరియు చిత్రాలు",
   'plansLib.includes.taxRate': 'మీ పన్ను రేటు, ఒక్కసారి సెట్ — కొత్త ఆర్డర్లు తమ పన్నును తామే నింపుతాయి',
   "plansLib.includes.taxAuto": "మీ కస్టమర్ రాష్ట్రం ప్రకారం ఆటోమేటిక్ పన్ను (US రాష్ట్ర మూల రేట్లు)",
+  "plansLib.includes.listPrices": "ప్రతి ఉత్పత్తి ధర దాని సంఖ్య పక్కన",
   'plansLib.includes.codeGenerator': "కోడ్ జనరేటర్ — మీ స్వంత ఉత్పత్తుల కోసం కొత్త UPC, SKU, బార్‌కోడ్ మరియు QR కోడ్‌లు",
   'plansLib.includes.gs1Codes': "మీ స్వంత GS1 ప్రిఫిక్స్ నుండి నిజమైన రిటైల్ UPC మరియు EAN కోడ్‌లు",
   "plansLib.includes.bulkEdit": "బల్క్ సవరణ మరియు బల్క్ తొలగింపు — అనేక ఉత్పత్తులను ఒకేసారి నవీకరించండి లేదా తీసివేయండి",
