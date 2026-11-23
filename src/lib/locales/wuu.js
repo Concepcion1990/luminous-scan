@@ -4099,6 +4099,7 @@ export const wuu = {
   "plansLib.includes.docStyle": "您自己的文档样式 — 标志、颜色、字体、边框和图片",
   'plansLib.includes.taxRate': '侬个税率，只需设置一次 — 新订单自动填入税额',
   "plansLib.includes.taxAuto": "按顾客所在州自动算税（美国各州基本税率）",
+  "plansLib.includes.listPrices": "每个产品个价钱勒数量旁边",
   'plansLib.includes.codeGenerator': "代码生成器 — 为侬自己的产品生成新的 UPC、SKU、条形码搭二维码",
   'plansLib.includes.gs1Codes': "由侬自家个 GS1 前缀生成个真正零售 UPC 搭 EAN 代码",
   "plansLib.includes.bulkEdit": "批量编辑搭批量删除 — 一次更新或者移除交关产品",

@@ -4099,6 +4099,7 @@ export const vi = {
   "plansLib.includes.docStyle": "Tài liệu theo phong cách của riêng bạn — logo, màu sắc, phông chữ, khung và hình ảnh",
   'plansLib.includes.taxRate': 'Thuế suất của bạn, đặt một lần — đơn mới tự điền thuế của chúng',
   "plansLib.includes.taxAuto": "Thuế tự động theo tiểu bang của khách hàng (mức cơ bản của các tiểu bang Hoa Kỳ)",
+  "plansLib.includes.listPrices": "Giá của mỗi sản phẩm bên cạnh số lượng của nó",
   'plansLib.includes.codeGenerator': "Trình tạo mã — mã UPC, SKU, mã vạch và QR mới cho sản phẩm của chính bạn",
   'plansLib.includes.gs1Codes': "Mã UPC và EAN bán lẻ thật từ tiền tố GS1 của chính bạn",
   "plansLib.includes.bulkEdit": "Chỉnh sửa và xóa hàng loạt — cập nhật hoặc xóa nhiều sản phẩm cùng lúc",
