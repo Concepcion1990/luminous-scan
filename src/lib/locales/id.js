@@ -4099,6 +4099,7 @@ export const id = {
   "plansLib.includes.docStyle": "Dokumen dengan gaya Anda sendiri — logo, warna, huruf, bingkai, dan gambar",
   'plansLib.includes.taxRate': 'Tarif pajak Anda, diatur sekali — pesanan baru mengisi pajaknya sendiri',
   "plansLib.includes.taxAuto": "Pajak otomatis berdasarkan negara bagian pelanggan Anda (tarif dasar negara bagian AS)",
+  "plansLib.includes.listPrices": "Harga setiap produk di samping jumlahnya",
   'plansLib.includes.codeGenerator': "Pembuat kode — kode UPC, SKU, barcode, dan QR baru untuk produk Anda sendiri",
   'plansLib.includes.gs1Codes': "Kode UPC dan EAN eceran asli dari awalan GS1 Anda sendiri",
   "plansLib.includes.bulkEdit": "Edit massal dan hapus massal — perbarui atau hapus banyak produk sekaligus",

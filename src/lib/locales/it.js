@@ -4099,6 +4099,7 @@ export const it = {
   "plansLib.includes.docStyle": "Documenti nel tuo stile — logo, colore, carattere, cornice e immagini",
   'plansLib.includes.taxRate': 'La tua aliquota fiscale, impostata una volta — i nuovi ordini compilano la propria imposta',
   "plansLib.includes.taxAuto": "Imposta automatica in base allo stato del tuo cliente (aliquote base statali USA)",
+  "plansLib.includes.listPrices": "Il prezzo di ogni prodotto accanto alla sua quantità",
   'plansLib.includes.codeGenerator': "Generatore di codici — nuovi codici UPC, SKU, a barre e QR per i tuoi prodotti",
   'plansLib.includes.gs1Codes': "Veri codici UPC ed EAN commerciali dal tuo prefisso GS1",
   "plansLib.includes.bulkEdit": "Modifica ed eliminazione in blocco: aggiorna o rimuovi molti prodotti in una volta",
