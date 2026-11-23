@@ -4099,6 +4099,7 @@ export const esVE = {
   "plansLib.includes.docStyle": "Documentos con tu propio estilo: logotipo, color, fuente, marco e imágenes",
   'plansLib.includes.taxRate': 'Tu tasa de impuesto, configurada una vez — las nuevas órdenes calculan su propio impuesto',
   "plansLib.includes.taxAuto": "Impuesto automático según el estado de su cliente (tasas base estatales de EE. UU.)",
+  "plansLib.includes.listPrices": "El precio de cada producto junto a su cantidad",
   'plansLib.includes.codeGenerator': "Generador de códigos: UPC, SKU, códigos de barras y QR nuevos para tus propios productos",
   'plansLib.includes.gs1Codes': "Códigos UPC y EAN comerciales verdaderos desde tu propio prefijo GS1",
   "plansLib.includes.bulkEdit": "Edición y eliminación en bloque: actualiza o elimina muchos productos a la vez",
