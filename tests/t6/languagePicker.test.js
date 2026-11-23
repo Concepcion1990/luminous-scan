@@ -187,14 +187,23 @@ test('sign-in: a door pick wins and becomes the saved language; with no pick, th
 test('policies: no translation registered -> the English body, cleanly', () => {
   // For locales without a registered translation, every kind falls
   // back to the English document itself. (Tranche 1 registered am,
-  // ar, bn and bho; tranche 2 registered the six Spanish variants —
-  // sampled here are locales still unregistered.)
+  // ar, bn and bho; tranche 2 registered the six Spanish variants;
+  // release 346 registered the four regional Englishes — sampled
+  // here are English codes the app does not ship, still
+  // unregistered, so the fallback path stays pinned.)
   for (const kind of POLICY_KINDS) {
-    for (const locale of ['en-GB', 'en-CA', 'en-AU']) {
+    for (const locale of ['en-NZ', 'en-ZA', 'en-IE']) {
       assert.equal(hasPolicyTranslation(kind, locale), false);
       const { document, translated } = getPolicyDocument(kind, locale);
       assert.equal(translated, false, `${kind}/${locale} should not claim a translation`);
       assert.equal(document, ENGLISH_DOCUMENTS[kind], `${kind}/${locale} should be the English document`);
+    }
+    // Release 346: the four regional Englishes serve their own
+    // editions, with translated: true; base 'en' below stays the
+    // unregistered official document.
+    for (const locale of ['en-GB', 'en-CA', 'en-AU', 'en-IN']) {
+      assert.equal(hasPolicyTranslation(kind, locale), true, `${kind}/${locale} should be registered (release 346)`);
+      assert.equal(getPolicyDocument(kind, locale).translated, true, `${kind}/${locale} should serve its own edition`);
     }
     const english = getPolicyDocument(kind, 'en');
     assert.equal(english.translated, false);

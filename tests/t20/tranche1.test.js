@@ -571,7 +571,10 @@ test('completed-tranche policy bodies are registered and served, merged over Eng
       assert.notEqual(notice, en['policies.translationNotice'], `${code} protective line is still English`);
     }
     // A locale outside the completed tranches still falls back to English.
-    assert.equal(hasPolicyTranslation(kind, 'en-GB'), false, `${kind}/en-GB should not be registered yet`);
-    assert.equal(getPolicyDocument(kind, 'en-GB').translated, false);
+    assert.equal(hasPolicyTranslation(kind, 'en-NZ'), false, `${kind}/en-NZ should not be registered`);
+    assert.equal(getPolicyDocument(kind, 'en-NZ').translated, false);
+    // Release 346: en-GB now carries its own regional edition.
+    assert.equal(hasPolicyTranslation(kind, 'en-GB'), true, `${kind}/en-GB should be registered (release 346)`);
+    assert.equal(getPolicyDocument(kind, 'en-GB').translated, true);
   }
 });

@@ -168,6 +168,18 @@ import { STOCKHAVEN_PRIVACY_POLICY_JV } from './policies/privacy.jv.js';
 import { STOCKHAVEN_TERMS_OF_SERVICE_PCM } from './policies/terms.pcm.js';
 import { STOCKHAVEN_SUBSCRIPTION_POLICY_PCM } from './policies/subscription.pcm.js';
 import { STOCKHAVEN_PRIVACY_POLICY_PCM } from './policies/privacy.pcm.js';
+import { STOCKHAVEN_TERMS_OF_SERVICE_EN_GB } from './policies/terms.en-GB.js';
+import { STOCKHAVEN_SUBSCRIPTION_POLICY_EN_GB } from './policies/subscription.en-GB.js';
+import { STOCKHAVEN_PRIVACY_POLICY_EN_GB } from './policies/privacy.en-GB.js';
+import { STOCKHAVEN_TERMS_OF_SERVICE_EN_CA } from './policies/terms.en-CA.js';
+import { STOCKHAVEN_SUBSCRIPTION_POLICY_EN_CA } from './policies/subscription.en-CA.js';
+import { STOCKHAVEN_PRIVACY_POLICY_EN_CA } from './policies/privacy.en-CA.js';
+import { STOCKHAVEN_TERMS_OF_SERVICE_EN_AU } from './policies/terms.en-AU.js';
+import { STOCKHAVEN_SUBSCRIPTION_POLICY_EN_AU } from './policies/subscription.en-AU.js';
+import { STOCKHAVEN_PRIVACY_POLICY_EN_AU } from './policies/privacy.en-AU.js';
+import { STOCKHAVEN_TERMS_OF_SERVICE_EN_IN } from './policies/terms.en-IN.js';
+import { STOCKHAVEN_SUBSCRIPTION_POLICY_EN_IN } from './policies/subscription.en-IN.js';
+import { STOCKHAVEN_PRIVACY_POLICY_EN_IN } from './policies/privacy.en-IN.js';
 
 export const POLICY_KINDS = Object.freeze(['terms', 'subscription', 'privacy']);
 
@@ -405,6 +417,27 @@ registerPolicyTranslation('privacy', 'jv', STOCKHAVEN_PRIVACY_POLICY_JV);
 registerPolicyTranslation('terms', 'pcm', STOCKHAVEN_TERMS_OF_SERVICE_PCM);
 registerPolicyTranslation('subscription', 'pcm', STOCKHAVEN_SUBSCRIPTION_POLICY_PCM);
 registerPolicyTranslation('privacy', 'pcm', STOCKHAVEN_PRIVACY_POLICY_PCM);
+
+// --- Regional English editions (Release 346, Nov 22, 2026) -------
+// The four regional Englishes (en-GB, en-CA, en-AU, en-IN) carry
+// their OWN editions of all three documents: the same substance,
+// sentence by sentence, with spelling and date presentation adapted
+// to each variant's own standard (en-GB 'cancelled', 'authorised',
+// '9 November 2026'; en-CA keeps -ize per Canadian Oxford and the
+// Canadian prose date style). Base 'en' is never registered — it IS
+// the English document.
+registerPolicyTranslation('terms', 'en-GB', STOCKHAVEN_TERMS_OF_SERVICE_EN_GB);
+registerPolicyTranslation('subscription', 'en-GB', STOCKHAVEN_SUBSCRIPTION_POLICY_EN_GB);
+registerPolicyTranslation('privacy', 'en-GB', STOCKHAVEN_PRIVACY_POLICY_EN_GB);
+registerPolicyTranslation('terms', 'en-CA', STOCKHAVEN_TERMS_OF_SERVICE_EN_CA);
+registerPolicyTranslation('subscription', 'en-CA', STOCKHAVEN_SUBSCRIPTION_POLICY_EN_CA);
+registerPolicyTranslation('privacy', 'en-CA', STOCKHAVEN_PRIVACY_POLICY_EN_CA);
+registerPolicyTranslation('terms', 'en-AU', STOCKHAVEN_TERMS_OF_SERVICE_EN_AU);
+registerPolicyTranslation('subscription', 'en-AU', STOCKHAVEN_SUBSCRIPTION_POLICY_EN_AU);
+registerPolicyTranslation('privacy', 'en-AU', STOCKHAVEN_PRIVACY_POLICY_EN_AU);
+registerPolicyTranslation('terms', 'en-IN', STOCKHAVEN_TERMS_OF_SERVICE_EN_IN);
+registerPolicyTranslation('subscription', 'en-IN', STOCKHAVEN_SUBSCRIPTION_POLICY_EN_IN);
+registerPolicyTranslation('privacy', 'en-IN', STOCKHAVEN_PRIVACY_POLICY_EN_IN);
 
 /** True when a translated body exists for this document + locale. */
 export function hasPolicyTranslation(kind, locale) {
