@@ -84,6 +84,7 @@ test('the deduped Business lists are exactly the everything line plus Business-o
     'plansLib.includes.documents',
     'plansLib.businessIncludes.restaurant',
     'plansLib.businessIncludes.orderGuide',
+    'plansLib.businessIncludes.xstoreMessages',
   ]);
   assert.deepEqual(welcomeBusinessKeys, [
     'plansLib.businessIncludes.everything',
@@ -106,6 +107,7 @@ test('the deduped Business lists are exactly the everything line plus Business-o
     'plansLib.includes.documents',
     'plansLib.businessIncludes.restaurant',
     'plansLib.businessIncludes.orderGuide',
+    'plansLib.businessIncludes.xstoreMessages',
   ]);
 });
 

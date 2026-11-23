@@ -7,7 +7,8 @@
 // at the owner's word — the lessons are words-only again — and
 // the same file now pins their ABSENCE: no lesson carries a
 // visuals property in either catalog, the catalog itself is
-// untouched (107 lessons, step counts intact), the Training page
+// untouched (107 lessons at 360, step counts intact; 110 since
+// the cross-store messages build added its three), the Training page
 // renders no StepVisual, the component file is gone, and the
 // embed guard in embedMode.js survives dormant (a framed document
 // may still be a picture; nothing frames one anymore).
@@ -28,9 +29,9 @@ test('no lesson carries a visuals property — client catalog or server catalog'
   }
 });
 
-test('the catalog itself is untouched: 107 lessons, spot step counts unchanged', () => {
-  assert.equal(CLIENT_LESSONS.length, 107, 'client catalog holds 107 lessons');
-  assert.equal(SERVER_LESSONS.length, 107, 'server catalog holds 107 lessons');
+test('the catalog itself is untouched: 110 lessons (107 through 360; +3 cross-store messages lessons), spot step counts unchanged', () => {
+  assert.equal(CLIENT_LESSONS.length, 110, 'client catalog holds 110 lessons');
+  assert.equal(SERVER_LESSONS.length, 110, 'server catalog holds 110 lessons');
   const spot = { 'owner-import': 2, 'products-find-edit': 11, 'welcome-basics': 6 };
   for (const catalog of [CLIENT_LESSONS, SERVER_LESSONS]) {
     for (const [id, steps] of Object.entries(spot)) {

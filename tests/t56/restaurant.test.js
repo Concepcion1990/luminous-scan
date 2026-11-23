@@ -26,7 +26,7 @@
 //  - Presentation: the corner's lines join the Business plan
 //    (includes + comparison), the nav group exists behind the
 //    restaurant feature, and the training catalog carries
-//    five scoped restaurant lessons (102 → 107).
+//    five scoped restaurant lessons (102 → 107; 110 since cross-store messages).
 import { test, after, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
@@ -759,8 +759,8 @@ test('nav: the corner hangs under its own subheading, behind the feature', () =>
 });
 
 test('training: five restaurant lessons, Business-scoped, ticks bring theirs', () => {
-  assert.equal(CLIENT_LESSONS.length, 107);
-  assert.equal(SERVER_LESSONS.length, 107);
+  assert.equal(CLIENT_LESSONS.length, 110);
+  assert.equal(SERVER_LESSONS.length, 110);
   const ids = ['owner-restaurant', 'staff-restaurant-view', 'mgr-restaurant-build', 'mgr-restaurant-pars', 'mgr-restaurant-money'];
   for (const id of ids) {
     const lesson = SERVER_LESSONS.find((l) => l.id === id);
