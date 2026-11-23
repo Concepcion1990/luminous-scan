@@ -4099,6 +4099,7 @@ export const ko = {
   "plansLib.includes.docStyle": "나만의 스타일의 문서 — 로고, 색상, 글꼴, 테두리, 사진",
   'plansLib.includes.taxRate': '세율, 한 번만 설정 — 새 주문이 세금을 스스로 채웁니다',
   "plansLib.includes.taxAuto": "고객의 주 기준 자동 세금 (미국 주 기본 세율)",
+  "plansLib.includes.listPrices": "각 상품의 가격이 개수 옆에",
   'plansLib.includes.codeGenerator': "코드 생성기 — 자체 제품을 위한 새 UPC, SKU, 바코드, QR 코드",
   'plansLib.includes.gs1Codes': "본인의 GS1 접두사에서 발급하는 실제 소매용 UPC 및 EAN 코드",
   "plansLib.includes.bulkEdit": "일괄 편집 및 일괄 삭제 — 여러 상품을 한 번에 업데이트하거나 제거",
