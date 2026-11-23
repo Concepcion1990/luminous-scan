@@ -93,6 +93,11 @@ export function returnTotals({ lines = [], exchange_lines = [], refund_amount = 
   return { returnedValue, exchangeValue, refund: Number(refund_amount) || 0 };
 }
 
+/* The tax on a return's goods — its derivation (the original
+ * order's proportional share, the tax-setting fallback behind
+ * it) — lives in src/lib/taxRate.js as returnTaxInfo, beside
+ * the order-tax machinery it extends (release 349). */
+
 export function restockUnits(ret) {
   return (ret.lines || [])
     .filter((l) => l.restock)

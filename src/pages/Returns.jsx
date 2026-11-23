@@ -19,7 +19,7 @@ import {
 } from '@/lib/returns';
 
 export default function Returns() {
-  const { user, profile, activeId } = useBusiness();
+  const { user, profile, activeId, record: business } = useBusiness();
   // Returns approval gate (owner ruling, Nov 19, 2026): anyone
   // with returns access can log a return, but approving and
   // completing one belongs to the owner — or to a member the
@@ -220,6 +220,8 @@ export default function Returns() {
         products={products}
         locations={locations}
         currency={currency}
+        taxRate={business?.tax_rate || ''}
+        taxMode={business?.tax_mode || 'fixed'}
         onSaved={(text) => {
           setFlash({ ok: true, text });
           setReload((n) => n + 1);
