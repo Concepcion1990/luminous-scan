@@ -37,9 +37,12 @@ test('doc style: the sanitizer keeps good values and refuses the rest whole', ()
     color: true, font: 'serif', border: 'double',
     headerImage: PHOTO_URL, footerImage: PHOTO_URL,
   });
+  // Release 350 batch note (Nov 23, 2026): the resolved style
+  // gained the four decoration sizes, null when unset.
   assert.deepEqual(good, {
     color: true, font: 'serif', border: 'double',
     headerImage: PHOTO_URL, footerImage: PHOTO_URL,
+    headerWidth: null, headerLength: null, footerWidth: null, footerLength: null,
   });
   // Missing pieces fill from the defaults.
   assert.deepEqual(sanitizeDocStyle({}), DEFAULT_DOC_STYLE);
@@ -80,7 +83,13 @@ test('doc style: the owner saves a style and it reads back resolved', async () =
     cookie: owner.cookie,
   });
   assert.equal(saved.status, 200, saved.text);
-  assert.deepEqual(saved.json.doc_style, style);
+  // Release 350 batch note: reads back resolved — the four
+  // decoration sizes ride along, null when unset.
+  const resolvedStyle = {
+    ...style,
+    headerWidth: null, headerLength: null, footerWidth: null, footerLength: null,
+  };
+  assert.deepEqual(saved.json.doc_style, resolvedStyle);
 
   // An invalid font in a later save is refused whole — and the
   // previously saved style is still the one that reads back.
@@ -92,7 +101,7 @@ test('doc style: the owner saves a style and it reads back resolved', async () =
   assert.equal(refused.status, 400, refused.text);
   const list = await req('/api/businesses', { cookie: owner.cookie });
   const business = list.json.items.find((b) => b.id === owner.business.id);
-  assert.deepEqual(business.doc_style, style);
+  assert.deepEqual(business.doc_style, resolvedStyle);
 });
 
 test('plans parity: the document-style line shows on Plans and Welcome, both plans', () => {
@@ -141,15 +150,19 @@ test('guard: ruled layouts stay ruled — bin label and price tag untouched by t
   const card = readFileSync('src/components/print/LabelCard.jsx', 'utf8');
   // LabelCard branches on the template string: 'price' and 'bin'
   // return early; the fall-through return is the product sheet —
-  // the only styled branch. Every USE of the style (docStyle?.)
-  // lives in that final sheet return, after both early returns, so
-  // the ruled price tag and the exempt storage-bin label print
-  // exactly as they always have.
+  // the only styled branch. Every USE of the style lives in that
+  // final sheet return, after both early returns, so the ruled
+  // price tag and the exempt storage-bin label print exactly as
+  // they always have.
+  // Release 350 batch note (Nov 23, 2026): the sheet's style use
+  // now rides the shared DocChrome pieces (frame, banners, stamp)
+  // fed with the style object, so the pin follows those markers
+  // instead of the old inline docStyle?. image reads.
   const sheetAt = card.indexOf('// Product sheet');
   assert.ok(sheetAt > 0, 'the product-sheet branch is present');
-  const uses = [...card.matchAll(/docStyle\?\./g)].map((m) => m.index);
-  assert.ok(uses.length >= 2, 'the sheet branch does use the style');
-  assert.ok(uses.every((i) => i > sheetAt), 'no style use outside the sheet branch');
+  const uses = [...card.matchAll(/<(?:DocFrame|DecoHeader|DecoFooter|PrintedAt)[\s>]/g)].map((m) => m.index);
+  assert.ok(uses.length >= 2, 'the sheet branch does use the style chrome');
+  assert.ok(uses.every((i) => i > sheetAt), 'no style chrome outside the sheet branch');
 });
 
 test('training: the three extended lessons carry the new step 5 in BOTH catalogs', () => {

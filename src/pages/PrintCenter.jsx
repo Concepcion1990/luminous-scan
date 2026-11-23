@@ -660,7 +660,7 @@ export default function PrintCenter() {
                 </p>
               </div>
             ) : isOrder ? (
-              <PurchaseOrderDoc order={order} business={profile} mode={activeTemplate.mode} />
+              <PurchaseOrderDoc order={order} business={profile} mode={activeTemplate.mode} docStyle={docStyle} />
             ) : isCustomerDoc ? (
               activeTemplate.mode === 'shipping' ? (
                 uploadedActive ? (
