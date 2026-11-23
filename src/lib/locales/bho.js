@@ -4099,6 +4099,7 @@ export const bho = {
   "plansLib.includes.docStyle": "राउर आपन स्टाइल में दस्तावेज़ — लोगो, रंग, फॉन्ट, फ्रेम आ फोटो",
   'plansLib.includes.taxRate': 'रउरा टैक्स दर, एक बेर सेट — नया ऑर्डर आपन टैक्स खुद भरेला',
   "plansLib.includes.taxAuto": "राउर ग्राहक के राज्य के हिसाब से स्वचालित टैक्स (अमेरिकी राज्य सभ के मूल दर)",
+  "plansLib.includes.listPrices": "हर सामान के दाम ओकर गिनती के साथे",
   'plansLib.includes.codeGenerator': "कोड जनरेटर — रउआँ के अपना उत्पाद खातिर नया UPC, SKU, बारकोड आ QR कोड",
   'plansLib.includes.gs1Codes': "राउर आपन GS1 प्रीफ़िक्स से असली खुदरा UPC आ EAN कोड",
   "plansLib.includes.bulkEdit": "बल्क संपादन आ बल्क हटावल — एक्के बेर में कई उत्पाद अपडेट या हटाईं",
