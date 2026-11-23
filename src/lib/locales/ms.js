@@ -4099,6 +4099,7 @@ export const ms = {
   "plansLib.includes.docStyle": "Dokumen dalam gaya anda sendiri — logo, warna, fon, bingkai, dan gambar",
   'plansLib.includes.taxRate': 'Kadar cukai anda, ditetapkan sekali — pesanan baharu mengisi cukai mereka sendiri',
   "plansLib.includes.taxAuto": "Cukai automatik mengikut negeri pelanggan anda (kadar asas negeri AS)",
+  "plansLib.includes.listPrices": "Harga setiap produk di sebelah bilangannya",
   'plansLib.includes.codeGenerator': "Penjana kod — kod UPC, SKU, kod bar dan QR baharu untuk produk anda sendiri",
   'plansLib.includes.gs1Codes': "Kod UPC dan EAN runcit sebenar daripada awalan GS1 anda sendiri",
   "plansLib.includes.bulkEdit": "Edit pukal dan padam pukal — kemas kini atau alih keluar banyak produk sekali gus",

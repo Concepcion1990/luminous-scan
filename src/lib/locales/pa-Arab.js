@@ -4099,6 +4099,7 @@ export const paArab = {
   "plansLib.includes.docStyle": "تہاڈے اپنے انداز وچ دستاویزاں — لوگو، رنگ، فونٹ، فریم اتے تصویراں",
   'plansLib.includes.taxRate': 'تہاڈی ٹیکس شرح، اک واری لگی — نویں آرڈر اپنا ٹیکس خود بھردے نیں',
   "plansLib.includes.taxAuto": "تواڈے گاہک دی ریاست دے مطابق خودکار ٹیکس (امریکی ریاستی بنیادی شرحاں)",
+  "plansLib.includes.listPrices": "ہر پروڈکٹ دی قیمت اوہدی گنتی دے نال",
   'plansLib.includes.codeGenerator': "کوڈ جنریٹر — آپ کی اپنی مصنوعات کے لیے نئے UPC، SKU، بار کوڈ اور QR کوڈ",
   'plansLib.includes.gs1Codes': "آپ کے اپنے GS1 پریفکس سے حقیقی خوردہ UPC اور EAN کوڈز",
   "plansLib.includes.bulkEdit": "بلک ایڈٹ تے بلک ڈیلیٹ — اکو واری کئی مصنوعات اپڈیٹ یا ہٹاؤ",
