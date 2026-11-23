@@ -75,8 +75,8 @@ test('wiring: Settings field, save payload, order-form pre-fill discipline', () 
   assert.match(business, /tax_rate: values\.tax_rate\?\.trim\(\) \|\| ''/);
   const dialog = readFileSync('src/components/orders/OrderFormDialog.jsx', 'utf8');
   assert.match(dialog, /const \[taxTouched, setTaxTouched\] = useState\(false\)/);
-  assert.match(dialog, /computeOrderTax\(orderTotals\(form\)\.subtotal, taxRate\)/);
-  assert.match(dialog, /if \(!open \|\| order \|\| !form \|\| taxTouched \|\| taxRate == null\) return;/);
+  assert.match(dialog, /computeOrderTax\(orderTotals\(form\)\.subtotal, effectiveTaxRate\)/);
+  assert.match(dialog, /if \(!open \|\| order \|\| !form \|\| taxTouched \|\| effectiveTaxRate == null\) return;/);
   assert.match(dialog, /orders\.taxRateSet/);
   assert.match(dialog, /orders\.taxRateUnset/);
   assert.match(dialog, /to="\/settings"/);
@@ -91,6 +91,6 @@ test('plans parity and the training lesson, both catalogs', () => {
   assert.equal(plans.split("t('plansLib.includes.taxRate')").length - 1, 3, 'Essentials lists x2 + the comparison row');
   for (const catalog of ['src/lib/trainingCatalog.js', 'server/trainingCatalog.js']) {
     const src = readFileSync(catalog, 'utf8');
-    assert.match(src, /\{ id: 'owner-tax-rate', track: 'owner', module: 'orders', steps: 3[ ,]/);
+    assert.match(src, /\{ id: 'owner-tax-rate', track: 'owner', module: 'orders', steps: 4[ ,]/);
   }
 });

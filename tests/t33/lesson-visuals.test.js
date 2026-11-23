@@ -40,7 +40,7 @@ test('owner ruling (Nov 18, 2026): owner-tax-rate and owner-setup carry NO visua
   // "Go ahead and remove those visuals though from the two
   // trainings" — the lessons and their steps stay; only the
   // pictures go. Every other lesson is untouched by the ruling.
-  for (const [id, steps] of [['owner-tax-rate', 3], ['owner-setup', 4]]) {
+  for (const [id, steps] of [['owner-tax-rate', 4], ['owner-setup', 4]]) {
     const lesson = TRAINING_LESSONS.find((l) => l.id === id);
     assert.ok(lesson, `${id} still exists`);
     assert.equal(lesson.steps, steps, `${id}: step count unchanged`);
