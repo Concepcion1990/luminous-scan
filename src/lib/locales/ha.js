@@ -4099,6 +4099,7 @@ export const ha = {
   "plansLib.includes.docStyle": "Takardu da salon ku na kanku — tambari, launi, harafi, firam, da hotuna",
   'plansLib.includes.taxRate': 'Kudin harajinka, an saita sau ɗaya — sabbin oda suna cike harajinsu da kansu',
   "plansLib.includes.taxAuto": "Haraji na kai tsaye bisa jihar abokin cinikin ka (kudaden asali na jihohin Amurka)",
+  "plansLib.includes.listPrices": "Farashin kowane samfur kusa da adadinsa",
   'plansLib.includes.codeGenerator': "Mai ƙirƙirar lambobi — sababbin lambobin UPC, SKU, barcode da QR don samfuranka",
   'plansLib.includes.gs1Codes': "Lambobin sayarwa na UPC da EAN na gaske daga gabatarwar GS1 ɗinka",
   "plansLib.includes.bulkEdit": "Gyara da yawa da goge da yawa — sabunta ko cire kayayyaki da yawa a lokaci guda",
