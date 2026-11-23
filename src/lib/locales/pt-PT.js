@@ -4099,6 +4099,7 @@ export const ptPT = {
   "plansLib.includes.docStyle": "Documentos com o seu próprio estilo — logotipo, cor, fonte, moldura e imagens",
   'plansLib.includes.taxRate': 'A sua taxa de imposto, definida uma vez — os novos pedidos preenchem o seu próprio imposto',
   "plansLib.includes.taxAuto": "Imposto automático pelo estado do seu cliente (taxas básicas estaduais dos EUA)",
+  "plansLib.includes.listPrices": "O preço de cada produto ao lado da sua quantidade",
   'plansLib.includes.codeGenerator': "Gerador de códigos — novos códigos UPC, SKU, de barras e QR para os seus próprios produtos",
   'plansLib.includes.gs1Codes': "Códigos UPC e EAN comerciais verdadeiros a partir do seu próprio prefixo GS1",
   "plansLib.includes.bulkEdit": "Edição e exclusão em massa — atualize ou remova muitos produtos de uma só vez",
