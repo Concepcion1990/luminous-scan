@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/client";
 import { continueMfa } from "@/lib/authMfa";
@@ -20,6 +20,12 @@ import { t, useLocale } from '@/lib/i18n';
  * offer the resume path. Cleared once the code is verified.
  */
 export const PENDING_VERIFICATION_KEY = "stockhaven.pendingVerificationEmail";
+
+/** The invite-link claim for this browser session (single-use
+ * invite links, Nov 22, 2026): { token, claim } for the link
+ * this session opened first. sessionStorage dies with the
+ * tab/session — which is exactly the link's one visit. */
+const INVITE_CLAIM_KEY = "stockhaven.inviteClaim";
 
 export function readPendingVerificationEmail() {
   try {
@@ -59,9 +65,17 @@ export default function Register() {
   // invited address in the query (?email=…), so a new hire lands
   // on this page with their email already filled in — no hunting
   // from the sign-in page (owner's ruling, Nov 19, 2026). The
-  // address stays fully editable; registration + verification +
-  // sign-in connect the account to the pending staff invite by
-  // that email exactly as before.
+  // address stays fully editable.
+  //
+  // Single-use invite links (owner's ruling, Nov 22, 2026): the
+  // email's link also carries a one-use token (?invite=…). The
+  // first open claims the link for THIS browser session (the
+  // claim lives in sessionStorage); finishing the signup in
+  // this same visit consumes it. A link opened and left, or
+  // opened by another session, is refused with a kind message
+  // and the owner sends a fresh invite. Legacy links (no
+  // token) keep the old email-match connection, exactly as
+  // before.
   const [email, setEmail] = useState(() => {
     try {
       return new URLSearchParams(window.location.search).get("email") || "";
@@ -69,6 +83,62 @@ export default function Register() {
       return "";
     }
   });
+  const [inviteToken] = useState(() => {
+    try {
+      return new URLSearchParams(window.location.search).get("invite") || "";
+    } catch {
+      return "";
+    }
+  });
+  // 'none' (no token) | 'checking' | 'ready' | 'spent' | 'connected'
+  const [inviteState, setInviteState] = useState(inviteToken ? "checking" : "none");
+  const [inviteClaim, setInviteClaim] = useState("");
+  const [inviteMessage, setInviteMessage] = useState("");
+  const inviteOpenStarted = useRef(false);
+
+  useEffect(() => {
+    if (!inviteToken || inviteOpenStarted.current) return;
+    inviteOpenStarted.current = true;
+    let storedClaim = "";
+    try {
+      const raw = sessionStorage.getItem(INVITE_CLAIM_KEY);
+      const parsed = raw ? JSON.parse(raw) : null;
+      if (parsed && parsed.token === inviteToken && parsed.claim) storedClaim = parsed.claim;
+    } catch {
+      storedClaim = "";
+    }
+    (async () => {
+      try {
+        const result = await base44.auth.openInviteLink({ token: inviteToken, claim: storedClaim || undefined });
+        if (result?.completed) {
+          setInviteState("connected");
+          return;
+        }
+        if (result?.claim) {
+          setInviteClaim(result.claim);
+          try {
+            sessionStorage.setItem(INVITE_CLAIM_KEY, JSON.stringify({ token: inviteToken, claim: result.claim }));
+          } catch {
+            // Private mode: the in-state claim still covers this visit.
+          }
+        }
+        if (result?.email) setEmail(result.email);
+        setInviteState("ready");
+      } catch (err) {
+        if (err?.data?.error === "invite_link_used") {
+          setInviteMessage(err.message || t('apiErrors.inviteLinkUsed'));
+          setInviteState("spent");
+        } else {
+          // The open call itself failed (network, server hiccup):
+          // never declare the link spent on a guess. The visit
+          // proceeds as a plain signup; the invite simply is not
+          // bound, and the owner can resend.
+          setInviteState("none");
+        }
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inviteToken]);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
@@ -88,11 +158,25 @@ export default function Register() {
     }
     setLoading(true);
     try {
-      await base44.auth.register({ email, password });
+      await base44.auth.register({
+        email,
+        password,
+        inviteToken: inviteState === "ready" && inviteClaim ? inviteToken : undefined,
+        inviteClaim: inviteState === "ready" && inviteClaim ? inviteClaim : undefined,
+      });
       rememberPendingVerificationEmail(email);
       setPendingEmail(email);
       setShowOtp(true);
     } catch (err) {
+      // The invite link died between opening and submitting
+      // (spent by another session): show the kind message in
+      // place of the form, exactly as an open-time refusal does.
+      if (err?.data?.error === "invite_link_used") {
+        setInviteMessage(err.message || t('apiErrors.inviteLinkUsed'));
+        setInviteState("spent");
+        setLoading(false);
+        return;
+      }
       // Re-registering an email that already has a verified account does
       // not send a new code — the account already exists, so the customer
       // must sign in instead of waiting on an OTP screen that will never
@@ -158,6 +242,55 @@ export default function Register() {
     }
     setShowOtp(true);
   };
+
+  // Single-use invite link states (Nov 22, 2026): while the
+  // link is being opened the form waits; a spent link shows
+  // the kind message with the sign-in door; a signed-in
+  // acceptance shows the connected panel.
+  if (inviteToken && inviteState === "checking") {
+    return (
+      <AuthLayout icon={UserPlus} title={t('register.title')} subtitle={t('register.subtitle')}>
+        <div className="flex justify-center py-8">
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        </div>
+      </AuthLayout>
+    );
+  }
+
+  if (inviteToken && inviteState === "spent") {
+    return (
+      <AuthLayout
+        icon={Mail}
+        title={t('register.title')}
+        subtitle={t('register.subtitle')}
+        footer={
+          <>
+            {t('register.alreadyHaveAccount')}{" "}
+            <Link to={loginPath} className="text-link font-medium hover:underline">
+              {t('register.logIn')}
+            </Link>
+          </>
+        }
+      >
+        <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+          {inviteMessage || t('apiErrors.inviteLinkUsed')}
+        </div>
+      </AuthLayout>
+    );
+  }
+
+  if (inviteToken && inviteState === "connected") {
+    return (
+      <AuthLayout icon={UserPlus} title={t('register.title')} subtitle={t('register.subtitle')}>
+        <div className="p-3 rounded-lg border border-border bg-muted/50 text-sm mb-4">
+          {t('register.inviteConnected')}
+        </div>
+        <Link to={safeReturnTo()}>
+          <Button className="w-full h-12 font-medium">{t('register.inviteOpenApp')}</Button>
+        </Link>
+      </AuthLayout>
+    );
+  }
 
   if (showOtp) {
     return (

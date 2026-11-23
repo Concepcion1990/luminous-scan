@@ -5,8 +5,10 @@
  * is refused before anything is created, with a plain neutral
  * message and zero side effects; matching is exact-domain and
  * case-insensitive; removing a domain re-opens signup; existing
- * accounts are untouched; a pending staff invite is exempt
- * (invites are owner-chosen, not public signups).
+ * accounts are untouched. As first shipped, a pending staff
+ * invite was exempt; the owner reversed that the same day
+ * (Nov 22, 2026 — release 344): the block stops invites too,
+ * and the last test here pins the new truth.
  */
 import { test, after, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
@@ -233,7 +235,7 @@ test('an unverified account predating the block still verifies', async () => {
   assert.equal(verify.status, 200, verify.text);
 });
 
-test('a pending staff invite is exempt — invites are owner-chosen', async () => {
+test('a pending staff invite is NOT exempt — the block stops invites too (owner reversal, Nov 22, 2026)', async () => {
   const owner = await ownerWithBusiness('invite-boss@shops.test', 'Invite Shop');
   const staffId = crypto.randomUUID();
   await pool.query(
@@ -243,12 +245,22 @@ test('a pending staff invite is exempt — invites are owner-chosen', async () =
   );
   const op = await operator();
   await addDomain(op.cookie, 'invited.test');
-  // The invited address signs up straight through the block.
-  const hire = await registerVerifiedUser('newhire@invited.test');
-  assert.ok(hire.user.id);
+  // The invited address is refused exactly like a public signup:
+  // same neutral wording, nothing created, no code mailed.
+  const mailBefore = mailbox.length;
+  const hire = await req('/api/auth/register', {
+    method: 'POST', body: { email: 'newhire@invited.test', password: PASSWORD },
+  });
+  assert.equal(hire.status, 400, hire.text);
+  assert.equal(hire.json.error, 'signup_email_unavailable');
+  assert.equal(hire.json.message, REFUSAL);
+  assert.equal(await userRow('newhire@invited.test'), null);
+  assert.equal(mailbox.length, mailBefore);
+  // The staff row is untouched: still invited, awaiting an
+  // address that can register.
   const { rows } = await pool.query('SELECT status FROM staff_members WHERE id = $1', [staffId]);
-  assert.equal(rows[0].status, 'active');
-  // But the same domain with NO invite is still refused.
+  assert.equal(rows[0].status, 'invited');
+  // And a stranger at the same domain is refused identically.
   const stranger = await req('/api/auth/register', {
     method: 'POST', body: { email: 'stranger@invited.test', password: PASSWORD },
   });
@@ -259,8 +271,8 @@ test('a pending staff invite is exempt — invites are owner-chosen', async () =
 test('pins: keyset, registry, and the refusal wording', async () => {
   const { en } = await import('../../src/lib/locales/en.js');
   const { esMX } = await import('../../src/lib/locales/es-MX.js');
-  assert.equal(Object.keys(en).length, 5101);
-  assert.equal(Object.keys(esMX).length, 5101);
+  assert.equal(Object.keys(en).length, 5106);
+  assert.equal(Object.keys(esMX).length, 5106);
   assert.equal(en['apiErrors.signupEmailUnavailable'], REFUSAL);
   assert.notEqual(esMX['apiErrors.signupEmailUnavailable'], REFUSAL);
   const { API_ERROR_MESSAGE_KEYS } = await import('../../src/lib/apiErrors.js');
