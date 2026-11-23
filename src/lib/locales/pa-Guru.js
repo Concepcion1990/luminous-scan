@@ -4099,6 +4099,7 @@ export const paGuru = {
   "plansLib.includes.docStyle": "ਤੁਹਾਡੀ ਆਪਣੀ ਸ਼ੈਲੀ ਵਿੱਚ ਦਸਤਾਵੇਜ਼ — ਲੋਗੋ, ਰੰਗ, ਫੌਂਟ, ਫਰੇਮ ਅਤੇ ਤਸਵੀਰਾਂ",
   'plansLib.includes.taxRate': 'ਤੁਹਾਡੀ ਟੈਕਸ ਦਰ, ਇੱਕ ਵਾਰ ਸੈੱਟ — ਨਵੇਂ ਆਰਡਰ ਆਪਣਾ ਟੈਕਸ ਖੁਦ ਭਰਦੇ ਹਨ',
   "plansLib.includes.taxAuto": "ਤੁਹਾਡੇ ਗਾਹਕ ਦੇ ਰਾਜ ਅਨੁਸਾਰ ਸਵੈਚਲਿਤ ਟੈਕਸ (ਅਮਰੀਕੀ ਰਾਜਾਂ ਦੀਆਂ ਮੂਲ ਦਰਾਂ)",
+  "plansLib.includes.listPrices": "ਹਰ ਉਤਪਾਦ ਦੀ ਕੀਮਤ ਉਸਦੀ ਗਿਣਤੀ ਦੇ ਨਾਲ",
   'plansLib.includes.codeGenerator': "ਕੋਡ ਜਨਰੇਟਰ — ਤੁਹਾਡੇ ਆਪਣੇ ਉਤਪਾਦਾਂ ਲਈ ਨਵੇਂ UPC, SKU, ਬਾਰਕੋਡ ਅਤੇ QR ਕੋਡ",
   'plansLib.includes.gs1Codes': "ਤੁਹਾਡੇ ਆਪਣੇ GS1 ਪ੍ਰੀਫਿਕਸ ਤੋਂ ਅਸਲੀ ਪਰਚੂਨ UPC ਅਤੇ EAN ਕੋਡ",
   "plansLib.includes.bulkEdit": "ਬਲਕ ਸੰਪਾਦਨ ਅਤੇ ਬਲਕ ਮਿਟਾਉਣਾ — ਕਈ ਉਤਪਾਦ ਇੱਕੋ ਵਾਰ ਅੱਪਡੇਟ ਜਾਂ ਹਟਾਓ",

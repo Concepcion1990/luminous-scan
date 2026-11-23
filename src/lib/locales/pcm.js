@@ -4099,6 +4099,7 @@ export const pcm = {
   "plansLib.includes.docStyle": "Documents for yor own style — logo, color, font, frame, and pictures",
   'plansLib.includes.taxRate': 'Your tax rate, set once — new orders dey fill their own tax',
   "plansLib.includes.taxAuto": "Automatic tax by your customer state (US state base rates dem)",
+  "plansLib.includes.listPrices": "Each product price dey near im count",
   'plansLib.includes.codeGenerator': "Code maker — fresh UPC, SKU, barcode and QR codes for your own products dem",
   'plansLib.includes.gs1Codes': "Real retail UPC and EAN codes from your own GS1 prefix",
   "plansLib.includes.bulkEdit": "Bulk edit and bulk delete — update or comot plenti products one time",
