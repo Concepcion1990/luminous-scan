@@ -331,6 +331,31 @@ async function stateForMember(pool, business, member, now, strict = false) {
     (deadline !== null && now.getTime() < deadline.getTime()) ||
     (insideToday && !consumedToday);
 
+  // Release 345 (the bracket fix): a LAPSED deadline is spent,
+  // not pending. When this member is admitted by live work — a
+  // fresh unconsumed shift, an open entry, an open call-in
+  // window — the old deadline's promise was already kept by the
+  // lockout it imposed after the earlier clock-out; carrying it
+  // into the new work period served it to /auth/me as a live
+  // auto-logout, and the client timer evicted a rightfully
+  // admitted member on the spot (the owner's Nov 22, 2026
+  // Staff 1 bounce: Saturday's clock-out deadline, still on the
+  // row Sunday inside her shift). Treat it as spent — clear the
+  // row (cancelAutoLogout semantics) and surface no deadline.
+  // A FUTURE deadline is untouched: the mid-session grace still
+  // dies at its deadline (339). A lapsed deadline on a member
+  // who is NOT admitted by work is likewise untouched — the
+  // refusal path never reaches this clearing.
+  let liveDeadline = deadline;
+  if (
+    deadline !== null &&
+    now.getTime() >= deadline.getTime() &&
+    (hasOpenEntry || callInOpen || (insideToday && !consumedToday))
+  ) {
+    await cancelAutoLogout(pool, businessId, member.id);
+    liveDeadline = null;
+  }
+
   let nextShiftStart = null;
   for (let offset = 0; offset <= 7; offset += 1) {
     const dateStr = addDays(local.dateStr, offset);
@@ -350,7 +375,7 @@ async function stateForMember(pool, business, member, now, strict = false) {
     applies: true,
     allowed,
     nextShiftStart,
-    autoLogoutAt: deadline,
+    autoLogoutAt: liveDeadline,
     callInOpen,
     hasOpenEntry,
     insideShift: insideToday && !consumedToday,
@@ -423,11 +448,19 @@ export async function staffWindowState(pool, user, now = new Date()) {
   };
 }
 
-/** The pending auto-logout instant for /auth/me (null when none). */
-export async function autoLogoutAtFor(pool, user) {
+/**
+ * The pending auto-logout instant for /auth/me (null when
+ * none). Release 345: a deadline that is not in the future is
+ * not pending — it is spent, and serving it verbatim made the
+ * client timer sign a rightfully admitted member out the
+ * instant they signed in (the Nov 22, 2026 Staff 1 bounce).
+ */
+export async function autoLogoutAtFor(pool, user, now = new Date()) {
   const found = await windowMember(pool, user);
   if (!found?.member?.auto_logout_at) return null;
-  return new Date(found.member.auto_logout_at).toISOString();
+  const deadline = new Date(found.member.auto_logout_at);
+  if (!(deadline.getTime() > now.getTime())) return null;
+  return deadline.toISOString();
 }
 
 /** Clock-out: start the grace window on the member's row. */
