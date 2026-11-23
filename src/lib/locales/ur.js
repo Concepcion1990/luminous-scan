@@ -4099,6 +4099,7 @@ export const ur = {
   "plansLib.includes.docStyle": "آپ کے اپنے انداز میں دستاویزات — لوگو، رنگ، فونٹ، فریم اور تصاویر",
   'plansLib.includes.taxRate': 'آپ کی ٹیکس شرح، ایک بار مقرر — نئے آرڈر اپنا ٹیکس خود بھرتے ہیں',
   "plansLib.includes.taxAuto": "آپ کے گاہک کی ریاست کے مطابق خودکار ٹیکس (امریکی ریاستی بنیادی شرحیں)",
+  "plansLib.includes.listPrices": "ہر پروڈکٹ کی قیمت اس کی تعداد کے ساتھ",
   'plansLib.includes.codeGenerator': "کوڈ جنریٹر — آپ کی اپنی مصنوعات کے لیے نئے UPC، SKU، بار کوڈ اور QR کوڈ",
   'plansLib.includes.gs1Codes': "آپ کے اپنے GS1 پریفکس سے حقیقی خوردہ UPC اور EAN کوڈز",
   "plansLib.includes.bulkEdit": "بلک ترمیم اور حذف — ایک ساتھ کئی مصنوعات کو اپ ڈیٹ یا ہٹائیں",
