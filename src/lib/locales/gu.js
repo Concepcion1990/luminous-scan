@@ -4099,6 +4099,7 @@ export const gu = {
   "plansLib.includes.docStyle": "તમારી પોતાની શૈલીમાં દસ્તાવેજો — લોગો, રંગ, ફૉન્ટ, ફ્રેમ અને ચિત્રો",
   'plansLib.includes.taxRate': 'તમારો કર દર, એકવાર સેટ — નવા ઓર્ડર પોતાનો કર જાતે ભરે છે',
   "plansLib.includes.taxAuto": "તમારા ગ્રાહકના રાજ્ય મુજબ સ્વચાલિત ટેક્સ (અમેરિકન રાજ્યોના મૂળ દરો)",
+  "plansLib.includes.listPrices": "દરેક ઉત્પાદનની કિંમત તેની ગણતરીની બાજુમાં",
   'plansLib.includes.codeGenerator': "કોડ જનરેટર — તમારા પોતાના ઉત્પાદનો માટે નવા UPC, SKU, બારકોડ અને QR કોડ",
   'plansLib.includes.gs1Codes': "તમારા પોતાના GS1 પ્રીફિક્સમાંથી સાચા છૂટક UPC અને EAN કોડ",
   "plansLib.includes.bulkEdit": "બલ્ક સંપાદન અને બલ્ક કાઢી નાખવું — ઘણા ઉત્પાદનો એકસાથે અપડેટ અથવા દૂર કરો",
