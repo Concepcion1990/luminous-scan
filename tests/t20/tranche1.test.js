@@ -105,6 +105,10 @@ const SPANISH_COGNATE_KEYS = new Set([
   'reports.total', 'print.subtotal', 'print.total',
   'staff.rolesCount', 'staff.rolesHeading', 'staff.statRoles',
   'bomLib.kindBundleShort', 'pricing.rollbackBadge',
+  // Restaurant corner batch (Nov 23, 2026): "Par" is the
+  // kitchen-Spanish word for the par level in the variants that
+  // keep it bare (the others read "Nivel par") — verified.
+  'guide.colPar',
 ]);
 const FR_FR_COGNATE_KEYS = new Set([
   'dashboard.minReorder', 'importLib.field.description', 'importLib.updateField.description',
@@ -130,6 +134,11 @@ const FR_FR_COGNATE_KEYS = new Set([
   // Staff documents (Nov 21, 2026): 'Documents' is the genuine
   // French word for the documents button label.
   'staff.documents.open',
+  // Restaurant corner batch (Nov 23, 2026): "Restaurant",
+  // "Active" and "Description" are the genuine French words,
+  // and "Par" is the kept domain term — verified word-by-word.
+  'nav.group.restaurant', 'training.module.restaurant', 'restaurant.eyebrow',
+  'recipes.statusActive', 'recipes.descriptionLabel', 'guide.colPar',
 ]);
 const FR_CA_COGNATE_KEYS = new Set([
   'counts.notesLabel', 'dashboard.minReorder', 'importLib.field.description',
@@ -157,6 +166,11 @@ const FR_CA_COGNATE_KEYS = new Set([
   'settings.policyQuiz.question',
   // Staff documents (Nov 21, 2026): 'Documents' — same cognate as fr-FR.
   'staff.documents.open',
+  // Restaurant corner batch (Nov 23, 2026): "Restaurant",
+  // "Active" and "Description" are the genuine French words,
+  // and "Par" is the kept domain term — verified word-by-word.
+  'nav.group.restaurant', 'training.module.restaurant', 'restaurant.eyebrow',
+  'recipes.statusActive', 'recipes.descriptionLabel', 'guide.colPar',
 ]);
 const PT_BR_COGNATE_KEYS = new Set([
   'bomLib.kindBundleShort', 'dashboard.skusCount', 'exports.backupJson',
@@ -167,6 +181,9 @@ const PT_BR_COGNATE_KEYS = new Set([
   'productForm.unitKg', 'products.bulkChangeStatus', 'purchasing.status',
   'purchasing.subtotal', 'purchasing.total', 'reports.total',
   'staff.memberDialog.statusLabel', 'training.module.scanner',
+  // Restaurant corner batch (Nov 23, 2026): "Status" and the
+  // domain term "Par" are the genuine Portuguese words — verified.
+  'recipes.statusLabel', 'guide.colPar',
 ]);
 const PT_PT_COGNATE_KEYS = new Set([
   'auth.emailLabel', 'bomLib.kindBundleShort', 'dashboard.skusCount',
@@ -174,6 +191,9 @@ const PT_PT_COGNATE_KEYS = new Set([
   'print.colItem', 'print.subtotal', 'print.total',
   'productForm.fulfillDigital', 'productForm.unitKg', 'purchasing.subtotal',
   'purchasing.total', 'reports.total', 'staffLib.area.stock',
+  // Restaurant corner batch (Nov 23, 2026): "Par" is the kept
+  // domain term — verified.
+  'guide.colPar',
 ]);
 const DE_COGNATE_KEYS = new Set([
   'alerts.nameLabel', 'bomLib.kindBundle', 'categories.nameLabel',
@@ -190,6 +210,10 @@ const DE_COGNATE_KEYS = new Set([
   'settings.identity.logoLabel', 'settings.switcher.taglinePlaceholder', 'staff.eyebrow',
   'staff.member.administrator', 'staff.memberDialog.statusLabel', 'staff.teamHeading',
   'suppliers.website', 'training.module.scanner',
+  // Restaurant corner batch (Nov 23, 2026): "Restaurant" and
+  // "Status" are the genuine German words — verified.
+  'nav.group.restaurant', 'training.module.restaurant', 'restaurant.eyebrow',
+  'recipes.statusLabel',
 ]);
 const IT_COGNATE_KEYS = new Set([
   'auth.emailLabel', 'auth.passwordLabel', 'bomLib.kindBundleShort',
@@ -197,6 +221,9 @@ const IT_COGNATE_KEYS = new Set([
   'payroll.bonus', 'print.no', 'productForm.unitKg',
   'products.exportNo', 'reports.fieldReport', 'settings.identity.logoLabel',
   'staff.memberDialog.emailLabel', 'suppliers.email', 'training.module.scanner',
+  // Restaurant corner batch (Nov 23, 2026): "Par" is the kept
+  // domain term — verified.
+  'guide.colPar',
 ]);
 const JA_COGNATE_KEYS = new Set([
   'productForm.unitKg',
@@ -218,6 +245,9 @@ const TR_COGNATE_KEYS = new Set([
   'bomLib.kindBundleShort', 'dashboard.minReorder', 'inventoryLib.movementTransfer',
   'print.refSuffix', 'productForm.unitKg', 'scan.action.transfer',
   'settings.identity.logoLabel',
+  // Restaurant corner batch (Nov 23, 2026): "Par" is the kept
+  // domain term — verified.
+  'guide.colPar',
 ]);
 const KN_COGNATE_KEYS = new Set([
   'productForm.unitKg',
@@ -246,6 +276,10 @@ const ID_COGNATE_KEYS = new Set([
   'productDetails.rowStatus', 'productForm.customLabelPlaceholder', 'productForm.statusLabel',
   'productForm.unitKg', 'products.bulkChangeStatus', 'purchasing.status',
   'purchasing.subtotal', 'staff.member.administrator', 'staff.memberDialog.statusLabel',
+  // Restaurant corner batch (Nov 23, 2026): Indonesian keeps
+  // "Edit", "Status" and the domain term "Par" — verified.
+  'recipes.editButton', 'recipes.statusLabel', 'pars.editTitle',
+  'guide.colPar',
 ]);
 const MS_COGNATE_KEYS = new Set([
   'alerts.editRule', 'bomLib.kindBundleShort', 'businessLib.brandColor.plum',
@@ -262,6 +296,10 @@ const MS_COGNATE_KEYS = new Set([
   'returns.edit', 'returns.editTitle', 'settings.identity.logoLabel',
   'staff.member.edit', 'staff.memberDialog.statusLabel', 'staff.roleCard.edit',
   'staffLib.importOnly',
+  // Restaurant corner batch (Nov 23, 2026): Malay keeps
+  // "Edit", "Status" and the domain term "Par" — verified.
+  'recipes.editButton', 'recipes.statusLabel', 'pars.editTitle',
+  'guide.colPar',
 ]);
 const TH_COGNATE_KEYS = new Set([
   'productForm.unitKg', 'products.exportColQr',
@@ -326,6 +364,14 @@ const TL_COGNATE_KEYS = new Set([
   // Filipino form label, verbatim as already verified above for
   // 'locations.addressLabel' and 'suppliers.address'.
   'settings.businessCard.address',
+  // Restaurant corner batch (Nov 23, 2026): Tagalog keeps
+  // these kitchen terms in English, as it does throughout —
+  // verified word-by-word.
+  'nav.group.restaurant', 'training.module.restaurant', 'restaurant.eyebrow',
+  'recipes.statusDraft', 'recipes.detailYield', 'recipes.qLabel',
+  'recipes.lineYield', 'recipes.lineRecipePrefix', 'pars.supplierLabel',
+  'pars.parLabel', 'guide.colPar', 'guide.colOrder',
+  'guide.colSupplier',
 ]);
 const HA_COGNATE_KEYS = new Set([
   'bomLib.kindBundle', 'bomLib.kindBundleShort', 'businessLib.brandColor.plum',
@@ -334,14 +380,23 @@ const HA_COGNATE_KEYS = new Set([
   'print.qrLabel', 'print.templateBarcode', 'productDetails.codeBarcode',
   'productDetails.rowSerial', 'productForm.barcodeLabel', 'productForm.generateTypeBarcode', 'productForm.unitKg',
   'products.exportColBarcode', 'products.exportColQr', 'products.sortCodes',
+  // Restaurant corner batch (Nov 23, 2026): "Par" is the kept
+  // domain term — verified.
+  'guide.colPar',
 ]);
 const SW_COGNATE_KEYS = new Set([
   'exports.eyebrow', 'import.eyebrow', 'productForm.unitKg',
+  // Restaurant corner batch (Nov 23, 2026): "Par" is the kept
+  // domain term — verified.
+  'guide.colPar',
 ]);
 const YO_COGNATE_KEYS = new Set([
   'importLib.field.barcode', 'layout.scanCodes', 'payroll.dd.checking',
   'payroll.dd.savings', 'productDetails.codeBarcode', 'productForm.barcodeLabel', 'productForm.generateTypeBarcode',
   'productForm.unitKg', 'products.exportColBarcode', 'products.sortCodes',
+  // Restaurant corner batch (Nov 23, 2026): "Par" is the kept
+  // domain term — verified.
+  'guide.colPar',
 ]);
 const JV_COGNATE_KEYS = new Set([
   'auth.emailLabel', 'bomLib.kindBundleShort', 'businessLib.brandColor.plum',
@@ -359,6 +414,9 @@ const JV_COGNATE_KEYS = new Set([
   'scan.action.transfer', 'settings.identity.logoLabel', 'settings.identity.taglineLabel',
   'settings.software.tagline', 'settings.switcher.taglineLabel', 'staff.member.administrator',
   'staff.memberDialog.emailLabel', 'staff.memberDialog.statusLabel', 'suppliers.email',
+  // Restaurant corner batch (Nov 23, 2026): Javanese keeps
+  // "Status" and the domain term "Par" — verified.
+  'recipes.statusLabel', 'guide.colPar',
 ]);
 const PCM_COGNATE_KEYS = new Set([
   'auth.aboutLink', 'auth.emailLabel', 'businessLib.dateFormat.dMmmYyyy',
@@ -378,6 +436,27 @@ const PCM_COGNATE_KEYS = new Set([
   // Shipping batch (Nov 13, 2026): Pidgin keeps the shipping-label
   // wording in English — verified word-by-word.
   'print.templateShipping', 'print.shipFrom', 'print.senderAddressLabel',
+  // Restaurant corner batch (Nov 23, 2026): Pidgin keeps these
+  // short kitchen labels in English — verified word-by-word.
+  'nav.group.restaurant', 'nav.orderGuide', 'staffLib.area.restaurantAccess',
+  'training.module.restaurant', 'training.lessons.mgr-restaurant-money.title', 'restaurant.eyebrow',
+  'recipes.newButton', 'recipes.openButton', 'recipes.editButton',
+  'recipes.deleteButton', 'recipes.cardTrueCost', 'recipes.statusActive',
+  'recipes.statusDraft', 'recipes.printButton', 'recipes.detailYield',
+  'recipes.priceCard', 'recipes.trueCostCard', 'recipes.costPerMakeCard',
+  'recipes.colIngredient', 'recipes.colQuantity', 'recipes.colCost',
+  'recipes.editTitle', 'recipes.newTitle', 'recipes.nameLabel',
+  'recipes.namePlaceholder', 'recipes.descriptionLabel', 'recipes.statusLabel',
+  'recipes.qLabel', 'recipes.zoneLabel', 'recipes.photoChange',
+  'recipes.photoRemove', 'recipes.addLine', 'recipes.lineQty',
+  'recipes.lineYield', 'recipes.lineRecipePrefix', 'recipes.needLine',
+  'recipes.cancel', 'recipes.save', 'pars.newButton',
+  'pars.editTitle', 'pars.newTitle', 'pars.productLabel',
+  'pars.supplierLabel', 'pars.parLabel', 'guide.title',
+  'guide.colProduct', 'guide.colPar', 'guide.colOrder',
+  'guide.colSupplier', 'print.recipeTitle', 'print.recipeIngredient',
+  'print.recipeQuantity', 'print.recipeLineCost', 'print.recipePrice',
+  'print.recipeTrueCost', 'print.recipeCostPerMake',
 ]);
 const COGNATE_KEYS = {
   'es-MX': SPANISH_COGNATE_KEYS,

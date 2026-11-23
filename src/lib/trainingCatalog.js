@@ -243,6 +243,13 @@ export const TRAINING_LESSONS = [
   { id: 'owner-pos-sales-list', track: 'owner', module: 'pos', steps: 4, feature: 'pos' },
   { id: 'print-shipping-label', track: 'staff', module: 'printing', steps: 5 },
   { id: 'owner-shipping-labels', track: 'owner', module: 'printing', steps: 5 },
+  // The restaurant corner (release 359, Nov 23, 2026) —
+  // mirrors the server catalog (t10 proves the two agree).
+  { id: 'owner-restaurant', track: 'owner', module: 'restaurant', steps: 5, feature: 'restaurant' },
+  { id: 'staff-restaurant-view', track: 'staff', module: 'restaurant', steps: 4, feature: 'restaurant' },
+  { id: 'mgr-restaurant-build', track: 'manager', module: 'restaurant', steps: 4, feature: 'restaurant' },
+  { id: 'mgr-restaurant-pars', track: 'manager', module: 'restaurant', steps: 4, feature: 'restaurant' },
+  { id: 'mgr-restaurant-money', track: 'manager', module: 'restaurant', steps: 4, feature: 'restaurant' },
 ];
 
 export const lessonById = (id) => TRAINING_LESSONS.find((lesson) => lesson.id === id) || null;

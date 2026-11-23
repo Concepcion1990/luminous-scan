@@ -28,7 +28,7 @@
  *    import and no hand-shaped 'd MMM' pattern remains anywhere
  *    in src outside the locale dictionaries; Payroll no longer
  *    feeds a raw ISO slice into the period sentence;
- *  - zero new strings: the keyset stays 5136 ×52.
+ *  - zero new strings from this release: the keyset it froze at 5136 ×52 stands at 5308 since the restaurant batch.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -172,10 +172,10 @@ test('wiring: the named surfaces read through the helpers', () => {
   assert.doesNotMatch(read('src/pages/PayStubPrint.jsx'), /start: String\(stub\.period_start\)/);
 });
 
-test('zero new strings: the keyset stays 5136 in every locale', () => {
+test('zero new strings from 358: the keyset stands at 5308 in every locale (5136 through 358; the restaurant batch added 172)', () => {
   const counts = Object.entries(LOCALES).map(([code, dict]) => [code, Object.keys(dict).length]);
   for (const [code, count] of counts) {
-    assert.equal(count, 5136, `${code} keyset`);
+    assert.equal(count, 5308, `${code} keyset`);
   }
   assert.equal(counts.length, 52);
 });

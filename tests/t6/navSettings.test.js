@@ -62,6 +62,10 @@ test('every signed-in app screen appears in the nav (menu audit)', () => {
     // document screen like the direct-deposit form: reached from
     // Payroll's stub list, printed, never a menu door.
     '/payroll/stub/:stubId',
+    // The dish page (Nov 23, 2026) is a detail screen like the
+    // pay stub: reached from the Recipes list (itself a menu
+    // door), printed as the dish card, never a menu door.
+    '/restaurant/recipes/:id',
   ]);
   const appScreens = routePaths.filter((p) => !publicRoutes.has(p));
   assert.ok(appScreens.length >= 30, `audit covers the full screen list (saw ${appScreens.length})`);

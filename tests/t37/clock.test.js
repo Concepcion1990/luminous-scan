@@ -354,7 +354,7 @@ test('the tick brings its training: catalog, module map, and lesson requirements
   assert.equal(lesson.track, 'manager');
   assert.deepEqual(MODULE_BY_PERMISSION['staff.clock'], ['workforce']);
   assert.deepEqual(LESSON_REQUIREMENTS['mgr-clock-callin'], ['staff.clock']);
-  assert.equal(TRAINING_LESSONS.length, 102, 'the catalog grew by exactly the one lesson in the clock build (100); the staff documents build (Nov 21, 2026) added two more (owner-staff-documents, mgr-staff-documents), for 102');
+  assert.equal(TRAINING_LESSONS.length, 107, 'the catalog grew by exactly the one lesson in the clock build (100); the staff documents build (Nov 21, 2026) added two more (owner-staff-documents, mgr-staff-documents), for 102; the restaurant corner build (Nov 23, 2026) added five more, for 107');
 });
 
 // ---- (b) missed clock-out + corrections ---------------------------------------

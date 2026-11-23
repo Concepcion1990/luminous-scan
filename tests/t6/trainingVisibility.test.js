@@ -33,6 +33,9 @@ const BUSINESS_ONLY = {
   'owner-pos-mapping': 'pos', 'owner-pos-csv': 'pos', 'owner-pos-sales-list': 'pos',
   'staff-pos-till-sales': 'pos',
   'owner-import-export': 'exports',
+  'owner-restaurant': 'restaurant', 'staff-restaurant-view': 'restaurant',
+  'mgr-restaurant-build': 'restaurant', 'mgr-restaurant-pars': 'restaurant',
+  'mgr-restaurant-money': 'restaurant',
 };
 
 async function catalogs() {
@@ -77,9 +80,13 @@ test('plan-visible counts: Business whole, Essentials without the Business subje
   // lesson per affected track (owner owner-staff-documents,
   // manager mgr-staff-documents riding the staff.documents
   // tick): owner 42/24, manager 20/14.
-  assert.equal(count('owner', true), 42);
-  assert.equal(count('manager', true), 20);
-  assert.equal(count('staff', true), 39);
+  // The restaurant corner build (Nov 23, 2026) adds five
+  // Business-only lessons (owner-restaurant, staff-restaurant-view,
+  // and the three tick lessons for managers): Business owner 43,
+  // manager 23, staff 40; Essentials counts unchanged.
+  assert.equal(count('owner', true), 43);
+  assert.equal(count('manager', true), 23);
+  assert.equal(count('staff', true), 40);
   // Essentials: 19 owner subjects hidden, owner-import in their place.
   assert.equal(count('owner', false), 24); // +1 confidentiality lesson (Nov 19, 2026)
   assert.equal(count('manager', false), 14);

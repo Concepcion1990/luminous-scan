@@ -345,6 +345,45 @@ export function isLowStockGrant(key) {
 }
 
 /**
+ * Owner-granted restaurant corner — THREE sibling ticks (the
+ * owner's rulings, Nov 20–21, 2026). Same pattern as the
+ * grants above: the keys live in the member's own permissions
+ * array, deliberately NOT part of PERMISSION_GROUPS /
+ * ALL_PERMISSIONS / the preset roles, edited in the member
+ * dialog as their own ticks, so the permission picker can
+ * never wipe them and no role carries them by default — a
+ * manager included. The owner holds all three inherently.
+ * Looking at the corner is FREE for every member of a
+ * Business workspace — the ticks govern doing, and money:
+ *
+ * - restaurant.build   creating and editing recipes (the
+ *                      server refuses recipe writes without
+ *                      it, owner excepted).
+ * - restaurant.pars    setting par levels (the order guide
+ *                      itself stays readable by everyone).
+ * - restaurant.money   seeing dish money — true costs and
+ *                      food-cost percentages. The server
+ *                      shapes those figures off the recipe
+ *                      read for anyone without it; the dish
+ *                      itself, its price and its ingredients
+ *                      stay visible.
+ *
+ * The corner exists only on Business, so the tick block
+ * renders only there; on Essentials none of the three exist.
+ */
+export const RESTAURANT_GRANTS = [
+  { key: 'restaurant.build', get label() { return t('staffLib.perm.restaurantBuild'); } },
+  { key: 'restaurant.pars', get label() { return t('staffLib.perm.restaurantPars'); } },
+  { key: 'restaurant.money', get label() { return t('staffLib.perm.restaurantMoney'); } },
+];
+
+export const RESTAURANT_GRANT_KEYS = RESTAURANT_GRANTS.map((grant) => grant.key);
+
+export function isRestaurantGrant(key) {
+  return RESTAURANT_GRANT_KEYS.includes(key);
+}
+
+/**
  * Owner-granted policy trainings (Nov 20, 2026): TWO sibling
  * ticks, one per owner document. Reading the Store Policies and
  * the Terms stays core for everyone — these ticks assign only
@@ -421,9 +460,9 @@ export function isDocumentsGrant(key) {
   return DOCUMENTS_GRANT_KEYS.includes(key);
 }
 
-/** Any per-member grant key (Settings sections + returns + products + locations + roster + low stock + policy trainings + clock + documents). */
+/** Any per-member grant key (Settings sections + returns + products + locations + roster + low stock + policy trainings + clock + documents + restaurant). */
 export function isMemberGrant(key) {
-  return isSettingsGrant(key) || isReturnsGrant(key) || isProductsGrant(key) || isLocationsGrant(key) || isRosterGrant(key) || isLowStockGrant(key) || isTrainingGrant(key) || isClockGrant(key) || isDocumentsGrant(key);
+  return isSettingsGrant(key) || isReturnsGrant(key) || isProductsGrant(key) || isLocationsGrant(key) || isRosterGrant(key) || isLowStockGrant(key) || isTrainingGrant(key) || isClockGrant(key) || isDocumentsGrant(key) || isRestaurantGrant(key);
 }
 
 /** A member row's level, mirroring the server's personLevel. */
