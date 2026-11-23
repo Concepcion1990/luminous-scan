@@ -21,7 +21,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { useBusiness } from '@/hooks/useBusiness';
 import { apiRequest } from '@/api/client';
 import { t } from '@/lib/i18n';
-import { toLocalDate } from '@/lib/dates';
+import { formatShortDate } from '@/lib/dates';
 import { TRAINING_LESSONS, lessonVisibleOnPlan, visibleLessonsForTrack } from '@/lib/trainingCatalog';
 import {
   addLessonComment,
@@ -51,9 +51,7 @@ const inputCls =
 const labelCls = 'font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground';
 
 function formatDay(value) {
-  const date = toLocalDate(value);
-  if (!date) return '';
-  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  return formatShortDate(value);
 }
 
 function Section({ title, help, children, icon: Icon }) {

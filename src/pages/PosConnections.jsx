@@ -51,17 +51,10 @@ import {
   eventStatusLabel,
   lineStatusLabel,
 } from '@/lib/pos';
-import { toLocalDate } from '@/lib/dates';
+import { formatDayTime } from '@/lib/dates';
 
 function formatWhen(value) {
-  const date = toLocalDate(value);
-  if (!date) return '';
-  return date.toLocaleString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  });
+  return formatDayTime(value);
 }
 
 function statusTone(status) {

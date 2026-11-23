@@ -1,9 +1,8 @@
-import { format } from 'date-fns';
 import { t } from '@/lib/i18n';
 
 import { Loader2, RotateCcw, Undo2 } from 'lucide-react';
 import { MOVEMENT_TYPES } from '@/lib/inventory';
-import { toLocalDate } from '@/lib/dates';
+import { formatDayTime, toLocalDate } from '@/lib/dates';
 import { Button } from '@/components/ui/button';
 
 const toneClass = {
@@ -96,7 +95,7 @@ export default function MovementRow({
       <div className="shrink-0 text-right">
         <p className={`numeric text-sm font-semibold ${toneClass[meta.tone] || ''}`}>{deltaLabel(movement)}</p>
         <p className="numeric font-mono text-[10px] text-muted-foreground">
-          {date ? format(date, 'd MMM, HH:mm') : ''}
+          {date ? formatDayTime(date) : ''}
         </p>
       </div>
     </div>

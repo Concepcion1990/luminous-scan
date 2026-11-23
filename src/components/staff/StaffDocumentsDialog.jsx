@@ -12,6 +12,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/use-toast';
+import { formatDateTime } from '@/lib/dates';
 import { getLocale, t } from '@/lib/i18n';
 import {
   listStaffDocuments,
@@ -97,7 +98,7 @@ function formatWhen(iso) {
       timeStyle: 'short',
     }).format(date);
   } catch {
-    return date.toLocaleString();
+    return formatDateTime(date);
   }
 }
 

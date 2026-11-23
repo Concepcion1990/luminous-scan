@@ -11,6 +11,7 @@ import EssentialsCheckoutReadinessDiagnostic from '@/components/billing/Essentia
 import UpgradeDryRunPanel from '@/components/billing/UpgradeDryRunPanel';
 import CancelSubscriptionDialog from '@/components/billing/CancelSubscriptionDialog';
 import { base44 } from '@/api/client';
+import { formatFullDate } from '@/lib/dates';
 import { t } from '@/lib/i18n';
 import {
   AlertDialog,
@@ -43,10 +44,7 @@ function money(value) {
 }
 
 function formatDate(value) {
-  const date = new Date(value);
-  return Number.isFinite(date.getTime())
-    ? date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-    : null;
+  return formatFullDate(value) || null;
 }
 
 export default function Upgrade() {
@@ -66,10 +64,7 @@ export default function Upgrade() {
   // complimentary (grandfathered) workspace is never cancellable.
   const cancelEndsOn = (() => {
     if (status !== 'canceled' || !record?.period_ends_at) return null;
-    const date = new Date(record.period_ends_at);
-    return Number.isFinite(date.getTime())
-      ? date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-      : null;
+    return formatFullDate(record.period_ends_at) || null;
   })();
   // The trial end date, kept separate from the upgrade effective date:
   // the two are not the same thing and must never be shown as one date.

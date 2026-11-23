@@ -17,6 +17,8 @@
  * whatever style is chosen.
  */
 
+import { formatLongDate, formatTimeOnly } from './dates.js';
+
 export const DOC_FONTS = {
   default: '',
   serif: "Georgia, 'Times New Roman', Times, serif",
@@ -187,21 +189,22 @@ export function decoImageStyle(style, slot, capMm = 24) {
 
 /**
  * The printed-at stamp's words (release 350): the date and time
- * a document was printed, formatted by the reader's own locale —
- * the same toLocale machinery the documents already use, now fed
- * the active locale instead of a fixed one. Returns the parts;
- * the sentence itself is the reader's language (print.printedAt).
+ * a document was printed, formatted by the reader's own locale.
+ * Returns the parts; the sentence itself is the reader's language
+ * (print.printedAt).
+ *
+ * Release 358 (dates the local way): the date part is now the
+ * locale's FULL convention — weekday + day + month name + year —
+ * through the shared Intl helpers in lib/dates, the same helpers
+ * every other surface reads. Because the 357 time trails render
+ * through this function too, the one change sweeps the printed-at
+ * stamp and every trail stamp together.
  */
 export function formatPrintedAt(date = new Date(), locale = 'en') {
-  const format = (loc) => ({
-    date: date.toLocaleDateString(loc, { year: 'numeric', month: 'long', day: 'numeric' }),
-    time: date.toLocaleTimeString(loc, { hour: 'numeric', minute: '2-digit' }),
-  });
-  try {
-    return format(locale || 'en');
-  } catch {
-    return format('en-US');
-  }
+  return {
+    date: formatLongDate(date, locale || 'en'),
+    time: formatTimeOnly(date, locale || 'en'),
+  };
 }
 
 /** Class flags a document root carries for the print stylesheet. */

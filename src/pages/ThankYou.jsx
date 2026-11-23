@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { formatFullDate } from '@/lib/dates';
 import { t } from '@/lib/i18n';
 import { Link, useSearchParams } from 'react-router-dom';
 import { CheckCircle2, Clock3, ShieldCheck } from 'lucide-react';
@@ -141,7 +142,7 @@ export default function ThankYou() {
             <p className="text-muted-foreground">
               {result?.status === 'trialing'
                 ? boss && result?.trial_ends_at
-                  ? t('thankYou.trialRunning', { date: new Date(result.trial_ends_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) })
+                  ? t('thankYou.trialRunning', { date: formatFullDate(result.trial_ends_at) })
                   : t('thankYou.trialRunningNoDate')
                 : t('thankYou.subscriptionActive')}
             </p>

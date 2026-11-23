@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
-import { format } from 'date-fns';
 import { ArrowUpRight } from 'lucide-react';
+import { formatShortDay } from '@/lib/dates';
 import PanelHeading from '@/components/dashboard/PanelHeading';
 import { openQty, poProgress } from '@/lib/purchasing';
 import { t } from '@/lib/i18n';
@@ -12,8 +12,8 @@ function expectedLabel(value) {
   const date = new Date(`${value}T00:00:00`);
   if (Number.isNaN(date.getTime())) return t('dashboard.noDateSet');
   return date < new Date()
-    ? t('dashboard.wasDue', { date: format(date, 'd MMM') })
-    : t('dashboard.dueOn', { date: format(date, 'd MMM') });
+    ? t('dashboard.wasDue', { date: formatShortDay(date) })
+    : t('dashboard.dueOn', { date: formatShortDay(date) });
 }
 
 /** Purchase orders that have not fully arrived, soonest expected first. */

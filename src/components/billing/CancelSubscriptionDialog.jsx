@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { base44 } from '@/api/client';
 import { CANCELLATION_GRACE_DAYS, CANCELLATION_WIPE_SENTENCE } from '@/lib/cancellationGrace';
+import { formatFullDate } from '@/lib/dates';
 import { t } from '@/lib/i18n';
 
 const SUPPORT_CONTACT = 'theluminousbookshop@outlook.com';
@@ -42,9 +43,7 @@ const CANCEL_ERROR_DETAILS = {
 
 function formatDate(value) {
   if (!value) return null;
-  const date = new Date(value);
-  if (!Number.isFinite(date.getTime())) return null;
-  return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  return formatFullDate(value) || null;
 }
 
 /**

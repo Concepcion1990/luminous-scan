@@ -1,4 +1,5 @@
 import { ChevronDown, ChevronRight, Trash2 } from 'lucide-react';
+import { formatNumericDate } from '@/lib/dates';
 import { t } from '@/lib/i18n';
 
 import { Button } from '@/components/ui/button';
@@ -37,7 +38,7 @@ export default function CountCard({ session, canManage, expanded, onToggle, onCa
           <p className="mt-0.5 text-xs text-muted-foreground">
             {[
               session.started_by ? t('counts.startedBy', { name: session.started_by }) : '',
-              session.started_at ? new Date(session.started_at).toLocaleDateString() : '',
+              session.started_at ? formatNumericDate(session.started_at) : '',
               session.notes,
             ]
               .filter(Boolean)

@@ -1,5 +1,6 @@
-const today = () =>
-  new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+import { formatShortDate } from '@/lib/dates';
+
+const today = () => formatShortDate(new Date());
 
 function BlankField({ label, width = 'w-[26mm]' }) {
   return (

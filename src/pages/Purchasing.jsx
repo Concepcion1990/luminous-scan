@@ -7,6 +7,7 @@ import ReceiveDialog from '@/components/purchasing/ReceiveDialog';
 import { Button } from '@/components/ui/button';
 import { useBusiness } from '@/hooks/useBusiness';
 import { scoped } from '@/lib/scoped';
+import { formatShortDate } from '@/lib/dates';
 import { t } from '@/lib/i18n';
 import { money, PO_STATUS, poProgress, statusQuery } from '@/lib/purchasing';
 
@@ -274,7 +275,7 @@ export default function Purchasing() {
                   <span className="self-center text-[11px] text-muted-foreground">
                     {t('purchasing.sentTo', {
                       email: order.sent_to,
-                      date: String(order.sent_at || '').slice(0, 10),
+                      date: formatShortDate(order.sent_at),
                     })}
                   </span>
                 )}

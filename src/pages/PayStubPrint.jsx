@@ -13,6 +13,7 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Printer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { formatShortDate } from '@/lib/dates';
 import { t } from '@/lib/i18n';
 import { useBusiness } from '@/hooks/useBusiness';
 import { formatMoneyPlain, listMyStubs } from '@/lib/workforce';
@@ -59,8 +60,8 @@ export default function PayStubPrint() {
           <p className="mt-3 text-sm font-medium">{stub.person_name}</p>
           <p className="text-sm text-stone-600">
             {t('payroll.stubs.period', {
-              start: String(stub.period_start).slice(0, 10),
-              end: String(stub.period_end).slice(0, 10),
+              start: formatShortDate(String(stub.period_start).slice(0, 10)),
+              end: formatShortDate(String(stub.period_end).slice(0, 10)),
             })}
           </p>
           <div className="mt-5 space-y-1.5 text-sm leading-relaxed">

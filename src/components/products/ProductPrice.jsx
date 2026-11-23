@@ -1,3 +1,4 @@
+import { formatNumericDate } from '@/lib/dates';
 import { formatMoney } from '@/lib/inventory';
 import { priceInfo } from '@/lib/pricing';
 import { t } from '@/lib/i18n';
@@ -32,7 +33,7 @@ export default function ProductPrice({ product, currency, digits = 2 }) {
       {info.mode === 'rollback' && !info.active && info.start && (
         <span className="text-[10px] font-normal text-muted-foreground">
           {t('pricing.rollbackStarts', {
-            date: new Date(`${info.start}T12:00:00`).toLocaleDateString(),
+            date: formatNumericDate(info.start),
           })}
         </span>
       )}

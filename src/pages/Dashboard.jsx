@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import useDataFresh from '@/hooks/useDataFresh';
 import { dataVersion } from '@/lib/dataFreshness';
-import { format } from 'date-fns';
+import { formatHeaderDate } from '@/lib/dates';
 import { Clock3, Plus, ScanLine } from 'lucide-react';
 import StatCard from '@/components/StatCard';
 import ReorderPanel from '@/components/dashboard/ReorderPanel';
@@ -161,7 +161,7 @@ export default function Dashboard() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-            {profile.name} · {format(new Date(), 'EEEE, d MMMM')}
+            {profile.name} · {formatHeaderDate(new Date())}
           </p>
           <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">{t('dashboard.title')}</h1>
           <p className="mt-1 text-sm text-muted-foreground">

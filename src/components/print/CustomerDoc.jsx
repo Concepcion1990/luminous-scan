@@ -2,6 +2,7 @@ import DocHeader from './DocHeader';
 import { DecoFooter, DecoHeader, DocFrame, PrintedAt } from './DocChrome';
 import { channelLabel, orderShipAddressLines } from '@/lib/orders';
 import { formatMoney } from '@/lib/inventory';
+import { formatShortDate } from '@/lib/dates';
 import { docRootClass, docRootStyle } from '@/lib/docStyle';
 import { t } from '@/lib/i18n';
 
@@ -13,10 +14,7 @@ const TITLES = {
 
 function shortDate(value) {
   if (!value) return '';
-  const stamp = new Date(String(value).length <= 10 ? `${value}T00:00:00` : value);
-  return Number.isNaN(stamp.getTime())
-    ? String(value)
-    : stamp.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  return formatShortDate(value) || String(value);
 }
 
 /**

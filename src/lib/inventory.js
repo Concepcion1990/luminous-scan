@@ -3,6 +3,7 @@ import { scoped, withBusiness } from '@/lib/scoped';
 import { loadEntitlement, resolveEntitlement } from '@/lib/entitlements';
 import { BUNDLE_MOVEMENT_TYPES, featureAllowed } from '@/lib/plans';
 import { t } from './i18n.js';
+import { formatShortDay } from './dates.js';
 import { SEARCHABLE_FIELDS, searchWords } from './searchMatch.js';
 import { countDistinctProducts } from './productDuplicates.js';
 
@@ -495,11 +496,7 @@ export function reversalBlocker(movement) {
 
 function movementLabel(movement) {
   const meta = MOVEMENT_TYPES[movement.type];
-  const stamp = movement.created_date ? new Date(movement.created_date) : null;
-  const when =
-    stamp && !Number.isNaN(stamp.getTime())
-      ? stamp.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-      : '';
+  const when = movement.created_date ? formatShortDay(movement.created_date) : '';
   return [meta?.label || movement.type, when].filter(Boolean).join(' · ');
 }
 

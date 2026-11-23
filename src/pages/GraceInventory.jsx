@@ -8,14 +8,13 @@ import { isBoss } from '@/lib/bossAuthority';
 import { scoped } from '@/lib/scoped';
 import { listProducts } from '@/lib/inventory';
 import { assessCancellationGrace, CANCELLATION_GRACE_DAYS, CANCELLATION_GRACE_PARAGRAPH } from '@/lib/cancellationGrace';
+import { formatFullDate } from '@/lib/dates';
 import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 
 function formatDate(value) {
   if (!value) return null;
-  const date = new Date(value);
-  if (!Number.isFinite(date.getTime())) return null;
-  return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  return formatFullDate(value) || null;
 }
 
 /**

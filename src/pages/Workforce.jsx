@@ -29,7 +29,7 @@ import {
   rewardValueText,
   voidReward,
 } from '@/lib/rewards';
-import { toLocalDate } from '@/lib/dates';
+import { formatShortDate, formatShortDay, formatTimeOnly, toLocalDate } from '@/lib/dates';
 import ProfileAvatar from '@/components/business/ProfileAvatar';
 import { buildVoiceWav, createPcmCapture } from '@/lib/voiceCapture';
 import {
@@ -71,18 +71,14 @@ const inputCls =
 const labelCls = 'font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground';
 
 function formatTime(value) {
-  const date = toLocalDate(value);
-  if (!date) return '';
-  return date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+  return formatTimeOnly(value);
 }
 function formatDay(value) {
-  const date = toLocalDate(value);
-  if (!date) return '';
-  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  return formatShortDay(value);
 }
 /** An entry's total span, in the reader's own unit words
- * (Intl unit formatting follows the device locale, the same
- * convention formatTime/formatDay above already use). */
+ * (Intl unit formatting follows the device locale; the dates
+ * above follow the picked language — release 358). */
 function formatDuration(startValue, endValue) {
   const start = toLocalDate(startValue);
   const end = toLocalDate(endValue);
@@ -102,8 +98,7 @@ function formatDuration(startValue, endValue) {
 }
 function formatDateOnly(value) {
   if (!value) return '';
-  const date = new Date(`${String(value).slice(0, 10)}T12:00:00`);
-  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  return formatShortDate(String(value).slice(0, 10));
 }
 
 function Section({ title, children, help }) {

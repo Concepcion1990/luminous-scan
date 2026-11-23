@@ -1,8 +1,7 @@
 import { Link } from 'react-router-dom';
-import { format } from 'date-fns';
 import PanelHeading from '@/components/dashboard/PanelHeading';
 import { MOVEMENT_TYPES } from '@/lib/inventory';
-import { toLocalDate } from '@/lib/dates';
+import { formatDayTime, toLocalDate } from '@/lib/dates';
 import { t } from '@/lib/i18n';
 
 const TONE_CLASS = {
@@ -54,7 +53,7 @@ export default function ActivityFeed({ movements = [], importEvents = [] }) {
               </span>
               <span className="numeric ml-auto shrink-0 font-mono text-[10px] uppercase tracking-wide text-muted-foreground">
                 {toLocalDate(row.created_date)
-                  ? format(toLocalDate(row.created_date), 'd MMM, HH:mm')
+                  ? formatDayTime(toLocalDate(row.created_date))
                   : ''}
               </span>
             </li>
@@ -83,7 +82,7 @@ function renderMovement(movement) {
       </span>
       <span className="numeric ml-auto shrink-0 font-mono text-[10px] uppercase tracking-wide text-muted-foreground sm:ml-3">
         {toLocalDate(movement.created_date)
-          ? format(toLocalDate(movement.created_date), 'd MMM, HH:mm')
+          ? formatDayTime(toLocalDate(movement.created_date))
           : ''}
       </span>
     </li>

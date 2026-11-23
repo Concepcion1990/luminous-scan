@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Eye, Loader2, Printer, Trash2, Upload } from 'lucide-react';
 import { apiDownload, apiRequest } from '@/api/client';
+import { formatShortDate } from '@/lib/dates';
 import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -130,10 +131,7 @@ export function useCarrierLabel(businessId, orderId) {
 
 export function savedDate(value) {
   if (!value) return '';
-  const stamp = new Date(value);
-  return Number.isNaN(stamp.getTime())
-    ? ''
-    : stamp.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  return formatShortDate(value);
 }
 
 export default function CarrierLabelPanel({ orderId, carrier, mode, onModeChange }) {

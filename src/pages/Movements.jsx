@@ -9,8 +9,7 @@ import { useBusiness } from '@/hooks/useBusiness';
 import { useDataFresh } from '@/hooks/useDataFresh';
 import useEntitlements from '@/hooks/useEntitlements';
 import useStaffAccess from '@/hooks/useStaffAccess';
-import { format } from 'date-fns';
-import { localTimeZoneName, toLocalDate } from '@/lib/dates';
+import { formatDayTime, localTimeZoneName, toLocalDate } from '@/lib/dates';
 import MovementRow from '@/components/movements/MovementRow';
 import ResponsiveSelect from '@/components/ui/ResponsiveSelect';
 import { t } from '@/lib/i18n';
@@ -244,7 +243,7 @@ export default function Movements() {
                   </span>
                   <span className="numeric ml-auto shrink-0 font-mono text-[10px] uppercase tracking-wide text-muted-foreground">
                     {toLocalDate(row.created_date)
-                      ? format(toLocalDate(row.created_date), 'd MMM, HH:mm')
+                      ? formatDayTime(toLocalDate(row.created_date))
                       : ''}
                   </span>
                 </div>

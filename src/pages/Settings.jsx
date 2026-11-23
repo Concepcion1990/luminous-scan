@@ -7,6 +7,7 @@ import { useTheme } from 'next-themes';
 import { useBusiness } from '@/hooks/useBusiness';
 import useEntitlements from '@/hooks/useEntitlements';
 import { useAuth } from '@/lib/AuthContext';
+import { formatDateTime, formatFullDate } from '@/lib/dates';
 import { prepareImageForUpload } from '@/lib/imagePrep';
 import { isPublisherOwner } from '@/lib/publisherAccess';
 import CancelSubscriptionDialog from '@/components/billing/CancelSubscriptionDialog';
@@ -60,7 +61,7 @@ const VERIFIED_STRIPE_STATUS_LABELS = {
 function verifiedDateLabel(dateValue) {
   if (typeof dateValue !== 'string') return '';
   const date = new Date(dateValue);
-  return Number.isNaN(date.getTime()) ? '' : date.toLocaleString();
+  return Number.isNaN(date.getTime()) ? '' : formatDateTime(date);
 }
 
 const APPEARANCE_OPTIONS = [
@@ -137,26 +138,17 @@ function BossSettings() {
   // everything about money — stays the owner's alone.
   const pastDueGraceEndsOn = (() => {
     if (entitlementStatus !== 'past_due' || !entitlementRecord?.payment_grace_ends_at) return null;
-    const date = new Date(entitlementRecord.payment_grace_ends_at);
-    return Number.isFinite(date.getTime())
-      ? date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-      : null;
+    return formatFullDate(entitlementRecord.payment_grace_ends_at) || null;
   })();
   const cancelEndsOn = (() => {
     if (entitlementStatus !== 'canceled' || !entitlementRecord?.period_ends_at) return null;
-    const date = new Date(entitlementRecord.period_ends_at);
-    return Number.isFinite(date.getTime())
-      ? date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-      : null;
+    return formatFullDate(entitlementRecord.period_ends_at) || null;
   })();
   // Trial end comes from trial_ends_at, not period_ends_at: the trial-cancel
   // line must name the trial end date (finding 11).
   const trialEndsOn = (() => {
     if (entitlementStatus !== 'trialing' || !entitlementRecord?.trial_ends_at) return null;
-    const date = new Date(entitlementRecord.trial_ends_at);
-    return Number.isFinite(date.getTime())
-      ? date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-      : null;
+    return formatFullDate(entitlementRecord.trial_ends_at) || null;
   })();
   const { logout } = useAuth();
   const queryClient = useQueryClient();

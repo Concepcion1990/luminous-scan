@@ -3,6 +3,7 @@ import { ArrowRight, Check, Clock3, Smartphone } from 'lucide-react';
 import useEntitlements from '@/hooks/useEntitlements';
 import { trialDaysLeft, trialWarningDetails } from '@/lib/entitlements';
 import { trialInAppNotice } from '@/lib/trialNotices';
+import { formatShortDate } from '@/lib/dates';
 import { formatPrice } from '@/lib/plans';
 import { t } from '@/lib/i18n';
 
@@ -20,9 +21,7 @@ const STATUS_LABEL = {
 };
 
 function formatDate(value) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '';
-  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  return formatShortDate(value);
 }
 
 /** The plan this business is on, always reachable after onboarding. */

@@ -5,10 +5,10 @@ import { isBoss } from '@/lib/bossAuthority';
 import useEntitlements from '@/hooks/useEntitlements';
 import { trialDaysLeft } from '@/lib/entitlements';
 import { TRIAL_DAYS } from '@/lib/plans';
+import { formatShortDay } from '@/lib/dates';
 import { t } from '@/lib/i18n';
 
-const shortDate = (value) =>
-  new Date(value).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+const shortDate = (value) => formatShortDay(value);
 
 function Bar({ value, note, filled }) {
   return (

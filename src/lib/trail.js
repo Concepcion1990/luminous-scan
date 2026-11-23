@@ -19,8 +19,10 @@
  *
  * Stamps render through the app's existing date/time helper
  * (formatPrintedAt — the documents' own parts, fed the reader's
- * locale). No new date format lives here: the "dates the local
- * way" build sweeps this rendering centrally with all the rest.
+ * locale). No new date format lives here: release 358 (dates the
+ * local way) swept this rendering centrally with all the rest —
+ * formatPrintedAt now speaks the locale's full convention,
+ * weekday included, through lib/dates.
  */
 import { formatPrintedAt } from '@/lib/docStyle';
 import { getLocale, t } from '@/lib/i18n';

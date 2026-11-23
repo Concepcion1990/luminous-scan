@@ -25,6 +25,7 @@ import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Printer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { formatFullDate } from '@/lib/dates';
 import { t } from '@/lib/i18n';
 import { useBusiness } from '@/hooks/useBusiness';
 import { getDirectDepositForm, signatureFontFamily } from '@/lib/workforce';
@@ -150,11 +151,8 @@ function SealedForm({ store, staffId }) {
     signed_at: data.details.signed_at || null,
     submitted_at: data.details.submitted_at || null,
   };
-  const signedDate = form.signed_at
-    ? new Date(form.signed_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
-    : '';
-  const fmtDate = (value) =>
-    value ? new Date(value).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : '';
+  const signedDate = form.signed_at ? formatFullDate(form.signed_at) : '';
+  const fmtDate = (value) => (value ? formatFullDate(value) : '');
 
   return (
     <>

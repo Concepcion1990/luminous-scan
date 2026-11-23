@@ -15,6 +15,7 @@ import { Landmark, PenLine, Printer, Send, Undo2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { useBusiness } from '@/hooks/useBusiness';
+import { formatFullDate, formatShortDate } from '@/lib/dates';
 import { getLocale, t } from '@/lib/i18n';
 import {
   createCashUp,
@@ -368,7 +369,7 @@ function RunsSection({ businessId, reloadKey }) {
           {runs.map((run) => (
             <li key={run.id} className="py-2.5 text-sm">
               <button type="button" className="font-medium underline-offset-2 hover:underline" onClick={() => toggle(run)}>
-                {t('payroll.stubs.period', { start: String(run.period_start).slice(0, 10), end: String(run.period_end).slice(0, 10) })}
+                {t('payroll.stubs.period', { start: formatShortDate(String(run.period_start).slice(0, 10)), end: formatShortDate(String(run.period_end).slice(0, 10)) })}
               </button>
               <span className="ml-2 text-xs text-muted-foreground">
                 {t('payroll.runs.stubs', { count: run.stub_count ?? 0 })}
@@ -621,7 +622,7 @@ function CashUpSection({ businessId }) {
         <ul className="mt-4 divide-y divide-border">
           {list.slice(0, 20).map((row) => (
             <li key={row.id} className="flex flex-wrap gap-x-4 gap-y-1 py-2 text-sm">
-              <span className="font-medium">{String(row.date).slice(0, 10)}</span>
+              <span className="font-medium">{formatShortDate(String(row.date).slice(0, 10))}</span>
               <span>
                 {t('payroll.cash.counted')}: {formatMoneyPlain(row.counted_total)}
               </span>
@@ -794,9 +795,7 @@ function DirectDepositSection({ businessId, ctx, people, businessName }) {
   const showForm = Boolean(
     mine && data.enabled && (mine.status !== 'submitted' || fixing),
   );
-  const signedDate = mine?.signed_at
-    ? new Date(mine.signed_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
-    : '';
+  const signedDate = mine?.signed_at ? formatFullDate(mine.signed_at) : '';
 
   const submit = async () => {
     setBusy(true);
@@ -1103,8 +1102,8 @@ export default function Payroll() {
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <span className="font-medium">
                     {t('payroll.stubs.period', {
-                      start: String(stub.period_start).slice(0, 10),
-                      end: String(stub.period_end).slice(0, 10),
+                      start: formatShortDate(String(stub.period_start).slice(0, 10)),
+                      end: formatShortDate(String(stub.period_end).slice(0, 10)),
                     })}
                   </span>
                   <Link
