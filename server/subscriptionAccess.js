@@ -28,6 +28,14 @@
  *             grace, canceled with no verifiable paid-through date,
  *             or any unknown status. Fail closed, always.
  *
+ * ACCOUNT INHERITANCE (release 356, Nov 23, 2026): the row assessed
+ * here is the business's EFFECTIVE row (plans.js
+ * entitlementInheritance) — a business with no row of its own is
+ * assessed on its owner's oldest business's row, because one
+ * subscription covers the account's businesses (up to five on
+ * Business). Before 356, businesses 2–5 were born row-less and read
+ * as never-paid, walling their owner out of business #1 as well.
+ *
  * ENFORCEMENT (one shared helper, called from every surface):
  *   - server/app.js: path middleware for /api/businesses/:bid/*
  *     (shop, T6 sync/cross-store, workforce, rewards, POS, training,
@@ -46,7 +54,7 @@
  * (eligibility, checkout, reconcile, status, plan change, cancel,
  * payment update), /api/account/* recovery kit, and webhooks.
  */
-import { entitlementFor } from './plans.js';
+import { entitlementInheritance } from './plans.js';
 import { loadBusiness } from './authz.js';
 import { GRANDFATHERED_BUSINESS_ID, CANCELLATION_GRACE_DAYS, NEUTRAL_STOP_MESSAGE } from './billing.js';
 import { failedPaymentRoadState } from './failedPayment.js';
@@ -166,10 +174,16 @@ export function assessSubscriptionAccess(record, { user = null, business = null,
 export async function subscriptionAccessFor(pool, user, businessId) {
   const business = await loadBusiness(pool, businessId);
   if (!business) {
-    return { state: 'denied', reason: 'no_business', status: null, plan: null, paidThrough: null, graceEndsAt: null, business: null, record: null };
+    return { state: 'denied', reason: 'no_business', status: null, plan: null, paidThrough: null, graceEndsAt: null, business: null, record: null, inheritedFrom: null };
   }
-  const record = await entitlementFor(pool, businessId);
-  return { ...assessSubscriptionAccess(record, { user, business }), business, record };
+  // Account inheritance (release 356): a business with no row of
+  // its own is assessed on the account's row (its owner's oldest
+  // business's) — one subscription covers the account's businesses.
+  // The assessment still runs against the TARGET business, so the
+  // publisher/grandfather checks and the owner-only money wording
+  // stay keyed to the business being entered.
+  const { record, inheritedFrom } = await entitlementInheritance(pool, businessId);
+  return { ...assessSubscriptionAccess(record, { user, business }), business, record, inheritedFrom };
 }
 
 /**

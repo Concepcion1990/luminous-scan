@@ -49,6 +49,7 @@ import {
   siteLimitMessage,
   customRolesBusinessOnlyMessage,
   BUNDLE_MOVEMENT_TYPES,
+  entitlementInheritance,
 } from './plans.js';
 import { createStaffMember, staffSeatCount, resolveMemberStore, singleStoreLocation } from './staff.js';
 import { memberLevel } from './staffWindow.js';
@@ -1105,6 +1106,21 @@ export async function listEntities(pool, user, name, filter = {}, options = {}) 
     }
     if (def.planGate && !featureAllowed(access.planKey, def.planGate)) continue;
     let businessRows = await fetchBusinessRows(pool, def, businessId);
+    if (name === 'Entitlement' && !businessRows.length) {
+      // Account inheritance (release 356): a business with no
+      // entitlement row of its own READS as the account's row —
+      // a synthesized copy of its owner's oldest business's row,
+      // wearing this business's id. One subscription covers the
+      // account's businesses, so every surface that reads the
+      // plan (access gate, switcher trial labels, Subscribe,
+      // Plans, Settings summary) sees the one true row on every
+      // business. Display only: nothing is stored, and a business
+      // that gains its own row is governed by it from that read on.
+      const { record, inheritedFrom } = await entitlementInheritance(pool, businessId);
+      if (record && inheritedFrom) {
+        businessRows = [publicRow(def, { ...record, business_id: businessId })];
+      }
+    }
     if (name === 'Product' && !featureAllowed(access.planKey, 'pricing')) {
       // Pricing is Business-only: off-Business reads see the fields
       // held at defaults (kept in the row, inert — migration 018).

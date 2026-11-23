@@ -71,6 +71,18 @@ export default function Plans() {
                 {t('welcome.signIn')}
               </Link>
             )}
+            {/* The way back in for someone already signed in
+                (release 356, Nov 23, 2026): a signed-in owner
+                comparing plans gets the same clear pill, pointed
+                at their app — never a dead end on a public page. */}
+            {isAuthenticated && (
+              <Link
+                to="/"
+                className="rounded-full bg-primary-foreground px-4 py-2 text-sm font-semibold text-primary shadow-sm transition-opacity hover:opacity-90"
+              >
+                {t('subscribe.memberOpenApp')}
+              </Link>
+            )}
           </div>
         </div>
       </header>

@@ -81,9 +81,75 @@ export async function entitlementFor(pool, businessId) {
   return rows[0] ?? null;
 }
 
+/**
+ * Account inheritance (release 356, Nov 23, 2026).
+ *
+ * THE DEFECT THIS FIXES: subscriptions and entitlements are stored
+ * per business, but the promise on the Plans page is per ACCOUNT —
+ * "One account, whichever plan you choose — Business covers up to
+ * five businesses." The add-business path is the first-signup path,
+ * so businesses 2–5 were born with no entitlement row of their own
+ * and read as never-paid: the owner was bounced to the public
+ * journey and offered a SECOND $29.99 subscription for a business
+ * her one plan already covered.
+ *
+ * THE RULE: a business with no row of its own resolves the account's
+ * row — the row of the OLDEST business its owner owns (the same
+ * source the business limit has always read: "the plan belongs to
+ * the login's oldest workspace") — when that row is a BUSINESS
+ * row. Nothing is copied or written: the one real row stays the
+ * single source of truth, so a renewal, a plan change, a
+ * cancellation or the failed-payment road moves every business
+ * under the account together, and no copy can drift. A business
+ * WITH its own row is governed by it, exactly as before.
+ *
+ * BUSINESS ONLY, deliberately: the promise being restored is
+ * the Business plan's ("covers up to five businesses").
+ * Essentials covers exactly ONE business — its own — so an
+ * Essentials row never inherits, and every Essentials behavior
+ * (access, checkout, the one-trial rules on any second
+ * workspace) stays byte-identical to before this release.
+ *
+ * A 'grandfathered' row never inherits: the publisher's
+ * complimentary workspace is personal to that business (its access
+ * assess already fails closed for any other business id).
+ *
+ * Returns { record, inheritedFrom } — record is the row that
+ * governs this business (or null), inheritedFrom the source
+ * business's id when the row is inherited, else null.
+ */
+export async function entitlementInheritance(pool, businessId) {
+  if (!businessId) return { record: null, inheritedFrom: null };
+  const own = await entitlementFor(pool, businessId);
+  if (own) return { record: own, inheritedFrom: null };
+  const { rows: targetRows } = await pool.query(
+    'SELECT owner_id FROM businesses WHERE id = $1 LIMIT 1',
+    [businessId],
+  );
+  const ownerId = targetRows[0]?.owner_id;
+  if (!ownerId) return { record: null, inheritedFrom: null };
+  const { rows: sourceRows } = await pool.query(
+    'SELECT id FROM businesses WHERE owner_id = $1 ORDER BY created_at ASC LIMIT 1',
+    [ownerId],
+  );
+  const sourceId = sourceRows[0]?.id;
+  if (!sourceId || sourceId === businessId) return { record: null, inheritedFrom: null };
+  const source = await entitlementFor(pool, sourceId);
+  if (!source || source.status === 'grandfathered' || source.plan !== 'business') {
+    return { record: null, inheritedFrom: null };
+  }
+  return { record: source, inheritedFrom: sourceId };
+}
+
+/** The governing plan row for a business: its own, or the account's inherited one. */
+export async function effectiveEntitlementFor(pool, businessId) {
+  const { record } = await entitlementInheritance(pool, businessId);
+  return record;
+}
+
 /** Missing billing records resolve to restricted Essentials, never Business. */
 export async function planFor(pool, businessId) {
-  const record = await entitlementFor(pool, businessId);
+  const record = await effectiveEntitlementFor(pool, businessId);
   if (!record) return DEFAULT_PLAN;
   return record.plan === 'business' ? 'business' : DEFAULT_PLAN;
 }

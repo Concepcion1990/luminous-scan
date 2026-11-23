@@ -80,6 +80,12 @@ export function useBusiness() {
   return {
     user,
     businesses,
+    // Every business's plan row (release 356: the access route's
+    // boot rescue reads the whole account, not just the active
+    // business, so a never-entitled active business can hand the
+    // owner over to one that is entitled instead of walling them
+    // off on the public pages).
+    plans,
     activeId,
     record,
     profile: resolveBusiness(record),

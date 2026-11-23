@@ -45,6 +45,20 @@ export default function Welcome() {
                 {t('welcome.signIn')}
               </Link>
             )}
+            {/* The way back in for someone already signed in
+                (release 356, Nov 23, 2026): this page is public,
+                and a signed-in owner who lands here — the app
+                used to strand them on it — gets the same clear
+                pill, pointed at their app. The access gate on
+                the other side still decides who may enter. */}
+            {isAuthenticated && (
+              <Link
+                to="/"
+                className="rounded-full bg-primary-foreground px-4 py-2 text-sm font-semibold text-primary shadow-sm transition-opacity hover:opacity-90"
+              >
+                {t('subscribe.memberOpenApp')}
+              </Link>
+            )}
           </div>
         </div>
       </header>

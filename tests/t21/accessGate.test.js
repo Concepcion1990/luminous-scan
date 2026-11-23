@@ -281,6 +281,18 @@ test('cross-business move refuses an unpaid target workspace', async () => {
   await setPlan(target.id, 'business', owner.user.id);
   const targetLoc = await createLocation(owner.cookie, target.id, { name: 'Dst' });
   await stripEntitlement(target.id);
+  // Release 356 (Nov 23, 2026): one subscription covers the
+  // account, so a same-account target with no row of its own is
+  // NOT unpaid while the account's Business row lives — it
+  // inherits it (that inheritance is the release's whole point).
+  // An unpaid target is now an account that grants nothing:
+  // end the account's subscription on the source business
+  // (canceled, paid-through long past) and the target has no
+  // access to be moved into.
+  await pool.query(
+    `UPDATE entitlements SET status = 'canceled', period_ends_at = $2 WHERE business_id = $1`,
+    [owner.business.id, new Date(Date.now() - 40 * 24 * 60 * 60 * 1000).toISOString()],
+  );
 
   const moved = await req(`/api/businesses/${owner.business.id}/cross-business-move`, {
     method: 'POST', cookie: owner.cookie,

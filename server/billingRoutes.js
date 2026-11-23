@@ -41,6 +41,7 @@ import {
   priceIdOfSubscription,
 } from './stripeCatalog.js';
 import { checkTrialEligibility, reserveTrial } from './trialEligibility.js';
+import { entitlementInheritance } from './plans.js';
 import { runTrialReminderSweep } from './trialReminders.js';
 import { recordPaymentFailure, clearPaymentRoad, runFailedPaymentSweep } from './failedPayment.js';
 import { runCustomerAddressSweep } from './customerAddresses.js';
@@ -235,6 +236,37 @@ export function createBillingRouter({ getPool: getPoolFn }) {
           ownerEmail: req.user.email,
         });
         return res.json({ comped: true, state: 'comped', plan: 'business' });
+      }
+    }
+    // Account inheritance (release 356, Nov 23, 2026): a business
+    // with no entitlement row of its own that is covered by the
+    // account's live subscription (its owner's oldest business's
+    // row — active, trialing, past due on the failed-payment road,
+    // or the founding-tester mark) NEVER reaches Stripe. One
+    // subscription covers the account's businesses; selling this
+    // workspace a second one was the double-charge the owner
+    // caught by hand. The answer reuses the comp door's shape —
+    // the client walks straight into the app — and no purchase
+    // row or Stripe session is created.
+    // Coverage follows inheritance, and inheritance is a
+    // Business-plan feature (plans.js): an inherited row is a
+    // Business row by construction. Essentials accounts never
+    // reach this answer — their checkouts run the normal road
+    // below, byte-identical to before this release.
+    {
+      const { record: accountRecord, inheritedFrom } = await entitlementInheritance(pool, business.id);
+      if (
+        inheritedFrom &&
+        accountRecord &&
+        ['active', 'trialing', 'past_due', 'founding_tester'].includes(accountRecord.status)
+      ) {
+        return res.json({
+          comped: true,
+          covered: true,
+          state: 'covered_by_account_plan',
+          plan: accountRecord.plan,
+          already: true,
+        });
       }
     }
     const readiness = requireReady();
