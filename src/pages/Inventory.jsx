@@ -23,7 +23,7 @@ import { t } from '@/lib/i18n';
  * per-location stock records.
  */
 export default function Inventory() {
-  const { activeId, record } = useBusiness();
+  const { activeId, record, profile } = useBusiness();
   const { can } = useStaffAccess();
   // The row Adjust door is catalog stock editing (products.edit,
   // owner catch Nov 19, 2026) — see Products for the same gate.
@@ -183,6 +183,7 @@ export default function Inventory() {
                     onAdjust={setAdjusting}
                     canAdjust={canEditProducts}
                     showReorder={showAlerts}
+                    currency={profile.currency}
                   />
                 ))}
               </div>

@@ -7,6 +7,7 @@ import ProductThumb from '@/components/products/ProductThumb';
 import ResponsiveSelect from '@/components/ui/ResponsiveSelect';
 import ProductFormDialog from '@/components/products/ProductFormDialog';
 import ProductPrice from '@/components/products/ProductPrice';
+import ListPrice from '@/components/products/ListPrice';
 import ExportCsvButton from '@/components/products/ExportCsvButton';
 import CopyGroupPanel from '@/components/products/CopyGroupPanel';
 import ProductFilterBar, { EMPTY_FILTERS } from '@/components/products/ProductFilterBar';
@@ -760,6 +761,18 @@ export default function Products() {
                         </span>
                       </button>
                     )}
+                    {/* Release 348: the product's price sits with
+                        its count at every width the price column
+                        (xl only) cannot reach — on a phone the
+                        count and its price read together. At xl
+                        the column takes over with the full
+                        treatment, so this compact line steps
+                        aside there. No price set → nothing. */}
+                    <ListPrice
+                      product={product}
+                      currency={profile.currency}
+                      className="mt-0.5 block text-xs font-normal text-muted-foreground xl:hidden"
+                    />
                   </span>
                   {showReorderValues && (
                     <span className="numeric hidden text-right text-xs text-muted-foreground xl:block">
@@ -771,6 +784,15 @@ export default function Products() {
                   </span>
 
                   <div className="flex items-center justify-end gap-1">
+                    {/* Release 348: on the phone the price rides
+                        beside the count in this cell — the row's
+                        only count below md. No price set → the
+                        cell reads exactly as before. */}
+                    <ListPrice
+                      product={product}
+                      currency={profile.currency}
+                      className="mr-1 text-xs text-muted-foreground md:hidden"
+                    />
                     <span className="md:hidden">
                       {archived || !canEditProducts ? (
                         <span className="numeric text-sm font-semibold">{total}</span>

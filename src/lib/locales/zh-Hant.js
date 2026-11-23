@@ -4099,6 +4099,7 @@ export const zhHant = {
   "plansLib.includes.docStyle": "您自己的文件樣式 — 標誌、顏色、字體、邊框和圖片",
   'plansLib.includes.taxRate': '您的稅率，只需設定一次 — 新訂單自動填入稅額',
   "plansLib.includes.taxAuto": "按客戶所在州自動計稅（美國各州基本稅率）",
+  "plansLib.includes.listPrices": "每個產品的價格都在其數量旁邊",
   'plansLib.includes.codeGenerator': "代碼產生器 — 為您自己的產品產生新的 UPC、SKU、條碼和 QR 碼",
   'plansLib.includes.gs1Codes': "由您自己的 GS1 前綴產生的真正零售 UPC 和 EAN 代碼",
   "plansLib.includes.bulkEdit": "批量編輯和批量刪除 — 一次更新或移除許多產品",

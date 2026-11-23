@@ -4099,6 +4099,7 @@ export const zhHans = {
   "plansLib.includes.docStyle": "您自己的文档样式 — 标志、颜色、字体、边框和图片",
   'plansLib.includes.taxRate': '您的税率，只需设置一次 — 新订单自动填入税额',
   "plansLib.includes.taxAuto": "按客户所在州自动计税（美国各州基本税率）",
+  "plansLib.includes.listPrices": "每个产品的价格都在其数量旁边",
   'plansLib.includes.codeGenerator': "代码生成器 — 为您自己的产品生成新的 UPC、SKU、条形码和二维码",
   'plansLib.includes.gs1Codes': "由您自己的 GS1 前缀生成的真正零售 UPC 和 EAN 代码",
   "plansLib.includes.bulkEdit": "批量编辑和批量删除 — 一次更新或移除许多产品",

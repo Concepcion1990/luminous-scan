@@ -271,8 +271,8 @@ test('a pending staff invite is NOT exempt — the block stops invites too (owne
 test('pins: keyset, registry, and the refusal wording', async () => {
   const { en } = await import('../../src/lib/locales/en.js');
   const { esMX } = await import('../../src/lib/locales/es-MX.js');
-  assert.equal(Object.keys(en).length, 5116);
-  assert.equal(Object.keys(esMX).length, 5116);
+  assert.equal(Object.keys(en).length, 5117);
+  assert.equal(Object.keys(esMX).length, 5117);
   assert.equal(en['apiErrors.signupEmailUnavailable'], REFUSAL);
   assert.notEqual(esMX['apiErrors.signupEmailUnavailable'], REFUSAL);
   const { API_ERROR_MESSAGE_KEYS } = await import('../../src/lib/apiErrors.js');

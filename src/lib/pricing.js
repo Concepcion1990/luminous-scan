@@ -95,3 +95,27 @@ export function priceInfo(product, now = new Date()) {
 export function effectivePrice(product, now = new Date()) {
   return priceInfo(product, now).effective;
 }
+
+/**
+ * The price that prints beside a product's count on the list rows
+ * (Products + Inventory, release 348, owner-approved Nov 18, 2026:
+ * "each product's own price beside its count"). It comes from the
+ * SAME priceInfo derivation the Products price column and the Scan
+ * list already render, so the same product can never show two
+ * different prices at two screen widths — for a regular product
+ * (and for every Essentials product, whose pricing fields arrive
+ * pre-stripped) it is exactly the stored price, verbatim.
+ *
+ * Returns null when the product has no price set: the lists show
+ * NOTHING beside the count then, never an invented $0.00 (the
+ * price-honesty rule). "Has a price" is judged exactly as
+ * ProductPrice judges it: a stored price, or a non-regular pricing
+ * mode carrying its own markdown price.
+ */
+export function listPrice(product, now = new Date()) {
+  const info = priceInfo(product, now);
+  const hasPrice =
+    (product?.price !== null && product?.price !== undefined && product?.price !== '') ||
+    info.mode !== 'regular';
+  return hasPrice ? info.effective : null;
+}
