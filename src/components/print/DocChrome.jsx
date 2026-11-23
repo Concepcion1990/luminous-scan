@@ -23,6 +23,25 @@ import { getLocale, t } from '@/lib/i18n';
  * bottom of the sheet; on screen, and on the receipt slip, it
  * simply follows the words.
  *
+ * CENTERED ON THE PAGE (release 355, Nov 23, 2026 — her
+ * ruling: the picture "starts at the center" and widens
+ * "outward equally on each side" to the set width). The
+ * bottom banner's print wrapper spans the printable width,
+ * so on paper it has always been centered on the PAGE. The
+ * top banner rendered only inside the 180mm document root,
+ * so on paper it centered on the DOCUMENT instead — at her
+ * 50% setting the two banners printed at different widths
+ * around different centers. The top banner therefore renders
+ * TWICE: the in-flow copy the preview shows (centered in the
+ * document, holding the banner's space in the layout), and a
+ * print-only band copy the print stylesheet fixes across the
+ * top of the printable area — the same span the bottom
+ * banner's wrapper gets — where the picture centers on the
+ * page at the set share of the page's width. On paper the
+ * in-flow copy keeps its space but does not paint. The
+ * receipt slip (band={false}) is a slip, not a page: its
+ * banner stays inside the slip, centered there.
+ *
  * THE STAMP prints on every Studio document — and nowhere else:
  * the 4×6 shipping label never carries it.
  */
@@ -39,15 +58,23 @@ export function DocFrame({ style, brandColor, page = true }) {
   );
 }
 
-export function DecoHeader({ style, capMm = 24, className = '' }) {
+export function DecoHeader({ style, capMm = 24, band = true, className = '' }) {
   if (!style?.headerImage) return null;
+  const imgStyle = decoImageStyle(style, 'header', capMm);
   return (
-    <img
-      src={style.headerImage}
-      alt=""
-      className={`doc-deco ${className}`}
-      style={decoImageStyle(style, 'header', capMm)}
-    />
+    <>
+      <img
+        src={style.headerImage}
+        alt=""
+        className={`doc-deco ${band ? 'doc-deco-flow ' : ''}${className}`}
+        style={imgStyle}
+      />
+      {band && (
+        <div aria-hidden="true" className="doc-deco-top">
+          <img src={style.headerImage} alt="" className="doc-deco" style={imgStyle} />
+        </div>
+      )}
+    </>
   );
 }
 

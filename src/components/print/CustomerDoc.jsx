@@ -69,7 +69,7 @@ export default function CustomerDoc({ order, business, mode = 'invoice', docStyl
         style={docRootStyle(docStyle, business?.brand_color)}
       >
         <DocFrame style={docStyle} brandColor={business?.brand_color} page={false} />
-        <DecoHeader style={docStyle} capMm={18} className="mb-2" />
+        <DecoHeader style={docStyle} capMm={18} band={false} className="mb-2" />
         {business?.logo_url && (
           <img
             src={business.logo_url}

@@ -257,6 +257,21 @@
   z-index: 2;
 }
 
+/* Centered on the page (release 355, Nov 23, 2026): the top
+   banner's print band. On screen the band copy never shows —
+   the in-flow banner (doc-deco-flow) is the preview. On paper
+   the band is fixed across the top of the printable area —
+   the same full-width span the bottom banner's wrapper gets
+   at the bottom — so the picture's set width is a share of
+   the PAGE's width and its auto margins center it on the
+   page, growing outward equally on each side from the center
+   exactly as the owner ruled. The in-flow copy keeps holding
+   the banner's space in the layout but does not paint, so
+   the words below never move and never hide under the band. */
+.doc-deco-top {
+  display: none;
+}
+
 @media print {
   .doc-frame-page {
     position: fixed;
@@ -268,6 +283,18 @@
     left: 0;
     right: 0;
     bottom: 0;
+  }
+
+  .doc-deco-top {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+  }
+
+  .doc-deco-flow {
+    visibility: hidden;
   }
 }
 
