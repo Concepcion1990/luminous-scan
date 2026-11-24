@@ -32,7 +32,7 @@
 //  - Essentials invisibility (327 doctrine) for all eight
 //    new entities, plan presentation (restaurantOps +
 //    restaurantDaily join Business only), the twelve new
-//    nav doors, the training catalog at 114, movement-type
+//    nav doors, the training catalog at 115, movement-type
 //    parity for staff_meal, and the restaurantLedger export
 //    dataset's seven columns / four sections.
 //
@@ -956,9 +956,9 @@ test('nav: the restaurant group lists all fourteen doors behind the restaurant f
   assert.ok(group.items.every((i) => i.feature === 'restaurant'));
 });
 
-test('training: catalog 114, the four ops lessons scoped and in agreement', () => {
-  assert.equal(CLIENT_LESSONS.length, 114);
-  assert.equal(SERVER_LESSONS.length, 114);
+test('training: catalog 115, the four ops lessons scoped and in agreement', () => {
+  assert.equal(CLIENT_LESSONS.length, 115);
+  assert.equal(SERVER_LESSONS.length, 115);
   const expected = {
     'owner-restaurant-ops': { track: 'owner', steps: 5 },
     'staff-restaurant-daily': { track: 'staff', steps: 4 },

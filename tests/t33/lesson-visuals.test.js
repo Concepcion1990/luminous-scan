@@ -29,9 +29,9 @@ test('no lesson carries a visuals property — client catalog or server catalog'
   }
 });
 
-test('the catalog itself is untouched: 114 lessons (107 through 360; +3 cross-store messages lessons, +4 restaurant operations lessons), spot step counts unchanged', () => {
-  assert.equal(CLIENT_LESSONS.length, 114, 'client catalog holds 114 lessons');
-  assert.equal(SERVER_LESSONS.length, 114, 'server catalog holds 114 lessons');
+test('the catalog itself is untouched: 115 lessons (107 through 360; +3 cross-store messages lessons, +4 restaurant operations lessons, +1 eBay storefront lesson in 362), spot step counts unchanged', () => {
+  assert.equal(CLIENT_LESSONS.length, 115, 'client catalog holds 115 lessons');
+  assert.equal(SERVER_LESSONS.length, 115, 'server catalog holds 115 lessons');
   const spot = { 'owner-import': 2, 'products-find-edit': 11, 'welcome-basics': 6 };
   for (const catalog of [CLIENT_LESSONS, SERVER_LESSONS]) {
     for (const [id, steps] of Object.entries(spot)) {

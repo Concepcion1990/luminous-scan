@@ -47,7 +47,8 @@ export const TRAINING_MODULES = [
   "exports",
   "builds",
   "rewards",
-  "pos"
+  "pos",
+  "storefronts"
 ];
 
 export const TRAINING_LESSONS = [
@@ -171,6 +172,11 @@ export const TRAINING_LESSONS = [
   { id: 'owner-xstore-messages', track: 'owner', module: 'messaging', steps: 5, feature: 'xstoreMessages' },
   { id: 'mgr-xstore-messages', track: 'manager', module: 'messaging', steps: 4, feature: 'xstoreMessages' },
   { id: 'staff-xstore-messages', track: 'staff', module: 'messaging', steps: 4, feature: 'xstoreMessages' },
+  // Storefront connections (release 362, Nov 23, 2026) —
+  // mirrors the other catalog (t10 proves the two agree).
+  // BOTH PLANS by the owner's connection doctrine: no feature
+  // tag, so the lesson shows on Essentials and Business alike.
+  { id: 'owner-ebay-connect', track: 'owner', module: 'storefronts', steps: 5 },
 ];
 
 export const lessonById = (id) => TRAINING_LESSONS.find((lesson) => lesson.id === id) || null;

@@ -370,6 +370,9 @@ const VI_COGNATE_KEYS = new Set([
   'settings.identity.logoLabel', 'staff.memberDialog.emailLabel', 'suppliers.email',
 ]);
 const TL_COGNATE_KEYS = new Set([
+  // eBay storefront batch (release 362, Nov 23, 2026): "Order" is
+  // the everyday Tagalog word for a placed order — verified.
+  'storefronts.orderLabel',
   // Restaurant operations batch (Nov 23, 2026): Tagalog keeps these kitchen and menu-engineering terms in English, as it does throughout (the quadrant names are the menu-engineering proper names) — verified word-by-word.
   'nav.menu', 'ops.invoices.supplierLabel', 'ops.invoices.poLabel', 'ops.invoices.poPrefix',
   'ops.invoices.statusDraft', 'ops.invoices.colSupplier', 'batch.colRecipe', 'batch.colOutput',
@@ -498,6 +501,15 @@ const JV_COGNATE_KEYS = new Set([
   'recipes.statusLabel', 'guide.colPar',
 ]);
 const PCM_COGNATE_KEYS = new Set([
+  // eBay storefront batch (release 362, Nov 23, 2026): Pidgin keeps
+  // these short door labels, buttons and headings in English — the
+  // register this file keeps throughout (its prose and lesson steps
+  // are translated) — verified word-by-word.
+  'nav.storefronts', 'storefronts.title', 'training.module.storefronts',
+  'storefronts.connect', 'storefronts.disconnect', 'storefronts.connectedAs',
+  'storefronts.checkNow', 'storefronts.lastCheck', 'storefronts.itemLabel',
+  'storefronts.orderLabel', 'storefronts.recentTitle',
+  'training.lessons.owner-ebay-connect.title',
   // Invoice-file batch (Nov 23, 2026): Pidgin keeps these three short file labels in English, same register as the invoice labels below — verified.
   'ops.invoices.attachedLabel', 'ops.invoices.viewFile', 'ops.invoices.removeFile',
   // Restaurant operations batch (Nov 23, 2026): Pidgin keeps these short kitchen labels, column heads, button texts, food names and menu-engineering quadrant names in English — the register this file keeps throughout (its prose and lesson steps are translated) — verified word-by-word.

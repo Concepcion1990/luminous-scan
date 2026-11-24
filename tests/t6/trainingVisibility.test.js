@@ -98,11 +98,15 @@ test('plan-visible counts: Business whole, Essentials without the Business subje
   // restaurant.build, mgr-restaurant-reports riding
   // restaurant.money): Business owner 45, manager 26, staff 42;
   // Essentials counts unchanged.
-  assert.equal(count('owner', true), 45);
+  // The eBay storefront build (release 362, Nov 23, 2026) adds
+  // ONE both-plans lesson (owner-ebay-connect, no feature tag —
+  // storefront connections are both plans): owner 46 on
+  // Business and 25 on Essentials; manager/staff unchanged.
+  assert.equal(count('owner', true), 46);
   assert.equal(count('manager', true), 26);
   assert.equal(count('staff', true), 42);
   // Essentials: 19 owner subjects hidden, owner-import in their place.
-  assert.equal(count('owner', false), 24); // +1 confidentiality lesson (Nov 19, 2026)
+  assert.equal(count('owner', false), 25); // +1 confidentiality lesson (Nov 19, 2026); +1 eBay storefront lesson (release 362, both plans)
   assert.equal(count('manager', false), 14);
   assert.equal(count('staff', false), 34);
   // Payroll / workforce / direct-deposit lessons stay on Essentials.
