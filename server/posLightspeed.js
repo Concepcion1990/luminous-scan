@@ -90,7 +90,7 @@ export function normalizeLightspeedSale(sale) {
     providerItemKey: p?.product_id ? `product:${p.product_id}` : `line:${p?.id || ''}`,
     itemLabel: String(p?.name || ''),
     sku: '',
-    barcode: '',
+    upc: '',
     quantity: Number(p?.quantity) || 0,
   }));
   return {

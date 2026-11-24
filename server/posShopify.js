@@ -50,7 +50,7 @@ export function normalizeShopifyOrder(order) {
     providerItemKey: item.variant_id ? `variant:${item.variant_id}` : String(item.sku || `line:${item.id || ''}`),
     itemLabel: String(item.name || item.title || ''),
     sku: String(item.sku || ''),
-    barcode: '',
+    upc: '',
     quantity: Number(item.quantity) || 0,
   }));
   return {

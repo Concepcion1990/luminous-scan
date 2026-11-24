@@ -75,7 +75,7 @@ export function normalizeZettlePurchase(purchase) {
       providerItemKey: p.variantUuid ? `variant:${p.variantUuid}` : `product:${p.productUuid}`,
       itemLabel: [p.name, p.variantName].filter(Boolean).join(' — '),
       sku: String(p.sku || ''),
-      barcode: String(p.barcode || ''),
+      upc: String(p.barcode || ''),
       // Zettle reports quantity as a string ("2") in its payloads.
       quantity: Number(p.quantity) || 0,
     }));
