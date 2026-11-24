@@ -143,7 +143,7 @@ export function normalizeToastOrder(order) {
         providerItemKey: selection.item?.guid ? `item:${selection.item.guid}` : `selection:${selection.guid || ''}`,
         itemLabel: String(selection.displayName || ''),
         sku: String(selection.plu || ''),
-        barcode: '',
+        upc: '',
         quantity: Number(selection.quantity) || 0,
       });
     }

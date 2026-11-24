@@ -114,7 +114,7 @@ export function normalizeWixOrder(order) {
       providerItemKey: catalogId ? `item:${catalogId}` : String(item?.sku || `line:${item?.id || ''}`),
       itemLabel: name,
       sku: String(item?.sku || ''),
-      barcode: '',
+      upc: '',
       quantity: Number(item?.quantity) || 0,
     };
   });

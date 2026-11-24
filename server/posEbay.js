@@ -301,14 +301,23 @@ function lineFromEbay(raw) {
   const itemId = String(raw.itemId || raw.legacyItemId || raw.item_id || '');
   const sku = String(raw.sku || raw.itemSku || raw.customLabel || '');
   const quantity = Number(raw.quantity ?? raw.quantitySold ?? 1) || 0;
+  // The three keys (release 364): the SKU is the one an eBay
+  // line reliably carries (when the seller set one). Catalog
+  // identifiers ride only where eBay itself supplies them —
+  // the Trading shape's ProductListingDetails (UPC / EAN /
+  // ISBN) or a line that names them outright. Nothing is
+  // invented: a line with no key at all takes the
+  // needs-matching road, exactly as a SKU-less line did.
+  const rawDetails = raw.productListingDetails || raw.ProductListingDetails;
+  const details = rawDetails && typeof rawDetails === 'object' ? rawDetails : {};
+  const upc = String(raw.upc || raw.ean || details.UPC || details.EAN || '');
+  const isbn = String(raw.isbn || details.ISBN || '');
   return {
     providerItemKey: itemId || sku,
     itemLabel: String(raw.title || raw.itemTitle || raw.name || ''),
     sku,
-    // The listings import carries the eBay SKU as the product's
-    // own SKU; the core's code match reads sku first and the
-    // other code fields second, so the SKU rides both slots.
-    barcode: sku,
+    upc,
+    isbn,
     quantity,
   };
 }

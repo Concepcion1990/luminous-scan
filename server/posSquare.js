@@ -127,7 +127,7 @@ export function normalizeSquareOrder(order) {
       providerItemKey: String(item.catalog_object_id || item.sku || item.uid || ''),
       itemLabel: label,
       sku: String(item.sku || ''),
-      barcode: String(item.upc || item.barcode || ''),
+      upc: String(item.upc || item.barcode || ''),
       quantity: Number(item.quantity) || 0,
     };
   });

@@ -137,7 +137,7 @@ export function normalizeCloverOrder(order) {
       providerItemKey: el.item?.id ? `item:${el.item.id}` : `line:${el.id || ''}`,
       itemLabel: String(el.name || el.item?.name || ''),
       sku: String(el.item?.sku || ''),
-      barcode: '',
+      upc: '',
       quantity: Number(el.quantity) || 0,
     }));
   return {

@@ -24,6 +24,20 @@
  * a response; staff can look but cannot manage; plan
  * presentation + nav + training pins.
  *
+ * Release 364 (Nov 23, 2026) — the THREE-KEY matcher, the
+ * owner's ruling the same night: a storefront sale matches
+ * by "either the SKU and the UPC as well as the ISBN —
+ * those three, either or", on BOTH plans. Covered below:
+ * a UPC-only line applies; an ISBN-only line applies; an
+ * ISBN-10 line matches an ISBN-13 product and the reverse;
+ * catalog identifiers arriving in ProductListingDetails
+ * match; a key shared by two products holds the sale
+ * (never a guessed winner); keys pointing at different
+ * products hold the sale; agreeing keys apply exactly
+ * once; a replayed UPC-matched sale still applies only
+ * once; the sweep road shares the widened matcher; an
+ * Essentials sale matched by UPC and by ISBN applies.
+ *
  * eBay itself is a fixture here: a test ECDSA keypair stands
  * in for eBay's signing key (the public-key endpoint is
  * stubbed at the fetch seam), and getOrders answers from
@@ -382,6 +396,225 @@ test('catch-up sweep applies a missed sale and never double-applies it', async (
 
   const state = await pool.query('SELECT * FROM ebay_sweep_state WHERE connection_id = $1', [connectionId]);
   assert.ok(state.rows[0]?.last_sweep_at, 'the watermark advanced');
+});
+
+// ---- Release 364: the three-key matcher ---------------------------------------------------------
+
+/** Owner + business + location + three products keyed three different ways. */
+async function bookSetup(email, plan = 'business') {
+  const setup = await ownerWithBusiness(email, 'Keyed Books');
+  if (plan) await setPlan(setup.business.id, plan, setup.user.id);
+  const location = await seededLocation(setup.cookie, setup.business.id);
+  const [krypton, phonics, atlas] = await createProducts(setup.cookie, setup.business.id, [
+    { name: 'The Last Days of Krypton', sku: 'SKU-KRYPTON', isbn: '9780061340741', price: 14 },
+    { name: 'Hooked on Phonics', sku: 'SKU-PHONICS', upc: '012345678905', price: 9 },
+    { name: 'World Atlas', sku: 'SKU-ATLAS', upc: '555000111222', isbn: '9783161484100', price: 22 },
+  ]);
+  await receive(setup.cookie, setup.business.id, krypton.id, location.id, 5);
+  await receive(setup.cookie, setup.business.id, phonics.id, location.id, 4);
+  await receive(setup.cookie, setup.business.id, atlas.id, location.id, 6);
+  return { ...setup, location, krypton, phonics, atlas };
+}
+
+test('three keys: a UPC-only line applies (hyphens and spaces are just printing)', async () => {
+  const { business, location, phonics } = await bookSetup(uniqEmail('ebay-upc'));
+  const conn = await connectEbaySql(business.id, location.id);
+  const res = await postEbayNotification(itemSold({
+    orderId: 'EB-ORDER-UPC',
+    username: conn.username,
+    lines: [{ lineItemId: 'li1', itemId: 'ITEM-PHONICS', upc: '0-12345-67890-5', quantity: 2, title: 'Hooked on Phonics' }],
+  }));
+  assert.equal(res.status, 200);
+  assert.equal(res.json.status, 'applied', 'the UPC alone carries the match');
+  assert.equal(await onHand(business.id, phonics.id, location.id), 2);
+  assert.equal(await movementCount(business.id, 'POS-ebay-EB-ORDER-UPC'), 1);
+});
+
+test('three keys: an ISBN-only line applies', async () => {
+  const { business, location, krypton } = await bookSetup(uniqEmail('ebay-isbn'));
+  const conn = await connectEbaySql(business.id, location.id);
+  const res = await postEbayNotification(itemSold({
+    orderId: 'EB-ORDER-ISBN',
+    username: conn.username,
+    lines: [{ lineItemId: 'li1', itemId: 'ITEM-KRYPTON', isbn: '9780061340741', quantity: 1, title: 'The Last Days of Krypton' }],
+  }));
+  assert.equal(res.status, 200);
+  assert.equal(res.json.status, 'applied', 'the ISBN alone carries the match');
+  assert.equal(await onHand(business.id, krypton.id, location.id), 4);
+  assert.equal(await movementCount(business.id, 'POS-ebay-EB-ORDER-ISBN'), 1);
+});
+
+test('three keys: an ISBN-10 line matches the product carrying the ISBN-13 form', async () => {
+  const { business, location, krypton } = await bookSetup(uniqEmail('ebay-isbn10'));
+  const conn = await connectEbaySql(business.id, location.id);
+  const res = await postEbayNotification(itemSold({
+    orderId: 'EB-ORDER-ISBN10',
+    username: conn.username,
+    lines: [{ lineItemId: 'li1', itemId: 'ITEM-KRYPTON', isbn: '0-06-134074-X', quantity: 2, title: 'The Last Days of Krypton' }],
+  }));
+  assert.equal(res.status, 200);
+  assert.equal(res.json.status, 'applied', 'the same book in its other printed form still matches');
+  assert.equal(await onHand(business.id, krypton.id, location.id), 3);
+});
+
+test('three keys: an ISBN-13 line matches the product carrying the ISBN-10 form', async () => {
+  const setup = await ownerWithBusiness(uniqEmail('ebay-isbn13'), 'Ten Form Books');
+  await setPlan(setup.business.id, 'business', setup.user.id);
+  const location = await seededLocation(setup.cookie, setup.business.id);
+  const [book] = await createProducts(setup.cookie, setup.business.id, [
+    { name: 'The Last Days of Krypton', sku: 'SKU-K10', isbn: '006134074X', price: 14 },
+  ]);
+  await receive(setup.cookie, setup.business.id, book.id, location.id, 3);
+  const conn = await connectEbaySql(setup.business.id, location.id);
+  const res = await postEbayNotification(itemSold({
+    orderId: 'EB-ORDER-ISBN13',
+    username: conn.username,
+    lines: [{ lineItemId: 'li1', itemId: 'ITEM-K10', isbn: '978-0-06-134074-1', quantity: 1, title: 'The Last Days of Krypton' }],
+  }));
+  assert.equal(res.status, 200);
+  assert.equal(res.json.status, 'applied', 'the equivalence runs both ways');
+  assert.equal(await onHand(setup.business.id, book.id, location.id), 2);
+});
+
+test('three keys: catalog identifiers in ProductListingDetails match (payload lines are the record)', async () => {
+  const { business, location, krypton } = await bookSetup(uniqEmail('ebay-catalog'));
+  const conn = await connectEbaySql(business.id, location.id);
+  // No order waits at the fetch seam for this id, so the
+  // notification's own lines are the record — and they carry
+  // the catalog block eBay supplies for catalog listings.
+  const res = await postEbayNotification(itemSold({
+    orderId: 'EB-ORDER-CATALOG',
+    username: conn.username,
+    lines: [{
+      lineItemId: 'li1', itemId: 'ITEM-KRYPTON', quantity: 1, title: 'The Last Days of Krypton',
+      productListingDetails: { ISBN: '9780061340741' },
+    }],
+  }));
+  assert.equal(res.status, 200);
+  assert.equal(res.json.status, 'applied', 'the supplied catalog ISBN carries the match');
+  assert.equal(await onHand(business.id, krypton.id, location.id), 4);
+});
+
+test('three keys: a UPC shared by two products holds the sale — never a guessed winner', async () => {
+  const { cookie, business, location } = await bookSetup(uniqEmail('ebay-ambig'));
+  const conn = await connectEbaySql(business.id, location.id);
+  // Two live products carrying the SAME UPC — a catalog
+  // state the create road discourages but a real shelf can
+  // reach (planted directly, as the connection fixtures are).
+  const ids = [crypto.randomUUID(), crypto.randomUUID()];
+  for (const [i, id] of ids.entries()) {
+    await pool.query(
+      `INSERT INTO products (id, business_id, name, sku, upc, price, status)
+       VALUES ($1, $2, $3, $4, '777777777777', 5, 'active')`,
+      [id, business.id, `Shared UPC Book ${i + 1}`, `SKU-SHARED-${i + 1}`],
+    );
+    await receive(cookie, business.id, id, location.id, 3);
+  }
+  const res = await postEbayNotification(itemSold({
+    orderId: 'EB-ORDER-AMBIG',
+    username: conn.username,
+    lines: [{ lineItemId: 'li1', itemId: 'ITEM-SHARED', upc: '777777777777', quantity: 1, title: 'Shared UPC Book' }],
+  }));
+  assert.equal(res.status, 200);
+  assert.equal(res.json.status, 'held_unmatched', 'one key, two products: a person decides');
+  assert.equal(await movementCount(business.id, 'POS-ebay-EB-ORDER-AMBIG'), 0, 'nothing was applied');
+  for (const id of ids) {
+    assert.equal(await onHand(business.id, id, location.id), 3, 'neither twin lost stock to a guess');
+  }
+});
+
+test('three keys: keys pointing at different products hold the sale', async () => {
+  const { business, location, krypton, phonics } = await bookSetup(uniqEmail('ebay-conflict'));
+  const conn = await connectEbaySql(business.id, location.id);
+  const res = await postEbayNotification(itemSold({
+    orderId: 'EB-ORDER-CONFLICT',
+    username: conn.username,
+    // The SKU says Krypton; the UPC says Phonics. Both are
+    // real — so nobody decides but a person.
+    lines: [{ lineItemId: 'li1', itemId: 'ITEM-MIXED', sku: 'SKU-KRYPTON', upc: '012345678905', quantity: 1, title: 'Mixed Signals' }],
+  }));
+  assert.equal(res.status, 200);
+  assert.equal(res.json.status, 'held_unmatched', 'conflicting keys never pick a winner');
+  assert.equal(await onHand(business.id, krypton.id, location.id), 5, 'the SKU product did not move');
+  assert.equal(await onHand(business.id, phonics.id, location.id), 4, 'the UPC product did not move');
+  assert.equal(await movementCount(business.id, 'POS-ebay-EB-ORDER-CONFLICT'), 0);
+});
+
+test('three keys: agreeing keys apply exactly once', async () => {
+  const { business, location, atlas } = await bookSetup(uniqEmail('ebay-agree'));
+  const conn = await connectEbaySql(business.id, location.id);
+  const res = await postEbayNotification(itemSold({
+    orderId: 'EB-ORDER-AGREE',
+    username: conn.username,
+    lines: [{
+      lineItemId: 'li1', itemId: 'ITEM-ATLAS',
+      sku: 'sku-atlas', upc: '555000111222', isbn: '978-3-16-148410-0',
+      quantity: 2, title: 'World Atlas',
+    }],
+  }));
+  assert.equal(res.status, 200);
+  assert.equal(res.json.status, 'applied', 'all three keys agree on the atlas (SKU case aside)');
+  assert.equal(await onHand(business.id, atlas.id, location.id), 4);
+  assert.equal(await movementCount(business.id, 'POS-ebay-EB-ORDER-AGREE'), 1, 'one line, one movement — agreement is not triple-counted');
+});
+
+test('three keys: a replayed UPC-matched sale still applies only once', async () => {
+  const { business, location, phonics } = await bookSetup(uniqEmail('ebay-replay'));
+  const conn = await connectEbaySql(business.id, location.id);
+  const payload = itemSold({
+    orderId: 'EB-ORDER-UPC-REPLAY',
+    username: conn.username,
+    lines: [{ lineItemId: 'li1', itemId: 'ITEM-PHONICS', upc: '012345678905', quantity: 1, title: 'Hooked on Phonics' }],
+  });
+  const first = await postEbayNotification(payload);
+  assert.equal(first.json.status, 'applied');
+  assert.equal(await onHand(business.id, phonics.id, location.id), 3);
+  const second = await postEbayNotification(payload);
+  assert.equal(second.json.duplicate, true);
+  assert.equal(await onHand(business.id, phonics.id, location.id), 3, 'the anchor holds whichever key matched');
+  assert.equal(await movementCount(business.id, 'POS-ebay-EB-ORDER-UPC-REPLAY'), 1);
+});
+
+test('three keys: the catch-up sweep shares the widened matcher', async () => {
+  const { business, location, krypton } = await bookSetup(uniqEmail('ebay-sweep-keys'));
+  const { id: connectionId } = await connectEbaySql(business.id, location.id);
+  const { rows } = await pool.query('SELECT * FROM pos_connections WHERE id = $1', [connectionId]);
+  const connection = rows[0];
+  const missedOrder = {
+    orderId: 'EB-ORDER-SWEEP-ISBN',
+    creationDate: '2026-11-23T19:30:00.000Z',
+    pricingSummary: { total: { value: '28.00', currency: 'USD' } },
+    lineItems: [{ lineItemId: 'li1', legacyItemId: 'ITEM-KRYPTON', isbn: '9780061340741', quantity: 2, title: 'The Last Days of Krypton' }],
+  };
+  const stubFetch = async (url) => {
+    const href = String(url);
+    if (href.includes('/sell/fulfillment/v1/order?')) return jsonResponse({ orders: [missedOrder] });
+    return jsonResponse({}, 404);
+  };
+  const first = await sweepEbayConnection(pool, connection, { fetchImpl: stubFetch, logger: { error() {} } });
+  assert.equal(first.error, null);
+  assert.equal(first.applied, 1, 'the sweep matched by ISBN through the same matcher');
+  assert.equal(await onHand(business.id, krypton.id, location.id), 3);
+  const second = await sweepEbayConnection(pool, connection, { fetchImpl: stubFetch, logger: { error() {} } });
+  assert.equal(second.duplicates, 1);
+  assert.equal(await onHand(business.id, krypton.id, location.id), 3);
+});
+
+test('three keys: an Essentials sale matched by UPC and by ISBN applies', async () => {
+  const { business, location, krypton, phonics } = await bookSetup(uniqEmail('ebay-ess-keys'), 'essentials');
+  const conn = await connectEbaySql(business.id, location.id);
+  const res = await postEbayNotification(itemSold({
+    orderId: 'EB-ORDER-ESS-KEYS',
+    username: conn.username,
+    lines: [
+      { lineItemId: 'li1', itemId: 'ITEM-PHONICS', upc: '012345678905', quantity: 1, title: 'Hooked on Phonics' },
+      { lineItemId: 'li2', itemId: 'ITEM-KRYPTON', isbn: '0-06-134074-X', quantity: 2, title: 'The Last Days of Krypton' },
+    ],
+  }));
+  assert.equal(res.status, 200);
+  assert.equal(res.json.status, 'applied', 'the three-key match is both plans, like the door itself');
+  assert.equal(await onHand(business.id, phonics.id, location.id), 3);
+  assert.equal(await onHand(business.id, krypton.id, location.id), 3);
 });
 
 // ---- Both plans open the door -----------------------------------------------------------------

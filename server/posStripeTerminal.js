@@ -98,7 +98,7 @@ export function normalizeStripeTerminalCharge(charge) {
       providerItemKey: String(item.sku || item.name || 'charge-item'),
       itemLabel: String(item.name || item.sku || ''),
       sku: String(item.sku || ''),
-      barcode: String(item.barcode || ''),
+      upc: String(item.barcode || ''),
       quantity: Number(item.quantity) || 0,
     }));
   if (!lines.length) return null;

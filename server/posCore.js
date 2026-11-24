@@ -11,7 +11,7 @@
  * A provider adapter turns its payload into ONE normalized sale:
  *   { externalSaleId, soldAt, locationLabel, locationId,
  *     totalAmount, totalCurrency,
- *     lines: [{ providerItemKey, itemLabel, sku, barcode, quantity }] }
+ *     lines: [{ providerItemKey, itemLabel, sku, upc, isbn, quantity }] }
  * and calls applyPosSale(). Everything after that is shared:
  *
  *   IDEMPOTENCY — (business_id, provider, external_sale_id) is
@@ -19,10 +19,19 @@
  *   retry, provider resend, CSV re-import) finds the row and
  *   returns the recorded outcome. Nothing ever double-counts.
  *
- *   MATCHING — a line finds its product three ways, in order:
+ *   MATCHING — a line finds its product two ways:
  *   1. a saved pos_item_mappings row for its provider item key;
- *   2. an exact SKU match (case-insensitive);
- *   3. an exact match on upc / barcode / qr_code / isbn.
+ *   2. the THREE-KEY match (the owner's ruling, Nov 23, 2026:
+ *      a storefront sale communicates "with either the SKU and
+ *      the UPC as well as the ISBN — those three, either or").
+ *      Each key the line carries is compared, normalized, with
+ *      the product field of the same name (the UPC key also
+ *      reads the product's barcode field — the printed retail
+ *      code lives in either). Any ONE key matching exactly one
+ *      product applies the sale — but the matcher NEVER
+ *      guesses: if the present keys point at different
+ *      products, or any single key matches more than one
+ *      product, the line is HELD for a person to link.
  *   No match → the line is HELD as 'unmatched' (no movement is
  *   written) until a person maps the item on the mapping screen.
  *
@@ -90,17 +99,92 @@ async function loadProducts(client, businessId) {
 
 const ci = (value) => String(value || '').trim().toLowerCase();
 
-/** Exact code match, SKU field first, then every other code field. */
-export function matchProductByCode(products, { sku, barcode }) {
-  const candidates = [sku, barcode].map(ci).filter(Boolean);
-  if (!candidates.length) return null;
-  const bySku = products.find((p) => candidates.includes(ci(p.sku)));
-  if (bySku) return bySku;
-  return (
-    products.find((p) =>
-      [p.upc, p.barcode, p.qr_code, p.isbn].some((field) => candidates.includes(ci(field))),
-    ) || null
-  );
+/**
+ * Key normalization (release 364): identifiers are compared
+ * the way people type and print them — trimmed, with spaces
+ * and hyphens removed ("978-3-16-148410-0" is "9783161484100").
+ * SKUs compare case-insensitively on top of that; codes
+ * compare uppercased so an ISBN-10's X check letter is itself
+ * however it was typed.
+ */
+const normSku = (value) => String(value || '').trim().replace(/[\s-]+/g, '').toLowerCase();
+const normCode = (value) => String(value || '').trim().replace(/[\s-]+/g, '').toUpperCase();
+
+function isbn13CheckDigit(first12) {
+  let sum = 0;
+  for (let i = 0; i < 12; i += 1) sum += Number(first12[i]) * (i % 2 === 0 ? 1 : 3);
+  return String((10 - (sum % 10)) % 10);
+}
+
+function isbn10CheckDigit(first9) {
+  let sum = 0;
+  for (let i = 0; i < 9; i += 1) sum += (10 - i) * Number(first9[i]);
+  const check = (11 - (sum % 11)) % 11;
+  return check === 10 ? 'X' : String(check);
+}
+
+/**
+ * The equivalent forms of one ISBN: itself, plus — for a
+ * 978-prefixed ISBN-13 — its ISBN-10 twin, and for an
+ * ISBN-10 its 978-prefixed ISBN-13 twin (the same book in
+ * its two printed forms). A 979 ISBN-13 has no ISBN-10
+ * twin and matches only itself. The twin is computed
+ * mechanically from the digits, so the forms equate even
+ * when one side was typed without its check digit's care.
+ */
+export function isbnForms(value) {
+  const s = normCode(value);
+  const forms = new Set();
+  if (!s) return forms;
+  forms.add(s);
+  if (/^\d{9}[\dX]$/.test(s)) {
+    const base = `978${s.slice(0, 9)}`;
+    forms.add(base + isbn13CheckDigit(base));
+  } else if (/^978\d{10}$/.test(s)) {
+    const nine = s.slice(3, 12);
+    forms.add(nine + isbn10CheckDigit(nine));
+  }
+  return forms;
+}
+
+/**
+ * The THREE-KEY match (release 364, the owner's ruling,
+ * Nov 23, 2026): a sale line carries up to three identifier
+ * keys — SKU, UPC, ISBN — and any ONE of them, matching
+ * exactly one product, applies the sale. The keys are
+ * judged together and the matcher never guesses:
+ *   - a key that matches MORE THAN ONE product makes the
+ *     line ambiguous → held for a person;
+ *   - keys that point at DIFFERENT products conflict → held;
+ *   - keys that agree on one product, or a single key
+ *     matching one product while the others match nothing,
+ *     → that product.
+ * Returns the product, or null (no match, ambiguous, or
+ * conflicted — the caller holds the line either way).
+ */
+export function matchProductByKeys(products, { sku, upc, isbn } = {}) {
+  const perKey = [];
+  const skuKey = normSku(sku);
+  if (skuKey) perKey.push(products.filter((p) => normSku(p.sku) === skuKey));
+  const upcKey = normCode(upc);
+  if (upcKey) {
+    perKey.push(products.filter((p) => normCode(p.upc) === upcKey || normCode(p.barcode) === upcKey));
+  }
+  const isbnKeyForms = isbnForms(isbn);
+  if (isbnKeyForms.size) {
+    perKey.push(products.filter((p) => {
+      const productForms = isbnForms(p.isbn);
+      return [...isbnKeyForms].some((form) => productForms.has(form));
+    }));
+  }
+  if (!perKey.length) return null;
+  if (perKey.some((matches) => matches.length > 1)) return null;
+  const agreed = new Map();
+  for (const matches of perKey) {
+    if (matches[0]) agreed.set(matches[0].id, matches[0]);
+  }
+  if (agreed.size !== 1) return null;
+  return [...agreed.values()][0];
 }
 
 async function mappingFor(client, businessId, provider, providerItemKey) {
@@ -150,7 +234,17 @@ async function applyLineTx(client, { businessId, provider, line, products, locat
     const mapping = await mappingFor(client, businessId, provider, line.provider_item_key);
     if (mapping) product = products.find((p) => p.id === mapping.product_id) || null;
   }
-  if (!product) product = matchProductByCode(products, line);
+  if (!product) {
+    // The three-key match. Lines recorded before migration
+    // 050 carry no upc column value — their stored barcode
+    // IS the retail code they arrived with, so it stands in
+    // as the UPC key and old held lines keep their road.
+    product = matchProductByKeys(products, {
+      sku: line.sku,
+      upc: line.upc || line.barcode,
+      isbn: line.isbn,
+    });
+  }
   if (!product || !location) {
     await client.query(
       'UPDATE pos_sale_lines SET status = $1, product_id = $2, updated_at = NOW() WHERE id = $3',
@@ -315,15 +409,21 @@ export async function applyPosSale(pool, {
       for (const rawLine of sale.lines || []) {
         const qty = Number(rawLine.quantity) || 0;
         const lineId = crypto.randomUUID();
+        // The line's three keys ride the row (release 364):
+        // the UPC key is the retail code — an adapter still
+        // calling it `barcode` lands in the same slot, and
+        // the stored barcode column keeps carrying it for
+        // every reader that predates the split.
+        const upc = String(rawLine.upc || rawLine.barcode || '');
         const insertedLine = await client.query(
           `INSERT INTO pos_sale_lines
-             (id, business_id, event_id, provider_item_key, item_label, sku, barcode, quantity, status)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+             (id, business_id, event_id, provider_item_key, item_label, sku, barcode, upc, isbn, quantity, status)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
            RETURNING *`,
           [
             lineId, businessId, event.id,
             String(rawLine.providerItemKey || ''), String(rawLine.itemLabel || ''),
-            String(rawLine.sku || ''), String(rawLine.barcode || ''),
+            String(rawLine.sku || ''), upc, upc, String(rawLine.isbn || ''),
             qty, qty <= 0 ? 'ignored' : holdForPlan ? 'held_plan' : 'unmatched',
           ],
         );
@@ -513,8 +613,14 @@ export function parseSalesCsv(text) {
     bySale.get(saleId).lines.push({
       providerItemKey: code,
       itemLabel: cell(cells, 'item_name'),
+      // The CSV's one code column is "sku_or_barcode" — the
+      // seller's code could be any of the three keys, so it
+      // rides all three slots and the three-key match judges
+      // it (release 364: keys pointing at different products
+      // hold the line instead of guessing, as everywhere).
       sku: code,
-      barcode: code,
+      upc: code,
+      isbn: code,
       quantity: qty,
     });
   });
