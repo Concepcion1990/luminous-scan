@@ -159,7 +159,7 @@ export const TRAINING_LESSONS = [
   { id: 'owner-billing', track: 'owner', module: 'billing', steps: 5 },
   { id: 'owner-trial-reminders', track: 'owner', module: 'billing', steps: 4 },
   { id: 'owner-printing', track: 'owner', module: 'printing', steps: 5 },
-  { id: 'owner-import', track: 'owner', module: 'import', steps: 4, essentialsOnly: true },
+  { id: 'owner-import', track: 'owner', module: 'import', steps: 5, essentialsOnly: true },
   { id: 'owner-import-export', track: 'owner', module: 'exports', steps: 4, feature: 'exports' },
   { id: 'owner-builds', track: 'owner', module: 'builds', steps: 4, feature: 'builds' },
   { id: 'owner-messages-oversight', track: 'owner', module: 'messaging', steps: 7 },

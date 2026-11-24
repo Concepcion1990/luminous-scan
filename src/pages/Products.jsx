@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { base44 } from '@/api/client';
+import { apiRequest, base44 } from '@/api/client';
 import useDataFresh from '@/hooks/useDataFresh';
 import { ArrowDown, ArrowUp, ChevronDown, ChevronUp, Pencil, Plus, Search } from 'lucide-react';
 import SortHeader from '@/components/products/SortHeader';
@@ -151,6 +151,54 @@ export default function Products() {
   useDataFresh('inventory', '/products', () => setReload((r) => r + 1));
   const [sort, setSort] = useState({ key: 'name', dir: 'asc' });
   const [activeCount, setActiveCount] = useState(0);
+  // Import photos (release 366): the strip over the list tells
+  // the truth about the photos a spreadsheet's links promised —
+  // how many are in, how many are still on their way — and
+  // carries the Bring in missing photos door. It reads from the
+  // import door's own endpoint (same gate as the importer), so
+  // a member without that gate simply never sees it.
+  const [photoProgress, setPhotoProgress] = useState(null);
+  const [photoBusy, setPhotoBusy] = useState(false);
+
+  useEffect(() => {
+    if (!activeId) return;
+    let cancelled = false;
+    apiRequest(`/api/businesses/${encodeURIComponent(activeId)}/photo-jobs`)
+      .then((data) => {
+        if (!cancelled && data) setPhotoProgress(data);
+      })
+      .catch(() => {
+        if (!cancelled) setPhotoProgress(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [activeId, reload]);
+
+  const bringInPhotos = async () => {
+    if (!activeId || photoBusy) return;
+    setPhotoBusy(true);
+    try {
+      const data = await apiRequest(
+        `/api/businesses/${encodeURIComponent(activeId)}/photo-jobs/recover`,
+        { method: 'POST', body: {} },
+      );
+      if (data) {
+        setPhotoProgress(data);
+        toast({
+          title:
+            data.missing > 0
+              ? t('products.photosBringingIn', { count: data.missing })
+              : t('products.photosAllIn'),
+        });
+      }
+      setReload((r) => r + 1);
+    } catch {
+      /* the strip keeps its last truthful state */
+    } finally {
+      setPhotoBusy(false);
+    }
+  };
 
   const SORT_OPTIONS = [
     { value: 'name', label: t('products.sortName') },
@@ -551,6 +599,28 @@ export default function Products() {
         </div>
       </div>
 
+      {photoProgress && photoProgress.withLink > 0 && (
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-lg border border-border bg-card px-3 py-2 text-xs text-muted-foreground">
+          <span className="font-medium text-foreground">
+            {t('products.photosProgress', { have: photoProgress.withPhoto, total: photoProgress.withLink })}
+          </span>
+          {photoProgress.pending > 0 && (
+            <span>{t('products.photosPending', { count: photoProgress.pending })}</span>
+          )}
+          {photoProgress.missing > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="ml-auto h-7 text-xs"
+              onClick={bringInPhotos}
+              disabled={photoBusy}
+            >
+              {t('products.photosBringIn')}
+            </Button>
+          )}
+        </div>
+      )}
+
       <div className="relative">
         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
@@ -719,6 +789,15 @@ export default function Products() {
                           </span>
                         )}
                       </span>
+                      {/* Release 366: a photo that could not be
+                          brought in is named HERE, on the product
+                          itself — not only on an import result
+                          screen that can be missed. */}
+                      {product.photo_problem && !product.photo_urls?.[0] && (
+                        <span className="block truncate text-[11px] text-warn">
+                          {t('products.photoProblem')}
+                        </span>
+                      )}
                     </span>
                   </button>
 

@@ -59,6 +59,13 @@ import { ownerPublicName, attributionNameMap, attributionName } from './profileP
 import { assertNotInGrace } from './billing.js';
 import { assertSubscriptionAccess } from './subscriptionAccess.js';
 import {
+  enqueuePhotoJob,
+  enqueueMissingPhotoJobs,
+  photoProgress,
+  kickPhotoDrain,
+  isPhotoLink,
+} from './photoJobs.js';
+import {
   orderPurchaseOrder,
   cancelPurchaseOrder,
   sendPurchaseOrder,
@@ -421,53 +428,20 @@ export function createShopRouter({ getPool: getPoolFn }) {
     });
   }));
 
-  // ---- Import photo fetch (release 365) -------------------------------
-  // A sheet's photo link is fetched HERE, server-side, into the app's
-  // own photo storage (product_photos — the same bytes the product
-  // form's upload door stores), so the product carries an
-  // /api/photos/<id> URL like any other photo. A link that cannot be
-  // fetched is a named problem for its row — never a silent skip,
-  // never a failed import (owner ruling, Nov 23, 2026).
-  const IMPORT_PHOTO_MAX_BYTES = 2 * 1024 * 1024; // the photo pipeline's own cap
-  const importPhotoMime = (buffer, contentType) => {
-    const type = String(contentType || '').split(';')[0].trim().toLowerCase();
-    if (['image/png', 'image/jpeg', 'image/webp'].includes(type)) return type;
-    if (buffer.length >= 3 && buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff) return 'image/jpeg';
-    if (
-      buffer.length >= 8
-      && buffer.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))
-    ) return 'image/png';
-    if (
-      buffer.length >= 12
-      && buffer.subarray(0, 4).toString('ascii') === 'RIFF'
-      && buffer.subarray(8, 12).toString('ascii') === 'WEBP'
-    ) return 'image/webp';
-    return null;
-  };
-  const fetchImportPhoto = async (businessId, rawUrl, origin) => {
-    const url = String(rawUrl || '').trim();
-    if (!/^https?:\/\//i.test(url)) return { problem: 'The photo link is not a web address.' };
-    let response;
-    try {
-      response = await fetch(url, { redirect: 'follow', signal: AbortSignal.timeout(10000) });
-    } catch {
-      return { problem: 'The photo link could not be reached.' };
-    }
-    if (!response.ok) return { problem: 'The photo link could not be reached.' };
-    const buffer = Buffer.from(await response.arrayBuffer());
-    if (!buffer.length) return { problem: 'The photo link returned an empty file.' };
-    if (buffer.length > IMPORT_PHOTO_MAX_BYTES) {
-      return { problem: 'The photo at that link is over 2 MB — too large to bring in.' };
-    }
-    const mime = importPhotoMime(buffer, response.headers.get('content-type'));
-    if (!mime) return { problem: 'The link did not return a PNG, JPG or WebP photo.' };
-    const id = crypto.randomUUID();
-    await pool().query(
-      'INSERT INTO product_photos (id, business_id, content_type, size_bytes, data_base64) VALUES ($1, $2, $3, $4, $5)',
-      [id, businessId, mime, buffer.length, buffer.toString('base64')],
-    );
-    return { url: `${origin}/api/photos/${id}` };
-  };
+  // ---- Import photos (release 365, rebuilt by release 366) ------------
+  // A sheet's photo link is KEPT on the product it belongs to
+  // (products.photo_source_url) and a durable photo job is queued
+  // for it; the background worker (server/photoJobs.js) fetches it
+  // into the app's own photo storage, politely and with retries.
+  // Release 365 fetched the links right here, inside this request —
+  // one at a time, a 10-second whole-download budget, no second
+  // attempt — and the picture CDN's throttling of that rapid stream
+  // cost the owner's real catalog more than half its photos, with
+  // the links stored nowhere to retry from (Nov 24, 2026). The
+  // import now answers as soon as the products and stock land:
+  // photos arrive on their own, and a link that cannot be fetched
+  // ends as a named problem ON the product, never a silent skip
+  // and never a failed import (owner ruling, Nov 23, 2026).
   // The generated-SKU identity, mirroring src/lib/csvImport.js and
   // server/entities.js slug rules exactly: a row with no SKU of its
   // own is judged by this base, so a re-import recognizes the
@@ -512,6 +486,7 @@ export function createShopRouter({ getPool: getPoolFn }) {
     let created = 0;
     let received = 0;
     let units = 0;
+    let photosQueued = 0;
     const limits = limitsForPlan(access.planKey);
     let activeCount = (
       await pool().query(
@@ -560,10 +535,19 @@ export function createShopRouter({ getPool: getPoolFn }) {
         problems.push({ index, name, problem: productLimitMessage(limits.products, activeCount, { neutral: !access.isOwner }) });
         continue;
       }
+      // The row's photo link (release 366): kept on the product
+      // itself whether or not any fetch ever succeeds, so a photo
+      // that does not arrive can always be brought in later. A
+      // link that is not a web address at all is named as the
+      // product's photo problem right here — it is known now, and
+      // no fetch is queued for it.
+      const photoLink = String(row.photo || '').trim();
       const draft = {
         business_id: req.params.bid,
         name,
         sku,
+        photo_source_url: isPhotoLink(photoLink) ? photoLink : '',
+        photo_problem: photoLink && !isPhotoLink(photoLink) ? 'The photo link is not a web address.' : '',
         upc: String(row.upc || '').trim(),
         barcode: String(row.barcode || '').trim(),
         isbn: String(row.isbn || '').trim(),
@@ -628,26 +612,29 @@ export function createShopRouter({ getPool: getPoolFn }) {
           });
         }
       }
-      const photoLink = String(row.photo || '').trim();
-      if (photoLink) {
+      if (photoLink && !isPhotoLink(photoLink)) {
+        photoProblems.push({ index, name, problem: 'The photo link is not a web address.' });
+      }
+      if (isPhotoLink(photoLink)) {
+        // Queue the photo; do NOT fetch it here (release 366).
+        // The worker brings it in on its own — the import answers
+        // as soon as the products and stock have landed.
         try {
-          const fetched = await fetchImportPhoto(
-            req.params.bid,
-            photoLink,
-            `${req.protocol}://${req.get('host')}`,
-          );
-          if (fetched.problem) {
-            photoProblems.push({ index, name, problem: fetched.problem });
-          } else {
-            await updateEntity(pool(), req.user, 'Product', createdRow.id, {
-              photo_urls: [fetched.url],
-            });
-          }
+          const job = await enqueuePhotoJob(pool(), {
+            businessId: req.params.bid,
+            productId: createdRow.id,
+            sourceUrl: photoLink,
+            origin: `${req.protocol}://${req.get('host')}`,
+          });
+          if (job) photosQueued += 1;
         } catch {
-          photoProblems.push({ index, name, problem: 'The photo could not be brought in.' });
+          // A queue failure must never fail the row that already
+          // landed: the link is stored on the product, and the
+          // recovery door can queue it again at any time.
         }
       }
     }
+    if (photosQueued > 0) kickPhotoDrain(pool());
     // The import's own story (owner ruling, Nov 15, 2026): one
     // activity row per committed Create import, so the Overview
     // feed and the full history can say "Imported N products" even
@@ -668,7 +655,33 @@ export function createShopRouter({ getPool: getPoolFn }) {
         ],
       );
     }
-    return res.status(201).json({ created, received, units, skipped: problems.length, problems, photoProblems });
+    return res.status(201).json({ created, received, units, skipped: problems.length, problems, photoProblems, photosQueued });
+  }));
+
+  // ---- Photo progress + recovery (release 366) -------------------------
+  // The visible truth about the business's import photos, and the
+  // owner's door for bringing the missing ones in. Both ride the
+  // import door's own gate (accessOr403 'exports.use' — the same
+  // roles the importer answers to; no new enrollment tick).
+  router.get('/businesses/:bid/photo-jobs', asyncHandler(async (req, res) => {
+    await accessOr403(pool(), req.user, req.params.bid, 'exports.use');
+    const progress = await photoProgress(pool(), req.params.bid);
+    return res.json(progress);
+  }));
+
+  router.post('/businesses/:bid/photo-jobs/recover', asyncHandler(async (req, res) => {
+    await accessOr403(pool(), req.user, req.params.bid, 'exports.use');
+    const { missing, enqueued } = await enqueueMissingPhotoJobs(pool(), {
+      businessId: req.params.bid,
+      origin: `${req.protocol}://${req.get('host')}`,
+    });
+    if (enqueued > 0) kickPhotoDrain(pool());
+    const progress = await photoProgress(pool(), req.params.bid);
+    // missing/enqueued report the moment the owner asked (the
+    // kick above may already be landing photos, so the live
+    // recount must not overwrite them); the progress fields ride
+    // along as the freshest counts.
+    return res.json({ ...progress, missing, enqueued });
   }));
 
   // ---- Export (Business only, server-built) ---------------------------

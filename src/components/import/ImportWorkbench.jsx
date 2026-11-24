@@ -332,9 +332,13 @@ export default function ImportWorkbench({ businessId }) {
   // single bulk call that refused past 100 — so a dry run could
   // promise 138 and the import died mid-write, landing a silent
   // partial. Now the server takes the whole ticked set at once,
-  // judges every row itself, receives the opening stock and
-  // fetches the photos; a refused send lands zero rows, and an
-  // accepted send answers with exactly the counts it made.
+  // judges every row itself and receives the opening stock; a
+  // refused send lands zero rows, and an accepted send answers
+  // with exactly the counts it made. Photo links are KEPT on the
+  // products and queued — the photos arrive on their own after
+  // the import answers (release 366: the 365 road fetched them
+  // inside this send, one try each, and a throttled stream cost
+  // a real catalog more than half its photos).
   const runImport = async () => {
     if (!businessId || !dryRun || needsCheck || !effectiveReady || overRoom > 0 || quantityBlock) return;
     setBusy(true);
@@ -361,6 +365,7 @@ export default function ImportWorkbench({ businessId }) {
         skipped: data?.skipped ?? 0,
         over: 0,
         stockRows: data?.received ?? 0,
+        photosQueued: data?.photosQueued ?? 0,
         // The server counts rows by their place in the send; the
         // result names them by their place in the owner's file.
         photoProblems: (data?.photoProblems ?? []).map((problem) => ({
@@ -430,6 +435,11 @@ export default function ImportWorkbench({ businessId }) {
                   skipped: result.skipped,
                   s: result.skipped === 1 ? '' : 's',
                 })}
+              </p>
+            )}
+            {result.photosQueued > 0 && (
+              <p className="mt-1 text-xs text-muted-foreground">
+                {t('import.photosQueued', { count: result.photosQueued })}
               </p>
             )}
             {result.over > 0 && (

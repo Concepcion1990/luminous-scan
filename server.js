@@ -20,6 +20,7 @@ import { runMigrations } from './server/migrate.js';
 import { setPoolOverride, getPool } from './server/db.js';
 import { startSweepScheduler } from './server/sweepScheduler.js';
 import { startMissedClockOutScheduler } from './server/clockAdmin.js';
+import { startPhotoJobScheduler } from './server/photoJobs.js';
 
 const app = createApp();
 
@@ -63,6 +64,13 @@ async function main() {
     // with no clock-out. The flag itself is computed live on
     // every entries read; this only lands the bell.
     startMissedClockOutScheduler({ getPoolFn: getPool });
+    // The photo job worker (release 366, Nov 24, 2026): drains
+    // the durable photo_jobs queue — import photos arrive on
+    // their own, politely and with retries, instead of being
+    // fetched inside the import request. The import and
+    // recovery doors also kick a drain when they enqueue, so
+    // this tick is the guarantee, not the only road.
+    startPhotoJobScheduler({ getPoolFn: getPool });
   });
 }
 
