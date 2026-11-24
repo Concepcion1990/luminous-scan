@@ -60,6 +60,7 @@ import Returns from '@/pages/Returns';
 import Counts from '@/pages/Counts';
 import CrossStoreInbox from '@/pages/CrossStoreInbox';
 import PosConnections from '@/pages/PosConnections';
+import StorefrontConnections from '@/pages/StorefrontConnections';
 import Workforce from '@/pages/Workforce';
 import CrossStoreMessages from '@/pages/CrossStoreMessages';
 import Training from '@/pages/Training';
@@ -337,6 +338,9 @@ const AuthenticatedApp = () => {
               </PlanRedirect>
             }
           />
+          {/* Storefront connections (release 362): BOTH PLANS by the owner's
+              connection doctrine — deliberately NO PlanRedirect here. */}
+          <Route path="/storefronts" element={<StorefrontConnections />} />
           <Route path="/returns" element={<Returns />} />
           <Route path="/counts" element={<Counts />} />
           <Route

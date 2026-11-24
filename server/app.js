@@ -33,7 +33,9 @@ import { createT6Router } from './t6Routes.js';
 import { createWorkforceRouter } from './workforceRoutes.js';
 import { createRewardsRouter } from './rewardsRoutes.js';
 import { createPosRouter } from './posRoutes.js';
+import { createStorefrontRouter } from './ebayRoutes.js';
 import { squareWebhookHandler, squareOAuthCallbackHandler } from './posSquare.js';
+import { ebayWebhookHandler, ebayChallengeHandler, ebayOAuthCallbackHandler } from './posEbay.js';
 import { shopifyWebhookHandler } from './posShopify.js';
 import { cloverWebhookHandler, cloverOAuthCallbackHandler } from './posClover.js';
 import { toastWebhookHandler } from './posToast.js';
@@ -90,6 +92,24 @@ export function createApp() {
   // Square OAuth callback: a browser redirect from Square, no
   // session — the HMAC-signed state is its credential.
   app.get('/api/pos/square/callback', squareOAuthCallbackHandler);
+  // eBay storefront notifications (release 362) — the same
+  // raw-body treatment: signature verification needs the exact
+  // bytes. The GET on the same path is eBay's destination
+  // verification challenge. eBay is a storefront, so its
+  // callback and routes carry no plan gate (both plans).
+  app.post('/webhooks/pos/ebay', express.raw({ type: '*/*', limit: '1mb' }), (req, res) => {
+    ebayWebhookHandler(req, res).catch((error) => {
+      console.error('[twin] eBay webhook failed:', error);
+      if (!res.headersSent) res.status(500).json({ error: 'server_error' });
+    });
+  });
+  app.get('/webhooks/pos/ebay', (req, res) => {
+    ebayChallengeHandler(req, res).catch((error) => {
+      console.error('[twin] eBay challenge failed:', error);
+      if (!res.headersSent) res.status(500).json({ error: 'server_error' });
+    });
+  });
+  app.get('/api/pos/ebay/callback', ebayOAuthCallbackHandler);
   // Clover OAuth callback: same shape — a browser redirect from
   // Clover, the HMAC-signed state is its credential.
   app.get('/api/pos/clover/callback', cloverOAuthCallbackHandler);
@@ -265,6 +285,8 @@ export function createApp() {
   app.use('/api', createRewardsRouter({ getPool }));
   // POS: till connections, mappings, CSV sales import (server/posRoutes.js).
   app.use('/api', createPosRouter({ getPool }));
+  // Storefront connections (release 362): the eBay door — both plans, no plan gate.
+  app.use('/api', createStorefrontRouter({ getPool }));
   // Training: role-scoped lesson tracks, assignments, team progress.
   app.use('/api', createTrainingRouter({ getPool }));
   // The owner's own store policies + terms (server/businessPolicyRoutes.js):

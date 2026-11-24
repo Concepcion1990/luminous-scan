@@ -50,11 +50,12 @@ import { runWipeSweep } from './billing.js';
 import { runCustomerAddressSweep } from './customerAddresses.js';
 import { runTrialReminderSweep } from './trialReminders.js';
 import { runFailedPaymentSweep } from './failedPayment.js';
+import { runEbaySweep } from './posEbay.js';
 
 export const SWEEP_INTERVAL_MS = 6 * 60 * 60 * 1000;
 export const SWEEP_BOOT_DELAY_MS = 30 * 1000;
 
-const defaultSweeps = { runWipeSweep, runCustomerAddressSweep, runTrialReminderSweep, runFailedPaymentSweep };
+const defaultSweeps = { runWipeSweep, runCustomerAddressSweep, runTrialReminderSweep, runFailedPaymentSweep, runEbaySweep };
 
 /** The kill switch: only an exact 'false' turns the scheduler off. */
 export function sweepSchedulerDisabled(env = process.env) {
@@ -67,7 +68,7 @@ export function sweepSchedulerDisabled(env = process.env) {
  * summary in the job endpoints' shape. Never throws.
  */
 export async function runScheduledSweeps(pool, { now = new Date(), logger = console, sweeps = defaultSweeps } = {}) {
-  const summary = { ranAt: now.toISOString(), wipe: null, customerAddresses: null, trialReminders: null, failedPayments: null, failures: [] };
+  const summary = { ranAt: now.toISOString(), wipe: null, customerAddresses: null, trialReminders: null, failedPayments: null, ebay: null, failures: [] };
   try {
     summary.wipe = await sweeps.runWipeSweep(pool, { now, logger });
   } catch (error) {
@@ -97,6 +98,19 @@ export async function runScheduledSweeps(pool, { now = new Date(), logger = cons
   } catch (error) {
     summary.failures.push({ job: 'failedPayments', reason: error.message });
     logger.error(`[twin] scheduled failed-payment sweep failed: ${error.message}`);
+  }
+  // The eBay storefront catch-up (release 362): orders the
+  // notification feed missed are pulled per connection onto
+  // the same idempotent road, so a missed notification never
+  // loses a sale. Guarded on the seam's presence so older
+  // injected sweep sets keep their exact shape.
+  if (typeof sweeps.runEbaySweep === 'function') {
+    try {
+      summary.ebay = await sweeps.runEbaySweep(pool, { now, logger });
+    } catch (error) {
+      summary.failures.push({ job: 'ebay', reason: error.message });
+      logger.error(`[twin] scheduled eBay sweep failed: ${error.message}`);
+    }
   }
   return summary;
 }

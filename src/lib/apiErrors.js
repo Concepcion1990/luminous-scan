@@ -498,6 +498,11 @@ export const API_ERROR_MESSAGE_KEYS = {
   "That invoice is not in this business.": "apiErrors.invoiceNotInBusiness",
   "Only the owner, or a team member trusted with building recipes and invoices, can change the invoice file.": "apiErrors.invoiceFileNotGranted",
   "The restaurant corner is part of the Business plan.": "apiErrors.restaurantBusinessOnly",
+  "eBay is not configured yet \u2014 the app owner has not added the eBay keys.": "apiErrors.ebayNotConfigured",
+  "eBay did not complete the connection. Please try connecting again.": "apiErrors.ebayOauthFailed",
+  "Storefront connections are managed by the owner or a manager.": "apiErrors.storefrontManagerOnly",
+  "A mapping needs the item it came in as and the product it belongs to.": "apiErrors.mappingNeedsBoth",
+  "There is no eBay connection in this business.": "apiErrors.ebayNoConnection",
 };
 
 export const API_ERROR_PATTERNS = [

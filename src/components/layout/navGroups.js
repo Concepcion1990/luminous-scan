@@ -95,6 +95,11 @@ export const NAV_GROUPS = [
       // Essentials on every POS route, and off-Business webhook
       // sales are still held, never lost.
       { to: '/pos', label: 'Till connections', labelKey: 'nav.pos', icon: Receipt, feature: 'pos' },
+      // Storefront connections are BOTH PLANS (the owner's
+      // connection doctrine, Nov 23, 2026): no feature tag, no
+      // perm — every signed-in member of either plan sees this
+      // door; the server still decides who may manage it.
+      { to: '/storefronts', label: 'Storefront connections', labelKey: 'nav.storefronts', icon: Store },
       { to: '/returns', label: 'Returns', labelKey: 'nav.returns', icon: Undo2, perm: 'returns.manage' },
       { to: '/listings', label: 'Listings', labelKey: 'nav.listings', icon: Store, perm: 'listings.manage' },
     ],

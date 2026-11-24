@@ -53,6 +53,7 @@ export const POS_PROVIDER_LABELS = {
   zettle: 'PayPal Zettle',
   stripe_terminal: 'Stripe Terminal',
   wix: 'Wix',
+  ebay: 'eBay',
   csv: 'CSV import',
 };
 
@@ -173,7 +174,10 @@ async function applyLineTx(client, { businessId, provider, line, products, locat
     location,
     type: 'sale',
     quantity: qty,
-    note: `Sold at the till (${POS_PROVIDER_LABELS[provider] || provider})`,
+    // eBay is a storefront, not a till (release 362): its
+    // movements say where the sale actually happened. The
+    // till providers' note is unchanged.
+    note: provider === 'ebay' ? 'Sold on eBay' : `Sold at the till (${POS_PROVIDER_LABELS[provider] || provider})`,
     reference,
     userName,
     planKey,
@@ -260,7 +264,8 @@ export async function applyPosSale(pool, {
 }) {
   const externalSaleId = String(sale?.externalSaleId || '').trim();
   if (!externalSaleId) throw err(400, 'invalid_value', 'A sale needs its provider sale id.');
-  const userName = (await posCallerName(pool, businessId, caller)) || `${POS_PROVIDER_LABELS[provider] || provider} POS`;
+  const userName = (await posCallerName(pool, businessId, caller))
+    || (provider === 'ebay' ? 'eBay' : `${POS_PROVIDER_LABELS[provider] || provider} POS`);
   const reference = `POS-${provider}-${externalSaleId}`.slice(0, 120);
 
   // The recorded outcome for an already-seen sale — the replay
@@ -380,7 +385,8 @@ export async function retryHeldLines(pool, { businessId, provider = null, provid
         locationId: connection?.location_id || null,
         locationLabel: event.location_label,
       });
-      const userName = (await posCallerName(client, businessId, caller)) || `${POS_PROVIDER_LABELS[event.provider] || event.provider} POS`;
+      const userName = (await posCallerName(client, businessId, caller))
+        || (event.provider === 'ebay' ? 'eBay' : `${POS_PROVIDER_LABELS[event.provider] || event.provider} POS`);
       const result = await applyLineTx(client, {
         businessId,
         provider: event.provider,
