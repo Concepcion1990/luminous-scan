@@ -421,6 +421,64 @@ export function createShopRouter({ getPool: getPoolFn }) {
     });
   }));
 
+  // ---- Import photo fetch (release 365) -------------------------------
+  // A sheet's photo link is fetched HERE, server-side, into the app's
+  // own photo storage (product_photos — the same bytes the product
+  // form's upload door stores), so the product carries an
+  // /api/photos/<id> URL like any other photo. A link that cannot be
+  // fetched is a named problem for its row — never a silent skip,
+  // never a failed import (owner ruling, Nov 23, 2026).
+  const IMPORT_PHOTO_MAX_BYTES = 2 * 1024 * 1024; // the photo pipeline's own cap
+  const importPhotoMime = (buffer, contentType) => {
+    const type = String(contentType || '').split(';')[0].trim().toLowerCase();
+    if (['image/png', 'image/jpeg', 'image/webp'].includes(type)) return type;
+    if (buffer.length >= 3 && buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff) return 'image/jpeg';
+    if (
+      buffer.length >= 8
+      && buffer.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))
+    ) return 'image/png';
+    if (
+      buffer.length >= 12
+      && buffer.subarray(0, 4).toString('ascii') === 'RIFF'
+      && buffer.subarray(8, 12).toString('ascii') === 'WEBP'
+    ) return 'image/webp';
+    return null;
+  };
+  const fetchImportPhoto = async (businessId, rawUrl, origin) => {
+    const url = String(rawUrl || '').trim();
+    if (!/^https?:\/\//i.test(url)) return { problem: 'The photo link is not a web address.' };
+    let response;
+    try {
+      response = await fetch(url, { redirect: 'follow', signal: AbortSignal.timeout(10000) });
+    } catch {
+      return { problem: 'The photo link could not be reached.' };
+    }
+    if (!response.ok) return { problem: 'The photo link could not be reached.' };
+    const buffer = Buffer.from(await response.arrayBuffer());
+    if (!buffer.length) return { problem: 'The photo link returned an empty file.' };
+    if (buffer.length > IMPORT_PHOTO_MAX_BYTES) {
+      return { problem: 'The photo at that link is over 2 MB — too large to bring in.' };
+    }
+    const mime = importPhotoMime(buffer, response.headers.get('content-type'));
+    if (!mime) return { problem: 'The link did not return a PNG, JPG or WebP photo.' };
+    const id = crypto.randomUUID();
+    await pool().query(
+      'INSERT INTO product_photos (id, business_id, content_type, size_bytes, data_base64) VALUES ($1, $2, $3, $4, $5)',
+      [id, businessId, mime, buffer.length, buffer.toString('base64')],
+    );
+    return { url: `${origin}/api/photos/${id}` };
+  };
+  // The generated-SKU identity, mirroring src/lib/csvImport.js and
+  // server/entities.js slug rules exactly: a row with no SKU of its
+  // own is judged by this base, so a re-import recognizes the
+  // products the first import created instead of twinning them.
+  const importSlugSku = (name) =>
+    String(name || '')
+      .toUpperCase()
+      .replace(/[^A-Z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 24);
+
   // ---- Import (server-side, plan-enforced) ----------------------------
   router.post('/businesses/:bid/import', asyncHandler(async (req, res) => {
     const access = await accessOr403(pool(), req.user, req.params.bid, 'exports.use');
@@ -447,6 +505,10 @@ export function createShopRouter({ getPool: getPoolFn }) {
       existing.rows.flatMap((r) => [r.upc, r.barcode, r.isbn]).map((c) => String(c || '').toLowerCase()).filter(Boolean),
     );
     const problems = [];
+    const photoProblems = [];
+    // The catalog as it stood when the send arrived: a SKU-less row
+    // is judged against this snapshot by its generated identity.
+    const catalogSkus = new Set(takenSkus);
     let created = 0;
     let received = 0;
     let units = 0;
@@ -464,11 +526,31 @@ export function createShopRouter({ getPool: getPoolFn }) {
         problems.push({ index, name: '', problem: 'A product name is required.' });
         continue;
       }
-      const sku = String(row.sku || '').trim();
+      let sku = String(row.sku || '').trim();
       const codeValue = String(row.upc || row.barcode || row.isbn || '').trim().toLowerCase();
       if (sku && takenSkus.has(sku.toLowerCase())) {
         problems.push({ index, name, problem: `SKU ${sku} is already in the catalog` });
         continue;
+      }
+      if (!sku) {
+        // No SKU of its own: judge the row by the identity the
+        // importer itself derives. Already home → named skip, never
+        // a twin. Genuinely new → the generated SKU is assigned
+        // here, suffixed against everything taken, exactly as the
+        // client's dry run resolved it.
+        const identity = importSlugSku(name);
+        if (identity && catalogSkus.has(identity.toLowerCase())) {
+          problems.push({ index, name, problem: `SKU ${identity} is already in the catalog` });
+          continue;
+        }
+        if (identity) {
+          sku = identity;
+          let attempt = 2;
+          while (takenSkus.has(sku.toLowerCase())) {
+            sku = `${identity}-${attempt}`;
+            attempt += 1;
+          }
+        }
       }
       if (codeValue && takenCodes.has(codeValue)) {
         problems.push({ index, name, problem: 'UPC / barcode already belongs to another product' });
@@ -501,31 +583,69 @@ export function createShopRouter({ getPool: getPoolFn }) {
       };
       if (Number.isNaN(draft.cost)) draft.cost = null;
       if (Number.isNaN(draft.price)) draft.price = null;
-      const createdRow = await createEntity(pool(), req.user, 'Product', draft);
+      // One row's failure is that row's problem — named in the
+      // result, never a silent skip and never a reason to fail the
+      // rows around it. Every refusal that CAN be known ahead of
+      // any write (access, batch, location, a spent batch) has
+      // already thrown above, before a single row landed: a refused
+      // send lands zero rows (owner ruling, Nov 23, 2026).
+      let createdRow;
+      try {
+        createdRow = await createEntity(pool(), req.user, 'Product', draft);
+      } catch (rowErr) {
+        problems.push({ index, name, problem: rowErr?.message || 'This row could not be created.' });
+        continue;
+      }
       created += 1;
       activeCount += 1;
       if (sku) takenSkus.add(sku.toLowerCase());
       if (codeValue) takenCodes.add(codeValue);
-      if (codeValue) takenCodes.add(codeValue);
       const qty = Math.abs(Number(row.stock_qty) || 0);
       if (qty > 0 && location) {
-        await withTx(pool(), (client) =>
-          recordMovementTx(client, {
-            businessId: req.params.bid,
-            product: createdRow,
-            location,
-            type: 'receive',
-            quantity: qty,
-            note: [`Import ${batchRef}`, String(body.note || '')].filter(Boolean).join(' · '),
-            reference: String(body.reference || ''),
-            supplierName: String(row.supplier_name || ''),
-            unitCost: draft.cost ?? 0,
-            planKey: access.planKey,
-            caller: req.user,
-          }),
-        );
-        received += 1;
-        units += qty;
+        try {
+          await withTx(pool(), (client) =>
+            recordMovementTx(client, {
+              businessId: req.params.bid,
+              product: createdRow,
+              location,
+              type: 'receive',
+              quantity: qty,
+              note: [`Import ${batchRef}`, String(body.note || '')].filter(Boolean).join(' · '),
+              reference: String(body.reference || ''),
+              supplierName: String(row.supplier_name || ''),
+              unitCost: draft.cost ?? 0,
+              planKey: access.planKey,
+              caller: req.user,
+            }),
+          );
+          received += 1;
+          units += qty;
+        } catch (rowErr) {
+          problems.push({
+            index,
+            name,
+            problem: `The product was created, but its opening stock could not be recorded: ${rowErr?.message || 'unknown error'}`,
+          });
+        }
+      }
+      const photoLink = String(row.photo || '').trim();
+      if (photoLink) {
+        try {
+          const fetched = await fetchImportPhoto(
+            req.params.bid,
+            photoLink,
+            `${req.protocol}://${req.get('host')}`,
+          );
+          if (fetched.problem) {
+            photoProblems.push({ index, name, problem: fetched.problem });
+          } else {
+            await updateEntity(pool(), req.user, 'Product', createdRow.id, {
+              photo_urls: [fetched.url],
+            });
+          }
+        } catch {
+          photoProblems.push({ index, name, problem: 'The photo could not be brought in.' });
+        }
       }
     }
     // The import's own story (owner ruling, Nov 15, 2026): one
@@ -548,7 +668,7 @@ export function createShopRouter({ getPool: getPoolFn }) {
         ],
       );
     }
-    return res.status(201).json({ created, received, units, skipped: problems.length, problems });
+    return res.status(201).json({ created, received, units, skipped: problems.length, problems, photoProblems });
   }));
 
   // ---- Export (Business only, server-built) ---------------------------

@@ -2,7 +2,7 @@ import { CheckCircle2, FlaskConical, TriangleAlert } from 'lucide-react';
 import { t } from '@/lib/i18n';
 
 /** The dry-run verdict: what would be created, what would be skipped, nothing written. */
-export default function DryRunPanel({ dryRun, report, needsCheck, withStock, capInfo }) {
+export default function DryRunPanel({ dryRun, report, needsCheck, withStock, stockMapped, capInfo }) {
   if (!dryRun) {
     return (
       <div className="rounded-lg border border-dashed border-border px-3 py-3 text-xs text-muted-foreground">
@@ -50,6 +50,12 @@ export default function DryRunPanel({ dryRun, report, needsCheck, withStock, cap
           </>
         ) : null}
       </p>
+
+      {stockMapped && !withStock && view.units > 0 && (
+        <p className="mt-1 font-medium text-foreground">
+          {t('import.dryRunUnitsNoLocation', { units: view.units })}
+        </p>
+      )}
 
       {capView.cap != null && (
         <p className="mt-1 text-foreground">

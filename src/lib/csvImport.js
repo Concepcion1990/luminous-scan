@@ -24,6 +24,7 @@ export const IMPORT_FIELDS = [
   { key: 'reorder_point', get label() { return t('importLib.field.reorderPoint'); } },
   { key: 'stock_qty', get label() { return t('importLib.field.stockQty'); } },
   { key: 'description', get label() { return t('importLib.field.description'); } },
+  { key: 'photo', get label() { return t('importLib.field.photo'); } },
 ];
 
 /**
@@ -44,25 +45,48 @@ export function importFieldsForPlan(planKey) {
 const UNITS = ['each', 'case', 'pair', 'pack', 'kg'];
 
 const SYNONYMS = {
-  name: ['name', 'productname', 'product', 'title', 'item', 'itemname', 'descriptionname'],
-  sku: ['sku', 'sku', 'itemcode', 'productcode', 'code', 'id'],
-  upc: ['upc', 'ean', 'ean13', 'gtin', 'upccode'],
+  name: ['name', 'productname', 'product', 'title', 'item', 'itemname', 'descriptionname', 'producttitle', 'listingtitle', 'itemtitle', 'booktitle'],
+  sku: ['sku', 'itemcode', 'productcode', 'code', 'id', 'customlabelsku', 'customlabel', 'sellersku', 'merchantsku'],
+  upc: ['upc', 'ean', 'ean13', 'gtin', 'upccode', 'pupc', 'pean'],
   barcode: ['barcode', 'barcodeno', 'scan'],
-  isbn: ['isbn', 'isbn10', 'isbn13'],
+  isbn: ['isbn', 'isbn10', 'isbn13', 'pisbn', 'isbnnumber'],
   author: ['author', 'by', 'writer'],
-  category: ['category', 'department', 'type', 'collection'],
+  category: ['category', 'department', 'type', 'collection', 'categoryname', 'category1name', 'storecategory'],
   subcategory: ['subcategory', 'subtype', 'subdepartment'],
   tags: ['tags', 'tag', 'keywords', 'labels'],
   brand: ['brand', 'make'],
   publisher: ['publisher', 'label', 'imprint'],
-  condition: ['condition', 'grade', 'state'],
+  condition: ['condition', 'grade', 'state', 'itemcondition'],
   unit: ['unit', 'uom', 'unitofmeasure'],
   cost: ['cost', 'unitcost', 'wholesale', 'buyprice', 'purchaseprice'],
-  price: ['price', 'retail', 'retailprice', 'sellprice', 'rrp', 'msrp'],
+  price: ['price', 'retail', 'retailprice', 'sellprice', 'rrp', 'msrp', 'startprice', 'currentprice', 'buyitnowprice', 'listprice'],
   reorder_point: ['reorderpoint', 'reorder', 'reorderat', 'min', 'minimum', 'minstock'],
-  stock_qty: ['stock', 'qty', 'quantity', 'onhand', 'stockqty', 'openingstock', 'units'],
+  stock_qty: ['stock', 'qty', 'quantity', 'onhand', 'stockqty', 'openingstock', 'units', 'availablequantity', 'quantityavailable', 'qtyavailable', 'unitsonhand', 'stockonhand', 'inventory'],
   description: ['description', 'notes', 'details', 'longdescription'],
+  photo: ['image', 'imageurl', 'photo', 'photourl', 'picture', 'pictureurl', 'mainimage', 'primaryimage', 'image1', 'pic'],
 };
+
+/**
+ * Columns that carry a marketplace's own bookkeeping, never a product
+ * field (owner's import night, Nov 23, 2026): an eBay "Item number"
+ * is an identifier for eBay's shelf, not the product's name — the old
+ * loose matching read it (and the ePID column, through the word
+ * "product") AS the name, so rows wore catalog numbers as names and
+ * every row without one was "missing" its name. "Format" on a
+ * marketplace sheet is the listing type (fixed price / auction),
+ * never the product's format, and "Variation details" is not a
+ * description. These never auto-match; the owner can still marry
+ * any of them by hand.
+ */
+const NEVER_AUTO_MATCH = new Set([
+  'itemnumber',
+  'itemid',
+  'listingid',
+  'ebayproductidepid',
+  'epid',
+  'format',
+  'variationdetails',
+]);
 
 export function normalizeHeader(header) {
   return String(header || '')
@@ -70,16 +94,102 @@ export function normalizeHeader(header) {
     .replace(/[^a-z0-9]/g, '');
 }
 
+/**
+ * How strongly one normalized header speaks for one field: an exact
+ * synonym is a shout, a synonym at either edge is a statement, a
+ * synonym buried mid-word is only a hint. The old matcher took the
+ * FIRST field with any buried hint — field order, not meaning,
+ * decided — which is how a price column could be read as a cost and
+ * an identifier as a name.
+ */
+function guessScore(key, synonyms) {
+  let best = 0;
+  for (const synonym of synonyms) {
+    // An exact synonym match is an exact match: no length bonus,
+    // so when two columns both name a field exactly (a seller
+    // sheet's Start price AND Current price), the EARLIER column
+    // wins the claim in guessFields — the listing's start price,
+    // not whichever synonym happens to be longer.
+    if (key === synonym) best = Math.max(best, 1000);
+    else if (synonym.length > 2 && (key.startsWith(synonym) || key.endsWith(synonym))) {
+      best = Math.max(best, 100 + synonym.length);
+    } else if (synonym.length >= 4 && key.includes(synonym)) {
+      best = Math.max(best, 10 + synonym.length);
+    }
+  }
+  return best;
+}
+
 /** Best-guess field for one spreadsheet column, or '' for "ignore". */
 export function guessField(header) {
   const key = normalizeHeader(header);
-  if (!key) return '';
-  const exact = Object.entries(SYNONYMS).find(([, list]) => list.includes(key));
-  if (exact) return exact[0];
-  const partial = Object.entries(SYNONYMS).find(([, list]) =>
-    list.some((synonym) => key.includes(synonym) && synonym.length > 2)
-  );
-  return partial ? partial[0] : '';
+  if (!key || NEVER_AUTO_MATCH.has(key)) return '';
+  let field = '';
+  let score = 0;
+  for (const [candidate, synonyms] of Object.entries(SYNONYMS)) {
+    const candidateScore = guessScore(key, synonyms);
+    if (candidateScore > score) {
+      field = candidate;
+      score = candidateScore;
+    }
+  }
+  return field;
+}
+
+/**
+ * Guesses for a whole sheet, with one rule the single-column guess
+ * cannot know: a field can be married to only ONE column. When two
+ * columns speak for the same field (an eBay sheet carries Start
+ * price, Buy It Now price, Reserve price AND Current price), the
+ * strongest voice keeps the field and the rest fall back to Ignore —
+ * visible in the mapper, never silently overwritten at read time
+ * (the old last-column-wins read is what married a name column to a
+ * catalog number). Ties go to the earlier column.
+ */
+export function guessFields(headers) {
+  const scored = headers.map((header) => {
+    const key = normalizeHeader(header);
+    if (!key || NEVER_AUTO_MATCH.has(key)) return { field: '', score: 0 };
+    let field = '';
+    let score = 0;
+    for (const [candidate, synonyms] of Object.entries(SYNONYMS)) {
+      const candidateScore = guessScore(key, synonyms);
+      if (candidateScore > score) {
+        field = candidate;
+        score = candidateScore;
+      }
+    }
+    return { field, score };
+  });
+  const claimed = new Set();
+  const order = scored
+    .map((entry, index) => ({ ...entry, index }))
+    .filter((entry) => entry.field)
+    .sort((a, b) => b.score - a.score || a.index - b.index);
+  for (const entry of order) {
+    if (claimed.has(entry.field)) scored[entry.index] = { field: '', score: 0 };
+    else claimed.add(entry.field);
+  }
+  return scored.map((entry) => entry.field);
+}
+
+/**
+ * The quantity marriage guard (owner ruling, Nov 23, 2026): a column
+ * that plainly holds quantities but is currently married to some
+ * OTHER field would strand every unit in the file — the products
+ * would be created with no stock counted and nothing would say so.
+ * Returns that column's header, or null when the road is clear (the
+ * column is married to Opening stock quantity, or the owner has
+ * deliberately set it to Ignore).
+ */
+export function unmarriedQuantityColumn(headers, mapping) {
+  for (let index = 0; index < headers.length; index += 1) {
+    const married = mapping[index] || '';
+    if (married !== 'stock_qty' && married !== 'ignore' && guessField(headers[index]) === 'stock_qty') {
+      return headers[index];
+    }
+  }
+  return null;
 }
 
 const NAMED_ENTITIES = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'" };
@@ -183,7 +293,7 @@ export function parseCsv(text) {
   };
 }
 
-function parseNumber(value) {
+export function parseNumber(value) {
   const cleaned = String(value ?? '').replace(/[^0-9.\-]/g, '');
   if (!cleaned) return undefined;
   const number = Number(cleaned);
@@ -196,6 +306,17 @@ function slugSku(name) {
     .replace(/[^A-Z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 24);
+}
+
+/**
+ * The identity the importer itself derives for a row with no SKU of
+ * its own: the generated SKU's base, before any uniqueness suffix.
+ * Duplicate judgment (client and server alike) reads a row by this
+ * identity, so re-importing the same file recognizes its own
+ * products instead of twinning them (owner ruling, Nov 23, 2026).
+ */
+export function generatedSkuFor(name) {
+  return slugSku(name);
 }
 
 /** Turns one mapped row into a product payload, or returns why it cannot be imported. */
@@ -233,7 +354,10 @@ export function draftFromRow(picked) {
   if (draft.price === undefined) delete draft.price;
 
   const quantity = Math.max(0, Math.round(parseNumber(picked.stock_qty) ?? 0));
-  return { draft, quantity };
+  // A photo link is not a product field — it rides beside the draft
+  // and the commit fetches it into the app's own photo storage.
+  const photoUrl = String(picked.photo || '').trim();
+  return { draft, quantity, photoUrl };
 }
 
 /** A SKU that is not already taken by the catalog or earlier rows in the file. */

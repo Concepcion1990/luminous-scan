@@ -1,17 +1,14 @@
 import { useMemo, useState } from 'react';
-import { base44 } from '@/api/client';
+import { apiRequest, base44 } from '@/api/client';
 import { Loader2, RotateCcw, TriangleAlert, Upload } from 'lucide-react';
 import { t } from '@/lib/i18n';
-import { guessField, importFieldsForPlan, parseCsv } from '@/lib/csvImport';
+import { guessFields, importFieldsForPlan, parseCsv, unmarriedQuantityColumn } from '@/lib/csvImport';
 import { evaluateRows, existingKeys } from '@/lib/importProducts';
 import { downloadCsv, toCsv } from '@/lib/csv';
 import { scoped } from '@/lib/scoped';
-import { createProducts } from '@/lib/entitlements';
-import { recordImportEvent } from '@/lib/importCommit';
 import { countDistinctProducts } from '@/lib/productDuplicates';
 import useEntitlements from '@/hooks/useEntitlements';
 import useImportDraft from '@/hooks/useImportDraft';
-import { useAuth } from '@/lib/AuthContext';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -32,7 +29,6 @@ const NO_LOCATION = 'none';
  * run, then write only the rows that passed.
  */
 export default function ImportWorkbench({ businessId }) {
-  const { user } = useAuth();
   const { limits, planKey } = useEntitlements();
   // The reorder point is a Business mapping target (owner ruling,
   // Nov 20, 2026): off Business it is not offered in the mapper,
@@ -96,7 +92,22 @@ export default function ImportWorkbench({ businessId }) {
     setExcluded((current) =>
       ticked ? current.filter((i) => i !== index) : [...current, index]
     );
+    // A changed pick is a changed promise: the dry run must be
+    // re-run before anything can be sent (the stale-check trap,
+    // owner ruling, Nov 23, 2026 — the signature already caught
+    // this; clearing the verdict makes the door state unmistakable).
+    setDryRun(null);
   };
+
+  // The quantity marriage guard (owner ruling, Nov 23, 2026): a
+  // quantity-looking column married to anything but Opening stock
+  // quantity would strand every unit in the file. The road stops
+  // here, in plain words, until the owner marries it or sets that
+  // column to Ignore on purpose.
+  const quantityBlock = useMemo(
+    () => (table ? unmarriedQuantityColumn(table.headers, mapping) : null),
+    [table, mapping]
+  );
 
   const hasName = mapping.includes('name');
   const stockMapped = mapping.includes('stock_qty');
@@ -160,7 +171,7 @@ export default function ImportWorkbench({ businessId }) {
   const loadSheet = (sheet) => {
     setSheetName(sheet.name);
     setTable({ headers: sheet.headers, rows: sheet.rows });
-    setMapping(sanitizeMapping(sheet.headers.map(guessField)));
+    setMapping(sanitizeMapping(guessFields(sheet.headers)));
     setDryRun(null);
     setExcluded([]);
   };
@@ -169,6 +180,13 @@ export default function ImportWorkbench({ businessId }) {
     const file = event.target.files?.[0];
     event.target.value = '';
     if (!file) return;
+    // The universal upload rule (owner ruling, Nov 23, 2026): this
+    // door takes files up to 25 MB — and says so plainly past it,
+    // before a byte is read.
+    if (file.size > 25 * 1024 * 1024) {
+      setError(t('import.fileTooLarge'));
+      return;
+    }
     setError('');
     setResult(null);
     setDryRun(null);
@@ -212,7 +230,16 @@ export default function ImportWorkbench({ businessId }) {
   };
 
   const changeMapping = (column, field) => {
-    setMapping((current) => current.map((value, index) => (index === column ? field : value)));
+    // One field, one column: marrying a field here un-marries it
+    // from any other column, in the open — the mapper never holds
+    // two claims on one field for the read to fight over.
+    setMapping((current) =>
+      current.map((value, index) => {
+        if (index === column) return field;
+        if (field && value === field) return '';
+        return value;
+      })
+    );
     setDryRun(null);
     setExcluded([]);
   };
@@ -299,75 +326,48 @@ export default function ImportWorkbench({ businessId }) {
     }
   };
 
+  // The commit is ONE send to the server's import door, at any
+  // size (owner ruling, Nov 23, 2026): the old road chopped the
+  // products into 100-row sends and then sent every stock row in a
+  // single bulk call that refused past 100 — so a dry run could
+  // promise 138 and the import died mid-write, landing a silent
+  // partial. Now the server takes the whole ticked set at once,
+  // judges every row itself, receives the opening stock and
+  // fetches the photos; a refused send lands zero rows, and an
+  // accepted send answers with exactly the counts it made.
   const runImport = async () => {
-    if (!businessId || !dryRun || needsCheck || !effectiveReady || overRoom > 0) return;
+    if (!businessId || !dryRun || needsCheck || !effectiveReady || overRoom > 0 || quantityBlock) return;
     setBusy(true);
     setError('');
     setResult(null);
     try {
       const valid = tickedReadyRows;
-      for (let index = 0; index < valid.length; index += 100) {
-        const chunk = valid
-          .slice(index, index + 100)
-          .map((row) => ({ ...row.draft, business_id: businessId }));
-        await createProducts(businessId, chunk);
-      }
-
-      // Opening stock lands in one location: a stock row and a ledger entry per product.
-      let stockRows = 0;
-      if (withStock) {
-        const place = locations.find((location) => location.id === locationId);
-        const idsBySku = new Map();
-        const skus = valid.map((row) => row.draft.sku);
-        for (let index = 0; index < skus.length; index += 100) {
-          const page = await base44.entities.Product.filter(
-            scoped({ sku: { $in: skus.slice(index, index + 100) } }, businessId),
-            { limit: 500 }
-          );
-          (page.items ?? []).forEach((product) => {
-            idsBySku.set(String(product.sku || '').toLowerCase(), product);
-          });
-        }
-        const levels = [];
-        const movements = [];
-        valid.forEach((row) => {
-          if (!(row.quantity > 0)) return;
-          const saved = idsBySku.get(row.draft.sku.toLowerCase());
-          if (!saved) return;
-          levels.push({
-            business_id: businessId,
-            product_id: saved.id,
-            location_id: locationId,
-            quantity: row.quantity,
-          });
-          movements.push({
-            business_id: businessId,
-            product_id: saved.id,
-            product_name: saved.name,
-            sku: saved.sku || '',
-            location_id: locationId,
-            location_name: place?.name || '',
-            type: 'receive',
-            quantity: row.quantity,
-            previous_qty: 0,
-            new_qty: row.quantity,
-            reference: 'CSV import',
-            note: 'Opening stock from import',
-            user_name: user?.full_name || '',
-          });
-        });
-        if (levels.length) {
-          await base44.entities.StockLevel.bulkCreate(levels);
-          await base44.entities.StockMovement.bulkCreate(movements);
-          stockRows = levels.length;
-        }
-      }
-
-      // One activity line for the whole import (owner ruling,
-      // Nov 15, 2026) — the feed tells the import's story even
-      // when every product arrived at zero and no stock moved.
-      await recordImportEvent({ businessId, kind: 'create', count: valid.length, fileName });
-      setResult({ created: valid.length, skipped: report.skipped, over: 0, stockRows });
+      const batchRef = `csv-${crypto.randomUUID()}`;
+      const data = await apiRequest(`/api/businesses/${encodeURIComponent(businessId)}/import`, {
+        method: 'POST',
+        body: {
+          rows: valid.map((row) => ({
+            ...row.draft,
+            stock_qty: withStock ? row.quantity || 0 : 0,
+            photo: row.photoUrl || '',
+          })),
+          location_id: withStock ? locationId : '',
+          batchRef,
+          fileName,
+        },
+      });
+      setResult({
+        created: data?.created ?? 0,
+        skipped: data?.skipped ?? 0,
+        over: 0,
+        stockRows: data?.received ?? 0,
+        // The server counts rows by their place in the send; the
+        // result names them by their place in the owner's file.
+        photoProblems: (data?.photoProblems ?? []).map((problem) => ({
+          ...problem,
+          index: valid[problem.index]?.index ?? problem.index,
+        })),
+      });
       setTable(null);
       setFileName('');
       setMapping([]);
@@ -436,6 +436,21 @@ export default function ImportWorkbench({ businessId }) {
               <p className="mt-1 text-xs text-muted-foreground">
                 {t('import.notImportedPlanFull', { count: result.over })}
               </p>
+            )}
+            {result.photoProblems?.length > 0 && (
+              <div className="mt-2 text-xs">
+                <p className="font-medium text-foreground">{t('import.photoProblemsHeading')}</p>
+                <ul className="mt-1 space-y-0.5 text-muted-foreground">
+                  {result.photoProblems.slice(0, 6).map((row) => (
+                    <li key={row.index} className="truncate">
+                      {t('import.problemRow', { row: row.index + 2, problem: row.problem })}
+                    </li>
+                  ))}
+                  {result.photoProblems.length > 6 && (
+                    <li>{t('import.andMore', { count: result.photoProblems.length - 6 })}</li>
+                  )}
+                </ul>
+              </div>
             )}
           </div>
         )}
@@ -537,11 +552,19 @@ export default function ImportWorkbench({ businessId }) {
             </div>
           )}
 
+          {quantityBlock && (
+            <p className="flex items-start gap-2 rounded-lg border border-warn/40 bg-warn/10 px-3 py-2 text-sm text-foreground">
+              <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-warn" />{' '}
+              {t('import.quantityNeedsMatch', { column: quantityBlock })}
+            </p>
+          )}
+
           <DryRunPanel
             dryRun={dryRun}
             report={displayReport}
             needsCheck={needsCheck}
             withStock={withStock}
+            stockMapped={stockMapped}
             capInfo={capInfo}
           />
 
@@ -549,7 +572,7 @@ export default function ImportWorkbench({ businessId }) {
             <Button
               variant="outline"
               onClick={runCheck}
-              disabled={!hasName || !table.rows.length || busy || checking}
+              disabled={!hasName || !table.rows.length || busy || checking || Boolean(quantityBlock)}
             >
               {checking ? (
                 <>
@@ -563,7 +586,7 @@ export default function ImportWorkbench({ businessId }) {
             </Button>
             <Button
               onClick={runImport}
-              disabled={busy || !hasName || !effectiveReady || needsCheck || !businessId || overRoom > 0}
+              disabled={busy || !hasName || !effectiveReady || needsCheck || !businessId || overRoom > 0 || Boolean(quantityBlock)}
             >
               {busy ? (
                 <>

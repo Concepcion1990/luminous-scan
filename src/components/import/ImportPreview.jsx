@@ -35,6 +35,7 @@ export default function ImportPreview({ report, excluded, onToggleRow, resetKey 
               <th className="px-2 py-1.5 font-medium">{t('import.colName')}</th>
               <th className="px-2 py-1.5 font-medium">{t('import.colSku')}</th>
               <th className="px-2 py-1.5 font-medium">{t('import.colQty')}</th>
+              <th className="px-2 py-1.5 font-medium">{t('importLib.field.price')}</th>
               <th className="px-2 py-1.5 font-medium">{t('import.colCheck')}</th>
             </tr>
           </thead>
@@ -48,8 +49,11 @@ export default function ImportPreview({ report, excluded, onToggleRow, resetKey 
                 >
                   <td className="numeric px-2 py-1.5 text-muted-foreground">{row.index + 2}</td>
                   <td className="max-w-[190px] truncate px-2 py-1.5">{row.name || '—'}</td>
-                  <td className="numeric px-2 py-1.5">{row.draft?.sku || '—'}</td>
-                  <td className="numeric px-2 py-1.5">{row.draft ? row.quantity || 0 : '—'}</td>
+                  <td className="numeric px-2 py-1.5">{row.sku || row.draft?.sku || '—'}</td>
+                  <td className="numeric px-2 py-1.5">{row.quantity ?? '—'}</td>
+                  <td className="numeric px-2 py-1.5">
+                    {row.price != null ? Number(row.price).toFixed(2) : '—'}
+                  </td>
                   <td className="px-2 py-1.5">
                     <span className="flex items-center gap-2">
                       {row.status === 'ready' ? (

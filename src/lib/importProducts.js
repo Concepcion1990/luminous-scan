@@ -3,14 +3,19 @@
  * preview, the dry run and the real import all read the same verdict.
  */
 
-import { draftFromRow, uniqueSku } from '@/lib/csvImport';
+import { draftFromRow, generatedSkuFor, parseNumber, uniqueSku } from '@/lib/csvImport';
 
 export const IGNORE = 'ignore';
 
 function pickRow(cells, mapping) {
   const picked = {};
   mapping.forEach((field, column) => {
-    if (field && field !== IGNORE) picked[field] = cells[column] || '';
+    // First marriage wins: two columns married to one field must
+    // never overwrite each other at read time (the old last-wins
+    // read married a catalog number over a product's true name).
+    if (field && field !== IGNORE && picked[field] === undefined) {
+      picked[field] = cells[column] || '';
+    }
   });
   return picked;
 }
@@ -29,20 +34,65 @@ export function evaluateRows({ table, mapping, existing = {}, room = null }) {
 
   const taken = new Set((existing.skus || []).map((sku) => String(sku).toLowerCase()));
   const codes = new Set((existing.codes || []).map((code) => String(code).toLowerCase()));
+  // The catalog as it stood when the check ran — the duplicate
+  // judgment for a row with no SKU of its own reads against THIS
+  // set alone, by the identity the importer itself derives (the
+  // generated SKU's base). Rows within one file still suffix
+  // against each other through `taken`, so distinct products in a
+  // single sheet all land; a second import of the same sheet finds
+  // every base already home and names every row before sending.
+  const catalogSkus = new Set(taken);
 
   const rows = table.rows.map((cells, index) => {
     const picked = pickRow(cells, mapping);
-    const { draft, quantity, error } = draftFromRow(picked);
-    if (error) return { index, name: picked.name || '', status: 'skip', problem: error };
+    const { draft, quantity, error, photoUrl } = draftFromRow(picked);
+    if (error) {
+      // Even a refused row shows what was read from it — name,
+      // quantity and price as parsed, never dashes for present data.
+      return {
+        index,
+        name: picked.name || '',
+        sku: String(picked.sku || '').trim(),
+        quantity: Math.max(0, Math.round(parseNumber(picked.stock_qty) ?? 0)),
+        price: parseNumber(picked.price),
+        status: 'skip',
+        problem: error,
+      };
+    }
 
     const code = String(draft.upc || draft.barcode || draft.isbn || '').toLowerCase();
     if (draft.sku && taken.has(draft.sku.toLowerCase())) {
-      return { index, name: draft.name, status: 'skip', problem: `SKU ${draft.sku} is already in the catalog` };
+      return {
+        index,
+        name: draft.name,
+        sku: draft.sku,
+        quantity,
+        price: draft.price,
+        status: 'skip',
+        problem: `SKU ${draft.sku} is already in the catalog`,
+      };
+    }
+    if (!draft.sku) {
+      const identity = generatedSkuFor(draft.name);
+      if (identity && catalogSkus.has(identity.toLowerCase())) {
+        return {
+          index,
+          name: draft.name,
+          sku: identity,
+          quantity,
+          price: draft.price,
+          status: 'skip',
+          problem: `SKU ${identity} is already in the catalog`,
+        };
+      }
     }
     if (code && codes.has(code)) {
       return {
         index,
         name: draft.name,
+        sku: draft.sku || generatedSkuFor(draft.name),
+        quantity,
+        price: draft.price,
         status: 'skip',
         problem: 'UPC / barcode already belongs to another product',
       };
@@ -53,7 +103,16 @@ export function evaluateRows({ table, mapping, existing = {}, room = null }) {
     else sku = uniqueSku(draft.name, taken, index + 1);
     if (code) codes.add(code);
 
-    return { index, name: draft.name, status: 'ready', draft: { ...draft, sku }, quantity };
+    return {
+      index,
+      name: draft.name,
+      sku,
+      quantity,
+      price: draft.price,
+      status: 'ready',
+      draft: { ...draft, sku },
+      photoUrl: photoUrl || '',
+    };
   });
 
   // Cap pass: the first `room` ready rows fit; the rest are 'over'.
