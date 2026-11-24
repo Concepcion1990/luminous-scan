@@ -1,4 +1,5 @@
 import DocHeader from './DocHeader';
+import DocPhoto from './DocPhoto';
 import { DecoFooter, DecoHeader, DocFrame, PrintedAt } from './DocChrome';
 import { docRootClass, docRootStyle } from '@/lib/docStyle';
 import { t } from '@/lib/i18n';
@@ -38,7 +39,12 @@ export default function PrepSheetDoc({ rows, business, docStyle }) {
               <tbody>
                 {row.ingredients.map((ingredient) => (
                   <tr key={ingredient.product_id} className="border-b border-black/10">
-                    <td className="py-1 pr-2">{ingredient.name}</td>
+                    <td className="py-1 pr-2">
+                      <div className="flex items-center gap-2">
+                        <DocPhoto url={ingredient.photo_url} />
+                        <span>{ingredient.name}</span>
+                      </div>
+                    </td>
                     <td className="py-1 text-right">
                       {ingredient.quantity} {ingredient.unit}
                     </td>

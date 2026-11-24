@@ -50,6 +50,15 @@ export function escPosLabelBytes(item) {
     pushText(bytes, line);
     push(0x0a);
   }
+  // The product's photo (print family, Nov 24, 2026) rides the
+  // payload as prepared GS v 0 raster bytes (labelPhotoRaster.js
+  // does the fetching and rasterising in the async callers, so
+  // this builder stays pure). No raster — the label is exactly
+  // the label it always was.
+  if (label.photoRaster?.length) {
+    bytes.push(...label.photoRaster);
+    push(0x0a);
+  }
   if (label.code) {
     // Native symbology on the thermal path too (Nov 14, 2026):
     // GS k function B — UPC-A is 0x41 with the 12 digits, EAN-13

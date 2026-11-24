@@ -199,19 +199,36 @@ export default function LabelCard({ template, product: productProp, label, busin
   }
 
   if (template === 'barcode') {
+    // The product's photo rides the barcode label (print family,
+    // Nov 24, 2026) beside the bars; a product without a photo
+    // prints exactly the label it always did.
+    const photo = product.photo_urls?.[0];
     return (
       <div className={`${shell} w-[62mm] gap-1 p-2`}>
-        <Name product={product} className="text-[8pt]" />
-        <BarcodeSvg value={barcode} className="h-10 self-center" />
-        <p className="text-center font-mono text-[7pt] tracking-wide">{barcode}</p>
+        <div className="flex items-start gap-2">
+          {photo && (
+            <img src={photo} alt="" className="doc-photo h-[13mm] w-[13mm] shrink-0 rounded object-cover" />
+          )}
+          <div className="min-w-0 flex-1">
+            <Name product={product} className="text-[8pt]" />
+            <BarcodeSvg value={barcode} className="h-10 w-full" />
+            <p className="text-center font-mono text-[7pt] tracking-wide">{barcode}</p>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (template === 'qr') {
+    // The product's photo rides the QR label too (print family,
+    // Nov 24, 2026), under the code and above the name.
+    const photo = product.photo_urls?.[0];
     return (
       <div className={`${shell} w-[44mm] items-center gap-1 p-2`}>
         <QrSvg value={qr} className="h-[26mm] w-[26mm]" />
+        {photo && (
+          <img src={photo} alt="" className="doc-photo h-[12mm] w-[12mm] rounded object-cover" />
+        )}
         <Name product={product} className="max-w-full text-center text-[7pt]" />
         <p className="truncate font-mono text-[6pt]">{product.sku}</p>
       </div>

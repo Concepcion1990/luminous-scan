@@ -1,4 +1,5 @@
 import DocHeader from './DocHeader';
+import DocPhoto from './DocPhoto';
 import { DecoFooter, DecoHeader, DocFrame, PrintedAt } from './DocChrome';
 import { formatMoney } from '@/lib/inventory';
 import { docRootClass, docRootStyle } from '@/lib/docStyle';
@@ -37,7 +38,7 @@ export default function RecipeDoc({ recipe, business, docStyle, rows, costPerMak
         <img
           src={recipe.photo_url}
           alt=""
-          className="mt-2 h-[38mm] w-full rounded object-cover"
+          className="doc-photo mt-2 h-[38mm] w-full rounded object-cover"
         />
       ) : null}
 
@@ -57,8 +58,13 @@ export default function RecipeDoc({ recipe, business, docStyle, rows, costPerMak
           {(rows || []).map((row, index) => (
             <tr key={index} className="border-b border-black/10">
               <td className="py-1 pr-2">
-                {row.label}
-                {row.detail ? <span className="text-black/60"> — {row.detail}</span> : null}
+                <div className="flex items-center gap-2">
+                  <DocPhoto url={row.photo_url} />
+                  <span>
+                    {row.label}
+                    {row.detail ? <span className="text-black/60"> — {row.detail}</span> : null}
+                  </span>
+                </div>
               </td>
               <td className="py-1 pr-2 text-right">{row.qtyText}</td>
               {showMoney ? <td className="py-1 text-right">{row.costText || ''}</td> : null}

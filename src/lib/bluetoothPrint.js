@@ -31,6 +31,7 @@
  * here — that needs a live check with the owner and a real printer.
  */
 import { escPosLabelsBytes } from './escPos.js';
+import { withLabelRasters } from './labelPhotoRaster.js';
 import { t } from './i18n.js';
 
 /** BLE services label printers commonly expose (Zebra / Brother / DYMO class). */
@@ -84,7 +85,11 @@ export async function printLabelsViaBluetooth(
   { bluetooth = globalThis.navigator?.bluetooth, copies = 1 } = {},
 ) {
   if (!products?.length) throw new Error('Choose at least one product to print.');
-  const bytes = escPosLabelsBytes(products, copies);
+  // Photos join the labels (print family, Nov 24, 2026): each
+  // product's picture is rasterised for the printer first; a
+  // photo that cannot be fetched never blocks the print.
+  const items = await withLabelRasters(products);
+  const bytes = escPosLabelsBytes(items, copies);
   const { device, characteristic } = await connectBluetoothPrinter({ bluetooth });
   const chunk = 100; // BLE writes stay small; the printer re-assembles them.
   for (let i = 0; i < bytes.length; i += chunk) {

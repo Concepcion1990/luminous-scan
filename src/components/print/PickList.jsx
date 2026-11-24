@@ -1,4 +1,5 @@
 import DocHeader from './DocHeader';
+import DocPhoto, { firstPhotoUrl } from './DocPhoto';
 import { DecoFooter, DecoHeader, DocFrame, PrintedAt } from './DocChrome';
 import { docRootClass, docRootStyle } from '@/lib/docStyle';
 import { t } from '@/lib/i18n';
@@ -43,14 +44,19 @@ export default function PickList({ products, business, docStyle }) {
               </td>
               <td className="truncate py-2 pr-1 font-mono text-[7pt]">{product.sku}</td>
               <td className="py-2 pr-2">
-                <p className="truncate text-[9pt] font-medium leading-tight">{product.name}</p>
-                {(product.author || product.condition || product.isbn) && (
-                  <p className="truncate text-[6.5pt] leading-tight text-black/60">
-                    {[product.author, product.condition, product.isbn && `ISBN ${product.isbn}`]
-                      .filter(Boolean)
-                      .join(' · ')}
-                  </p>
-                )}
+                <div className="flex items-center gap-2">
+                  <DocPhoto url={firstPhotoUrl(product)} />
+                  <div className="min-w-0">
+                    <p className="truncate text-[9pt] font-medium leading-tight">{product.name}</p>
+                    {(product.author || product.condition || product.isbn) && (
+                      <p className="truncate text-[6.5pt] leading-tight text-black/60">
+                        {[product.author, product.condition, product.isbn && `ISBN ${product.isbn}`]
+                          .filter(Boolean)
+                          .join(' · ')}
+                      </p>
+                    )}
+                  </div>
+                </div>
               </td>
               <td className="py-2">
                 <span className="block h-[5mm] border-b border-dotted border-black/50" />

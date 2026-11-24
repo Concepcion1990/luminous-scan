@@ -79,6 +79,7 @@ export default function RestaurantTransfers() {
   // existed borrows it from its transfer_in sibling — the
   // in row's own shelf IS the destination.
   const docs = useMemo(() => {
+    const productsById = new Map(products.map((p) => [p.id, p]));
     const inByReference = new Map();
     for (const movement of movements) {
       if (movement.type === 'transfer_in' && movement.reference && !inByReference.has(movement.reference)) {
@@ -103,10 +104,13 @@ export default function RestaurantTransfers() {
           lines: [],
         });
       }
-      byKey.get(key).lines.push(movement);
+      byKey.get(key).lines.push({
+        ...movement,
+        photo_url: productsById.get(movement.product_id)?.photo_urls?.[0] || '',
+      });
     }
     return [...byKey.values()];
-  }, [movements]);
+  }, [movements, products]);
 
   const printDoc = (doc) => {
     setPrintingDoc(doc);

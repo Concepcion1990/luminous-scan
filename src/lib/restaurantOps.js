@@ -293,6 +293,7 @@ export function prepRows(pars, recipes, products, levels) {
       return {
         product_id: productId,
         name: product?.name || '',
+        photo_url: product?.photo_urls?.[0] || '',
         quantity: qty * makes,
         unit: product?.unit || 'each',
       };

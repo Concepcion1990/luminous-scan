@@ -1,4 +1,5 @@
 import DocHeader from './DocHeader';
+import DocPhoto from './DocPhoto';
 import { DecoFooter, DecoHeader, DocFrame, PrintedAt } from './DocChrome';
 import { docRootClass, docRootStyle } from '@/lib/docStyle';
 import { formatShortDate } from '@/lib/dates';
@@ -62,8 +63,13 @@ export default function TransferDoc({ doc, business, docStyle }) {
           {(doc.lines || []).map((line, index) => (
             <tr key={index} className="border-b border-black/10">
               <td className="py-1 pr-2">
-                {line.product_name}
-                {line.sku ? <span className="text-black/60"> — {line.sku}</span> : null}
+                <div className="flex items-center gap-2">
+                  <DocPhoto url={line.photo_url} />
+                  <span>
+                    {line.product_name}
+                    {line.sku ? <span className="text-black/60"> — {line.sku}</span> : null}
+                  </span>
+                </div>
               </td>
               <td className="py-1 text-right">{line.quantity}</td>
             </tr>

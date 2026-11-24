@@ -65,6 +65,29 @@ export function drawLabelBarcode(doc, code, centerX, topY) {
 }
 
 /** Label PDF bytes from already-loaded items — no fetch, no server. */
+/**
+ * Draw a label's product photo (print family, Nov 24, 2026) at
+ * the label's top-right corner. The caller attaches the photo as
+ * a data URL (label.photoData) ahead of time, so this builder
+ * still fetches nothing. Returns false — drawing nothing — when
+ * there is no usable image; the label then prints exactly as
+ * it always did.
+ */
+export function drawLabelPhoto(doc, dataUrl, x, y, size) {
+  if (typeof dataUrl !== 'string' || !dataUrl.startsWith('data:image/')) return false;
+  const format = dataUrl.startsWith('data:image/png')
+    ? 'PNG'
+    : dataUrl.startsWith('data:image/webp')
+      ? 'WEBP'
+      : 'JPEG';
+  try {
+    doc.addImage(dataUrl, format, x, y, size, size);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function buildLabelsPdfBytes(items, { copies = 1, businessName = '' } = {}) {
   const doc = new jsPDF({ unit: 'pt', format: 'letter' });
   doc.setFont('helvetica', 'normal');
@@ -96,7 +119,15 @@ export function buildLabelsPdfBytes(items, { copies = 1, businessName = '' } = {
     doc.setTextColor(30, 30, 30);
     doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
-    doc.text(doc.splitTextToSize(String(label.title || 'Untitled'), labelW - 20), x + 10, y + 20);
+    // The product's photo prints at the label's top-right corner
+    // (print family, Nov 24, 2026); the title narrows to make
+    // room only when a photo actually rides this label.
+    const hasPhoto = drawLabelPhoto(doc, label.photoData, x + labelW - 54, y + 8, 44);
+    doc.text(
+      doc.splitTextToSize(String(label.title || 'Untitled'), hasPhoto ? labelW - 74 : labelW - 20),
+      x + 10,
+      y + 20,
+    );
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
     // The detail lines, one per row; the code sits below them.
@@ -139,6 +170,24 @@ export function buildLabelsPdfBytes(items, { copies = 1, businessName = '' } = {
     doc.text(`Labels · Page ${i} of ${pages}`, 40, 756);
   }
   return new Uint8Array(doc.output('arraybuffer'));
+}
+
+/** Fetch one photo and return it as a data URL; null on any failure. */
+export async function fetchPhotoDataUrl(url) {
+  if (!url) return null;
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return null;
+    const blob = await response.blob();
+    return await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(typeof reader.result === 'string' ? reader.result : null);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
 }
 
 /** Build the labels PDF from cached data and trigger the download. */

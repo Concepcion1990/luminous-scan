@@ -25,6 +25,19 @@
  * this payload, never a product object. The mappers below are the
  * only place product or location fields are read.
  *
+ * The payload also carries the product's PHOTO (print family,
+ * Nov 24, 2026 — the owner's ruling: the barcode and QR labels
+ * print the product's picture beside the item, in every path):
+ *   photo     — the stored photo's URL (photo_urls[0]); the
+ *               browser-print templates read it directly.
+ *   photoData — the same photo as a data URL, attached by the
+ *               labels-PDF caller (client or server) so the PDF
+ *               builders can embed it without fetching.
+ *   photoRaster — the same photo as ESC/POS raster bytes,
+ *               attached by the Bluetooth / USB callers.
+ * A location label carries none of these — a sign for a place
+ * stays exactly as it was (the owner's exception list).
+ *
  * The fuller features behind this — overstock location tracking
  * (bin / top-of-shelf / stock room, counts per location) and
  * price-drop reasons shown to the manager — are POST-TWIN, not T5.
@@ -60,7 +73,7 @@ export function productToLabel(product) {
   }
   if (product.sku) lines.push(`SKU ${product.sku}`);
   const code = productCodeOf(product);
-  return {
+  const label = {
     title: String(product.name || 'Untitled').slice(0, 42),
     lines,
     code,
@@ -68,6 +81,17 @@ export function productToLabel(product) {
     // as itself on every path; everything else stays Code 128.
     codeType: symbologyFor(code),
   };
+  // Photo fields join the payload ONLY when there is a photo to
+  // carry (print family, Nov 24, 2026) — a photo-less product's
+  // payload keeps exactly the shape it has always had.
+  const photo = Array.isArray(product.photo_urls) ? product.photo_urls[0] : '';
+  if (photo) label.photo = photo;
+  // A photo a caller already fetched for this product (as a
+  // data URL or ESC/POS raster) rides through the mapping —
+  // the PDF and thermal builders read it from the payload.
+  if (product.photoData) label.photoData = product.photoData;
+  if (product.photoRaster) label.photoRaster = product.photoRaster;
+  return label;
 }
 
 /**
@@ -100,12 +124,20 @@ export function locationToLabel(location) {
 export function toLabel(item) {
   if (!item) return { title: 'Untitled', lines: [], code: '', codeType: 'CODE128' };
   if (typeof item.title === 'string') {
-    return {
+    const label = {
       title: item.title.slice(0, 42),
       lines: Array.isArray(item.lines) ? item.lines.map(String) : [],
       code: String(item.code || '').trim(),
       codeType: item.codeType || 'CODE128',
     };
+    // Photo fields ride the pass-through untouched (print
+    // family, Nov 24, 2026) so a caller-attached photo survives
+    // normalisation on its way to the PDF and ESC/POS builders —
+    // present only when the payload actually carries one.
+    if (item.photo) label.photo = item.photo;
+    if (item.photoData) label.photoData = item.photoData;
+    if (item.photoRaster) label.photoRaster = item.photoRaster;
+    return label;
   }
   if (item.name && (item.aisle !== undefined || item.bin !== undefined || item.room !== undefined || item.code)) {
     return locationToLabel(item);

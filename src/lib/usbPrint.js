@@ -28,6 +28,7 @@
  * here — that needs a live check with the owner and a real printer.
  */
 import { escPosLabelsBytes } from './escPos.js';
+import { withLabelRasters } from './labelPhotoRaster.js';
 import { t } from './i18n.js';
 
 // Plain module-level t(): this copy is exported as a bare string — the print
@@ -67,7 +68,10 @@ export async function printLabelsViaUsb(
 ) {
   if (!products?.length) throw new Error('Choose at least one product to print.');
   if (!usbAvailable(usb)) throw new Error(USB_UNAVAILABLE_COPY);
-  const bytes = escPosLabelsBytes(products, copies);
+  // Photos join the labels (print family, Nov 24, 2026), same
+  // as the Bluetooth path: rasterised first, never blocking.
+  const items = await withLabelRasters(products);
+  const bytes = escPosLabelsBytes(items, copies);
   const device = await usb.requestDevice({ filters: [] });
   await device.open();
   if (device.configuration === null) await device.selectConfiguration(1);

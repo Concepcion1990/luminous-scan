@@ -5,7 +5,7 @@ import { base44, apiDownload } from '@/api/client';
 import { t } from '@/lib/i18n';
 import { useBusiness } from '@/hooks/useBusiness';
 import useEntitlements from '@/hooks/useEntitlements';
-import { listProducts } from '@/lib/inventory';
+import { listAllProducts } from '@/lib/inventory';
 import { orderShipAddressText } from '@/lib/orders';
 import { isSupplierPrintTemplate } from '@/lib/plans';
 import { scoped } from '@/lib/scoped';
@@ -15,8 +15,9 @@ import {
   printLabelsViaBluetooth,
 } from '@/lib/bluetoothPrint';
 import { usbAvailable, USB_UNAVAILABLE_COPY, printLabelsViaUsb } from '@/lib/usbPrint';
-import { downloadLabelsPdf } from '@/lib/labelsPdf';
+import { downloadLabelsPdf, fetchPhotoDataUrl } from '@/lib/labelsPdf';
 import LabelCard, { TEMPLATES } from '@/components/print/LabelCard';
+import BlankFormDoc, { BLANK_FORMS } from '@/components/print/BlankFormDoc';
 import CountSheet from '@/components/print/CountSheet';
 import PickList from '@/components/print/PickList';
 import OrderPicker from '@/components/print/OrderPicker';
@@ -53,6 +54,13 @@ export default function PrintCenter() {
     (entry) => showSupplierDocs || !isSupplierPrintTemplate(entry.key)
   );
   const [template, setTemplate] = useState('price');
+  // Blank forms (print family, Nov 24, 2026): their own area of
+  // the Print Center, for every business on both plans — clean
+  // tables with empty rows to fill in by hand, wearing the
+  // owner's Studio styling. Picking a blank form and picking a
+  // print style clear each other, so the preview always shows
+  // exactly one thing.
+  const [blankKind, setBlankKind] = useState('');
   // The tapped document's editor is what she sees next (owner's
   // phone, Nov 15, 2026): the editor renders directly beneath
   // the document list — it used to sit below the whole Style
@@ -61,6 +69,13 @@ export default function PrintCenter() {
   const editorRef = useRef(null);
   const pickTemplate = (key) => {
     setTemplate(key);
+    setBlankKind('');
+    requestAnimationFrame(() => {
+      editorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  };
+  const pickBlankForm = (key) => {
+    setBlankKind(key);
     requestAnimationFrame(() => {
       editorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
@@ -133,7 +148,12 @@ export default function PrintCenter() {
     let cancelled = false;
     (async () => {
       setLoading(true);
-      const products = await listProducts({ search: debounced, limit: 100, businessId: activeId || '' });
+      // The FULL catalog, paged behind the scenes (print family
+      // ruling, Nov 24, 2026: no limit in the print chain — the
+      // picker used to stop at 100, so a 137-product owner's
+      // last 37 products could never be picked or printed, and
+      // "Select all" did not mean all).
+      const products = await listAllProducts({ search: debounced, businessId: activeId || '' });
       if (cancelled) return;
       setItems(products);
       setLoading(false);
@@ -142,6 +162,59 @@ export default function PrintCenter() {
       cancelled = true;
     };
   }, [debounced, activeId]);
+
+  // Product photos for the order documents (print family,
+  // Nov 24, 2026): order and return lines carry only a
+  // product_id, so the documents join the photo at print time
+  // from this map. Every product the picker loads — and every
+  // product already picked — contributes its stored photo; the
+  // map only ever grows, so a document's lines keep their
+  // pictures even after the search moves on.
+  const [photoById, setPhotoById] = useState({});
+  useEffect(() => {
+    setPhotoById({});
+  }, [activeId]);
+
+  // Label photos are fetched when a product is PICKED (print
+  // family, Nov 24, 2026) and ride the selected product as
+  // photoData, so the labels PDF — built fetch-free from the
+  // selection, exactly as it always has been — embeds each
+  // product's picture. A photo that cannot be fetched attaches
+  // as empty and the label prints without it, as before.
+  useEffect(() => {
+    const missing = selected.filter((p) => p.photo_urls?.[0] && p.photoData === undefined);
+    if (!missing.length) return;
+    let cancelled = false;
+    (async () => {
+      const fetched = new Map();
+      await Promise.all(
+        missing.map(async (p) => {
+          fetched.set(p.id, await fetchPhotoDataUrl(p.photo_urls[0]));
+        }),
+      );
+      if (cancelled) return;
+      setSelected((list) =>
+        list.map((p) => (fetched.has(p.id) ? { ...p, photoData: fetched.get(p.id) || '' } : p)),
+      );
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [selected]);
+  useEffect(() => {
+    setPhotoById((prev) => {
+      const next = { ...prev };
+      let changed = false;
+      for (const product of [...items, ...selected]) {
+        const url = product?.photo_urls?.[0];
+        if (product?.id && url && next[product.id] !== url) {
+          next[product.id] = url;
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [items, selected]);
 
   const needsOrder = template === 'po' || template === 'packing';
   const needsCustomerOrder = ['invoice', 'receipt', 'custpacking', 'shipping'].includes(template);
@@ -252,15 +325,17 @@ export default function PrintCenter() {
   // guard is the enforcement — the same shape as the export button.
   const supplierBlocked = isSupplierPrintTemplate(template) && !showSupplierDocs;
 
-  const nothingPicked = isOrder
-    ? !order
-    : isCustomerDoc
-      ? !customerOrder
-      : isReturnDoc
-        ? !returnRecord
-        : isDocument
-          ? selected.length === 0
-          : labels.length === 0;
+  const nothingPicked = blankKind
+    ? false
+    : isOrder
+      ? !order
+      : isCustomerDoc
+        ? !customerOrder
+        : isReturnDoc
+          ? !returnRecord
+          : isDocument
+            ? selected.length === 0
+            : labels.length === 0;
 
   const blank = supplierBlocked || nothingPicked;
 
@@ -279,7 +354,7 @@ export default function PrintCenter() {
   // server PDF — they print through the browser only.
   const isLabelStyle = !isDocument && !pickedDoc;
   const serverPdfPath = () => {
-    if (!activeId) return null;
+    if (!activeId || blankKind) return null;
     if (isLabelStyle && selected.length) {
       return `/api/businesses/${activeId}/print/labels?product_ids=${selected.map((p) => p.id).join(',')}&copies=${copies}`;
     }
@@ -345,8 +420,12 @@ export default function PrintCenter() {
     }
   };
 
-  const summaryTitle = isOrder
-    ? order
+  const blankForm = BLANK_FORMS.find((entry) => entry.key === blankKind) || null;
+
+  const summaryTitle = blankForm
+    ? t(blankForm.labelKey)
+    : isOrder
+      ? order
       ? t('print.summaryLines', {
           number: order.number,
           count: (order.lines || []).length,
@@ -378,8 +457,10 @@ export default function PrintCenter() {
 
   const templateLabel = activeTemplate?.labelKey ? t(activeTemplate.labelKey) : '';
 
-  const summarySub = isOrder
-    ? `${templateLabel} · ${order ? order.supplier_name : t('print.pickOrder')}`
+  const summarySub = blankForm
+    ? t('print.blankFormsHint')
+    : isOrder
+      ? `${templateLabel} · ${order ? order.supplier_name : t('print.pickOrder')}`
     : isCustomerDoc
       ? `${templateLabel} · ${
           customerOrder ? customerOrder.customer_name || t('print.noCustomerName') : t('print.pickCustomerOrder')
@@ -431,7 +512,7 @@ export default function PrintCenter() {
                   type="button"
                   onClick={() => pickTemplate(entry.key)}
                   className={`rounded-lg border px-3 py-2 text-left transition-colors ${
-                    template === entry.key
+                    template === entry.key && !blankKind
                       ? 'border-primary bg-primary text-primary-foreground'
                       : 'border-border hover:bg-muted'
                   }`}
@@ -439,11 +520,39 @@ export default function PrintCenter() {
                   <span className="block text-sm font-medium">{t(entry.labelKey)}</span>
                   <span
                     className={`block text-[11px] ${
-                      template === entry.key ? 'text-primary-foreground/60' : 'text-muted-foreground'
+                      template === entry.key && !blankKind ? 'text-primary-foreground/60' : 'text-muted-foreground'
                     }`}
                   >
                     {t(entry.hintKey)}
                   </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Blank forms — their own area (print family, Nov 24,
+              2026), for everyone on both plans: pick a form and
+              print a clean table of empty rows to fill in by
+              hand. The form wears the Studio styling below, the
+              same as every filled document. */}
+          <div className="rounded-xl border border-border bg-card p-4">
+            <Label className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+              {t('print.blankFormsTitle')}
+            </Label>
+            <p className="mt-1 text-[11px] text-muted-foreground">{t('print.blankFormsHint')}</p>
+            <div className="mt-2 grid gap-1.5">
+              {BLANK_FORMS.map((entry) => (
+                <button
+                  key={entry.key}
+                  type="button"
+                  onClick={() => pickBlankForm(entry.key)}
+                  className={`rounded-lg border px-3 py-2 text-left transition-colors ${
+                    blankKind === entry.key
+                      ? 'border-primary bg-primary text-primary-foreground'
+                      : 'border-border hover:bg-muted'
+                  }`}
+                >
+                  <span className="block text-sm font-medium">{t(entry.labelKey)}</span>
                 </button>
               ))}
             </div>
@@ -512,6 +621,13 @@ export default function PrintCenter() {
             </>
           ) : isReturnDoc ? (
             <ReturnPicker returns={returnRecords} value={returnId} onChange={setReturnId} />
+          ) : blankKind ? (
+            <div className="rounded-xl border border-border bg-card p-4">
+              <Label className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                {t('print.blankFormsTitle')}
+              </Label>
+              <p className="mt-1 text-[11px] text-muted-foreground">{t('print.blankFormsHint')}</p>
+            </div>
           ) : (
           <div className="rounded-xl border border-border bg-card p-4">
             <div className="flex items-center justify-between gap-3">
@@ -548,7 +664,7 @@ export default function PrintCenter() {
           </div>
           )}
 
-          {isLabelStyle && selected.length > 0 && (
+          {!blankKind && isLabelStyle && selected.length > 0 && (
             <div className="rounded-xl border border-border bg-card p-4">
               <Label className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
                 {t('print.directTitle')}
@@ -606,14 +722,14 @@ export default function PrintCenter() {
               <p className="text-sm font-medium">{summaryTitle}</p>
               <p className="text-[11px] text-muted-foreground">{summarySub}</p>
             </div>
-            {!pickedDoc && selected.length > 0 && (
+            {!blankKind && !pickedDoc && selected.length > 0 && (
               <Button variant="ghost" size="sm" onClick={() => setSelected([])}>
                 {t('print.clearSelection')}
               </Button>
             )}
           </div>
 
-          {!pickedDoc && selected.length > 0 && (
+          {!blankKind && !pickedDoc && selected.length > 0 && (
             <div className="flex flex-wrap gap-1.5 border-b border-border px-4 py-2 no-print">
               {selected.map((product) => (
                 <button
@@ -659,8 +775,10 @@ export default function PrintCenter() {
                         : t('print.chooseStyleHint')}
                 </p>
               </div>
+            ) : blankKind ? (
+              <BlankFormDoc kind={blankKind} business={profile} docStyle={docStyle} />
             ) : isOrder ? (
-              <PurchaseOrderDoc order={order} business={profile} mode={activeTemplate.mode} docStyle={docStyle} />
+              <PurchaseOrderDoc order={order} business={profile} mode={activeTemplate.mode} docStyle={docStyle} photoById={photoById} />
             ) : isCustomerDoc ? (
               activeTemplate.mode === 'shipping' ? (
                 uploadedActive ? (
@@ -703,10 +821,10 @@ export default function PrintCenter() {
                   />
                 )
               ) : (
-                <CustomerDoc order={customerOrder} business={profile} mode={activeTemplate.mode} docStyle={docStyle} />
+                <CustomerDoc order={customerOrder} business={profile} mode={activeTemplate.mode} docStyle={docStyle} photoById={photoById} />
               )
             ) : isReturnDoc ? (
-              <ReturnDoc ret={returnRecord} business={profile} docStyle={docStyle} />
+              <ReturnDoc ret={returnRecord} business={profile} docStyle={docStyle} photoById={photoById} />
             ) : isDocument ? (
               <Sheet products={selected} business={profile} docStyle={docStyle} />
             ) : (

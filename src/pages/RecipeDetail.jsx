@@ -108,6 +108,7 @@ export default function RecipeDetail() {
     const yieldPct = Number(line.yield_pct);
     return {
       label: line.product_name || product?.name || '',
+      photo_url: product?.photo_urls?.[0] || '',
       detail: [
         line.unit || product?.unit || '',
         Number.isFinite(yieldPct) && yieldPct > 0 && yieldPct < 100

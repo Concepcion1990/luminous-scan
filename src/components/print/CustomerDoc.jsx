@@ -1,4 +1,5 @@
 import DocHeader from './DocHeader';
+import DocPhoto from './DocPhoto';
 import { DecoFooter, DecoHeader, DocFrame, PrintedAt } from './DocChrome';
 import { channelLabel, orderShipAddressLines } from '@/lib/orders';
 import { formatMoney } from '@/lib/inventory';
@@ -21,7 +22,7 @@ function shortDate(value) {
  * Customer-facing paperwork built from a customer order: a priced invoice, a
  * compact receipt, or a packing slip that travels in the box with no prices on it.
  */
-export default function CustomerDoc({ order, business, mode = 'invoice', docStyle }) {
+export default function CustomerDoc({ order, business, mode = 'invoice', docStyle, photoById = {} }) {
   const packing = mode === 'packing';
   const receipt = mode === 'receipt';
   const lines = order.lines || [];
@@ -201,7 +202,10 @@ export default function CustomerDoc({ order, business, mode = 'invoice', docStyl
             >
               <td className="truncate py-1.5 pr-1 font-mono text-[7pt]">{line.sku}</td>
               <td className="py-1.5 pr-2">
-                <p className="truncate text-[9pt] leading-tight">{line.product_name}</p>
+                <div className="flex items-center gap-2">
+                  <DocPhoto url={photoById[line.product_id]} />
+                  <p className="min-w-0 truncate text-[9pt] leading-tight">{line.product_name}</p>
+                </div>
               </td>
               <td className="numeric py-1.5 text-right text-[8pt]">{line.quantity ?? 0}</td>
               {!packing && (

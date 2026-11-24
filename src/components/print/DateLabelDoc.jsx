@@ -1,3 +1,4 @@
+import DocPhoto from './DocPhoto';
 import { DecoFooter, DecoHeader, DocFrame, PrintedAt } from './DocChrome';
 import { docRootClass, docRootStyle } from '@/lib/docStyle';
 import { formatShortDate } from '@/lib/dates';
@@ -21,7 +22,10 @@ export default function DateLabelDoc({ batches, business, docStyle }) {
       <div className="grid grid-cols-2 gap-3">
         {(batches || []).map((batch) => (
           <div key={batch.id} className="rounded border border-black/50 p-3">
-            <p className="text-[12pt] font-semibold leading-tight">{batch.product_name}</p>
+            <div className="flex items-start gap-2">
+              <DocPhoto url={batch.photo_url} className="h-[11mm] w-[11mm]" />
+              <p className="text-[12pt] font-semibold leading-tight">{batch.product_name}</p>
+            </div>
             {batch.location_name ? (
               <p className="mt-0.5 text-[9pt] text-black/70">{batch.location_name}</p>
             ) : null}

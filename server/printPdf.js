@@ -29,6 +29,7 @@ import { jsPDF } from 'jspdf';
 import { printLabelsFor, fillLabel } from './printLabels.js';
 import { drawPrintText, splitPrintText } from './printFonts.js';
 import { barcodeRects } from './barcodeSym.js';
+import { drawPdfPhoto } from './printPhotos.js';
 
 // Barcode geometry, shared with src/lib/labelsPdf.js so the two
 // PDFs agree bar for bar: 0.25mm per module like the SVG label
@@ -136,6 +137,7 @@ function toLabel(item, labelsText, locale) {
       lines: Array.isArray(item.lines) ? item.lines.map(String) : [],
       code: String(item.code || '').trim(),
       codeType: item.codeType || 'CODE128',
+      photoData: item.photoData || '',
     };
   }
   const lines = [];
@@ -143,7 +145,16 @@ function toLabel(item, labelsText, locale) {
     lines.push(money(item.price, 'USD', locale));
   }
   if (item.sku) lines.push(fillLabel(labelsText.skuLine, { sku: item.sku }));
-  return { title: String(item.name || labelsText.untitled).slice(0, 42), lines, code: codeOf(item), codeType: 'CODE128' };
+  return {
+    title: String(item.name || labelsText.untitled).slice(0, 42),
+    lines,
+    code: codeOf(item),
+    codeType: 'CODE128',
+    // The product's photo, resolved by the route from the stored
+    // photo bytes (print family, Nov 24, 2026); empty when the
+    // product has none.
+    photoData: item.photoData || '',
+  };
 }
 
 /** Labels, both plans. One label per item per copy — product or location. */
@@ -172,7 +183,16 @@ export function buildLabelsPdf(items, { copies = 1, businessName = '', language 
     doc.setTextColor(30, 30, 30);
     doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
-    text(doc, split(doc, String(label.title || labelsText.untitled), labelW - 20), x + 10, y + 20);
+    // The product's photo at the label's top-right corner — the
+    // server twin of the client labels PDF (print family,
+    // Nov 24, 2026); the title narrows only when a photo rides.
+    const hasPhoto = drawPdfPhoto(doc, label.photoData, x + labelW - 54, y + 8, 44, 44);
+    text(
+      doc,
+      split(doc, String(label.title || labelsText.untitled), hasPhoto ? labelW - 74 : labelW - 20),
+      x + 10,
+      y + 20,
+    );
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
     label.lines.slice(0, 3).forEach((line, i) => {
@@ -210,7 +230,7 @@ export function buildLabelsPdf(items, { copies = 1, businessName = '', language 
 }
 
 /** Customer packing slip (quantities only, no prices) — Business. */
-export function buildPackingSlipPdf(order, business) {
+export function buildPackingSlipPdf(order, business, { photoDataById = {} } = {}) {
   const labels = printLabelsFor(business?.language);
   const doc = newDoc(business?.name);
   doc.setTextColor(30, 30, 30);
@@ -230,9 +250,13 @@ export function buildPackingSlipPdf(order, business) {
   y += 18;
   (order.lines || []).forEach((line) => {
     const qty = line.qty ?? line.quantity ?? line.qty_ordered ?? 0;
-    text(doc, String(line.product_name || line.sku || labels.item), 40, y);
+    // The product's photo beside its name (print family, Nov 24,
+    // 2026) when the route resolved one; the name shifts right
+    // only on rows that actually carry a picture.
+    const hasPhoto = drawPdfPhoto(doc, photoDataById[line.product_id], 40, y - 9, 12, 12);
+    text(doc, String(line.product_name || line.sku || labels.item), hasPhoto ? 58 : 40, y);
     text(doc, String(qty), 420, y);
-    y += 16;
+    y += hasPhoto ? 18 : 16;
     if (y > 720) {
       doc.addPage();
       y = 56;
@@ -246,7 +270,7 @@ export function buildPackingSlipPdf(order, business) {
  * Purchase order (mode 'po': with costs) or supplier packing slip
  * (mode 'packing': quantities only, no prices) — Business.
  */
-export function buildPoPdf(order, business, { mode = 'po' } = {}) {
+export function buildPoPdf(order, business, { mode = 'po', photoDataById = {} } = {}) {
   const labels = printLabelsFor(business?.language);
   const doc = newDoc(business?.name);
   doc.setTextColor(30, 30, 30);
@@ -273,13 +297,16 @@ export function buildPoPdf(order, business, { mode = 'po' } = {}) {
   (order.lines || []).forEach((line) => {
     const qty = Number(line.qty_ordered) || 0;
     const cost = Number(line.unit_cost) || 0;
-    text(doc, String(line.product_name || line.sku || labels.item), 40, y);
+    // The product's photo beside its name (print family, Nov 24,
+    // 2026) — on the purchase order and its packing slip alike.
+    const hasPhoto = drawPdfPhoto(doc, photoDataById[line.product_id], 40, y - 9, 12, 12);
+    text(doc, String(line.product_name || line.sku || labels.item), hasPhoto ? 58 : 40, y);
     text(doc, String(qty), 340, y);
     if (mode === 'po') {
       text(doc, money(cost, business?.currency, business?.language), 400, y);
       text(doc, money(qty * cost, business?.currency, business?.language), 490, y);
     }
-    y += 16;
+    y += hasPhoto ? 18 : 16;
     if (y > 720) {
       doc.addPage();
       y = 56;
@@ -361,7 +388,7 @@ export function buildSupplierDocPdf(supplier, business, openOrders = []) {
 }
 
 /** One report as a PDF — Business. Same rows the server report endpoint returns. */
-export function buildReportPdf(report, business, { from = '', to = '' } = {}) {
+export function buildReportPdf(report, business, { from = '', to = '', photoDataById = {} } = {}) {
   const labels = printLabelsFor(business?.language);
   const doc = newDoc(business?.name);
   doc.setTextColor(30, 30, 30);
@@ -381,11 +408,15 @@ export function buildReportPdf(report, business, { from = '', to = '' } = {}) {
   doc.setFont('helvetica', 'normal');
   y += 18;
   (report?.rows || []).forEach((row) => {
-    text(doc, split(doc, String(row.label || ''), 240)[0], 40, y);
+    // A report grouped by product prints each product's photo
+    // beside its name (print family, Nov 24, 2026); rows carry
+    // the product id as their key only in that grouping.
+    const hasPhoto = drawPdfPhoto(doc, photoDataById[row.key], 40, y - 9, 12, 12);
+    text(doc, split(doc, String(row.label || ''), 240)[0], hasPhoto ? 58 : 40, y);
     text(doc, String(row.count ?? 0), 300, y);
     text(doc, String(row.units ?? 0), 380, y);
     text(doc, money(row.value, business?.currency, business?.language), 450, y);
-    y += 16;
+    y += hasPhoto ? 18 : 16;
     if (y > 720) {
       doc.addPage();
       y = 56;

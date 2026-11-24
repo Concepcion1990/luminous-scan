@@ -1,4 +1,5 @@
 import DocHeader from './DocHeader';
+import DocPhoto from './DocPhoto';
 import { DecoFooter, DecoHeader, DocFrame, PrintedAt } from './DocChrome';
 import { formatMoney } from '@/lib/inventory';
 import { docRootClass, docRootStyle } from '@/lib/docStyle';
@@ -14,7 +15,7 @@ import { t } from '@/lib/i18n';
  * decoration pictures and the printed-at stamp — the frame
  * dresses the page only, the facts print exactly as they are.
  */
-export default function PurchaseOrderDoc({ order, business, mode = 'po', docStyle }) {
+export default function PurchaseOrderDoc({ order, business, mode = 'po', docStyle, photoById = {} }) {
   const packing = mode === 'packing';
   const lines = order.lines || [];
   // Exact prices on paper (Nov 14, 2026): cents always, never rounded.
@@ -74,7 +75,10 @@ export default function PurchaseOrderDoc({ order, business, mode = 'po', docStyl
             <tr key={`${line.product_id || line.sku}-${index}`} className="break-inside-avoid border-b border-black/25">
               <td className="truncate py-1.5 pr-1 font-mono text-[7pt]">{line.sku}</td>
               <td className="py-1.5 pr-2">
-                <p className="truncate text-[9pt] leading-tight">{line.product_name}</p>
+                <div className="flex items-center gap-2">
+                  <DocPhoto url={photoById[line.product_id]} />
+                  <p className="min-w-0 truncate text-[9pt] leading-tight">{line.product_name}</p>
+                </div>
               </td>
               <td className="numeric py-1.5 text-right text-[8pt]">{line.qty_ordered ?? 0}</td>
               <td className="numeric py-1.5 text-right text-[8pt]">{line.qty_received ?? 0}</td>

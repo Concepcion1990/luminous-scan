@@ -1,4 +1,5 @@
 import DocHeader from './DocHeader';
+import DocPhoto, { firstPhotoUrl } from './DocPhoto';
 import { DecoFooter, DecoHeader, DocFrame, PrintedAt } from './DocChrome';
 import { docRootClass, docRootStyle } from '@/lib/docStyle';
 import { t } from '@/lib/i18n';
@@ -39,12 +40,17 @@ export default function CountSheet({ products, business, docStyle }) {
               <td className="py-1.5 font-mono text-[7pt] text-black/70">{index + 1}</td>
               <td className="truncate py-1.5 pr-1 font-mono text-[7pt]">{product.sku}</td>
               <td className="py-1.5 pr-2">
-                <p className="truncate text-[8pt] font-medium leading-tight">{product.name}</p>
-                {(product.author || product.condition) && (
-                  <p className="truncate text-[6.5pt] leading-tight text-black/60">
-                    {[product.author, product.condition].filter(Boolean).join(' · ')}
-                  </p>
-                )}
+                <div className="flex items-center gap-2">
+                  <DocPhoto url={firstPhotoUrl(product)} />
+                  <div className="min-w-0">
+                    <p className="truncate text-[8pt] font-medium leading-tight">{product.name}</p>
+                    {(product.author || product.condition) && (
+                      <p className="truncate text-[6.5pt] leading-tight text-black/60">
+                        {[product.author, product.condition].filter(Boolean).join(' · ')}
+                      </p>
+                    )}
+                  </div>
+                </div>
               </td>
               <td className="py-1.5 pr-1">
                 <span className="block h-[6mm] border border-black/30" />

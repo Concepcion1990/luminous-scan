@@ -53,7 +53,13 @@ export default function RestaurantExpiry() {
   const ordered = useMemo(() => fefoOrder(batches), [batches]);
   const soon = useMemo(() => expiringSoon(batches, 7), [batches]);
   const soonIds = useMemo(() => new Set(soon.map((batch) => batch.id)), [soon]);
-  const printBatches = ordered.filter((batch) => selected.includes(batch.id));
+  const productsById = useMemo(() => new Map(products.map((p) => [p.id, p])), [products]);
+  const printBatches = ordered
+    .filter((batch) => selected.includes(batch.id))
+    .map((batch) => ({
+      ...batch,
+      photo_url: productsById.get(batch.product_id)?.photo_urls?.[0] || '',
+    }));
 
   const toggle = (id) =>
     setSelected((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]));

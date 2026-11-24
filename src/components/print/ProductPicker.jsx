@@ -70,6 +70,13 @@ export default function ProductPicker({ products, loading, search, onSearch, sel
                 >
                   {active && <Check className="h-3 w-3" />}
                 </span>
+                {product.photo_urls?.[0] && (
+                  <img
+                    src={product.photo_urls[0]}
+                    alt=""
+                    className="h-9 w-9 shrink-0 rounded object-cover"
+                  />
+                )}
                 <span className="min-w-0 flex-1 overflow-hidden">
                   <span className="block truncate text-sm">{product.name}</span>
                   <span className="numeric block truncate text-[11px] text-muted-foreground">

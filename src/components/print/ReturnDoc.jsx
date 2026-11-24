@@ -1,4 +1,5 @@
 import DocHeader from './DocHeader';
+import DocPhoto from './DocPhoto';
 import { DecoFooter, DecoHeader, DocFrame, PrintedAt } from './DocChrome';
 import { conditionLabel, reasonLabel } from '@/lib/returns';
 import { formatTrailStamp, returnTrail } from '@/lib/trail';
@@ -16,7 +17,7 @@ function shortDate(value) {
  * Return / exchange paperwork: what came back, its condition, and whether it was
  * put back on the shelf. Refunds are the amount recorded by hand, nothing more.
  */
-export default function ReturnDoc({ ret, business, docStyle }) {
+export default function ReturnDoc({ ret, business, docStyle, photoById = {} }) {
   const exchange = ret.kind === 'exchange';
   const lines = ret.lines || [];
   const exchangeLines = ret.exchange_lines || [];
@@ -87,7 +88,10 @@ export default function ReturnDoc({ ret, business, docStyle }) {
             >
               <td className="truncate py-1.5 pr-1 font-mono text-[7pt]">{line.sku}</td>
               <td className="py-1.5 pr-2">
-                <p className="truncate text-[9pt] leading-tight">{line.product_name}</p>
+                <div className="flex items-center gap-2">
+                  <DocPhoto url={photoById[line.product_id]} />
+                  <p className="min-w-0 truncate text-[9pt] leading-tight">{line.product_name}</p>
+                </div>
               </td>
               <td className="numeric py-1.5 text-right text-[8pt]">{line.quantity ?? 0}</td>
               <td className="truncate py-1.5 pr-1 text-[8pt]">{conditionLabel(line.condition)}</td>
@@ -129,7 +133,10 @@ export default function ReturnDoc({ ret, business, docStyle }) {
                 >
                   <td className="truncate py-1.5 pr-1 font-mono text-[7pt]">{line.sku}</td>
                   <td className="py-1.5 pr-2">
-                    <p className="truncate text-[9pt] leading-tight">{line.product_name}</p>
+                    <div className="flex items-center gap-2">
+                      <DocPhoto url={photoById[line.product_id]} />
+                      <p className="min-w-0 truncate text-[9pt] leading-tight">{line.product_name}</p>
+                    </div>
                   </td>
                   <td className="numeric py-1.5 text-right text-[8pt]">{line.quantity ?? 0}</td>
                   <td className="numeric py-1.5 text-right text-[8pt]">

@@ -86,6 +86,22 @@ import {
   buildSupplierDocPdf,
   buildReportPdf,
 } from './printPdf.js';
+import { photoDataByProductId } from './printPhotos.js';
+
+// Product photos for the print PDFs (print family, Nov 24,
+// 2026): resolve the stored photo of each named product in this
+// business to a data URL the PDF builders can embed. Ids that
+// are not products of this business resolve to nothing.
+async function printPhotoMap(db, bid, productIds) {
+  const ids = [...new Set((productIds || []).filter(Boolean).map(String))];
+  if (!ids.length) return {};
+  const placeholders = ids.map((_, i) => `$${i + 2}`).join(', ');
+  const { rows } = await db.query(
+    `SELECT id, photo_urls FROM products WHERE business_id = $1 AND id IN (${placeholders})`,
+    [bid, ...ids],
+  );
+  return photoDataByProductId(db, rows);
+}
 
 function err(status, code, message) {
   return Object.assign(new Error(message), { status, code });
@@ -984,11 +1000,13 @@ export function createShopRouter({ getPool: getPoolFn }) {
   router.get('/businesses/:bid/print/labels', asyncHandler(async (req, res) => {
     const access = await accessOr403(pool(), req.user, req.params.bid);
     await assertNotInGrace(pool(), req.params.bid);
+    // No cap on how many labels print (print family ruling, Nov 24,
+    // 2026: "however many are selected, that many print" — the old
+    // slice(0, 50) silently dropped every label past the fiftieth).
     const ids = String(req.query.product_ids || '')
       .split(',')
       .map((id) => id.trim())
-      .filter(Boolean)
-      .slice(0, 50);
+      .filter(Boolean);
     if (!ids.length) throw err(400, 'invalid_value', 'Choose at least one product to print.');
     const placeholders = ids.map((_, i) => `$${i + 2}`).join(', ');
     const { rows } = await pool().query(
@@ -998,11 +1016,17 @@ export function createShopRouter({ getPool: getPoolFn }) {
       [req.params.bid, ...ids],
     );
     if (!rows.length) throw err(404, 'not_found', 'No products found for those labels.');
-    const buffer = buildLabelsPdf(rows, {
-      copies: req.query.copies,
-      businessName: access.business.name,
-      language: access.business.language,
-    });
+    // Each label carries its product's photo (print family,
+    // Nov 24, 2026), resolved from the stored photo bytes.
+    const photoDataById = await photoDataByProductId(pool(), rows);
+    const buffer = buildLabelsPdf(
+      rows.map((row) => ({ ...row, photoData: photoDataById[row.id] || '' })),
+      {
+        copies: req.query.copies,
+        businessName: access.business.name,
+        language: access.business.language,
+      },
+    );
     return pdfResponse(res, buffer, `${fileSlug(access.business.name)}-labels-${fileStamp()}.pdf`);
   }));
 
@@ -1018,9 +1042,14 @@ export function createShopRouter({ getPool: getPoolFn }) {
     );
     if (!rows[0]) throw err(404, 'not_found', 'Order not found.');
     const order = publicRow(entityDef('Order'), rows[0]);
+    const photoDataById = await printPhotoMap(
+      pool(),
+      req.params.bid,
+      (order.lines || []).map((line) => line.product_id),
+    );
     return pdfResponse(
       res,
-      buildPackingSlipPdf(order, access.business),
+      buildPackingSlipPdf(order, access.business, { photoDataById }),
       `${fileSlug(access.business.name)}-packing-slip-${fileStamp()}.pdf`,
     );
   }));
@@ -1038,9 +1067,14 @@ export function createShopRouter({ getPool: getPoolFn }) {
     if (!rows[0]) throw err(404, 'not_found', 'Purchase order not found.');
     const order = publicRow(entityDef('PurchaseOrder'), rows[0]);
     const mode = req.query.mode === 'packing' ? 'packing' : 'po';
+    const photoDataById = await printPhotoMap(
+      pool(),
+      req.params.bid,
+      (order.lines || []).map((line) => line.product_id),
+    );
     return pdfResponse(
       res,
-      buildPoPdf(order, access.business, { mode }),
+      buildPoPdf(order, access.business, { mode, photoDataById }),
       `${fileSlug(access.business.name)}-po-${fileStamp()}.pdf`,
     );
   }));
@@ -1086,11 +1120,20 @@ export function createShopRouter({ getPool: getPoolFn }) {
       category: String(req.query.category || ''),
       language: access.business.language,
     });
+    // Grouped by product, each row's key IS a product id — those
+    // rows print with the product's photo (print family, Nov 24,
+    // 2026); other groupings' keys are names and resolve to none.
+    const photoDataById = await printPhotoMap(
+      pool(),
+      req.params.bid,
+      (report?.rows || []).map((row) => row.key),
+    );
     return pdfResponse(
       res,
       buildReportPdf(report, access.business, {
         from: String(req.query.from || ''),
         to: String(req.query.to || ''),
+        photoDataById,
       }),
       `${fileSlug(access.business.name)}-report-${fileStamp()}.pdf`,
     );

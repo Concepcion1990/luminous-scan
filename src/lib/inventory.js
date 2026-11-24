@@ -120,7 +120,7 @@ export const MOVEMENT_TYPES = {
   },
 };
 
-export async function listProducts({
+async function buildProductQuery({
   search = '',
   category = '',
   tag = '',
@@ -128,7 +128,6 @@ export async function listProducts({
   condition = '',
   locationId = '',
   locationIds = [],
-  limit = 200,
   businessId = '',
 } = {}) {
   const clauses = [];
@@ -163,16 +162,51 @@ export async function listProducts({
       { limit: 2000 }
     );
     const ids = [...new Set((levelPage.items ?? []).map((level) => level.product_id))];
-    if (!ids.length) return [];
+    if (!ids.length) return null;
     clauses.push({ id: { $in: ids } });
   }
 
-  const query = clauses.length ? { $and: clauses } : {};
-  const page = await base44.entities.Product.filter(scoped(query, businessId), {
+  return scoped(clauses.length ? { $and: clauses } : {}, businessId);
+}
+
+export async function listProducts({ limit = 200, ...options } = {}) {
+  const query = await buildProductQuery(options);
+  if (!query) return [];
+  const page = await base44.entities.Product.filter(query, {
     sort: 'name',
     limit,
   });
   return page.items ?? [];
+}
+
+// The owner's FULL product list, paged behind the scenes (print
+// family ruling, Nov 24, 2026: "there should not be a limit on
+// that" — the Print Center picker showed only the first 100, so a
+// 137-product owner's last 37 could never be picked or printed).
+// Walks the query endpoint's cursor pages until the catalog is
+// exhausted; each page request stays modest, and the seen-set
+// guards against a looping cursor.
+export async function listAllProducts(options = {}) {
+  const query = await buildProductQuery(options);
+  if (!query) return [];
+  const all = [];
+  const seen = new Set();
+  let cursor = null;
+  for (;;) {
+    const pageOptions = { sort: 'name', limit: 500 };
+    if (cursor) pageOptions.cursor = cursor;
+    const page = await base44.entities.Product.filter(query, pageOptions);
+    const items = page?.items ?? [];
+    for (const row of items) {
+      if (row && !seen.has(row.id)) {
+        seen.add(row.id);
+        all.push(row);
+      }
+    }
+    if (!page?.next_cursor || items.length === 0) break;
+    cursor = page.next_cursor;
+  }
+  return all;
 }
 
 export function escapeRegex(value) {
