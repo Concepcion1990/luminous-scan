@@ -160,6 +160,12 @@ export const TRAINING_LESSONS = [
   { id: 'mgr-restaurant-build', track: 'manager', module: 'restaurant', steps: 4, feature: 'restaurant' },
   { id: 'mgr-restaurant-pars', track: 'manager', module: 'restaurant', steps: 4, feature: 'restaurant' },
   { id: 'mgr-restaurant-money', track: 'manager', module: 'restaurant', steps: 4, feature: 'restaurant' },
+  // Restaurant operations (release 361, Nov 23, 2026) —
+  // mirrors the server catalog (t10 proves the two agree).
+  { id: 'owner-restaurant-ops', track: 'owner', module: 'restaurant', steps: 5, feature: 'restaurant' },
+  { id: 'staff-restaurant-daily', track: 'staff', module: 'restaurant', steps: 4, feature: 'restaurant' },
+  { id: 'mgr-restaurant-invoices', track: 'manager', module: 'restaurant', steps: 4, feature: 'restaurant' },
+  { id: 'mgr-restaurant-reports', track: 'manager', module: 'restaurant', steps: 4, feature: 'restaurant' },
   // Cross-store messages (Nov 23, 2026) — mirrors the server
   // catalog (t10 proves the two agree).
   { id: 'owner-xstore-messages', track: 'owner', module: 'messaging', steps: 5, feature: 'xstoreMessages' },

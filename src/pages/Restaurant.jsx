@@ -1,8 +1,26 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/client';
-import { Check, ChefHat, Plus } from 'lucide-react';
+import {
+  ArrowRightLeft,
+  Ban,
+  BookOpen,
+  CalendarClock,
+  Check,
+  ChefHat,
+  ClipboardList,
+  FileText,
+  NotebookPen,
+  Plus,
+  Scale,
+  Thermometer,
+  Trash2,
+  TrendingUp,
+  UtensilsCrossed,
+  Wheat,
+} from 'lucide-react';
 import RecipeDialog from '@/components/restaurant/RecipeDialog';
+import ProductKitchenDialog from '@/components/restaurant/ProductKitchenDialog';
 import { Button } from '@/components/ui/button';
 import { useBusiness } from '@/hooks/useBusiness';
 import useStaffAccess from '@/hooks/useStaffAccess';
@@ -34,8 +52,28 @@ export default function Restaurant() {
   const [editing, setEditing] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [flash, setFlash] = useState(null);
+  const [kitchenProduct, setKitchenProduct] = useState(null);
+  const [kitchenOpen, setKitchenOpen] = useState(false);
 
   const canBuild = canStaff('restaurant.build');
+
+  // The operations doors (release 361): one card per door,
+  // each behind the same restaurant gate as its page.
+  const doors = [
+    { to: '/restaurant/order-guide', icon: ClipboardList, title: t('nav.orderGuide'), body: t('restaurant.doorOrderGuide') },
+    { to: '/restaurant/invoices', icon: FileText, title: t('nav.invoices'), body: t('restaurant.doorInvoices') },
+    { to: '/restaurant/waste', icon: Trash2, title: t('nav.waste'), body: t('restaurant.doorWaste') },
+    { to: '/restaurant/expiry', icon: CalendarClock, title: t('nav.expiry'), body: t('restaurant.doorExpiry') },
+    { to: '/restaurant/allergens', icon: Wheat, title: t('nav.allergens'), body: t('restaurant.doorAllergens') },
+    { to: '/restaurant/temp-logs', icon: Thermometer, title: t('nav.tempLogs'), body: t('restaurant.doorTempLogs') },
+    { to: '/restaurant/86', icon: Ban, title: t('nav.eightySix'), body: t('restaurant.doorEightySix') },
+    { to: '/restaurant/transfers', icon: ArrowRightLeft, title: t('nav.transfers'), body: t('restaurant.doorTransfers') },
+    { to: '/restaurant/staff-meals', icon: UtensilsCrossed, title: t('nav.staffMeals'), body: t('restaurant.doorStaffMeals') },
+    { to: '/restaurant/menu', icon: TrendingUp, title: t('nav.menu'), body: t('restaurant.doorMenu') },
+    { to: '/restaurant/variance', icon: Scale, title: t('nav.variance'), body: t('restaurant.doorVariance') },
+    { to: '/restaurant/prep', icon: NotebookPen, title: t('nav.prep'), body: t('restaurant.doorPrep') },
+    { to: '/restaurant/ledger', icon: BookOpen, title: t('nav.ledger'), body: t('restaurant.doorLedger') },
+  ];
 
   useEffect(() => {
     (async () => {
@@ -169,6 +207,49 @@ export default function Restaurant() {
         </div>
       )}
 
+      <div className="space-y-3">
+        <h2 className="text-base font-semibold">{t('restaurant.doorsTitle')}</h2>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {doors.map((door) => (
+            <Link
+              key={door.to}
+              to={door.to}
+              className="flex items-start gap-3 rounded-xl border border-border bg-card p-4 hover:bg-muted/40"
+            >
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted">
+                <door.icon className="h-5 w-5 text-muted-foreground" />
+              </span>
+              <span className="min-w-0">
+                <span className="block font-medium">{door.title}</span>
+                <span className="block text-xs text-muted-foreground">{door.body}</span>
+              </span>
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {canBuild ? (
+        <div className="space-y-3">
+          <h2 className="text-base font-semibold">{t('restaurant.kitchenTitle')}</h2>
+          <p className="max-w-xl text-sm text-muted-foreground">{t('restaurant.kitchenIntro')}</p>
+          <div className="flex flex-wrap gap-2">
+            {products.map((product) => (
+              <Button
+                key={product.id}
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setKitchenProduct(product);
+                  setKitchenOpen(true);
+                }}
+              >
+                {product.name}
+              </Button>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
       <RecipeDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
@@ -176,6 +257,15 @@ export default function Restaurant() {
         recipes={recipes}
         products={products}
         locations={locations}
+        onSaved={(text) => {
+          setFlash({ ok: true, text });
+          setReload((n) => n + 1);
+        }}
+      />
+      <ProductKitchenDialog
+        open={kitchenOpen}
+        onOpenChange={setKitchenOpen}
+        product={kitchenProduct}
         onSaved={(text) => {
           setFlash({ ok: true, text });
           setReload((n) => n + 1);

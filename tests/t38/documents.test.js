@@ -361,10 +361,10 @@ test('the tick brings its training: catalog, module map, requirements, and live 
   const ownerLesson = TRAINING_LESSONS.find((l) => l.id === 'owner-staff-documents');
   assert.ok(ownerLesson, 'the owner lesson ships in the server catalog');
   assert.equal(ownerLesson.track, 'owner');
-  assert.equal(TRAINING_LESSONS.length, 110, 'the catalog grew by exactly the two lessons');
+  assert.equal(TRAINING_LESSONS.length, 114, '114 since restaurant operations added 4; the catalog grew by exactly the two lessons');
   assert.deepEqual(MODULE_BY_PERMISSION['staff.documents'], ['staff']);
   assert.deepEqual(LESSON_REQUIREMENTS['mgr-staff-documents'], ['staff.documents']);
-  assert.equal(CLIENT_LESSONS.length, 110, 'the client catalog matches');
+  assert.equal(CLIENT_LESSONS.length, 114, 'the client catalog matches');
   assert.ok(CLIENT_LESSONS.some((l) => l.id === 'mgr-staff-documents'));
 
   // The grant family shape: its own grant list, a member grant,

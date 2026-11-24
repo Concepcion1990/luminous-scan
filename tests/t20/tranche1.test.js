@@ -98,6 +98,8 @@ const TRANCHE_1_LOCALES = [
 // adds 'pricing.rollbackBadge': "Rollback" is Walmart's actual
 // Spanish-language branding for the sale, verified for all six.
 const SPANISH_COGNATE_KEYS = new Set([
+  // Restaurant operations batch (Nov 23, 2026): "Total" is the Spanish word, "g" is the gram symbol, and the Fahrenheit/Celsius scale names are spelled the same in Spanish — verified.
+  'ops.invoices.colTotal', 'units.unitPlaceholder', 'ops.tempLogs.scaleF', 'ops.tempLogs.scaleC',
   'products.exportNo', 'print.no',
   'productForm.fulfillDigital', 'productForm.unitKg',
   'orders.subtotal', 'orders.total',
@@ -111,6 +113,11 @@ const SPANISH_COGNATE_KEYS = new Set([
   'guide.colPar',
 ]);
 const FR_FR_COGNATE_KEYS = new Set([
+  // Restaurant operations batch (Nov 23, 2026): "Note", "Date" and "Total" are the genuine French words, "PO {number}" is the purchase-order code format, "g" is the gram symbol, and the scale names are spelled the same in French — verified.
+  'ops.invoices.poPrefix', 'ops.invoices.noteLabel', 'ops.invoices.colDate', 'ops.invoices.colTotal',
+  'ops.waste.noteLabel', 'ops.waste.colDate', 'batch.noteLabel', 'units.unitPlaceholder', 'ops.tempLogs.scaleF',
+  'ops.tempLogs.scaleC', 'ops.eightySix.noteLabel', 'staffMeals.noteLabel', 'staffMeals.colDate',
+  'print.transferDate',
   'dashboard.minReorder', 'importLib.field.description', 'importLib.updateField.description',
   'importLib.updateField.dimensions', 'inventoryLib.movementCorrection', 'locations.limitLabel',
   'locations.typeLabel', 'movements.typeCorrections', 'orders.total',
@@ -141,6 +148,11 @@ const FR_FR_COGNATE_KEYS = new Set([
   'recipes.statusActive', 'recipes.descriptionLabel', 'guide.colPar',
 ]);
 const FR_CA_COGNATE_KEYS = new Set([
+  // Restaurant operations batch (Nov 23, 2026): Same French cognates as fr-FR — verified.
+  'ops.invoices.poPrefix', 'ops.invoices.noteLabel', 'ops.invoices.colDate', 'ops.invoices.colTotal',
+  'ops.waste.noteLabel', 'ops.waste.colDate', 'batch.noteLabel', 'units.unitPlaceholder', 'ops.tempLogs.scaleF',
+  'ops.tempLogs.scaleC', 'ops.eightySix.noteLabel', 'staffMeals.noteLabel', 'staffMeals.colDate',
+  'print.transferDate',
   'counts.notesLabel', 'dashboard.minReorder', 'importLib.field.description',
   'importLib.receiveField.note', 'importLib.updateField.description', 'importLib.updateField.dimensions',
   'importLib.updateField.notes', 'inventory.noteLabel', 'inventoryLib.movementCorrection',
@@ -173,6 +185,9 @@ const FR_CA_COGNATE_KEYS = new Set([
   'recipes.statusActive', 'recipes.descriptionLabel', 'guide.colPar',
 ]);
 const PT_BR_COGNATE_KEYS = new Set([
+  // Restaurant operations batch (Nov 23, 2026): "Status", "Total" and "Item" are the genuine Portuguese words, "g" is the gram symbol, and the scale names are spelled the same in Portuguese — verified.
+  'ops.invoices.statusLabel', 'ops.invoices.colTotal', 'ops.invoices.colStatus', 'units.unitPlaceholder',
+  'ops.tempLogs.scaleF', 'ops.tempLogs.scaleC', 'ops.eightySix.productLabel', 'print.transferItem',
   'bomLib.kindBundleShort', 'dashboard.skusCount', 'exports.backupJson',
   'listings.status', 'locations.kindVan', 'locations.skusLabel',
   'orders.subtotal', 'orders.total', 'print.colItem',
@@ -186,6 +201,9 @@ const PT_BR_COGNATE_KEYS = new Set([
   'recipes.statusLabel', 'guide.colPar',
 ]);
 const PT_PT_COGNATE_KEYS = new Set([
+  // Restaurant operations batch (Nov 23, 2026): "Status", "Total" and "Item" are the genuine Portuguese words, "g" is the gram symbol, and the scale names are spelled the same in Portuguese — verified.
+  'ops.invoices.statusLabel', 'ops.invoices.colTotal', 'ops.invoices.colStatus', 'units.unitPlaceholder',
+  'ops.tempLogs.scaleF', 'ops.tempLogs.scaleC', 'ops.eightySix.productLabel', 'print.transferItem',
   'auth.emailLabel', 'bomLib.kindBundleShort', 'dashboard.skusCount',
   'locations.skusLabel', 'orders.subtotal', 'orders.total',
   'print.colItem', 'print.subtotal', 'print.total',
@@ -196,6 +214,9 @@ const PT_PT_COGNATE_KEYS = new Set([
   'guide.colPar',
 ]);
 const DE_COGNATE_KEYS = new Set([
+  // Restaurant operations batch (Nov 23, 2026): "Status" is the genuine German word, "PO {number}" is the purchase-order code format, "g" is the gram symbol, and the scale names are spelled the same in German — verified.
+  'ops.invoices.poPrefix', 'ops.invoices.statusLabel', 'ops.invoices.colStatus', 'units.unitPlaceholder',
+  'ops.tempLogs.scaleF', 'ops.tempLogs.scaleC',
   'alerts.nameLabel', 'bomLib.kindBundle', 'categories.nameLabel',
   'dashboard.skusCount', 'import.colName', 'import.problemColProblem',
   'importLib.field.barcode', 'inventory.notePlaceholder', 'layout.scanCodes',
@@ -216,6 +237,8 @@ const DE_COGNATE_KEYS = new Set([
   'recipes.statusLabel',
 ]);
 const IT_COGNATE_KEYS = new Set([
+  // Restaurant operations batch (Nov 23, 2026): "Per" is the genuine Italian preposition ("Per 1 {unit}"), "PO {number}" is the purchase-order code format, "g" is the gram symbol, and the scale names are spelled the same in Italian — verified.
+  'ops.invoices.poPrefix', 'units.unitPlaceholder', 'units.perLabel', 'ops.tempLogs.scaleF', 'ops.tempLogs.scaleC',
   'auth.emailLabel', 'auth.passwordLabel', 'bomLib.kindBundleShort',
   'dashboard.minReorder', 'exports.backupJson', 'orders.email',
   'payroll.bonus', 'print.no', 'productForm.unitKg',
@@ -226,22 +249,34 @@ const IT_COGNATE_KEYS = new Set([
   'guide.colPar',
 ]);
 const JA_COGNATE_KEYS = new Set([
+  // Restaurant operations batch (Nov 23, 2026): "g" is the gram symbol, spelled the same in Japanese — verified.
+  'units.unitPlaceholder',
   'productForm.unitKg',
 ]);
 const KO_COGNATE_KEYS = new Set([
+  // Restaurant operations batch (Nov 23, 2026): "g" is the gram symbol, spelled the same in Korean — verified.
+  'units.unitPlaceholder',
   'productForm.unitKg',
 ]);
 const FA_COGNATE_KEYS = new Set([
+  // Restaurant operations batch (Nov 23, 2026): "g" is the gram symbol, spelled the same in Persian — verified.
+  'units.unitPlaceholder',
   'productForm.unitKg',
 ]);
 const PRS_COGNATE_KEYS = new Set([
+  // Restaurant operations batch (Nov 23, 2026): "g" is the gram symbol, spelled the same in Dari — verified.
+  'units.unitPlaceholder',
   'productForm.unitKg',
 ]);
 const UR_COGNATE_KEYS = new Set([
+  // Restaurant operations batch (Nov 23, 2026): "PO {number}" is the purchase-order code format and "g" is the gram symbol — verified.
+  'ops.invoices.poPrefix', 'units.unitPlaceholder',
   'businessLib.dateFormat.dMmmYyyy', 'businessLib.dateFormat.mmmDyyyy', 'dashboard.skusCount',
   'layout.scanCodes', 'locations.skusLabel', 'productForm.unitKg',
 ]);
 const TR_COGNATE_KEYS = new Set([
+  // Restaurant operations batch (Nov 23, 2026): "Transfer" is the genuine Turkish word, "g" is the gram symbol, and the scale names are spelled the same in Turkish — verified.
+  'units.unitPlaceholder', 'ops.tempLogs.scaleF', 'ops.tempLogs.scaleC', 'print.transferTitle',
   'bomLib.kindBundleShort', 'dashboard.minReorder', 'inventoryLib.movementTransfer',
   'print.refSuffix', 'productForm.unitKg', 'scan.action.transfer',
   'settings.identity.logoLabel',
@@ -250,26 +285,43 @@ const TR_COGNATE_KEYS = new Set([
   'guide.colPar',
 ]);
 const KN_COGNATE_KEYS = new Set([
+  // Restaurant operations batch (Nov 23, 2026): "PO {number}" is the purchase-order code format and "g" is the gram symbol — verified.
+  'ops.invoices.poPrefix', 'units.unitPlaceholder',
   'productForm.unitKg',
 ]);
 const MR_COGNATE_KEYS = new Set([
+  // Restaurant operations batch (Nov 23, 2026): "PO {number}" is the purchase-order code format and "g" is the gram symbol — verified.
+  'ops.invoices.poPrefix', 'units.unitPlaceholder',
   'productForm.unitKg',
 ]);
 const TA_COGNATE_KEYS = new Set([
+  // Restaurant operations batch (Nov 23, 2026): "PO {number}" is the purchase-order code format and "g" is the gram symbol — verified.
+  'ops.invoices.poPrefix', 'units.unitPlaceholder',
   'productForm.unitKg',
 ]);
 const TE_COGNATE_KEYS = new Set([
+  // Restaurant operations batch (Nov 23, 2026): "PO {number}" is the purchase-order code format and "g" is the gram symbol — verified.
+  'ops.invoices.poPrefix', 'units.unitPlaceholder',
   'businessLib.dateFormat.dMmmYyyy', 'businessLib.dateFormat.mmmDyyyy', 'payroll.dd.checking',
   'payroll.dd.savings', 'productForm.unitKg',
 ]);
 const PA_GURU_COGNATE_KEYS = new Set([
+  // Restaurant operations batch (Nov 23, 2026): "g" is the gram symbol, spelled the same in Punjabi — verified.
+  'units.unitPlaceholder',
   'locations.skusLabel', 'productForm.unitKg',
 ]);
 const PA_ARAB_COGNATE_KEYS = new Set([
+  // Restaurant operations batch (Nov 23, 2026): "g" is the gram symbol, spelled the same in Punjabi (Shahmukhi) — verified.
+  'units.unitPlaceholder',
   'businessLib.dateFormat.dMmmYyyy', 'businessLib.dateFormat.mmmDyyyy', 'layout.scanCodes',
   'productForm.unitKg',
 ]);
 const ID_COGNATE_KEYS = new Set([
+  // Restaurant operations batch (Nov 23, 2026): Indonesian keeps "Status", "Total", "Unit", "Item", "Per", "Transfer" and "Total margin" in these forms, "PO {number}" is the code format, "g" is the gram symbol, and the scale names are spelled the same — verified word-by-word.
+  'ops.invoices.poPrefix', 'ops.invoices.statusLabel', 'ops.invoices.colTotal', 'ops.invoices.colStatus',
+  'units.unitPlaceholder', 'units.perLabel', 'ops.tempLogs.unitLabel', 'ops.tempLogs.scaleF', 'ops.tempLogs.scaleC',
+  'ops.tempLogs.colUnit', 'ops.eightySix.productLabel', 'menu.colTotalMargin', 'print.transferTitle',
+  'print.transferItem',
   'dashboard.minReorder', 'exports.eyebrow', 'import.eyebrow',
   'listings.status', 'orders.subtotal', 'payroll.bonus',
   'print.status', 'print.subtotal', 'productDetails.rowSerial',
@@ -282,6 +334,11 @@ const ID_COGNATE_KEYS = new Set([
   'guide.colPar',
 ]);
 const MS_COGNATE_KEYS = new Set([
+  // Restaurant operations batch (Nov 23, 2026): Malay keeps "Status", "Total", "Unit", "Item", "Per", "Transfer" and "Total margin" in these forms, "PO {number}" is the code format, "g" is the gram symbol, and the scale names are spelled the same — verified word-by-word.
+  'recipes.lineUnit', 'ops.invoices.poPrefix', 'ops.invoices.statusLabel', 'ops.invoices.colTotal',
+  'ops.invoices.colStatus', 'units.unitLabel', 'units.unitPlaceholder', 'units.perLabel', 'ops.tempLogs.unitLabel',
+  'ops.tempLogs.scaleF', 'ops.tempLogs.scaleC', 'ops.tempLogs.colUnit', 'ops.eightySix.productLabel',
+  'menu.colTotalMargin', 'print.transferTitle', 'print.transferItem',
   'alerts.editRule', 'bomLib.kindBundleShort', 'businessLib.brandColor.plum',
   'businessLib.dateFormat.dMmmYyyy', 'categories.editAria', 'categories.kindTag',
   'dashboard.minReorder', 'exports.eyebrow', 'import.eyebrow',
@@ -302,13 +359,25 @@ const MS_COGNATE_KEYS = new Set([
   'guide.colPar',
 ]);
 const TH_COGNATE_KEYS = new Set([
+  // Restaurant operations batch (Nov 23, 2026): "PO {number}" is the purchase-order code format and "g" is the gram symbol — verified.
+  'ops.invoices.poPrefix', 'units.unitPlaceholder',
   'productForm.unitKg', 'products.exportColQr',
 ]);
 const VI_COGNATE_KEYS = new Set([
+  // Restaurant operations batch (Nov 23, 2026): "PO {number}" is the purchase-order code format, "g" is the gram symbol, and the Fahrenheit/Celsius scale names are kept in Vietnamese — verified.
+  'ops.invoices.poPrefix', 'units.unitPlaceholder', 'ops.tempLogs.scaleF', 'ops.tempLogs.scaleC',
   'auth.emailLabel', 'orders.email', 'productForm.unitKg',
   'settings.identity.logoLabel', 'staff.memberDialog.emailLabel', 'suppliers.email',
 ]);
 const TL_COGNATE_KEYS = new Set([
+  // Restaurant operations batch (Nov 23, 2026): Tagalog keeps these kitchen and menu-engineering terms in English, as it does throughout (the quadrant names are the menu-engineering proper names) — verified word-by-word.
+  'nav.menu', 'ops.invoices.supplierLabel', 'ops.invoices.poLabel', 'ops.invoices.poPrefix',
+  'ops.invoices.statusDraft', 'ops.invoices.colSupplier', 'batch.colRecipe', 'batch.colOutput',
+  'batch.runRecipeLabel', 'allergens.title', 'allergens.colShelfLife', 'allergens.shellfish',
+  'units.unitPlaceholder', 'ops.tempLogs.scaleLabel', 'ops.tempLogs.scaleF', 'ops.tempLogs.scaleC',
+  'ops.tempLogs.colReading', 'ops.eightySix.productLabel', 'menu.title', 'menu.quadrant.star',
+  'menu.quadrant.plowhorse', 'menu.quadrant.puzzle', 'menu.quadrant.dog', 'prep.sheetTitle', 'print.prepTitle',
+  'print.transferItem',
   // 'pricing.rollbackBadge' ("Rollback") added by the pricing batch
   // (Nov 13, 2026): Tagalog retail uses the English word directly.
   // 'print.templateShipping' added by the shipping batch the same
@@ -374,6 +443,8 @@ const TL_COGNATE_KEYS = new Set([
   'guide.colSupplier',
 ]);
 const HA_COGNATE_KEYS = new Set([
+  // Restaurant operations batch (Nov 23, 2026): "PO {number}" is the purchase-order code format, "g" is the gram symbol, and the scale names are kept in Hausa — verified.
+  'ops.invoices.poPrefix', 'units.unitPlaceholder', 'ops.tempLogs.scaleF', 'ops.tempLogs.scaleC',
   'bomLib.kindBundle', 'bomLib.kindBundleShort', 'businessLib.brandColor.plum',
   'importLib.field.barcode', 'layout.scanCodes', 'payroll.bonus',
   'payroll.dd.checking', 'payroll.dd.savings', 'print.barcodeLabel',
@@ -385,12 +456,16 @@ const HA_COGNATE_KEYS = new Set([
   'guide.colPar',
 ]);
 const SW_COGNATE_KEYS = new Set([
+  // Restaurant operations batch (Nov 23, 2026): "PO {number}" is the purchase-order code format, "g" is the gram symbol, and the scale names are kept in Swahili — verified.
+  'ops.invoices.poPrefix', 'units.unitPlaceholder', 'ops.tempLogs.scaleF', 'ops.tempLogs.scaleC',
   'exports.eyebrow', 'import.eyebrow', 'productForm.unitKg',
   // Restaurant corner batch (Nov 23, 2026): "Par" is the kept
   // domain term — verified.
   'guide.colPar',
 ]);
 const YO_COGNATE_KEYS = new Set([
+  // Restaurant operations batch (Nov 23, 2026): "PO {number}" is the purchase-order code format, "g" is the gram symbol, and the scale names are kept in Yoruba — verified.
+  'ops.invoices.poPrefix', 'units.unitPlaceholder', 'ops.tempLogs.scaleF', 'ops.tempLogs.scaleC',
   'importLib.field.barcode', 'layout.scanCodes', 'payroll.dd.checking',
   'payroll.dd.savings', 'productDetails.codeBarcode', 'productForm.barcodeLabel', 'productForm.generateTypeBarcode',
   'productForm.unitKg', 'products.exportColBarcode', 'products.sortCodes',
@@ -399,6 +474,10 @@ const YO_COGNATE_KEYS = new Set([
   'guide.colPar',
 ]);
 const JV_COGNATE_KEYS = new Set([
+  // Restaurant operations batch (Nov 23, 2026): Javanese keeps "Unit", "Status" and "Transfer" in these forms, "PO {number}" is the code format, "g" is the gram symbol, and the scale names are spelled the same — verified.
+  'recipes.lineUnit', 'ops.invoices.poPrefix', 'ops.invoices.statusLabel', 'ops.invoices.colStatus',
+  'units.unitLabel', 'units.unitPlaceholder', 'ops.tempLogs.unitLabel', 'ops.tempLogs.scaleF', 'ops.tempLogs.scaleC',
+  'ops.tempLogs.colUnit', 'print.transferTitle',
   'auth.emailLabel', 'bomLib.kindBundleShort', 'businessLib.brandColor.plum',
   'businessLib.dateFormat.dMmmYyyy', 'dashboard.minReorder', 'exports.eyebrow',
   'import.eyebrow', 'importLib.field.barcode', 'inventoryLib.movementTransfer',
@@ -419,6 +498,48 @@ const JV_COGNATE_KEYS = new Set([
   'recipes.statusLabel', 'guide.colPar',
 ]);
 const PCM_COGNATE_KEYS = new Set([
+  // Invoice-file batch (Nov 23, 2026): Pidgin keeps these three short file labels in English, same register as the invoice labels below — verified.
+  'ops.invoices.attachedLabel', 'ops.invoices.viewFile', 'ops.invoices.removeFile',
+  // Restaurant operations batch (Nov 23, 2026): Pidgin keeps these short kitchen labels, column heads, button texts, food names and menu-engineering quadrant names in English — the register this file keeps throughout (its prose and lesson steps are translated) — verified word-by-word.
+  'nav.waste', 'nav.eightySix', 'nav.menu', 'nav.variance', 'nav.ledger', 'inventoryLib.movementStaffMeal',
+  'recipes.lineUnit', 'ops.invoices.newButton', 'ops.invoices.newTitle', 'ops.invoices.editTitle',
+  'ops.invoices.supplierLabel', 'ops.invoices.poLabel', 'ops.invoices.poNone', 'ops.invoices.poPrefix',
+  'ops.invoices.numberLabel', 'ops.invoices.dateLabel', 'ops.invoices.statusLabel', 'ops.invoices.statusDraft',
+  'ops.invoices.statusAccepted', 'ops.invoices.addLine', 'ops.invoices.lineQty', 'ops.invoices.lineCost',
+  'ops.invoices.totalLabel', 'ops.invoices.noteLabel', 'ops.invoices.save', 'ops.invoices.colSupplier',
+  'ops.invoices.colNumber', 'ops.invoices.colDate', 'ops.invoices.colTotal', 'ops.invoices.colMatch',
+  'ops.invoices.colStatus', 'ops.invoices.matchNone', 'ops.invoices.alertAccept', 'ops.invoices.alertDismiss',
+  'ops.waste.title', 'ops.waste.newButton', 'ops.waste.newTitle', 'ops.waste.productLabel',
+  'ops.waste.quantityLabel', 'ops.waste.reasonLabel', 'ops.waste.locationLabel', 'ops.waste.locationNone',
+  'ops.waste.noteLabel', 'ops.waste.save', 'ops.waste.colDate', 'ops.waste.colProduct', 'ops.waste.colQuantity',
+  'ops.waste.colReason', 'ops.waste.colLocation', 'ops.waste.colCost', 'ops.waste.totalLabel',
+  'ops.waste.reason.spoilage', 'ops.waste.reason.overproduction', 'ops.waste.reason.prep_mistake',
+  'ops.waste.reason.spillage', 'ops.waste.reason.other', 'ops.expiry.colProduct', 'ops.expiry.colLocation',
+  'ops.expiry.colQuantity', 'ops.expiry.colReceived', 'ops.expiry.colUseBy', 'ops.expiry.expiresToday',
+  'batch.newButton', 'batch.productLabel', 'batch.quantityLabel', 'batch.locationLabel', 'batch.locationNone',
+  'batch.expiresLabel', 'batch.noteLabel', 'batch.save', 'batch.shelfLifeLabel', 'batch.runsTitle', 'batch.colWhen',
+  'batch.colRecipe', 'batch.colMakes', 'batch.colProduced', 'batch.colOutput', 'batch.colLocation',
+  'batch.runRecipeLabel', 'batch.runMakesLabel', 'batch.runLocationLabel', 'batch.runLocationNone', 'batch.runSave',
+  'allergens.colDish', 'allergens.colProduct', 'allergens.colShelfLife', 'allergens.daysCount', 'allergens.save',
+  'allergens.milk', 'allergens.fish', 'allergens.shellfish', 'allergens.wheat', 'allergens.soy', 'allergens.sesame',
+  'units.addButton', 'units.unitLabel', 'units.unitPlaceholder', 'units.perLabel', 'ops.tempLogs.unitLabel',
+  'ops.tempLogs.unitPlaceholder', 'ops.tempLogs.locationLabel', 'ops.tempLogs.locationNone',
+  'ops.tempLogs.temperatureLabel', 'ops.tempLogs.scaleLabel', 'ops.tempLogs.scaleF', 'ops.tempLogs.scaleC',
+  'ops.tempLogs.correctiveLabel', 'ops.tempLogs.correctivePrefix', 'ops.tempLogs.save', 'ops.tempLogs.colWhen',
+  'ops.tempLogs.colUnit', 'ops.tempLogs.colReading', 'ops.tempLogs.colRange', 'ops.tempLogs.colBy',
+  'ops.tempLogs.inRange', 'ops.tempLogs.outOfRange', 'ops.eightySix.title', 'ops.eightySix.productLabel',
+  'ops.eightySix.locationAll', 'ops.eightySix.noteLabel', 'ops.transfers.newButton', 'ops.transfers.newTitle',
+  'ops.transfers.productLabel', 'ops.transfers.fromLabel', 'ops.transfers.toLabel', 'ops.transfers.quantityLabel',
+  'ops.transfers.printButton', 'staffMeals.productLabel', 'staffMeals.locationLabel', 'staffMeals.locationNone',
+  'staffMeals.noteLabel', 'staffMeals.colDate', 'staffMeals.colDish', 'staffMeals.colLocation', 'menu.title',
+  'menu.fromLabel', 'menu.toLabel', 'menu.colDish', 'menu.colUnits', 'menu.colRevenue', 'menu.colMargin',
+  'menu.colTotalMargin', 'menu.colQuadrant', 'menu.quadrant.star', 'menu.quadrant.plowhorse', 'menu.quadrant.puzzle',
+  'menu.quadrant.dog', 'variance.title', 'variance.colProduct', 'variance.colTheoretical', 'variance.colWaste',
+  'variance.colOther', 'variance.colTotal', 'variance.colUnexplained', 'prep.sheetTitle', 'prep.printButton',
+  'ledger.title', 'ledger.downloadCsv', 'ledger.downloadXlsx', 'ledger.sectionWaste', 'ledger.sectionDepletion',
+  'exportsLib.restaurantLedger.title', 'print.labelReceived', 'print.labelUseBy', 'print.labelQuantity',
+  'print.prepTitle', 'print.prepBuildTo', 'print.transferTitle', 'print.transferFrom', 'print.transferTo',
+  'print.transferDate', 'print.transferReference', 'print.transferItem', 'print.transferQuantity',
   'auth.aboutLink', 'auth.emailLabel', 'businessLib.dateFormat.dMmmYyyy',
   'businessLib.dateFormat.mmmDyyyy', 'layout.aboutLink', 'layout.scanCodes',
   'orders.email', 'plans.perMonthShort', 'plans.policyLink',
@@ -457,6 +578,18 @@ const PCM_COGNATE_KEYS = new Set([
   'guide.colSupplier', 'print.recipeTitle', 'print.recipeIngredient',
   'print.recipeQuantity', 'print.recipeLineCost', 'print.recipePrice',
   'print.recipeTrueCost', 'print.recipeCostPerMake',
+]);
+const GU_COGNATE_KEYS = new Set([
+  // Restaurant operations batch (Nov 23, 2026): "PO {number}" is the purchase-order code format and "g" is the gram symbol — verified.
+  'ops.invoices.poPrefix', 'units.unitPlaceholder',
+]);
+const HI_COGNATE_KEYS = new Set([
+  // Restaurant operations batch (Nov 23, 2026): "PO {number}" is the purchase-order code format and "g" is the gram symbol — verified.
+  'ops.invoices.poPrefix', 'units.unitPlaceholder',
+]);
+const TG_COGNATE_KEYS = new Set([
+  // Restaurant operations batch (Nov 23, 2026): "g" is the gram symbol, spelled the same in Tajik — verified.
+  'units.unitPlaceholder',
 ]);
 const COGNATE_KEYS = {
   'es-MX': SPANISH_COGNATE_KEYS,
@@ -503,6 +636,9 @@ const COGNATE_KEYS = {
   'jv': JV_COGNATE_KEYS,
 
   'pcm': PCM_COGNATE_KEYS,
+  'gu': GU_COGNATE_KEYS,
+  'hi': HI_COGNATE_KEYS,
+  'tg': TG_COGNATE_KEYS,
 };
 
 const TOKENS = [

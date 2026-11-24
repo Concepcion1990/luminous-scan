@@ -396,8 +396,8 @@ test('presentation: plan lines, comparison row, feature, nav door — Business o
 });
 
 test('training: three lessons, catalogs in agreement, Business-visible only', () => {
-  assert.equal(SERVER_LESSONS.length, 110, 'catalog 107 -> 110');
-  assert.equal(CLIENT_LESSONS.length, 110);
+  assert.equal(SERVER_LESSONS.length, 114, 'catalog 107 -> 110 with cross-store messages; 114 since restaurant operations added 4');
+  assert.equal(CLIENT_LESSONS.length, 114);
   for (const id of ['owner-xstore-messages', 'mgr-xstore-messages', 'staff-xstore-messages']) {
     const server = SERVER_LESSONS.find((l) => l.id === id);
     const client = CLIENT_LESSONS.find((l) => l.id === id);

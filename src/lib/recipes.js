@@ -13,6 +13,41 @@ import { scoped } from './scoped.js';
  * Q factor touches cost only.
  */
 
+/** A product's unit conversions, however the row carries them
+ *  (release 361): the entity stores a JSON array of
+ *  {unit, per} — per = how many of that unit make ONE stock
+ *  unit (1 kg = 1000 g → {unit:'g', per:1000}). Accepts the
+ *  parsed array or the raw string; anything else reads as no
+ *  conversions. */
+export function parseUnitConversions(product) {
+  const raw = product?.unit_conversions;
+  if (Array.isArray(raw)) return raw;
+  if (typeof raw === 'string' && raw.trim()) {
+    try {
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
+/** A recipe line's quantity in the product's STOCK units
+ *  (release 361 — the exact mirror of the server's
+ *  lineStockQty): no line unit, or the stock unit itself,
+ *  means the quantity already is stock units; a known
+ *  conversion divides by its per; an unknown unit falls back
+ *  to the quantity as written — never crash, never invent. */
+export function lineStockQty(product, line) {
+  const qty = Number(line?.quantity) || 0;
+  if (!product || !line?.unit || line.unit === product.unit) return qty;
+  const conversion = parseUnitConversions(product).find(
+    (entry) => entry?.unit === line.unit && Number(entry?.per) > 0
+  );
+  return conversion ? qty / Number(conversion.per) : qty;
+}
+
 export function yieldQtyOf(recipe) {
   const qty = Number(recipe?.yield_qty);
   return Number.isFinite(qty) && qty > 0 ? qty : 1;
@@ -38,7 +73,7 @@ export function recipeCostPerMake(recipesById, productsById, recipe, seen = new 
       sum += qty * (recipeCostPerMake(recipesById, productsById, sub, nextSeen) / yieldQtyOf(sub));
     } else {
       const product = productsById.get(line.product_id);
-      sum += (qty * (Number(product?.cost) || 0)) / yieldFactor(line);
+      sum += (lineStockQty(product, line) * (Number(product?.cost) || 0)) / yieldFactor(line);
     }
   }
   const q = Math.min(Math.max(Number(recipe.q_factor_pct) || 0, 0), 100);
@@ -53,7 +88,7 @@ export function recipeCostPerUnit(recipesById, productsById, recipe) {
 /** Flatten a recipe to raw products: Map product_id -> the
  *  as-purchased quantity ONE make consumes (sub-recipes
  *  rolled up). This is what a sale takes off the shelf. */
-export function expandRecipeToProducts(recipesById, recipe, seen = new Set()) {
+export function expandRecipeToProducts(recipesById, recipe, seen = new Set(), productsById = null) {
   const out = new Map();
   if (!recipe || seen.has(recipe.id)) return out;
   const nextSeen = new Set(seen);
@@ -65,11 +100,17 @@ export function expandRecipeToProducts(recipesById, recipe, seen = new Set()) {
       const sub = recipesById.get(line.recipe_id);
       if (!sub) continue;
       const subMakes = qty / yieldQtyOf(sub);
-      for (const [productId, subQty] of expandRecipeToProducts(recipesById, sub, nextSeen)) {
+      for (const [productId, subQty] of expandRecipeToProducts(recipesById, sub, nextSeen, productsById)) {
         out.set(productId, (out.get(productId) || 0) + subQty * subMakes);
       }
     } else if (line.product_id) {
-      out.set(line.product_id, (out.get(line.product_id) || 0) + qty);
+      // Depletion is in stock units (release 361): when the
+      // caller hands over the products, a line written in a
+      // converted unit (grams against a kilogram stock unit)
+      // converts through lineStockQty; without products the
+      // quantity stands as written, as before.
+      const stockQty = productsById ? lineStockQty(productsById.get(line.product_id), line) : qty;
+      out.set(line.product_id, (out.get(line.product_id) || 0) + stockQty);
     }
   }
   return out;

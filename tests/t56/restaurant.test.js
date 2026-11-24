@@ -26,7 +26,8 @@
 //  - Presentation: the corner's lines join the Business plan
 //    (includes + comparison), the nav group exists behind the
 //    restaurant feature, and the training catalog carries
-//    five scoped restaurant lessons (102 → 107; 110 since cross-store messages).
+//    five scoped restaurant lessons (102 → 107; 110 since cross-store messages;
+//    114 since restaurant operations, whose four lessons t59 pins).
 import { test, after, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
@@ -743,7 +744,11 @@ test('plan presentation: the corner joins Business includes + comparison only', 
   const welcomeEssentials = WELCOME_OPTIONS.find((o) => o.key === 'essentials');
   assert.ok(!welcomeEssentials.includes.some((line) => /restaurant|order guide/i.test(line)), 'Welcome Essentials gains nothing');
   const rows = COMPARISON_ROWS.filter((row) => /restaurant|order guide/i.test(row.label));
-  assert.equal(rows.length, 2);
+  // Release 361 added the corner's second pair of lines
+  // (restaurantOps + restaurantDaily, pinned by t59): the
+  // restaurant family on the comparison table is now four
+  // rows, every one Business-only.
+  assert.equal(rows.length, 4);
   for (const row of rows) {
     assert.equal(row.business, true);
     assert.equal(row.essentials, false);
@@ -754,13 +759,17 @@ test('plan presentation: the corner joins Business includes + comparison only', 
 test('nav: the corner hangs under its own subheading, behind the feature', () => {
   const group = NAV_GROUPS.find((g) => g.labelKey === 'nav.group.restaurant');
   assert.ok(group, 'the Restaurant group exists');
-  assert.deepEqual(group.items.map((i) => i.to), ['/restaurant', '/restaurant/order-guide']);
+  // The 359 doors still lead the group; release 361 hung
+  // twelve more doors under the same subheading (the full
+  // fourteen-door list is pinned by t59).
+  assert.deepEqual(group.items.map((i) => i.to).slice(0, 2), ['/restaurant', '/restaurant/order-guide']);
+  assert.equal(group.items.length, 14);
   assert.ok(group.items.every((i) => i.feature === 'restaurant'));
 });
 
 test('training: five restaurant lessons, Business-scoped, ticks bring theirs', () => {
-  assert.equal(CLIENT_LESSONS.length, 110);
-  assert.equal(SERVER_LESSONS.length, 110);
+  assert.equal(CLIENT_LESSONS.length, 114);
+  assert.equal(SERVER_LESSONS.length, 114);
   const ids = ['owner-restaurant', 'staff-restaurant-view', 'mgr-restaurant-build', 'mgr-restaurant-pars', 'mgr-restaurant-money'];
   for (const id of ids) {
     const lesson = SERVER_LESSONS.find((l) => l.id === id);

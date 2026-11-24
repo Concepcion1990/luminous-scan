@@ -128,7 +128,7 @@ test('Import: the reorder target is offered, templated and mapped on Business on
 
 test('Stored reorder points are never stripped: the server keeps the field on every plan', () => {
   const entities = src('server/entities.js');
-  assert.match(entities, /numeric: \['cost', 'price', 'reorder_point', 'clearance_price', 'sale_price'\]/);
+  assert.match(entities, /numeric: \['cost', 'price', 'reorder_point', 'clearance_price', 'sale_price', 'shelf_life_days'\]/);
   const strip = entities.slice(entities.indexOf('function stripPricing'), entities.indexOf('function stripPricing') + 700);
   assert.doesNotMatch(strip, /reorder_point/, 'plan shaping never touches reorder_point');
   // The low computation itself stays — Business surfaces feed on it.
