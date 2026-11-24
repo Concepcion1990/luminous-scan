@@ -157,7 +157,13 @@ test('import activity: every write and render site is wired', () => {
   assert.match(commit, /export async function recordImportEvent/);
   assert.match(commit, /kind: 'update', count: updated/);
   const create = readFileSync('src/components/import/ImportWorkbench.jsx', 'utf8');
-  assert.match(create, /recordImportEvent\(\{ businessId, kind: 'create', count: valid\.length, fileName \}\)/);
+  // Release 365 (Nov 23, 2026): the Create commit rides the
+  // server's one-send import door, and the door itself writes the
+  // activity event (the INSERT pinned below against shopRoutes) —
+  // the client no longer records it after the fact, so a refused
+  // send can never leave a phantom "Imported N products" line.
+  assert.match(create, /apiRequest\(`\/api\/businesses\/\$\{encodeURIComponent\(businessId\)\}\/import`/);
+  assert.ok(!create.includes('recordImportEvent'), 'the create event is the server door’s to write');
   // Receive imports write NO event — their receipts already speak.
   const receiveCommit = commit.slice(commit.indexOf('export async function applyReceipts'));
   assert.ok(!receiveCommit.includes('recordImportEvent'), 'receive stays movement-only');

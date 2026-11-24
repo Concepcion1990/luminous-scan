@@ -146,6 +146,10 @@ const FR_FR_COGNATE_KEYS = new Set([
   // and "Par" is the kept domain term — verified word-by-word.
   'nav.group.restaurant', 'training.module.restaurant', 'restaurant.eyebrow',
   'recipes.statusActive', 'recipes.descriptionLabel', 'guide.colPar',
+  // Import robustness batch (release 365, Nov 23, 2026): "Photo"
+  // is the genuine French word for the import field too — the
+  // same cognate as products.colPhoto above, verified.
+  'importLib.field.photo',
 ]);
 const FR_CA_COGNATE_KEYS = new Set([
   // Restaurant operations batch (Nov 23, 2026): Same French cognates as fr-FR — verified.
@@ -183,6 +187,9 @@ const FR_CA_COGNATE_KEYS = new Set([
   // and "Par" is the kept domain term — verified word-by-word.
   'nav.group.restaurant', 'training.module.restaurant', 'restaurant.eyebrow',
   'recipes.statusActive', 'recipes.descriptionLabel', 'guide.colPar',
+  // Import robustness batch (release 365, Nov 23, 2026): "Photo"
+  // — same French cognate as fr-FR, verified.
+  'importLib.field.photo',
 ]);
 const PT_BR_COGNATE_KEYS = new Set([
   // Restaurant operations batch (Nov 23, 2026): "Status", "Total" and "Item" are the genuine Portuguese words, "g" is the gram symbol, and the scale names are spelled the same in Portuguese — verified.

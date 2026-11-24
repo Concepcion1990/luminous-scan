@@ -32,7 +32,11 @@ test('no lesson carries a visuals property — client catalog or server catalog'
 test('the catalog itself is untouched: 115 lessons (107 through 360; +3 cross-store messages lessons, +4 restaurant operations lessons, +1 eBay storefront lesson in 362), spot step counts unchanged', () => {
   assert.equal(CLIENT_LESSONS.length, 115, 'client catalog holds 115 lessons');
   assert.equal(SERVER_LESSONS.length, 115, 'server catalog holds 115 lessons');
-  const spot = { 'owner-import': 2, 'products-find-edit': 11, 'welcome-basics': 6 };
+  // Release 365 (Nov 23, 2026) deliberately grew owner-import
+  // 2 -> 4 steps: the lesson gained the column-marriage step and
+  // the dry-run-promise step (the owner's import rulings). The
+  // other spot counts stand exactly as 360 left them.
+  const spot = { 'owner-import': 4, 'products-find-edit': 11, 'welcome-basics': 6 };
   for (const catalog of [CLIENT_LESSONS, SERVER_LESSONS]) {
     for (const [id, steps] of Object.entries(spot)) {
       const lesson = catalog.find((l) => l.id === id);

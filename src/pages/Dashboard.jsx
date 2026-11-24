@@ -266,7 +266,7 @@ export default function Dashboard() {
                     label={t('dashboard.stockValue')}
                     value={formatMoney(stats.stockValue, profile.currency, 2)}
                     tone="ok"
-                    hint={t('dashboard.atCurrentCost')}
+                    hint={`${t('dashboard.atCurrentCost')} · ${t('dashboard.atSellingPrice')}: ${formatMoney(stats.retailValue, profile.currency, 2)}`}
                   />
                 )}
               </>

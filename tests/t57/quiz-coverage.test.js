@@ -77,13 +77,27 @@ test('quiz coverage: every lesson, both plans, every step view — well-formed a
 test('the repaired lesson: owner-import asks belongs instead of a duplicated notBelongs', () => {
   const lesson = TRAINING_LESSONS.find((l) => l.id === 'owner-import');
   assert.ok(lesson, 'owner-import exists');
-  assert.equal(lesson.steps, 2, 'owner-import is the 2-step lesson');
+  // Release 365 (Nov 23, 2026) grew owner-import 2 -> 4 steps —
+  // it gained the column-marriage step and the dry-run-promise
+  // step (the owner's import rulings). The 360 repair still
+  // governs any view with fewer than 3 visible steps: notBelongs
+  // falls back to belongs there, count unchanged.
+  assert.equal(lesson.steps, 4, 'owner-import is the 4-step lesson since release 365');
   // owner-import is Essentials-only (essentialsOnly), so its live
   // plan view is isBusiness=false; check both builder inputs anyway.
   for (const isBusiness of [false, true]) {
     const quiz = buildQuiz(lesson, [1, 2], { personKey: PERSON_KEY, isBusiness });
     assert.equal(quiz.questions.length, 5, 'question count unchanged by the fallback');
     assert.ok(quiz.questions.every((q) => q.type === 'belongs'), 'every question falls back to belongs');
+    // With all four steps visible the lesson quizzes like any
+    // other: notBelongs and order ask properly, nothing falls back.
+    const full = buildQuiz(lesson, [1, 2, 3, 4], { personKey: PERSON_KEY, isBusiness });
+    assert.equal(full.questions.length, 5, 'full view question count');
+    assert.deepEqual(
+      full.questions.map((q) => q.type),
+      ['belongs', 'notBelongs', 'belongs', 'order', 'belongs'],
+      'full view asks the standard mix',
+    );
   }
 });
 
