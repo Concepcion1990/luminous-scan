@@ -24,7 +24,10 @@
  *
  *   - THE MISSED CLOCK-OUT. An open entry whose scheduled shift
  *     end has passed is flagged — computed live wherever entries
- *     are read — and the owner plus every ticked manager are
+ *     are read — with one exception since release 363 (the
+ *     owner's ruling, Nov 23, 2026): a called-in entry is never
+ *     flagged while open, shift on paper or not. The owner plus
+ *     every ticked manager are
  *     belled exactly once (time_entries.missed_flagged_at is the
  *     claim ledger, migration 038). Detection runs on a short
  *     in-process cadence and lazily when a clock admin reads the
@@ -144,14 +147,24 @@ function formatLocalTime(date, timeZone) {
  * The missed-clock-out fact for one entry, or null: the entry is
  * still open AND the scheduled shift for its clock-in day has
  * ended (business-local). An entry with no scheduled shift that
- * day (a call-in entry, or a legacy unscheduled one) has no
- * scheduled end to miss — it is never flagged; its window/entry
- * rules are the ones the owner wrote for it.
+ * day (a legacy unscheduled one) has no scheduled end to miss —
+ * it is never flagged; its window/entry rules are the ones the
+ * owner wrote for it. A CALLED-IN entry is likewise never
+ * flagged while it is open, even when a shift exists on paper
+ * for its clock-in day (release 363, the owner's ruling,
+ * Nov 23, 2026): the window's design is "open until they clock
+ * out", at any time, so there is no scheduled end for the entry
+ * to miss. The owner's own live proof: a shift on paper
+ * 10:00–18:00, a call-in clock-in at 20:56, and the still-open
+ * entry wore the Missed clock-out flag instantly. Once a
+ * called-in entry is clocked out it is a closed entry, and the
+ * closed-entry rule above governs it like any other.
  * Returns { shift_start, shift_end, shift_date } as ISO instants
  * plus the business-local date string.
  */
 export async function missedClockOutInfo(pool, business, entry, now = new Date()) {
   if (!entry || entry.clock_out_at) return null;
+  if (entry.called_in) return null;
   const timeZone = businessTimezone(business);
   const inLocal = localParts(new Date(entry.clock_in_at), timeZone);
   const { rows } = await pool.query(
