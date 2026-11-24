@@ -5789,7 +5789,7 @@ export const wuu = {
   "training.lessons.owner-ebay-connect.step2": "一个 eBay 店面连接一家商户 — 就是该店所卖商品所属个商户。假使侬经营多家商户，请拿每家店连接到伊自家个商户。",
   "training.lessons.owner-ebay-connect.step3": "拣侬个 eBay 库存垃个位置，葛么销售就会从正确个货架上扣除。",
   "training.lessons.owner-ebay-connect.step4": "从葛辰光起，销售会自家进来：当商品垃 eBay 上头卖脱个辰光，伊个数量会垃该搭减少，销售会连同 eBay 订单号记录垃出入库记录里向。呒没啥会回流 — 应用永远勿会更改侬个 eBay 商品刊登。",
-  "training.lessons.owner-ebay-connect.step5": "销售通过刊登上个 SKU 进行匹配 — 同侬个刊登导入所带个 SKU 一样。假使一笔销售匹配勿到，伊会垃店面连接页面个“需要匹配个销售”下头等：拿伊关联到伊个产品一记，该笔销售 — 还有以后类似个销售 — 就会自家记录。“马上检查销售”会获取任何最近个内容，而断开连接会停止连接；已经记录个销售会保留。",
+  "training.lessons.owner-ebay-connect.step5": "销售通过刊登上个 SKU、UPC 或者 ISBN 进行匹配 — 以刊登所带个三样当中任意一样为准。假使一笔销售匹配勿到，伊会垃店面连接页面个“需要匹配个销售”下头等：拿伊关联到伊个产品一记，该笔销售 — 还有以后类似个销售 — 就会自家记录。“马上检查销售”会获取任何最近个内容，而断开连接会停止连接；已经记录个销售会保留。",
   "training.lessons.owner-ebay-connect.title": "连接侬个 eBay 店",
   "training.module.storefronts": "店面连接",
 };

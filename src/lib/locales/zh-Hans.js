@@ -5789,7 +5789,7 @@ export const zhHans = {
   "training.lessons.owner-ebay-connect.step2": "一个 eBay 店面连接一个商家 — 就是该店所售商品所属的商家。如果您经营多个商家，请将每个店连接到它自己的商家。",
   "training.lessons.owner-ebay-connect.step3": "选择您的 eBay 库存所在的位置，这样销售就会从正确的货架上扣除。",
   "training.lessons.owner-ebay-connect.step4": "从那时起，销售会自行进来：当商品在 eBay 上售出时，其数量会在这里减少，销售会连同 eBay 订单号记录在出入库记录中。没有任何东西会回流 — 应用永远不会更改您的 eBay 商品刊登。",
-  "training.lessons.owner-ebay-connect.step5": "销售通过刊登上的 SKU 进行匹配 — 与您的刊登导入所带的 SKU 相同。如果一笔销售无法匹配，它会在店面连接页面的“需要匹配的销售”下等待：将它关联到它的产品一次，那笔销售 — 以及今后类似的销售 — 就会自行记录。“立即检查销售”会获取任何最近的内容，而断开连接会停止连接；已记录的销售会保留。",
+  "training.lessons.owner-ebay-connect.step5": "销售通过刊登上的 SKU、UPC 或 ISBN 进行匹配 — 刊登所带的三者中任意一个均可。如果一笔销售无法匹配，它会在店面连接页面的“需要匹配的销售”下等待：将它关联到它的产品一次，那笔销售 — 以及今后类似的销售 — 就会自行记录。“立即检查销售”会获取任何最近的内容，而断开连接会停止连接；已记录的销售会保留。",
   "training.lessons.owner-ebay-connect.title": "连接您的 eBay 店",
   "training.module.storefronts": "店面连接",
 };
