@@ -5789,7 +5789,7 @@ export const yue = {
   "training.lessons.owner-ebay-connect.step2": "一個 eBay 店面連接一間商戶 — 就係嗰間店所賣商品所屬嘅商戶。如果你經營多過一間商戶，請將每間店連接去佢自己嘅商戶。",
   "training.lessons.owner-ebay-connect.step3": "揀你嘅 eBay 庫存所在嘅位置，咁銷售就會由正確嘅貨架上面扣除。",
   "training.lessons.owner-ebay-connect.step4": "由嗰陣起，銷售會自己入嚟：當有商品喺 eBay 賣出嗰陣，佢嘅數量會喺呢度減少，銷售會連同 eBay 訂單編號記錄喺出入庫記錄入面。冇任何嘢會回流 — 應用程式永遠都唔會改你嘅 eBay 商品刊登。",
-  "training.lessons.owner-ebay-connect.step5": "銷售透過刊登上面嘅 SKU 嚟配對 — 同你嘅刊登匯入所帶嘅 SKU 一樣。如果一筆銷售配對唔到，佢會喺店面連接頁面嘅「需要配對嘅銷售」下面等：將佢連結去佢嘅產品一次，嗰筆銷售 — 同埋以後類似嘅銷售 — 就會自己記錄。「即刻檢查銷售」會攞到任何最近嘅內容，而中斷連接會停止連接；已經記錄咗嘅銷售會保留。",
+  "training.lessons.owner-ebay-connect.step5": "銷售透過刊登上面嘅 SKU、UPC 或者 ISBN 嚟配對 — 刊登所帶嘅三樣當中，是但一樣都得。如果一筆銷售配對唔到，佢會喺店面連接頁面嘅「需要配對嘅銷售」下面等：將佢連結去佢嘅產品一次，嗰筆銷售 — 同埋以後類似嘅銷售 — 就會自己記錄。「即刻檢查銷售」會攞到任何最近嘅內容，而中斷連接會停止連接；已經記錄咗嘅銷售會保留。",
   "training.lessons.owner-ebay-connect.title": "連接你嘅 eBay 店",
   "training.module.storefronts": "店面連接",
 };

@@ -5789,7 +5789,7 @@ export const zhHant = {
   "training.lessons.owner-ebay-connect.step2": "一個 eBay 店面連接一個商家 — 就是該店所售商品所屬的商家。如果您經營多個商家，請將每個店連接到它自己的商家。",
   "training.lessons.owner-ebay-connect.step3": "選擇您的 eBay 庫存所在的位置，這樣銷售就會從正確的貨架上扣除。",
   "training.lessons.owner-ebay-connect.step4": "從那時起，銷售會自行進來：當商品在 eBay 上售出時，其數量會在這裡減少，銷售會連同 eBay 訂單編號記錄在出入庫記錄中。沒有任何東西會回流 — 應用程式永遠不會更改您的 eBay 商品刊登。",
-  "training.lessons.owner-ebay-connect.step5": "銷售透過刊登上的 SKU 進行配對 — 與您的刊登匯入所帶的 SKU 相同。如果一筆銷售無法配對，它會在店面連接頁面的「需要配對的銷售」下等待：將它連結到它的產品一次，那筆銷售 — 以及今後類似的銷售 — 就會自行記錄。「立即檢查銷售」會取得任何最近的內容，而中斷連接會停止連接；已記錄的銷售會保留。",
+  "training.lessons.owner-ebay-connect.step5": "銷售透過刊登上的 SKU、UPC 或 ISBN 進行配對 — 刊登所帶的三者中任意一個均可。如果一筆銷售無法配對，它會在店面連接頁面的「需要配對的銷售」下等待：將它連結到它的產品一次，那筆銷售 — 以及今後類似的銷售 — 就會自行記錄。「立即檢查銷售」會取得任何最近的內容，而中斷連接會停止連接；已記錄的銷售會保留。",
   "training.lessons.owner-ebay-connect.title": "連接您的 eBay 店",
   "training.module.storefronts": "店面連接",
 };
