@@ -490,6 +490,14 @@ export const API_ERROR_MESSAGE_KEYS = {
   "That product already has a par level here. Edit the one that is there.": "apiErrors.parExists",
   "A par level cannot be negative.": "apiErrors.parNegative",
   "A pack size must be greater than zero.": "apiErrors.packSize",
+  "The recipe must belong to this business.": "apiErrors.invalidReference.recipeMustBelongBusiness",
+  "The purchase order must belong to this business.": "apiErrors.invalidReference.purchaseOrderMustBelongBusiness",
+  "A batch run needs a recipe with a linked prep product.": "apiErrors.batchNeedsProduct",
+  "Send a PDF or image file under 25 MB.": "apiErrors.invoiceFileInvalid",
+  "That invoice file is not on file.": "apiErrors.invoiceFileNotFound",
+  "That invoice is not in this business.": "apiErrors.invoiceNotInBusiness",
+  "Only the owner, or a team member trusted with building recipes and invoices, can change the invoice file.": "apiErrors.invoiceFileNotGranted",
+  "The restaurant corner is part of the Business plan.": "apiErrors.restaurantBusinessOnly",
 };
 
 export const API_ERROR_PATTERNS = [

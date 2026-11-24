@@ -161,10 +161,12 @@ function businessEntityClient() {
 
 const ENTITY_NAMES = [
   'AlertRule',
+  'BatchRun',
   'Bom',
   'Business',
   'Category',
   'CountSession',
+  'EightySixItem',
   'Entitlement',
   'ImportEvent',
   'Listing',
@@ -175,11 +177,17 @@ const ENTITY_NAMES = [
   'PurchaseOrder',
   'Recipe',
   'Return',
+  'StaffMeal',
   'StaffMember',
   'StaffRole',
+  'StockBatch',
   'StockLevel',
   'StockMovement',
   'Supplier',
+  'SupplierInvoice',
+  'TempLog',
+  'VendorPriceAlert',
+  'WasteEntry',
 ];
 
 /**

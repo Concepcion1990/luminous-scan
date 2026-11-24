@@ -106,6 +106,10 @@ export const LESSON_REQUIREMENTS = {
   'mgr-restaurant-build': ['restaurant.build'],
   'mgr-restaurant-pars': ['restaurant.pars'],
   'mgr-restaurant-money': ['restaurant.money'],
+  // Release 361 (Nov 23, 2026): the operations lessons reuse
+  // the same two ticks — no new ticks were minted.
+  'mgr-restaurant-invoices': ['restaurant.build'],
+  'mgr-restaurant-reports': ['restaurant.money'],
   'mgr-suppliers-orders': ['suppliers.manage'],
   'mgr-send-supplier-order': ['purchasing.manage'],
   'mgr-tax-rate': ['settings.taxRate', 'settings.manage'],

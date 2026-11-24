@@ -52,6 +52,7 @@ import { createXstoreMessageRouter } from './xstoreMessageRoutes.js';
 import { createCompRouter } from './compRoutes.js';
 import { createBlocklistRouter } from './blocklistRoutes.js';
 import { createStaffDocumentRouter } from './staffDocumentRoutes.js';
+import { createRestaurantFileRouter } from './restaurantFileRoutes.js';
 import { createDeletionRouter } from './deletionRoutes.js';
 import { assertSubscriptionAccess } from './subscriptionAccess.js';
 import { ocrAssetsHandler } from './ocrAssets.js';
@@ -99,6 +100,15 @@ export function createApp() {
   app.use(
     '/api/businesses/:bid/workforce/messages/threads/:threadId/voice',
     express.json({ limit: '12mb' }),
+  );
+  // Supplier invoice files (release 361): her universal
+  // ruling (Nov 23, 2026) caps every upload in the app at
+  // 25 MB — a 25 MB file travels as ~33 MB of base64, so
+  // this one path gets a parser wide enough to reach the
+  // route's own clear refusal, not the parser's 413.
+  app.use(
+    '/api/businesses/:bid/restaurant/invoices/:invoiceId/file',
+    express.json({ limit: '40mb' }),
   );
   // 3 MB JSON bodies: a store logo (up to 2 MB as a data URL) must
   // reach the logo endpoint's own clear 400, not the parser's 413.
@@ -283,6 +293,10 @@ export function createApp() {
   // member's paperwork file — owner + staff.documents-ticked
   // managers only, every version kept.
   app.use('/api', createStaffDocumentRouter({ getPool }));
+  // Supplier invoice files (server/restaurantFileRoutes.js):
+  // the paper copy on a supplier invoice, born at her
+  // universal 25 MB upload cap (Nov 23, 2026).
+  app.use('/api', createRestaurantFileRouter({ getPool }));
   app.use('/api', createShopRouter({ getPool }));
 
   app.use('/api', (_req, res) => {

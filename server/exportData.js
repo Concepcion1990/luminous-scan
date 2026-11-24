@@ -9,6 +9,8 @@
  */
 import { publicRow, entityDef } from './entities.js';
 import { attributionName } from './profilePhotos.js';
+import { recipeCostPerUnit } from './recipes.js';
+import { parseJsonArray } from './authz.js';
 
 export const EXPORT_ROW_CAP = 20000;
 
@@ -248,6 +250,129 @@ export const EXPORTS = {
         { label: 'Created', value: (r) => iso(r.order.created_date) },
       ];
       return { columns, rows, truncated };
+    },
+  },
+
+  // Restaurant ledger (release 361): one row per kitchen
+  // money event, in the four sections the bookkeeper files
+  // by — Purchases (received PO lines at their line cost),
+  // Waste (the costed waste log), Staff meals (valued at the
+  // dish's true recipe cost where a recipe exists, else the
+  // product's cost) and Depletion (the cause-linked consume
+  // rows 359's depletion writes). Server-built like every
+  // dataset here, so it inherits the export route's
+  // Business-only gate (featureAllowed 'exports') exactly
+  // like the other money datasets. Columns mirror
+  // src/lib/exportData.js dataset 'restaurantLedger'.
+  restaurantLedger: {
+    title: 'Restaurant ledger',
+    async build(pool, businessId) {
+      const money = (value) => (value === null || value === undefined ? '' : Number(Number(value).toFixed(2)));
+      const columns = [
+        { label: 'Section', value: (r) => r.section },
+        { label: 'Date', value: (r) => iso(r.date) },
+        { label: 'Item', value: (r) => r.item || '' },
+        { label: 'Quantity', value: (r) => r.quantity ?? '' },
+        { label: 'Unit cost', value: (r) => money(r.unit_cost) },
+        { label: 'Total cost', value: (r) => money(r.total_cost) },
+        { label: 'Reference', value: (r) => r.reference || '' },
+      ];
+      const rows = [];
+      const truncatedFlags = [];
+
+      const { rows: poRows, truncated: poTruncated } = await allRows(pool, 'PurchaseOrder', businessId);
+      truncatedFlags.push(poTruncated);
+      for (const order of poRows) {
+        for (const line of Array.isArray(order.lines) ? order.lines : []) {
+          const received = Number(line?.qty_received) || 0;
+          if (!(received > 0)) continue;
+          const unitCost = line.unit_cost === null || line.unit_cost === undefined ? null : Number(line.unit_cost);
+          rows.push({
+            section: 'Purchases',
+            date: order.received_date || order.updated_date || order.created_date,
+            item: line.product_name || '',
+            quantity: received,
+            unit_cost: unitCost,
+            total_cost: unitCost === null ? null : received * unitCost,
+            reference: order.number || '',
+          });
+        }
+      }
+
+      const { rows: wasteRows, truncated: wasteTruncated } = await allRows(pool, 'WasteEntry', businessId);
+      truncatedFlags.push(wasteTruncated);
+      for (const entry of wasteRows) {
+        const qty = Number(entry.quantity) || 0;
+        const unitCost = entry.unit_cost === null || entry.unit_cost === undefined ? null : Number(entry.unit_cost);
+        rows.push({
+          section: 'Waste',
+          date: entry.created_date,
+          item: entry.product_name || '',
+          quantity: qty,
+          unit_cost: unitCost,
+          total_cost: unitCost === null ? null : qty * unitCost,
+          reference: entry.id,
+        });
+      }
+
+      const [{ rows: mealRows, truncated: mealTruncated }, { rows: productRows }, { rows: recipeRows }] =
+        await Promise.all([
+          allRows(pool, 'StaffMeal', businessId),
+          allRows(pool, 'Product', businessId),
+          allRows(pool, 'Recipe', businessId),
+        ]);
+      truncatedFlags.push(mealTruncated);
+      const productsById = new Map(productRows.map((row) => [row.id, row]));
+      // Recipe rows arrive with unit_conversions still TEXT
+      // (allRows reads through the Product def only for
+      // products) — the cost math parses them defensively.
+      const rawRecipes = recipeRows.map((row) => ({ ...row, lines: parseJsonArray(row.lines) }));
+      const recipesById = new Map(rawRecipes.map((row) => [row.id, row]));
+      const recipeByProduct = new Map();
+      for (const recipe of rawRecipes) {
+        if (recipe.product_id && recipe.status === 'active' && !recipeByProduct.has(recipe.product_id)) {
+          recipeByProduct.set(recipe.product_id, recipe);
+        }
+      }
+      for (const meal of mealRows) {
+        const qty = Number(meal.quantity) || 0;
+        const product = productsById.get(meal.product_id);
+        const recipe = recipeByProduct.get(meal.product_id);
+        const unitCost = recipe
+          ? recipeCostPerUnit(recipesById, productsById, recipe)
+          : product?.cost === null || product?.cost === undefined
+            ? null
+            : Number(product.cost);
+        rows.push({
+          section: 'Staff meals',
+          date: meal.created_date,
+          item: meal.product_name || product?.name || '',
+          quantity: qty,
+          unit_cost: unitCost,
+          total_cost: unitCost === null ? null : qty * unitCost,
+          reference: meal.id,
+        });
+      }
+
+      const { rows: movementRows, truncated: movementTruncated } = await allRows(pool, 'StockMovement', businessId);
+      truncatedFlags.push(movementTruncated);
+      for (const movement of movementRows) {
+        if (movement.type !== 'consume' || !movement.cause_movement_id) continue;
+        const qty = Number(movement.quantity) || 0;
+        const unitCost = movement.unit_cost === null || movement.unit_cost === undefined ? null : Number(movement.unit_cost);
+        rows.push({
+          section: 'Depletion',
+          date: movement.created_date,
+          item: movement.product_name || '',
+          quantity: qty,
+          unit_cost: unitCost,
+          total_cost: unitCost === null ? null : qty * unitCost,
+          reference: movement.reference || movement.cause_movement_id,
+        });
+      }
+
+      rows.sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')));
+      return { columns, rows, truncated: truncatedFlags.some(Boolean) };
     },
   },
 

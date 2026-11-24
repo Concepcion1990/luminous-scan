@@ -191,6 +191,15 @@ export const TRAINING_LESSONS = [
   { id: 'mgr-restaurant-build', track: 'manager', module: 'restaurant', steps: 4, feature: 'restaurant' },
   { id: 'mgr-restaurant-pars', track: 'manager', module: 'restaurant', steps: 4, feature: 'restaurant' },
   { id: 'mgr-restaurant-money', track: 'manager', module: 'restaurant', steps: 4, feature: 'restaurant' },
+  // Restaurant operations (release 361, Nov 23, 2026): four
+  // more lessons under the same Business-only restaurant
+  // feature. The two new manager lessons reuse the existing
+  // ticks — invoices/batches ride restaurant.build, the money
+  // reports ride restaurant.money (LESSON_REQUIREMENTS).
+  { id: 'owner-restaurant-ops', track: 'owner', module: 'restaurant', steps: 5, feature: 'restaurant' },
+  { id: 'staff-restaurant-daily', track: 'staff', module: 'restaurant', steps: 4, feature: 'restaurant' },
+  { id: 'mgr-restaurant-invoices', track: 'manager', module: 'restaurant', steps: 4, feature: 'restaurant' },
+  { id: 'mgr-restaurant-reports', track: 'manager', module: 'restaurant', steps: 4, feature: 'restaurant' },
   // Cross-store messages (Nov 23, 2026): three lessons in the
   // messaging module under the Business-only xstoreMessages
   // feature, so Essentials never sees one of them. The door

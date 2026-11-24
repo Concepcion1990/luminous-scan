@@ -22,20 +22,21 @@ import {
 } from '@/components/ui/select';
 import { useBusiness } from '@/hooks/useBusiness';
 import { withBusiness } from '@/lib/scoped';
-import { parseRecipeUpload } from '@/lib/recipes';
+import { parseRecipeUpload, parseUnitConversions } from '@/lib/recipes';
 import { t } from '@/lib/i18n';
 
-const EMPTY_LINE = { kind: 'product', ref: '', quantity: 1, yield_pct: 100 };
+const EMPTY_LINE = { kind: 'product', ref: '', quantity: 1, yield_pct: 100, unit: '' };
 
 function lineFromStored(line) {
   if (line.kind === 'recipe') {
-    return { kind: 'recipe', ref: line.recipe_id || '', quantity: line.quantity ?? 1, yield_pct: 100 };
+    return { kind: 'recipe', ref: line.recipe_id || '', quantity: line.quantity ?? 1, yield_pct: 100, unit: '' };
   }
   return {
     kind: 'product',
     ref: line.product_id || '',
     quantity: line.quantity ?? 1,
     yield_pct: line.yield_pct ?? 100,
+    unit: line.unit || '',
   };
 }
 
@@ -121,6 +122,7 @@ export default function RecipeDialog({ open, onOpenChange, recipe, recipes, prod
             ref: line.product_id,
             quantity: line.quantity,
             yield_pct: line.yield_pct,
+            unit: line.unit || '',
           }))];
         });
       }
@@ -173,7 +175,7 @@ export default function RecipeDialog({ open, onOpenChange, recipe, recipes, prod
           product_id: product.id,
           product_name: product.name,
           sku: product.sku || '',
-          unit: product.unit || 'each',
+          unit: line.unit || product.unit || 'each',
           quantity: Number(line.quantity),
           yield_pct: Math.min(Math.max(Number(line.yield_pct) || 100, 1), 100),
         });
@@ -346,6 +348,26 @@ export default function RecipeDialog({ open, onOpenChange, recipe, recipes, prod
                     <Input type="number" min="1" max="100" step="any" value={line.yield_pct} onChange={(e) => setLine(index, { yield_pct: e.target.value })} />
                   </div>
                 ) : null}
+                {line.kind === 'product' && line.ref ? (() => {
+                  const lineProduct = products.find((p) => p.id === line.ref);
+                  if (!lineProduct) return null;
+                  const stockUnit = lineProduct.unit || 'each';
+                  const units = [stockUnit, ...parseUnitConversions(lineProduct).map((c) => c.unit).filter((u) => u && u !== stockUnit)];
+                  if (units.length < 2) return null;
+                  return (
+                    <div className="w-24 space-y-1">
+                      <Label className="text-[11px]">{t('recipes.lineUnit')}</Label>
+                      <Select value={line.unit || stockUnit} onValueChange={(v) => setLine(index, { unit: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {units.map((unit) => (
+                            <SelectItem key={unit} value={unit}>{unit}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  );
+                })() : null}
                 <Button type="button" variant="ghost" size="icon" onClick={() => setLines((rows) => rows.filter((_, i) => i !== index))}>
                   <Trash2 className="h-4 w-4" />
                 </Button>

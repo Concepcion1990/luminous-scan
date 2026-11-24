@@ -30,6 +30,17 @@ import {
   CreditCard,
   Inbox,
   Receipt,
+  FileText,
+  Trash2,
+  Wheat,
+  Thermometer,
+  Ban,
+  ArrowRightLeft,
+  UtensilsCrossed,
+  TrendingUp,
+  Scale,
+  NotebookPen,
+  BookOpen,
 } from 'lucide-react';
 
 /**
@@ -101,6 +112,18 @@ export const NAV_GROUPS = [
     items: [
       { to: '/restaurant', label: 'Recipes & dishes', labelKey: 'nav.recipes', icon: ChefHat, feature: 'restaurant' },
       { to: '/restaurant/order-guide', label: 'Order guide', labelKey: 'nav.orderGuide', icon: ClipboardList, feature: 'restaurant' },
+      { to: '/restaurant/invoices', label: 'Supplier invoices', labelKey: 'nav.invoices', icon: FileText, feature: 'restaurant' },
+      { to: '/restaurant/waste', label: 'Waste log', labelKey: 'nav.waste', icon: Trash2, feature: 'restaurant' },
+      { to: '/restaurant/expiry', label: 'Expiry & dates', labelKey: 'nav.expiry', icon: CalendarClock, feature: 'restaurant' },
+      { to: '/restaurant/allergens', label: 'Allergens', labelKey: 'nav.allergens', icon: Wheat, feature: 'restaurant' },
+      { to: '/restaurant/temp-logs', label: 'Temperature logs', labelKey: 'nav.tempLogs', icon: Thermometer, feature: 'restaurant' },
+      { to: '/restaurant/86', label: '86 board', labelKey: 'nav.eightySix', icon: Ban, feature: 'restaurant' },
+      { to: '/restaurant/transfers', label: 'Transfers', labelKey: 'nav.transfers', icon: ArrowRightLeft, feature: 'restaurant' },
+      { to: '/restaurant/staff-meals', label: 'Staff meals', labelKey: 'nav.staffMeals', icon: UtensilsCrossed, feature: 'restaurant' },
+      { to: '/restaurant/menu', label: 'Menu engineering', labelKey: 'nav.menu', icon: TrendingUp, feature: 'restaurant' },
+      { to: '/restaurant/variance', label: 'Variance', labelKey: 'nav.variance', icon: Scale, feature: 'restaurant' },
+      { to: '/restaurant/prep', label: 'Prep sheets', labelKey: 'nav.prep', icon: NotebookPen, feature: 'restaurant' },
+      { to: '/restaurant/ledger', label: 'Accounting export', labelKey: 'nav.ledger', icon: BookOpen, feature: 'restaurant' },
     ],
   },
   {

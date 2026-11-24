@@ -31,6 +31,11 @@ export const MOVEMENT_TYPES = {
   released: { label: 'Released', direction: 'hold' },
   consume: { label: 'Consumed', direction: 'out' },
   produce: { label: 'Built', direction: 'in' },
+  // Restaurant operations (release 361): a staff meal takes
+  // the dish off the shelf as its own usage category. Like
+  // consume/produce it is NOT in REVERSIBLE_TYPES — the meal
+  // was eaten; the row stands and stock is adjusted directly.
+  staff_meal: { label: 'Staff meal', direction: 'out' },
   disassemble: { label: 'Taken apart', direction: 'out' },
   recovered: { label: 'Part recovered', direction: 'in' },
 };
@@ -188,6 +193,14 @@ export async function recordMovementTx(client, {
     unit_cost: Number(unitCost) || 0,
     user_name: userName || '',
   };
+  // A transfer's OUT row names its destination (release 361:
+  // the transfer document reads the out row — before this,
+  // only the in row carried a place name, its source, and
+  // the document's TO line came out blank).
+  if (type === 'transfer' && toLocation) {
+    base.to_location_id = toLocation.id;
+    base.to_location_name = toLocation.name;
+  }
   const movement = await insertMovement(client, { ...base, type }, caller);
   if (type === 'transfer' && toLocation) {
     const destLevel = await getLevel(client, businessId, product.id, toLocation.id);

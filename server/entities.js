@@ -52,7 +52,17 @@ import {
   entitlementInheritance,
 } from './plans.js';
 import { createStaffMember, staffSeatCount, resolveMemberStore, singleStoreLocation } from './staff.js';
-import { recipeCostPerMake, recipeCostPerUnit, depleteForSaleTx, restoreDepletionsTx } from './recipes.js';
+import {
+  recipeCostPerMake,
+  recipeCostPerUnit,
+  depleteForSaleTx,
+  depleteForRecipeTx,
+  restoreDepletionsTx,
+  activeRecipeForProduct,
+  yieldQtyOf,
+} from './recipes.js';
+import { recordMovementTx } from './movements.js';
+import { computeInvoiceMatch, priceAlertCandidates } from './restaurantOps.js';
 import { memberLevel } from './staffWindow.js';
 import { ensureDefaultLocation } from './defaultLocation.js';
 import { rememberOrderAddress } from './customerAddresses.js';
@@ -68,8 +78,11 @@ import {
 const DEFS = {
   Product: {
     table: 'products',
-    json: ['variant_options', 'photo_urls', 'tags', 'custom_fields'],
-    numeric: ['cost', 'price', 'reorder_point', 'clearance_price', 'sale_price'],
+    // allergens + unit_conversions join the json list with
+    // release 361 (migration 048): both are JSON arrays stored
+    // in TEXT columns, parsed on read like tags/custom_fields.
+    json: ['variant_options', 'photo_urls', 'tags', 'custom_fields', 'allergens', 'unit_conversions'],
+    numeric: ['cost', 'price', 'reorder_point', 'clearance_price', 'sale_price', 'shelf_life_days'],
     bool: ['active'],
     required: ['name'],
     writePerm: 'products.edit',
@@ -194,6 +207,92 @@ const DEFS = {
     required: ['product_id'],
     planGate: 'restaurant',
     writePerm: 'restaurant.pars',
+  },
+  // Restaurant operations (release 361, Nov 23, 2026;
+  // migration 048). All planGate 'restaurant' like the 359
+  // foundation. The FORK on gates (flagged in the record):
+  // no new ticks — BUILDING and MONEY doors ride the existing
+  // ticks (invoices, batches, batch runs and price-alert
+  // answers take restaurant.build), while the DAILY-LOG
+  // writes (waste, temp logs, the 86 board, staff meals)
+  // carry NO writePerm at all: any trusted member of the
+  // business may log them, because logging dies when it
+  // needs permission. Reads stay the free view base.
+  StockBatch: {
+    table: 'stock_batches',
+    json: [],
+    numeric: ['quantity'],
+    bool: [],
+    required: ['product_id'],
+    planGate: 'restaurant',
+    writePerm: 'restaurant.build',
+  },
+  WasteEntry: {
+    table: 'waste_entries',
+    json: [],
+    numeric: ['quantity', 'unit_cost'],
+    bool: [],
+    required: ['product_id'],
+    planGate: 'restaurant',
+    // No writePerm — see the fork note above. Money shaping:
+    // unit_cost is stripped and total_cost never attached for
+    // anyone but the owner / a restaurant.money holder
+    // (shapeWasteMoney, the shapeRecipeMoney pattern).
+  },
+  TempLog: {
+    table: 'temp_logs',
+    json: [],
+    numeric: ['temperature'],
+    bool: ['in_range'],
+    required: ['unit_name'],
+    planGate: 'restaurant',
+    // No writePerm — daily log (see the fork note above).
+  },
+  EightySixItem: {
+    table: 'eighty_six_items',
+    json: [],
+    numeric: [],
+    bool: ['active'],
+    required: ['product_id'],
+    planGate: 'restaurant',
+    // No writePerm — daily log (see the fork note above).
+  },
+  SupplierInvoice: {
+    table: 'supplier_invoices',
+    json: ['lines'],
+    numeric: ['total'],
+    bool: [],
+    required: ['supplier_name'],
+    planGate: 'restaurant',
+    writePerm: 'restaurant.build',
+  },
+  VendorPriceAlert: {
+    table: 'vendor_price_alerts',
+    json: [],
+    numeric: ['old_cost', 'new_cost'],
+    bool: [],
+    required: ['product_id'],
+    planGate: 'restaurant',
+    writePerm: 'restaurant.build',
+  },
+  BatchRun: {
+    table: 'batch_runs',
+    json: ['lines'],
+    numeric: ['makes', 'output_qty'],
+    bool: [],
+    required: ['recipe_id'],
+    planGate: 'restaurant',
+    writePerm: 'restaurant.build',
+  },
+  StaffMeal: {
+    table: 'staff_meals',
+    json: [],
+    numeric: ['quantity'],
+    bool: [],
+    required: ['product_id'],
+    planGate: 'restaurant',
+    // No writePerm — daily log (see the fork note above). The
+    // create hook writes the staff_meal stock-out movement.
   },
   AlertRule: {
     table: 'alert_rules',
@@ -797,6 +896,451 @@ async function validatePar(pool, business, candidate, selfId) {
 }
 
 /**
+ * Restaurant operations validation (release 361, Nov 23,
+ * 2026) — the guardCreate/guardUpdate style of
+ * validateRecipe/validatePar: every product, recipe, PO,
+ * supplier and location a row names must belong to the same
+ * business, and quantities are greater than zero. Candidates
+ * are the full would-be row (create values, or the stored
+ * row merged with the patch).
+ */
+async function assertProductInBusiness(pool, businessId, productId) {
+  const found = (
+    await pool.query('SELECT * FROM products WHERE id = $1 AND business_id = $2', [productId, businessId])
+  ).rows[0];
+  if (!found) throw err(400, 'invalid_reference', 'The product must belong to this business.');
+  return found;
+}
+
+async function assertLocationInBusiness(pool, businessId, locationId) {
+  if (!locationId) return null;
+  const found = (
+    await pool.query('SELECT * FROM locations WHERE id = $1 AND business_id = $2', [locationId, businessId])
+  ).rows[0];
+  if (!found) throw err(400, 'invalid_reference', 'The location must belong to this business.');
+  return found;
+}
+
+async function assertSupplierInBusiness(pool, businessId, supplierId) {
+  if (!supplierId) return null;
+  const found = (
+    await pool.query('SELECT id FROM suppliers WHERE id = $1 AND business_id = $2', [supplierId, businessId])
+  ).rows[0];
+  if (!found) throw err(400, 'invalid_reference', 'The supplier must belong to this business.');
+  return found;
+}
+
+async function assertRecipeInBusiness(pool, businessId, recipeId) {
+  const found = (
+    await pool.query('SELECT * FROM recipes WHERE id = $1 AND business_id = $2', [recipeId, businessId])
+  ).rows[0];
+  if (!found) throw err(400, 'invalid_reference', 'The recipe must belong to this business.');
+  return found;
+}
+
+function assertPositiveQuantity(value) {
+  if (value !== undefined && value !== null && !(Number(value) > 0)) {
+    throw err(400, 'invalid_quantity', 'Enter a quantity greater than zero.');
+  }
+}
+
+async function validateStockBatch(pool, business, candidate) {
+  await assertProductInBusiness(pool, business.id, candidate.product_id);
+  await assertLocationInBusiness(pool, business.id, candidate.location_id);
+  assertPositiveQuantity(candidate.quantity);
+}
+
+async function validateWasteEntry(pool, business, candidate) {
+  await assertProductInBusiness(pool, business.id, candidate.product_id);
+  await assertLocationInBusiness(pool, business.id, candidate.location_id);
+  assertPositiveQuantity(candidate.quantity);
+}
+
+async function validateTempLog(pool, business, candidate) {
+  await assertLocationInBusiness(pool, business.id, candidate.location_id);
+}
+
+async function validateEightySixItem(pool, business, candidate) {
+  await assertProductInBusiness(pool, business.id, candidate.product_id);
+  await assertLocationInBusiness(pool, business.id, candidate.location_id);
+}
+
+async function validateSupplierInvoice(pool, business, candidate) {
+  await assertSupplierInBusiness(pool, business.id, candidate.supplier_id);
+  if (candidate.purchase_order_id) {
+    const po = (
+      await pool.query('SELECT id FROM purchase_orders WHERE id = $1 AND business_id = $2', [
+        candidate.purchase_order_id,
+        business.id,
+      ])
+    ).rows[0];
+    if (!po) throw err(400, 'invalid_reference', 'The purchase order must belong to this business.');
+  }
+  const lines = Array.isArray(candidate.lines) ? candidate.lines : [];
+  for (const line of lines) {
+    if (!(Number(line?.quantity) > 0)) {
+      throw err(400, 'invalid_quantity', 'Every order line needs a quantity greater than zero.');
+    }
+  }
+  await assertProductsInBusiness(pool, business.id, lines.map((line) => line?.product_id));
+}
+
+async function validateVendorPriceAlert(pool, business, candidate) {
+  await assertProductInBusiness(pool, business.id, candidate.product_id);
+  await assertSupplierInBusiness(pool, business.id, candidate.supplier_id);
+}
+
+async function validateBatchRun(pool, business, candidate) {
+  const recipe = await assertRecipeInBusiness(pool, business.id, candidate.recipe_id);
+  // A batch run PRODUCES the recipe's linked prep product:
+  // without one there is nothing to put on the shelf.
+  if (!recipe.product_id) {
+    throw err(400, 'batch_needs_product', 'A batch run needs a recipe with a linked prep product.');
+  }
+  const product = await assertProductInBusiness(pool, business.id, recipe.product_id);
+  if (product.status === 'archived') {
+    throw err(400, 'product_archived', `${product.name || 'This product'} is archived, so its stock is frozen. Restore it to active to move its stock again.`);
+  }
+  await assertLocationInBusiness(pool, business.id, candidate.location_id);
+  assertPositiveQuantity(candidate.makes);
+  return recipe;
+}
+
+async function validateStaffMeal(pool, business, candidate) {
+  await assertProductInBusiness(pool, business.id, candidate.product_id);
+  await assertLocationInBusiness(pool, business.id, candidate.location_id);
+  if (candidate.recipe_id) await assertRecipeInBusiness(pool, business.id, candidate.recipe_id);
+  assertPositiveQuantity(candidate.quantity);
+}
+
+/**
+ * Waste money shaping (release 361): the waste log's money
+ * follows the recipe rule (shapeRecipeMoney's pattern) —
+ * unit_cost rides the row ONLY for the owner or a
+ * restaurant.money tick holder, and the computed total_cost
+ * (qty × unit_cost) is attached for exactly those readers.
+ * Everyone else's payload carries neither key, so no door
+ * can render money it was never sent.
+ */
+function shapeWasteMoney(access, name, rows) {
+  if (name !== 'WasteEntry' || !rows.length) return rows;
+  const canSeeMoney = access.isOwner || access.can('restaurant.money');
+  for (const row of rows) {
+    if (canSeeMoney) {
+      row.total_cost = row.unit_cost === null || row.unit_cost === undefined
+        ? null
+        : Math.round((Number(row.quantity) || 0) * (Number(row.unit_cost) || 0) * 100) / 100;
+    } else {
+      delete row.unit_cost;
+      delete row.total_cost;
+    }
+  }
+  return rows;
+}
+
+/**
+ * Supplier invoice read shaping (release 361): when the
+ * invoice names a purchase order, the row gains the computed
+ * 3-way `match` (server/restaurantOps.js — authoritative;
+ * the client mirror is only a pre-save preview). No PO →
+ * match is null, never an invented comparison.
+ */
+async function shapeInvoiceMatch(pool, access, name, rows) {
+  if (name !== 'SupplierInvoice' || !rows.length) return rows;
+  const poDef = entityDef('PurchaseOrder');
+  for (const row of rows) {
+    if (!row.purchase_order_id) {
+      row.match = null;
+      continue;
+    }
+    const po = (
+      await pool.query('SELECT * FROM purchase_orders WHERE id = $1 AND business_id = $2', [
+        row.purchase_order_id,
+        row.business_id,
+      ])
+    ).rows[0];
+    row.match = computeInvoiceMatch(row, po ? publicRow(poDef, po) : null);
+  }
+  return rows;
+}
+
+/**
+ * Vendor price alerts from an invoice (release 361): for
+ * each invoice line whose billed unit cost differs from the
+ * product's current cost, open ONE alert — an open alert for
+ * the same invoice + product is never duplicated (a re-save
+ * of the invoice must not stack copies). Runs on invoice
+ * create and update; the alert's answer (accepted →
+ * products.cost = new_cost) lives in the VendorPriceAlert
+ * update hook below.
+ */
+async function insertPriceAlertsForInvoice(pool, invoiceRow, user) {
+  const businessId = invoiceRow.business_id;
+  const { rows: productRows } = await pool.query('SELECT * FROM products WHERE business_id = $1', [businessId]);
+  const productsById = new Map(productRows.map((row) => [row.id, row]));
+  const candidates = priceAlertCandidates(invoiceRow, productsById);
+  for (const candidate of candidates) {
+    const existing = (
+      await pool.query(
+        `SELECT id FROM vendor_price_alerts
+         WHERE business_id = $1 AND invoice_id = $2 AND product_id = $3 AND status = 'open' LIMIT 1`,
+        [businessId, invoiceRow.id, candidate.product_id],
+      )
+    ).rows[0];
+    if (existing) continue;
+    await pool.query(
+      `INSERT INTO vendor_price_alerts
+         (id, business_id, product_id, product_name, supplier_id, supplier_name, invoice_id,
+          old_cost, new_cost, status, created_by_id, created_by)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
+      [
+        crypto.randomUUID(),
+        businessId,
+        candidate.product_id,
+        candidate.product_name,
+        invoiceRow.supplier_id || '',
+        invoiceRow.supplier_name || '',
+        invoiceRow.id,
+        candidate.old_cost,
+        candidate.new_cost,
+        'open',
+        user.id,
+        user.email,
+      ],
+    );
+  }
+}
+
+/** The location a restaurant stock event lands on: the row's
+ *  named location, else the business's first location (the
+ *  default-location heal means a business always has one). */
+async function resolveOpsLocation(pool, businessId, locationId) {
+  if (locationId) {
+    const named = (
+      await pool.query('SELECT * FROM locations WHERE id = $1 AND business_id = $2', [locationId, businessId])
+    ).rows[0];
+    if (named) return named;
+  }
+  const { rows } = await pool.query(
+    'SELECT * FROM locations WHERE business_id = $1 ORDER BY created_at ASC LIMIT 1',
+    [businessId],
+  );
+  return rows[0] ?? null;
+}
+
+/**
+ * Batch run create hook (release 361): the run happens in
+ * ONE explicit transaction after the row is inserted (the
+ * funnel's create path is not transactional — the 359 sale
+ * hook's shape): a 'produce' movement puts yield_qty × makes
+ * of the recipe's linked prep product on the shelf at the
+ * run's location, then the recipe's FULL expansion is
+ * consumed through depleteForRecipeTx keyed to that produce
+ * movement. The row is then filled with what actually
+ * happened: the consumed lines snapshot, the produce
+ * movement's id, the output quantity, and the resolved
+ * product/recipe/location names.
+ */
+async function runBatchRunHook(pool, access, row, user) {
+  const def = entityDef('BatchRun');
+  const businessId = row.business_id;
+  const recipe = (
+    await pool.query('SELECT * FROM recipes WHERE id = $1 AND business_id = $2', [row.recipe_id, businessId])
+  ).rows[0];
+  if (!recipe?.product_id) return row;
+  const product = (
+    await pool.query('SELECT * FROM products WHERE id = $1 AND business_id = $2', [recipe.product_id, businessId])
+  ).rows[0];
+  if (!product) return row;
+  const location = await resolveOpsLocation(pool, businessId, row.location_id);
+  if (!location) return row;
+  const makes = Number(row.makes) || 0;
+  if (!(makes > 0)) return row;
+  const outputQty = yieldQtyOf(recipe) * makes;
+  const userName = await countActorName(pool, access);
+  let produceMovement = null;
+  let consumed = [];
+  await withTx(pool, async (client) => {
+    const produced = await recordMovementTx(client, {
+      businessId,
+      product,
+      location,
+      type: 'produce',
+      quantity: outputQty,
+      note: `Recipe: ${recipe.name}`,
+      reference: row.id,
+      userName,
+      planKey: access.planKey,
+      caller: user,
+    });
+    produceMovement = produced.movement;
+    consumed = await depleteForRecipeTx(client, {
+      businessId,
+      recipe,
+      makes,
+      location,
+      causeMovement: produceMovement,
+      userName,
+      caller: user,
+    });
+  });
+  const lines = consumed.map((movement) => ({
+    product_id: movement.product_id,
+    product_name: movement.product_name,
+    quantity: Number(movement.quantity) || 0,
+  }));
+  const { rows } = await pool.query(
+    `UPDATE batch_runs
+     SET lines = $1, produce_movement_id = $2, output_qty = $3, product_id = $4, product_name = $5,
+         recipe_name = $6, location_id = $7, location_name = $8, updated_at = NOW()
+     WHERE id = $9 RETURNING *`,
+    [
+      JSON.stringify(lines),
+      produceMovement.id,
+      outputQty,
+      product.id,
+      product.name,
+      recipe.name,
+      location.id,
+      location.name,
+      row.id,
+    ],
+  );
+  return publicRow(def, rows[0]);
+}
+
+/**
+ * Staff meal create hook (release 361): the meal takes the
+ * dish off the shelf as a 'staff_meal' movement (through
+ * recordMovementTx, in one explicit transaction after the
+ * insert — the 359 hook shape), then depletes the dish's
+ * ACTIVE recipe through depleteForRecipeTx keyed to that
+ * movement. CLAMPED, honestly: when the dish is at zero the
+ * funnel refuses the movement for insufficient stock — that
+ * refusal, and only that one, is caught: the meal row still
+ * records with movement_id null (the meal happened; the
+ * shelf was already empty). Any other refusal (an archived
+ * dish, an unknown type) still fails the write. A plain
+ * product with no active recipe is just the movement.
+ */
+async function runStaffMealHook(pool, access, row, user) {
+  const def = entityDef('StaffMeal');
+  const businessId = row.business_id;
+  const product = (
+    await pool.query('SELECT * FROM products WHERE id = $1 AND business_id = $2', [row.product_id, businessId])
+  ).rows[0];
+  if (!product) return row;
+  const location = await resolveOpsLocation(pool, businessId, row.location_id);
+  if (!location) return row;
+  const quantity = Number(row.quantity) || 0;
+  if (!(quantity > 0)) return row;
+  const userName = await countActorName(pool, access);
+  let movement = null;
+  let recipe = null;
+  await withTx(pool, async (client) => {
+    try {
+      const written = await recordMovementTx(client, {
+        businessId,
+        product,
+        location,
+        type: 'staff_meal',
+        quantity,
+        note: row.note || '',
+        reference: row.id,
+        unitCost: Number(product.cost) || 0,
+        userName,
+        planKey: access.planKey,
+        caller: user,
+      });
+      movement = written.movement;
+    } catch (error) {
+      if (error?.code !== 'insufficient_stock') throw error;
+    }
+    if (movement) {
+      recipe = await activeRecipeForProduct(client, businessId, product.id);
+      if (recipe) {
+        await depleteForRecipeTx(client, {
+          businessId,
+          recipe,
+          makes: quantity / yieldQtyOf(recipe),
+          location,
+          causeMovement: movement,
+          userName,
+          caller: user,
+        });
+      }
+    }
+  });
+  const { rows } = await pool.query(
+    `UPDATE staff_meals
+     SET movement_id = $1, recipe_id = $2, product_name = $3, location_id = $4, location_name = $5,
+         updated_at = NOW()
+     WHERE id = $6 RETURNING *`,
+    [movement?.id ?? null, recipe?.id ?? row.recipe_id ?? null, product.name, location.id, location.name, row.id],
+  );
+  return publicRow(def, rows[0]);
+}
+
+/**
+ * Waste create hook (release 361): what was thrown away
+ * leaves the shelf — a 'write_off' movement through
+ * recordMovementTx (one explicit transaction after the
+ * insert, the 359 hook shape), reference = the entry. The
+ * entry snapshots the product's current cost when the
+ * caller sent none, so the log carries its cost whoever
+ * logged it (the money shaping decides who may SEE it).
+ * CLAMPED like the staff-meal hook: when the shelf holds
+ * less than the entry claims, the movement is refused for
+ * insufficient stock — that refusal, and only that one, is
+ * caught: the entry still records with movement_id null
+ * (the waste happened; the count was already off). Any
+ * other refusal still fails the write.
+ */
+async function runWasteHook(pool, access, row, user) {
+  const def = entityDef('WasteEntry');
+  const businessId = row.business_id;
+  const product = (
+    await pool.query('SELECT * FROM products WHERE id = $1 AND business_id = $2', [row.product_id, businessId])
+  ).rows[0];
+  if (!product) return row;
+  const location = await resolveOpsLocation(pool, businessId, row.location_id);
+  if (!location) return row;
+  const quantity = Number(row.quantity) || 0;
+  if (!(quantity > 0)) return row;
+  const unitCost = row.unit_cost != null ? Number(row.unit_cost) : Number(product.cost) || 0;
+  const userName = await countActorName(pool, access);
+  let movement = null;
+  await withTx(pool, async (client) => {
+    try {
+      const written = await recordMovementTx(client, {
+        businessId,
+        product,
+        location,
+        type: 'write_off',
+        quantity,
+        note: row.note || '',
+        reference: row.id,
+        unitCost,
+        userName,
+        planKey: access.planKey,
+        caller: user,
+      });
+      movement = written.movement;
+    } catch (error) {
+      if (error?.code !== 'insufficient_stock') throw error;
+    }
+  });
+  const { rows } = await pool.query(
+    `UPDATE waste_entries
+     SET movement_id = $1, unit_cost = $2, product_name = $3, location_id = $4, location_name = $5,
+         updated_at = NOW()
+     WHERE id = $6 RETURNING *`,
+    [movement?.id ?? null, unitCost, product.name, location.id, location.name, row.id],
+  );
+  return publicRow(def, rows[0]);
+}
+
+/**
  * Recipe money shaping (release 359): dish money is money —
  * the owner-only money rule applied to a recipe read. The
  * computed cost figures (per make, per dish, and the food
@@ -819,7 +1363,11 @@ async function shapeRecipeMoney(pool, access, name, rows) {
   const businessId = access.business.id;
   const [{ rows: recipeRows }, { rows: productRows }] = await Promise.all([
     pool.query('SELECT * FROM recipes WHERE business_id = $1', [businessId]),
-    pool.query('SELECT id, cost, price FROM products WHERE business_id = $1', [businessId]),
+    // unit + unit_conversions ride along: the cost math
+    // converts recipe-line units into stock units
+    // (lineStockQty), and a skinny row would silently price
+    // a grams line as kilograms (harness find, Nov 23, 2026).
+    pool.query('SELECT id, cost, price, unit, unit_conversions FROM products WHERE business_id = $1', [businessId]),
   ]);
   const recipesById = new Map(recipeRows.map((row) => [row.id, row]));
   const productsById = new Map(productRows.map((row) => [row.id, row]));
@@ -1231,6 +1779,44 @@ async function guardCreate(pool, def, name, access, values) {
   if (name === 'Par') {
     await validatePar(pool, business, values, null);
   }
+  if (name === 'StockBatch') {
+    await validateStockBatch(pool, business, values);
+  }
+  if (name === 'WasteEntry') {
+    await validateWasteEntry(pool, business, values);
+  }
+  if (name === 'TempLog') {
+    await validateTempLog(pool, business, values);
+  }
+  if (name === 'EightySixItem') {
+    await validateEightySixItem(pool, business, values);
+  }
+  if (name === 'SupplierInvoice') {
+    await validateSupplierInvoice(pool, business, values);
+  }
+  if (name === 'VendorPriceAlert') {
+    await validateVendorPriceAlert(pool, business, values);
+  }
+  if (name === 'BatchRun') {
+    // The run's outcome fields are the server's alone
+    // (release 361): the create hook writes what actually
+    // happened — the client never names them.
+    values.produce_movement_id = null;
+    values.output_qty = null;
+    values.lines = [];
+    await validateBatchRun(pool, business, values);
+  }
+  if (name === 'StaffMeal') {
+    // The stock-out link is the server's alone (release
+    // 361): the create hook writes it, never the client.
+    values.movement_id = null;
+    await validateStaffMeal(pool, business, values);
+  }
+  if (name === 'WasteEntry') {
+    // Same rule (release 361): the write_off link is the
+    // create hook's to write, never the client's.
+    values.movement_id = null;
+  }
   if (name === 'StockMovement') {
     // The cause link is the server's alone (release 359): a
     // depletion row names the sale that caused it, and that
@@ -1432,6 +2018,36 @@ async function guardUpdate(pool, def, name, access, row, patch) {
   if (name === 'Par') {
     await validatePar(pool, access.business, { ...row, ...patch }, row.id);
   }
+  if (name === 'StockBatch') {
+    await validateStockBatch(pool, access.business, { ...row, ...patch });
+  }
+  if (name === 'WasteEntry') {
+    await validateWasteEntry(pool, access.business, { ...row, ...patch });
+  }
+  if (name === 'TempLog') {
+    await validateTempLog(pool, access.business, { ...row, ...patch });
+  }
+  if (name === 'EightySixItem') {
+    await validateEightySixItem(pool, access.business, { ...row, ...patch });
+  }
+  if (name === 'SupplierInvoice') {
+    await validateSupplierInvoice(pool, access.business, { ...row, ...patch });
+  }
+  if (name === 'VendorPriceAlert') {
+    await validateVendorPriceAlert(pool, access.business, { ...row, ...patch });
+  }
+  if (name === 'BatchRun') {
+    // A run that already happened is a record, not a recipe
+    // card: its outcome fields never move by edit.
+    delete patch.produce_movement_id;
+    delete patch.output_qty;
+    delete patch.lines;
+    await validateBatchRun(pool, access.business, { ...row, ...patch });
+  }
+  if (name === 'StaffMeal') {
+    delete patch.movement_id;
+    await validateStaffMeal(pool, access.business, { ...row, ...patch });
+  }
   if (name === 'StockMovement') {
     // The cause link is the server's alone (release 359) — a
     // patch that round-trips the row simply loses the field.
@@ -1614,6 +2230,10 @@ export async function listEntities(pool, user, name, filter = {}, options = {}) 
     // Recipe money rides the row only for money holders
     // (release 359) — computed here, absent for everyone else.
     businessRows = await shapeRecipeMoney(pool, access, name, businessRows);
+    // Waste money follows the same rule, and a supplier
+    // invoice carries its computed 3-way match (release 361).
+    businessRows = shapeWasteMoney(access, name, businessRows);
+    businessRows = await shapeInvoiceMatch(pool, access, name, businessRows);
     if (!access.isOwner) {
       // Attribution fields carry names, never emails, to a
       // non-owner (rider + audit, Nov 21, 2026); the creator
@@ -1691,12 +2311,16 @@ export async function getEntity(pool, user, name, id) {
     const shaped = publicRow(def, row);
     await shapeTrailActors(pool, access, name, [shaped]);
     await shapeRecipeMoney(pool, access, name, [shaped]);
+    shapeWasteMoney(access, name, [shaped]);
+    await shapeInvoiceMatch(pool, access, name, [shaped]);
     await shapeAttribution(pool, access, name, [shaped]);
     return stripCreatedBy(shaped);
   }
   const shaped = publicRow(def, row);
   await shapeTrailActors(pool, access, name, [shaped]);
   await shapeRecipeMoney(pool, access, name, [shaped]);
+  shapeWasteMoney(access, name, [shaped]);
+  await shapeInvoiceMatch(pool, access, name, [shaped]);
   return shaped;
 }
 
@@ -1739,8 +2363,33 @@ export async function createEntity(pool, user, name, values) {
   } else {
     values = await stampAttribution(pool, access, name, values);
   }
-  const createdRow = await insertRow(pool, def, businessId, user, values);
+  let createdRow = await insertRow(pool, def, businessId, user, values);
   await shapeTrailActors(pool, access, name, [createdRow]);
+  // Restaurant operations hooks (release 361): a batch run
+  // produces + consumes, a staff meal writes its stock-out
+  // movement and depletes, and a supplier invoice opens
+  // vendor price alerts — each in its own explicit
+  // transaction after the insert (the funnel's create path
+  // is not transactional; the 359 sale hook's shape). Unlike
+  // depletion, these hooks ARE the write's purpose, so their
+  // failures surface instead of being swallowed.
+  if (name === 'BatchRun') {
+    createdRow = await runBatchRunHook(pool, access, createdRow, user);
+    await shapeTrailActors(pool, access, name, [createdRow]);
+  }
+  if (name === 'StaffMeal') {
+    createdRow = await runStaffMealHook(pool, access, createdRow, user);
+    await shapeTrailActors(pool, access, name, [createdRow]);
+  }
+  if (name === 'WasteEntry') {
+    createdRow = await runWasteHook(pool, access, createdRow, user);
+    await shapeTrailActors(pool, access, name, [createdRow]);
+  }
+  if (name === 'SupplierInvoice') {
+    await insertPriceAlertsForInvoice(pool, createdRow, user);
+    await shapeInvoiceMatch(pool, access, name, [createdRow]);
+  }
+  shapeWasteMoney(access, name, [createdRow]);
   // The 90-day customer address book: an order save remembers /
   // refreshes the customer's reusable ship-to address. Never
   // allowed to fail the order itself.
@@ -1876,6 +2525,38 @@ export async function updateEntity(pool, user, name, id, patch) {
   if (name === 'Recipe') {
     await shapeRecipeMoney(pool, access, name, [result]);
   }
+  // Restaurant operations update hooks (release 361):
+  // answering a price alert 'accepted' writes the new cost
+  // onto the product ('dismissed' changes nothing), and an
+  // invoice edit re-scans its lines for price alerts and
+  // re-shapes the 3-way match on the way out.
+  if (name === 'VendorPriceAlert' && result.status === 'accepted') {
+    await pool.query(
+      'UPDATE products SET cost = $1, updated_at = NOW() WHERE id = $2 AND business_id = $3',
+      [result.new_cost, result.product_id, result.business_id],
+    );
+  }
+  if (name === 'EightySixItem' && result.active === false && !result.cleared_at) {
+    // Clearing the board stamps who cleared it and when —
+    // server-side, on the flip to inactive, once (release
+    // 361). The board renders the stamps; an edit to an
+    // already-cleared row never restamps them.
+    const userName = await countActorName(pool, access);
+    const { rows } = await pool.query(
+      `UPDATE eighty_six_items SET cleared_at = NOW(), cleared_by = $1, updated_at = NOW()
+       WHERE id = $2 AND business_id = $3 RETURNING cleared_at, cleared_by`,
+      [userName, result.id, result.business_id],
+    );
+    if (rows[0]) {
+      result.cleared_at = rows[0].cleared_at;
+      result.cleared_by = rows[0].cleared_by;
+    }
+  }
+  if (name === 'SupplierInvoice') {
+    await insertPriceAlertsForInvoice(pool, result, user);
+    await shapeInvoiceMatch(pool, access, name, [result]);
+  }
+  shapeWasteMoney(access, name, [result]);
   if (!access.isOwner) {
     // The update response obeys the same read rule: attribution
     // resolved to names, creator stamp withheld (Nov 21, 2026).

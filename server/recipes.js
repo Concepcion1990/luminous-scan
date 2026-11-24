@@ -38,6 +38,28 @@
  *   (restoreDepletionsTx) — a returned dish does NOT restore
  *   ingredients, because the food was made; only a reversed
  *   sale does.
+ *
+ *   Release 361 (Nov 23, 2026) generalises the shelf half:
+ *   depleteForRecipeTx is the consumed-expansion machinery
+ *   depleteForSaleTx was built on, parameterised by the
+ *   recipe, the number of MAKES and the cause movement — so
+ *   a sale (cause = the sale movement), a staff meal (cause
+ *   = the staff_meal movement) and a batch run (cause = the
+ *   produce movement; the batch's own recipe consumed in
+ *   full) all take ingredients off the shelf the same way.
+ *   depleteForSaleTx keeps its signature and delegates, so
+ *   the sale path's behaviour is unchanged.
+ *
+ *   UNIT CONVERSION (research A11, release 361): a recipe
+ *   line may be written in a unit other than the product's
+ *   stock unit ("500 g" of a product stocked by the kg). The
+ *   product's unit_conversions ([{unit, per}] — per = how
+ *   many of that unit make ONE stock unit) turn the line
+ *   quantity back into stock units: lineStockQty, applied in
+ *   BOTH the cost math and the expansion, so a converted
+ *   line costs and depletes in stock units. An unknown unit
+ *   leaves the quantity unchanged — never crash, never
+ *   invent a conversion.
  */
 import crypto from 'node:crypto';
 import { getLevel, setLevel, MOVEMENT_TYPES } from './movements.js';
@@ -50,13 +72,45 @@ export function recipeLines(recipe) {
   return Array.isArray(lines) ? lines : [];
 }
 
+/**
+ * A product's unit conversions, parsed defensively: the row
+ * may carry unit_conversions as a JSON string (the products
+ * table's TEXT column), an already-parsed array, or nothing.
+ * Anything unusable parses to [].
+ */
+export function parseUnitConversions(product) {
+  const raw = product?.unit_conversions;
+  if (Array.isArray(raw)) return raw;
+  const parsed = parseJsonArray(raw);
+  return Array.isArray(parsed) ? parsed : [];
+}
+
+/**
+ * A recipe line's quantity in the product's STOCK units.
+ * qty = Number(line.quantity); a line with no unit, or the
+ * stock unit itself, is already in stock units. Otherwise
+ * the product's conversion with c.unit === line.unit and
+ * per > 0 divides it (per = units per ONE stock unit, so
+ * 500 g at per 1000 is 0.5 stock units). An unknown unit
+ * returns the quantity unchanged.
+ */
+export function lineStockQty(product, line) {
+  const qty = Number(line?.quantity) || 0;
+  if (!line?.unit || !product || line.unit === product.unit) return qty;
+  const conversion = parseUnitConversions(product).find(
+    (entry) => entry && entry.unit === line.unit && Number(entry.per) > 0,
+  );
+  if (!conversion) return qty;
+  return qty / Number(conversion.per);
+}
+
 function yieldFactor(line) {
   const pct = Number(line?.yield_pct);
   if (!Number.isFinite(pct) || pct <= 0 || pct > 100) return 1;
   return pct / 100;
 }
 
-function yieldQtyOf(recipe) {
+export function yieldQtyOf(recipe) {
   const qty = Number(recipe?.yield_qty);
   return Number.isFinite(qty) && qty > 0 ? qty : 1;
 }
@@ -83,7 +137,7 @@ export function recipeCostPerMake(recipesById, productsById, recipe, seen = new 
     } else {
       const product = getFrom(productsById, line.product_id);
       const cost = Number(product?.cost) || 0;
-      sum += (qty * cost) / yieldFactor(line);
+      sum += (lineStockQty(product, line) * cost) / yieldFactor(line);
     }
   }
   const q = Number(recipe.q_factor_pct) || 0;
@@ -109,7 +163,7 @@ function getFrom(map, id) {
  * takes the AP quantity — yield is waste between the shelf
  * and the plate, and the shelf loses the whole thing.
  */
-export function expandRecipeToProducts(recipesById, recipe, seen = new Set()) {
+export function expandRecipeToProducts(recipesById, recipe, seen = new Set(), productsById = null) {
   const out = new Map();
   if (!recipe || seen.has(recipe.id)) return out;
   const nextSeen = new Set(seen);
@@ -121,12 +175,18 @@ export function expandRecipeToProducts(recipesById, recipe, seen = new Set()) {
       const sub = getFrom(recipesById, line.recipe_id);
       if (!sub) continue;
       const subMakes = qty / yieldQtyOf(sub);
-      const subFlat = expandRecipeToProducts(recipesById, sub, nextSeen);
+      const subFlat = expandRecipeToProducts(recipesById, sub, nextSeen, productsById);
       for (const [productId, subQty] of subFlat) {
         out.set(productId, (out.get(productId) || 0) + subQty * subMakes);
       }
     } else if (line.product_id) {
-      out.set(line.product_id, (out.get(line.product_id) || 0) + qty);
+      // Depletion is in stock units: a line written in a
+      // converted unit (grams of a kg-stocked product) takes
+      // its stock-unit quantity off the shelf.
+      const stockQty = productsById
+        ? lineStockQty(getFrom(productsById, line.product_id), line)
+        : qty;
+      out.set(line.product_id, (out.get(line.product_id) || 0) + stockQty);
     }
   }
   return out;
@@ -191,49 +251,56 @@ async function insertConsumeMovement(client, values, caller) {
 }
 
 /**
- * Take a sold dish's ingredients off the shelf it sold from.
- * Runs INSIDE the caller's transaction. Returns the consume
- * rows written (possibly none). Never throws for a shortage,
- * a missing recipe or a draft — depletion is a follower of
- * the sale, never its gatekeeper.
+ * Take a recipe's ingredients off a shelf, `makes` times
+ * over — the consumed-expansion machinery every restaurant
+ * stock event shares (release 361). Runs INSIDE the caller's
+ * transaction. `recipe` is the recipe row to expand (the
+ * caller resolves WHICH recipe: a sale follows the dish's
+ * ACTIVE recipe, a batch run consumes its own recipe in
+ * full); `causeMovement` is the movement the consume rows
+ * name as their cause (the sale / staff_meal / produce
+ * movement). Returns the consume rows written (possibly
+ * none). Never throws for a shortage or a missing recipe —
+ * depletion is a follower of its cause, never its
+ * gatekeeper: an ingredient short on the shelf depletes to
+ * zero, an ingredient at zero writes no row, an ARCHIVED
+ * ingredient is skipped whole.
  */
-export async function depleteForSaleTx(client, {
+export async function depleteForRecipeTx(client, {
   businessId,
-  saleMovement,
-  product,
+  recipe,
+  makes,
   location,
-  quantity,
+  causeMovement,
   userName,
   caller,
 }) {
-  if (!saleMovement?.id || !product?.id || !location?.id) return [];
+  if (!causeMovement?.id || !recipe || !location?.id) return [];
+  if (!(Number(makes) > 0)) return [];
   // Idempotency: rows already carrying this cause mean the
-  // sale was already followed (a redelivery, a retried hook).
+  // event was already followed (a redelivery, a retried hook).
   const existing = await client.query(
     'SELECT id FROM stock_movements WHERE business_id = $1 AND cause_movement_id = $2 LIMIT 1',
-    [businessId, saleMovement.id],
+    [businessId, causeMovement.id],
   );
   if (existing.rows.length) return [];
-  const recipe = await activeRecipeForProduct(client, businessId, product.id);
-  if (!recipe) return [];
   const all = await loadBusinessRecipes(client, businessId);
   const byId = new Map(all.map((row) => [row.id, row]));
-  const flat = expandRecipeToProducts(byId, recipe);
-  const makes = (Number(quantity) || 0) / yieldQtyOf(recipe);
-  if (!(makes > 0)) return [];
+  const { rows: productRowsAll } = await client.query(
+    'SELECT * FROM products WHERE business_id = $1',
+    [businessId],
+  );
+  const productsById = new Map(productRowsAll.map((row) => [row.id, row]));
+  const flat = expandRecipeToProducts(byId, recipe, new Set(), productsById);
   const written = [];
   for (const [ingredientId, perMake] of flat) {
-    if (ingredientId === product.id) continue;
+    if (recipe.product_id && ingredientId === recipe.product_id) continue;
     const need = perMake * makes;
     if (!(need > 0)) continue;
-    const { rows: productRows } = await client.query(
-      'SELECT * FROM products WHERE id = $1 AND business_id = $2',
-      [ingredientId, businessId],
-    );
-    const ingredient = productRows[0];
+    const ingredient = productsById.get(ingredientId);
     if (!ingredient) continue;
     // The Nov 14 freeze: an archived product's stock does not
-    // move for anyone — the recipe skips it, the sale stands.
+    // move for anyone — the recipe skips it, the cause stands.
     if (ingredient.status === 'archived') continue;
     const level = await getLevel(client, businessId, ingredientId, location.id);
     const onHand = Number(level?.quantity ?? 0);
@@ -251,15 +318,50 @@ export async function depleteForSaleTx(client, {
       quantity: take,
       previous_qty: onHand,
       new_qty: onHand - take,
-      reference: saleMovement.reference || '',
+      reference: causeMovement.reference || '',
       unit_cost: Number(ingredient.cost) || 0,
       note: `Recipe: ${recipe.name}`,
       user_name: userName || '',
-      cause_movement_id: saleMovement.id,
+      cause_movement_id: causeMovement.id,
     }, caller);
     written.push(movement);
   }
   return written;
+}
+
+/**
+ * Take a sold dish's ingredients off the shelf it sold from.
+ * Runs INSIDE the caller's transaction. Returns the consume
+ * rows written (possibly none). Never throws for a shortage,
+ * a missing recipe or a draft — depletion is a follower of
+ * the sale, never its gatekeeper. (Release 361: this is the
+ * sale-shaped delegate over depleteForRecipeTx — the dish's
+ * ACTIVE recipe, makes = sold ÷ the recipe's yield, cause =
+ * the sale movement. Behaviour is exactly the 359 original.)
+ */
+export async function depleteForSaleTx(client, {
+  businessId,
+  saleMovement,
+  product,
+  location,
+  quantity,
+  userName,
+  caller,
+}) {
+  if (!saleMovement?.id || !product?.id || !location?.id) return [];
+  const recipe = await activeRecipeForProduct(client, businessId, product.id);
+  if (!recipe) return [];
+  const makes = (Number(quantity) || 0) / yieldQtyOf(recipe);
+  if (!(makes > 0)) return [];
+  return depleteForRecipeTx(client, {
+    businessId,
+    recipe,
+    makes,
+    location,
+    causeMovement: saleMovement,
+    userName,
+    caller,
+  });
 }
 
 function movementLabel(movement) {

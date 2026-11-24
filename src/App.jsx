@@ -31,6 +31,18 @@ import Materials from '@/pages/Materials';
 import Restaurant from '@/pages/Restaurant';
 import RecipeDetail from '@/pages/RecipeDetail';
 import OrderGuide from '@/pages/OrderGuide';
+import RestaurantInvoices from '@/pages/RestaurantInvoices';
+import RestaurantWaste from '@/pages/RestaurantWaste';
+import RestaurantExpiry from '@/pages/RestaurantExpiry';
+import RestaurantAllergens from '@/pages/RestaurantAllergens';
+import RestaurantTempLogs from '@/pages/RestaurantTempLogs';
+import RestaurantEightySix from '@/pages/RestaurantEightySix';
+import RestaurantTransfers from '@/pages/RestaurantTransfers';
+import RestaurantStaffMeals from '@/pages/RestaurantStaffMeals';
+import RestaurantMenu from '@/pages/RestaurantMenu';
+import RestaurantVariance from '@/pages/RestaurantVariance';
+import RestaurantPrep from '@/pages/RestaurantPrep';
+import RestaurantLedger from '@/pages/RestaurantLedger';
 import Listings from '@/pages/Listings';
 import Locations from '@/pages/Locations';
 import Movements from '@/pages/Movements';
@@ -166,6 +178,102 @@ const AuthenticatedApp = () => {
             element={
               <PlanRedirect feature="restaurant">
                 <OrderGuide />
+              </PlanRedirect>
+            }
+          />
+          <Route
+            path="/restaurant/invoices"
+            element={
+              <PlanRedirect feature="restaurant">
+                <RestaurantInvoices />
+              </PlanRedirect>
+            }
+          />
+          <Route
+            path="/restaurant/waste"
+            element={
+              <PlanRedirect feature="restaurant">
+                <RestaurantWaste />
+              </PlanRedirect>
+            }
+          />
+          <Route
+            path="/restaurant/expiry"
+            element={
+              <PlanRedirect feature="restaurant">
+                <RestaurantExpiry />
+              </PlanRedirect>
+            }
+          />
+          <Route
+            path="/restaurant/allergens"
+            element={
+              <PlanRedirect feature="restaurant">
+                <RestaurantAllergens />
+              </PlanRedirect>
+            }
+          />
+          <Route
+            path="/restaurant/temp-logs"
+            element={
+              <PlanRedirect feature="restaurant">
+                <RestaurantTempLogs />
+              </PlanRedirect>
+            }
+          />
+          <Route
+            path="/restaurant/86"
+            element={
+              <PlanRedirect feature="restaurant">
+                <RestaurantEightySix />
+              </PlanRedirect>
+            }
+          />
+          <Route
+            path="/restaurant/transfers"
+            element={
+              <PlanRedirect feature="restaurant">
+                <RestaurantTransfers />
+              </PlanRedirect>
+            }
+          />
+          <Route
+            path="/restaurant/staff-meals"
+            element={
+              <PlanRedirect feature="restaurant">
+                <RestaurantStaffMeals />
+              </PlanRedirect>
+            }
+          />
+          <Route
+            path="/restaurant/menu"
+            element={
+              <PlanRedirect feature="restaurant">
+                <RestaurantMenu />
+              </PlanRedirect>
+            }
+          />
+          <Route
+            path="/restaurant/variance"
+            element={
+              <PlanRedirect feature="restaurant">
+                <RestaurantVariance />
+              </PlanRedirect>
+            }
+          />
+          <Route
+            path="/restaurant/prep"
+            element={
+              <PlanRedirect feature="restaurant">
+                <RestaurantPrep />
+              </PlanRedirect>
+            }
+          />
+          <Route
+            path="/restaurant/ledger"
+            element={
+              <PlanRedirect feature="restaurant">
+                <RestaurantLedger />
               </PlanRedirect>
             }
           />

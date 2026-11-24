@@ -291,6 +291,101 @@ export const EXPORTS = [
     },
   },
   {
+    id: 'restaurantLedger',
+    get title() { return t('exportsLib.restaurantLedger.title'); },
+    get description() { return t('exportsLib.restaurantLedger.description'); },
+    async build({ businessId }) {
+      // The restaurant ledger (release 361): one row per
+      // money event, in the fixed accounting columns. This is
+      // the client mirror of the server-built dataset — the
+      // server shapes the money to the viewer's tick, so a
+      // cost the server withheld stays blank here too.
+      const [{ rows: orders }, { rows: waste }, { rows: meals }, { rows: movements }, { rows: recipes }, { rows: products }] =
+        await Promise.all([
+          fetchAll('PurchaseOrder', businessId, { sort: '-created_date' }),
+          fetchAll('WasteEntry', businessId, { sort: '-created_date' }),
+          fetchAll('StaffMeal', businessId, { sort: '-created_date' }),
+          fetchAll('StockMovement', businessId, { sort: '-created_date' }),
+          fetchAll('Recipe', businessId, { sort: 'name' }),
+          fetchAll('Product', businessId, { sort: 'name' }),
+        ]);
+      const recipeByProduct = new Map(
+        (recipes || []).filter((r) => r.product_id).map((r) => [r.product_id, r])
+      );
+      const productById = new Map((products || []).map((p) => [p.id, p]));
+      const rows = [];
+      for (const order of orders) {
+        for (const line of order.lines || []) {
+          const received = Number(line.qty_received) || 0;
+          if (!(received > 0)) continue;
+          const unitCost = Number(line.unit_cost) || 0;
+          rows.push({
+            section: 'Purchases',
+            date: order.received_date || String(order.created_date || '').slice(0, 10),
+            item: line.product_name || '',
+            quantity: received,
+            unitCost,
+            totalCost: Number((received * unitCost).toFixed(2)),
+            reference: order.number || '',
+          });
+        }
+      }
+      for (const entry of waste) {
+        rows.push({
+          section: 'Waste',
+          date: String(entry.created_date || '').slice(0, 10),
+          item: entry.product_name || '',
+          quantity: Number(entry.quantity) || 0,
+          unitCost: entry.unit_cost ?? '',
+          totalCost: entry.total_cost ?? '',
+          reference: entry.id || '',
+        });
+      }
+      for (const meal of meals) {
+        const recipe = recipeByProduct.get(meal.product_id);
+        const unitCost =
+          recipe?.true_cost != null
+            ? Number(recipe.true_cost)
+            : productById.get(meal.product_id)?.cost ?? '';
+        const qty = Number(meal.quantity) || 0;
+        rows.push({
+          section: 'Staff meals',
+          date: String(meal.created_date || '').slice(0, 10),
+          item: meal.product_name || '',
+          quantity: qty,
+          unitCost,
+          totalCost: unitCost === '' ? '' : Number((qty * Number(unitCost)).toFixed(2)),
+          reference: meal.id || '',
+        });
+      }
+      for (const movement of movements) {
+        if (movement.type !== 'consume') continue;
+        const qty = Math.abs(Number(movement.quantity) || 0);
+        if (!(qty > 0)) continue;
+        const unitCost = movement.unit_cost ?? '';
+        rows.push({
+          section: 'Depletion',
+          date: String(movement.created_date || '').slice(0, 10),
+          item: movement.product_name || '',
+          quantity: qty,
+          unitCost,
+          totalCost: unitCost === '' ? '' : Number((qty * Number(unitCost)).toFixed(2)),
+          reference: movement.reference || '',
+        });
+      }
+      const columns = [
+        { label: 'Section', value: (r) => r.section },
+        { label: 'Date', value: (r) => r.date },
+        { label: 'Item', value: (r) => r.item },
+        { label: 'Quantity', value: (r) => r.quantity },
+        { label: 'Unit cost', value: (r) => r.unitCost },
+        { label: 'Total cost', value: (r) => r.totalCost },
+        code('Reference', (r) => r.reference),
+      ];
+      return { columns, rows };
+    },
+  },
+  {
     id: 'locations',
     get title() { return t('exportsLib.locations.title'); },
     get description() { return t('exportsLib.locations.description'); },

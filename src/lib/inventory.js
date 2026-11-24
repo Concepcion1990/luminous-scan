@@ -64,6 +64,12 @@ export const MOVEMENT_TYPES = {
     direction: 'in',
     get hint() { return t('inventoryLib.movementFoundHint'); },
   },
+  staff_meal: {
+    get label() { return t('inventoryLib.movementStaffMeal'); },
+    tone: 'out',
+    direction: 'out',
+    get hint() { return t('inventoryLib.movementStaffMealHint'); },
+  },
   write_off: {
     get label() { return t('inventoryLib.movementWrittenOff'); },
     tone: 'warn',
@@ -346,6 +352,13 @@ export async function recordMovement({
     unit_cost: Number(unitCost) || 0,
     user_name: user?.full_name || '',
   };
+
+  // A transfer's OUT row names its destination — the
+  // server funnel's shape, mirrored (release 361).
+  if (type === 'transfer' && toLocation) {
+    base.to_location_id = toLocation.id;
+    base.to_location_name = toLocation.name;
+  }
 
   await base44.entities.StockMovement.create({ ...base, type });
 
