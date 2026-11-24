@@ -26,8 +26,12 @@
  * decided here): a member who never clocks out keeps an open
  * time entry, and an open entry means "at work" — access stays
  * open. No scheduled-end bracket was invented. (The clock itself
- * already refuses a self clock-out more than 10 minutes after
- * the shift ends and sends the member to a manager or the owner.)
+ * refuses a SCHEDULED entry's self clock-out more than 10
+ * minutes after the shift ends and sends the member to a
+ * manager or the owner; a called-in entry carries no such
+ * fence since release 363 — the owner's ruling, Nov 23, 2026:
+ * the called-in clock out at any time, and that clock-out is
+ * what closes their window.)
  * The missed clock-out FLAG and its bell live in
  * server/clockAdmin.js (the clock build, Nov 21, 2026); the
  * bracket rule itself is unchanged — an open entry still admits.
