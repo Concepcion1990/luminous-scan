@@ -5789,7 +5789,7 @@ export const ko = {
   "training.lessons.owner-ebay-connect.step2": "하나의 eBay 스토어프런트는 하나의 비즈니스에 연결됩니다 — 그 스토어가 판매하는 상품의 비즈니스입니다. 비즈니스를 여러 개 운영한다면 각 스토어를 해당 비즈니스에 연결하세요.",
   "training.lessons.owner-ebay-connect.step3": "eBay 재고가 있는 위치를 선택하세요. 그래야 판매가 올바른 선반에서 차감됩니다.",
   "training.lessons.owner-ebay-connect.step4": "그때부터 판매는 자동으로 들어옵니다: eBay에서 상품이 팔리면 그 수량이 여기서 줄고, 판매가 eBay 주문 번호와 함께 이동 내역에 기록됩니다. 반대로 흐르는 것은 없습니다 — 앱은 여러분의 eBay 등록 상품을 절대 변경하지 않습니다.",
-  "training.lessons.owner-ebay-connect.step5": "판매는 등록 상품의 SKU로 일치합니다 — 여러분의 등록 상품 가져오기가 지니는 바로 그 SKU입니다. 판매가 일치하지 못하면 스토어프런트 연결 페이지의 '일치가 필요한 판매' 아래에서 기다립니다: 한 번 그 제품에 연결하면 그 판매 — 그리고 앞으로의 비슷한 판매 — 가 자동으로 기록됩니다. '지금 판매 확인하기'는 최근의 것을 모두 가져오고, 연결 해제는 연결을 중단합니다; 이미 기록된 판매는 그대로 남습니다.",
+  "training.lessons.owner-ebay-connect.step5": "판매는 등록 상품의 SKU, UPC, 또는 ISBN으로 일치합니다 — 등록 상품이 지니는 세 가지 중 어느 것으로든 일치합니다. 판매가 일치하지 못하면 스토어프런트 연결 페이지의 '일치가 필요한 판매' 아래에서 기다립니다: 한 번 그 제품에 연결하면 그 판매 — 그리고 앞으로의 비슷한 판매 — 가 자동으로 기록됩니다. '지금 판매 확인하기'는 최근의 것을 모두 가져오고, 연결 해제는 연결을 중단합니다; 이미 기록된 판매는 그대로 남습니다.",
   "training.lessons.owner-ebay-connect.title": "eBay 스토어 연결하기",
   "training.module.storefronts": "스토어프런트 연결",
 };
