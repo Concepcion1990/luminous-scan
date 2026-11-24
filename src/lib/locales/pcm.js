@@ -5789,7 +5789,7 @@ export const pcm = {
   "training.lessons.owner-ebay-connect.step2": "One eBay storefront dey connect to one business — di business wey dat store dey sell im goods. If you dey run pass one business, connect each store to im own business.",
   "training.lessons.owner-ebay-connect.step3": "Pick di location wey your eBay stock dey, so sales go comot from di right shelf.",
   "training.lessons.owner-ebay-connect.step4": "From dat time, sales dey land by demselves: when item sell for eBay, im count go drop here and dem go record di sale for Movements with di eBay order number. Nothing dey flow back — di app no dey ever change your eBay listings.",
-  "training.lessons.owner-ebay-connect.step5": "Sale dey match by di SKU for di listing — di same SKU wey your import listings dey carry. If sale no fit match, e go wait under 'Sales wey need matching' for di Storefront connections page: link am to im product once, and dat sale — and future ones like am — go record demselves. 'Check for sales now' dey fetch anything recent, and Disconnect dey stop di connection; sales wey dem don record go stay.",
+  "training.lessons.owner-ebay-connect.step5": "Sale dey match by di SKU, di UPC, or di ISBN — any of di three wey di listing dey carry. If sale no fit match, e go wait under 'Sales wey need matching' for di Storefront connections page: link am to im product once, and dat sale — and future ones like am — go record demselves. 'Check for sales now' dey fetch anything recent, and Disconnect dey stop di connection; sales wey dem don record go stay.",
   "training.lessons.owner-ebay-connect.title": "Connect your eBay store",
   "training.module.storefronts": "Storefront connections",
 };

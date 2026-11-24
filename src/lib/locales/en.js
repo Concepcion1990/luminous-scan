@@ -5924,7 +5924,7 @@ export const en = {
   "training.lessons.owner-ebay-connect.step2": "One eBay storefront connects to one business — the business whose goods that store sells. If you run more than one business, connect each store to its own business.",
   "training.lessons.owner-ebay-connect.step3": "Pick the location your eBay stock sits in, so sales come off the right shelf.",
   "training.lessons.owner-ebay-connect.step4": "From then on, sales land by themselves: when an item sells on eBay, its count drops here and the sale is recorded in Movements with the eBay order number. Nothing flows back — the app never changes your eBay listings.",
-  "training.lessons.owner-ebay-connect.step5": "A sale matches by the SKU on the listing — the same SKU your listings import carries. If a sale cannot match, it waits under 'Sales that need matching' on the Storefront connections page: link it to its product once, and that sale — and future ones like it — record themselves. 'Check for sales now' fetches anything recent, and Disconnect stops the connection; sales already recorded stay.",
+  "training.lessons.owner-ebay-connect.step5": "A sale matches by the SKU, the UPC, or the ISBN — whichever of the three the listing carries. If a sale cannot match, it waits under 'Sales that need matching' on the Storefront connections page: link it to its product once, and that sale — and future ones like it — record themselves. 'Check for sales now' fetches anything recent, and Disconnect stops the connection; sales already recorded stay.",
   "training.lessons.owner-ebay-connect.title": "Connect your eBay store",
   "training.module.storefronts": "Storefront connections",
 };
