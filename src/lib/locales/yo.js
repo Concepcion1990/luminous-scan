@@ -5789,7 +5789,7 @@ export const yo = {
   "training.lessons.owner-ebay-connect.step2": "Ile itaja eBay kan sopọ si iṣowo kan — iṣowo ti ile itaja naa n ta awọn ẹru rẹ. Ti o ba n ṣiṣẹ iṣowo ju ọkan lọ, sopọ ile itaja kọọkan si iṣowo tirẹ.",
   "training.lessons.owner-ebay-connect.step3": "Yan ipo ti ọja eBay rẹ wa, ki awọn tita le jade lati selifu ti o tọ.",
   "training.lessons.owner-ebay-connect.step4": "Lati igba naa lọ, awọn tita n de funra wọn: nigbati ohun kan ba ta lori eBay, iye rẹ dinku nibi ati pe a ṣe igbasilẹ tita naa ninu Awọn Gbigbe pẹlu nọmba aṣẹ eBay. Ko si ohun ti n ṣan pada — app na ko yi awọn atokọ eBay rẹ pada rara.",
-  "training.lessons.owner-ebay-connect.step5": "Tita kan n baamu nipasẹ SKU lori atokọ naa — SKU kanna ti awọn atokọ gbigbewọle rẹ n gbe. Ti tita ko ba le baamu, o duro labẹ 'Awọn tita ti o nilo ibaramu' lori oju-iwe Awọn asopọ ile itaja: sopọ o si ọja rẹ lẹẹkan, ati tita naa — ati awọn ọjọ iwaju bi rẹ — ṣe igbasilẹ ara wọn. 'Ṣayẹwo fun awọn tita ni bayi' n mu ohunkohun aipẹ wa, ati Ge asopọ n da asopọ naa duro; awọn tita ti a ti ṣe igbasilẹ tẹlẹ wa.",
+  "training.lessons.owner-ebay-connect.step5": "Tita kan n baamu nipasẹ SKU, UPC, tabi ISBN — eyikeyi ninu awọn mẹta ti atokọ naa n gbe. Ti tita ko ba le baamu, o duro labẹ 'Awọn tita ti o nilo ibaramu' lori oju-iwe Awọn asopọ ile itaja: sopọ o si ọja rẹ lẹẹkan, ati tita naa — ati awọn ọjọ iwaju bi rẹ — ṣe igbasilẹ ara wọn. 'Ṣayẹwo fun awọn tita ni bayi' n mu ohunkohun aipẹ wa, ati Ge asopọ n da asopọ naa duro; awọn tita ti a ti ṣe igbasilẹ tẹlẹ wa.",
   "training.lessons.owner-ebay-connect.title": "Sopọ ile itaja eBay rẹ",
   "training.module.storefronts": "Awọn asopọ ile itaja",
 };
