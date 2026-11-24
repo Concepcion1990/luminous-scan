@@ -172,10 +172,10 @@ test('wiring: the named surfaces read through the helpers', () => {
   assert.doesNotMatch(read('src/pages/PayStubPrint.jsx'), /start: String\(stub\.period_start\)/);
 });
 
-test('zero new strings from 358: the keyset stands at 5796 in every locale (5136 through 358; the restaurant batch added 172, cross-store messages 25, restaurant operations 390, eBay storefront 46, the photo door fix 8)', () => {
+test('zero new strings from 358: the keyset stands at 5801 in every locale (5136 through 358; the restaurant batch added 172, cross-store messages 25, restaurant operations 390, eBay storefront 46, the photo door fix 8)', () => {
   const counts = Object.entries(LOCALES).map(([code, dict]) => [code, Object.keys(dict).length]);
   for (const [code, count] of counts) {
-    assert.equal(count, 5796, `${code} keyset`);
+    assert.equal(count, 5801, `${code} keyset`);
   }
   assert.equal(counts.length, 52);
 });
