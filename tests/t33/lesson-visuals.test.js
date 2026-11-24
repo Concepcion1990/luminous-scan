@@ -34,9 +34,12 @@ test('the catalog itself is untouched: 115 lessons (107 through 360; +3 cross-st
   assert.equal(SERVER_LESSONS.length, 115, 'server catalog holds 115 lessons');
   // Release 365 (Nov 23, 2026) deliberately grew owner-import
   // 2 -> 4 steps: the lesson gained the column-marriage step and
-  // the dry-run-promise step (the owner's import rulings). The
-  // other spot counts stand exactly as 360 left them.
-  const spot = { 'owner-import': 4, 'products-find-edit': 11, 'welcome-basics': 6 };
+  // the dry-run-promise step (the owner's import rulings).
+  // Release 366 (Nov 24, 2026) grew it once more, 4 -> 5: the
+  // photo truth step (photos arrive on their own; the Bring in
+  // missing photos door). The other spot counts stand exactly
+  // as 360 left them.
+  const spot = { 'owner-import': 5, 'products-find-edit': 11, 'welcome-basics': 6 };
   for (const catalog of [CLIENT_LESSONS, SERVER_LESSONS]) {
     for (const [id, steps] of Object.entries(spot)) {
       const lesson = catalog.find((l) => l.id === id);

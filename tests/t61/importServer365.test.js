@@ -10,7 +10,13 @@
  *       second send names every row already in the catalog;
  *   (7) a photo link in the sheet lands as the product's photo in
  *       the app's own photo storage; a dead link is a named
- *       problem and the product is still created;
+ *       problem and the product is still created — as rebuilt by
+ *       release 366 (Nov 24, 2026): the link is KEPT on the
+ *       product and queued, the photo arrives on its own through
+ *       the background worker, and a link that cannot be fetched
+ *       ends named on the product itself (the full 366 proofs —
+ *       scale, throttling, restart, the recovery door — live in
+ *       tests/t62);
  *   (9) Essentials parity: the same road, the same behavior, on
  *       the Essentials plan.
  */
@@ -18,6 +24,35 @@ import test, { after } from 'node:test';
 import assert from 'node:assert/strict';
 import http from 'node:http';
 import { pool, req, close, ownerWithBusiness, seededLocation } from '../t3/helpers.js';
+import { drainPhotoJobs } from '../../server/photoJobs.js';
+
+const silentLogger = { log() {}, error() {} };
+
+/**
+ * Drain the photo queue the way the worker does, running the
+ * clock forward so retries fall due, until no job for the
+ * business is still active (or the rounds run out).
+ */
+async function drainUntilSettled(businessId, timeoutMs = 30000) {
+  const deadline = Date.now() + timeoutMs;
+  for (;;) {
+    await drainPhotoJobs(pool, {
+      now: new Date(Date.now() + 60 * 60 * 1000),
+      backoffMs: [0, 0, 0],
+      logger: silentLogger,
+    });
+    const active = (
+      await pool.query(
+        "SELECT COUNT(*)::int AS n FROM photo_jobs WHERE business_id = $1 AND status IN ('queued', 'fetching')",
+        [businessId],
+      )
+    ).rows[0].n;
+    if (active === 0) return;
+    if (Date.now() > deadline) break;
+    await new Promise((resolve) => setTimeout(resolve, 25));
+  }
+  throw new Error('photo jobs never settled');
+}
 
 after(close);
 
@@ -120,7 +155,7 @@ test('365 (4): the same file twice — no twins, second send names every row', a
   assert.deepEqual(skus, ['ALPHA-TALES', 'BETA-TALES', 'GAMMA-TALES']);
 });
 
-test('365 (7): a photo link lands as the product photo; a dead link is a named problem', async () => {
+test('365 (7) as rebuilt by 366: the link is kept and queued; the photo arrives on its own; a dead link ends named on the product', async () => {
   const { cookie, business } = await ownerWithBusiness('t61-photo@example.com', 'Photo Shop', { plan: 'business' });
   const res = await importRows(cookie, business.id, {
     rows: [
@@ -132,8 +167,17 @@ test('365 (7): a photo link lands as the product photo; a dead link is a named p
   });
   assert.equal(res.status, 201, res.text);
   assert.equal(res.json.created, 2);
-  assert.equal(res.json.photoProblems.length, 1);
-  assert.equal(res.json.photoProblems[0].name, 'Dead Link Book');
+  // Release 366: nothing is fetched inside the send. Both links
+  // are queued, no fetch has failed yet, and the links live on
+  // the products themselves — the recovery road stands on them.
+  assert.equal(res.json.photosQueued, 2);
+  assert.equal(res.json.photoProblems.length, 0);
+  const kept = (
+    await pool.query('SELECT name, photo_source_url FROM products WHERE business_id = $1 ORDER BY name', [business.id])
+  ).rows;
+  assert.equal(kept.find((r) => r.name === 'Photo Book').photo_source_url, photoUrl);
+  assert.equal(kept.find((r) => r.name === 'Dead Link Book').photo_source_url, 'http://127.0.0.1:1/nope.png');
+  await drainUntilSettled(business.id);
   const photoBook = (
     await pool.query('SELECT photo_urls FROM products WHERE business_id = $1 AND name = $2', [business.id, 'Photo Book'])
   ).rows[0];
@@ -145,10 +189,12 @@ test('365 (7): a photo link lands as the product photo; a dead link is a named p
   ).rows[0].n;
   assert.equal(stored, 1);
   const deadBook = (
-    await pool.query('SELECT photo_urls FROM products WHERE business_id = $1 AND name = $2', [business.id, 'Dead Link Book'])
+    await pool.query('SELECT photo_urls, photo_problem FROM products WHERE business_id = $1 AND name = $2', [business.id, 'Dead Link Book'])
   ).rows[0];
   const deadUrls = typeof deadBook.photo_urls === 'string' ? JSON.parse(deadBook.photo_urls) : deadBook.photo_urls;
   assert.ok(!deadUrls || deadUrls.length === 0);
+  // The exhausted failure is named on the product itself.
+  assert.match(deadBook.photo_problem, /could not be reached/);
 });
 
 test('365 (9): Essentials parity — same road, same behavior', async () => {
@@ -167,6 +213,8 @@ test('365 (9): Essentials parity — same road, same behavior', async () => {
   assert.equal(res.json.received, 2);
   assert.equal(res.json.units, 6);
   assert.equal(res.json.photoProblems.length, 0);
+  assert.equal(res.json.photosQueued, 1); // one row carries a photo link (release 366)
+  await drainUntilSettled(business.id);
   const levels = (
     await pool.query(
       'SELECT COALESCE(SUM(quantity), 0)::int AS n FROM stock_levels WHERE business_id = $1',

@@ -79,23 +79,31 @@ test('the repaired lesson: owner-import asks belongs instead of a duplicated not
   assert.ok(lesson, 'owner-import exists');
   // Release 365 (Nov 23, 2026) grew owner-import 2 -> 4 steps —
   // it gained the column-marriage step and the dry-run-promise
-  // step (the owner's import rulings). The 360 repair still
-  // governs any view with fewer than 3 visible steps: notBelongs
-  // falls back to belongs there, count unchanged.
-  assert.equal(lesson.steps, 4, 'owner-import is the 4-step lesson since release 365');
+  // step (the owner's import rulings). Release 366 (Nov 24,
+  // 2026) added the fifth step — the photo truth (photos arrive
+  // on their own; the Bring in missing photos door). The 360
+  // repair still governs any view with fewer than 3 visible
+  // steps: notBelongs falls back to belongs there, count
+  // unchanged.
+  assert.equal(lesson.steps, 5, 'owner-import is the 5-step lesson since release 366');
   // owner-import is Essentials-only (essentialsOnly), so its live
   // plan view is isBusiness=false; check both builder inputs anyway.
   for (const isBusiness of [false, true]) {
     const quiz = buildQuiz(lesson, [1, 2], { personKey: PERSON_KEY, isBusiness });
     assert.equal(quiz.questions.length, 5, 'question count unchanged by the fallback');
     assert.ok(quiz.questions.every((q) => q.type === 'belongs'), 'every question falls back to belongs');
-    // With all four steps visible the lesson quizzes like any
+    // With all five steps visible the lesson quizzes like any
     // other: notBelongs and order ask properly, nothing falls back.
-    const full = buildQuiz(lesson, [1, 2, 3, 4], { personKey: PERSON_KEY, isBusiness });
-    assert.equal(full.questions.length, 5, 'full view question count');
+    const full = buildQuiz(lesson, [1, 2, 3, 4, 5], { personKey: PERSON_KEY, isBusiness });
+    // Release 366: with five steps visible the derived quiz asks
+    // six questions — the standard mix, extended by the
+    // derivation's own pattern for a larger lesson (the second
+    // notBelongs quotes a different step; the 360 defect was a
+    // DUPLICATED question, not a repeated type).
+    assert.equal(full.questions.length, 6, 'full view question count');
     assert.deepEqual(
       full.questions.map((q) => q.type),
-      ['belongs', 'notBelongs', 'belongs', 'order', 'belongs'],
+      ['belongs', 'notBelongs', 'belongs', 'order', 'belongs', 'notBelongs'],
       'full view asks the standard mix',
     );
   }
