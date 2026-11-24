@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Building2, Check, Pencil, Plus } from 'lucide-react';
 import { useBusiness } from '@/hooks/useBusiness';
 import { PLANS } from '@/lib/plans';
+import { effectivePlanKey } from '@/lib/entitlements';
 import { isBoss } from '@/lib/bossAuthority';
 import { memberLevelOf } from '@/lib/staff';
 import useStaffAccess from '@/hooks/useStaffAccess';
@@ -34,7 +35,7 @@ import {
  * Sits on the dark header/sidebar in both layouts.
  */
 export default function BusinessSwitcher({ compact = false }) {
-  const { businesses, activeId, record, user, switchTo, create, canCreate, limit, isLoading, trialLabelFor } =
+  const { businesses, plans, activeId, record, user, switchTo, create, canCreate, limit, isLoading, trialLabelFor } =
     useBusiness();
   // An owner or administrator opens another business whenever the plan allows it; a
   // staff seat never does, because a seat is not ownership.
@@ -98,6 +99,22 @@ export default function BusinessSwitcher({ compact = false }) {
   // Say why, and where to go: only once the allowance is known, and only
   // for someone who may create (a staff seat never sees the button).
   const atBusinessLimit = mayCreate && limit != null && !canCreate;
+
+  // The door beside the limit note (owner's ruling, Nov 24, 2026):
+  // the header shows the plan change that actually exists for this
+  // login. Essentials can only go up, so its door says Upgrade;
+  // Business is already the top plan — an "Upgrade" link there was
+  // a dead door — so its door says Downgrade to Essentials. Both
+  // lead to /upgrade, which already handles the change in each
+  // direction. The governing plan is the oldest business's, read
+  // from the same plan row the allowance (`limit`) is computed
+  // from, so the door and the cap can never disagree; and the note
+  // only renders once that plan is known (limit != null), so the
+  // label is never a guess. Who sees the note is unchanged: only
+  // someone who may create, at their business limit.
+  const oldestBusiness = businesses[0] ?? null;
+  const oldestPlanRow = plans.find((row) => row.business_id === oldestBusiness?.id) ?? null;
+  const onBusinessPlan = effectivePlanKey(oldestPlanRow, user, oldestBusiness) === 'business';
 
   return (
     <div className={compact ? 'space-y-1' : 'space-y-2'}>
@@ -199,7 +216,7 @@ export default function BusinessSwitcher({ compact = false }) {
         <p className="text-[11px] leading-snug text-primary-foreground/60">
           {t('settings.switcher.limitNote', { max: PLANS.business.limits.businesses })}{' '}
           <Link to="/upgrade" className="font-medium text-primary-foreground underline underline-offset-2">
-            {t('settings.switcher.upgrade')}
+            {onBusinessPlan ? t('upgrade.downgradeToEssentials') : t('settings.switcher.upgrade')}
           </Link>
         </p>
       )}

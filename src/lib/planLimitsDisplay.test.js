@@ -380,6 +380,32 @@ test('BusinessSwitcher explains a disabled New button and counts in compact too'
   assert.match(switcher, /\{businesses\.length\}\/\{limit \?\? '…'\}/);
 });
 
+/**
+ * OWNER'S RULING (Nov 24, 2026): the header plan line shows the door
+ * that exists for your plan. On her real Business account the line
+ * read "Business allows up to 5 — Upgrade" — a dead door, since
+ * Business is already the top plan. Business now sees the Downgrade
+ * door; Essentials keeps Upgrade. One link, one target (/upgrade,
+ * which already handles plan changes in both directions) — only
+ * the label follows the plan.
+ */
+test('BusinessSwitcher limit-note door matches the plan: Upgrade up, Downgrade down', () => {
+  const switcher = readFileSync('src/components/business/BusinessSwitcher.jsx', 'utf8');
+  // The governing plan is the oldest business's effective plan —
+  // the same plan row the business allowance is computed from in
+  // useBusiness, so the door and the cap can never disagree.
+  assert.match(switcher, /plans\.find\(\(row\) => row\.business_id === oldestBusiness\?\.id\)/);
+  assert.match(switcher, /effectivePlanKey\(oldestPlanRow, user, oldestBusiness\) === 'business'/);
+  // Only the label follows the plan; the door itself is unchanged.
+  assert.match(switcher, /onBusinessPlan \? t\('upgrade\.downgradeToEssentials'\) : t\('settings\.switcher\.upgrade'\)/);
+  // The Business label reuses the /upgrade page's own downgrade
+  // key, which already exists, genuinely translated, in every
+  // locale — this release adds no keys.
+  assert.equal(en['upgrade.downgradeToEssentials'], 'Downgrade to Essentials');
+  assert.equal(en['settings.switcher.upgrade'], 'Upgrade');
+});
+
+
 /** AUDIT FINDING 25: 3 active + 1 suspended showed "Staff 4" next to
  * "Staff 3 of 3" — looking like an over-limit error. The stat card and
  * the "N people" line now count seats in use (active + invited only),
