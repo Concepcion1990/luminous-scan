@@ -5789,7 +5789,7 @@ export const tr = {
   "training.lessons.owner-ebay-connect.step2": "Bir eBay vitrini bir işletmeye bağlanır — o vitrinin ürünlerini sattığı işletmeye. Birden fazla işletme yönetiyorsanız, her vitrini kendi işletmesine bağlayın.",
   "training.lessons.owner-ebay-connect.step3": "eBay stoğunuzun bulunduğu konumu seçin; böylece satışlar doğru raftan düşülür.",
   "training.lessons.owner-ebay-connect.step4": "O andan itibaren satışlar kendiliğinden gelir: bir ürün eBay'de satıldığında sayısı burada düşer ve satış, eBay sipariş numarasıyla birlikte Hareketler'e kaydedilir. Hiçbir şey geri akmaz — uygulama eBay ilanlarınızı asla değiştirmez.",
-  "training.lessons.owner-ebay-connect.step5": "Bir satış, ilandaki SKU ile eşleşir — içe aktarılan ilanlarınızın taşıdığı SKU'nun aynısı. Bir satış eşleşemezse, Vitrin bağlantıları sayfasında 'Eşleştirilmesi gereken satışlar' altında bekler: onu bir kez ürününe bağlayın; o satış — ve onun gibi gelecektekiler — kendiliğinden kaydedilir. 'Satışları şimdi kontrol et' yakın zamandakileri getirir, Bağlantıyı kes bağlantıyı durdurur; zaten kaydedilmiş satışlar kalır.",
+  "training.lessons.owner-ebay-connect.step5": "Bir satış, ilandaki SKU, UPC veya ISBN ile eşleşir — ilan bu üçünden hangisini taşıyorsa. Bir satış eşleşemezse, Vitrin bağlantıları sayfasında 'Eşleştirilmesi gereken satışlar' altında bekler: onu bir kez ürününe bağlayın; o satış — ve onun gibi gelecektekiler — kendiliğinden kaydedilir. 'Satışları şimdi kontrol et' yakın zamandakileri getirir, Bağlantıyı kes bağlantıyı durdurur; zaten kaydedilmiş satışlar kalır.",
   "training.lessons.owner-ebay-connect.title": "eBay vitrininizi bağlayın",
   "training.module.storefronts": "Vitrin bağlantıları",
 };
