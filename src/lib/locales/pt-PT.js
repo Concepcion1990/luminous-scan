@@ -5789,7 +5789,7 @@ export const ptPT = {
   "training.lessons.owner-ebay-connect.step2": "Uma loja eBay liga-se a uma empresa — a empresa cujos produtos essa loja vende. Se tiver mais do que uma empresa, ligue cada loja à sua própria empresa.",
   "training.lessons.owner-ebay-connect.step3": "Escolha o local onde está o seu stock do eBay, para que as vendas saiam da prateleira certa.",
   "training.lessons.owner-ebay-connect.step4": "A partir daí, as vendas chegam sozinhas: quando um item é vendido no eBay, a quantidade dele desce aqui e a venda é registada em Movimentos com o número de encomenda do eBay. Nada volta — a aplicação nunca altera os seus anúncios do eBay.",
-  "training.lessons.owner-ebay-connect.step5": "Uma venda corresponde pelo SKU do anúncio — o mesmo SKU que os seus anúncios importados trazem. Se uma venda não puder corresponder, fica à espera em 'Vendas que precisam de associação' na página Ligações de lojas: associe-a ao seu produto uma vez, e essa venda — e as futuras como ela — registam-se sozinhas. 'Verificar vendas agora' vai buscar tudo o que for recente, e Desligar para a ligação; as vendas já registadas ficam.",
+  "training.lessons.owner-ebay-connect.step5": "Uma venda corresponde pelo SKU, pelo UPC ou pelo ISBN — qualquer um dos três que o anúncio traga. Se uma venda não puder corresponder, fica à espera em 'Vendas que precisam de associação' na página Ligações de lojas: associe-a ao seu produto uma vez, e essa venda — e as futuras como ela — registam-se sozinhas. 'Verificar vendas agora' vai buscar tudo o que for recente, e Desligar para a ligação; as vendas já registadas ficam.",
   "training.lessons.owner-ebay-connect.title": "Ligue a sua loja eBay",
   "training.module.storefronts": "Ligações de lojas",
 };
