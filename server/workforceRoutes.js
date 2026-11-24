@@ -936,7 +936,20 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
     const now = new Date();
     const inLocal = localParts(new Date(entry.clock_in_at), timeZone);
     const outLocal = localParts(now, timeZone);
-    const shift = entry.unscheduled ? null : await shiftFor(pool(), businessId, me.id, inLocal.weekday);
+    // Release 363 (the owner's ruling, Nov 23, 2026): an entry
+    // that began through a call-in window is not measured
+    // against the scheduled shift at all — no too-late fence,
+    // no early-departure note. The called-in member clocks out
+    // at any time, because that is what the window is there
+    // for, and that clock-out is what closes the window
+    // (below). A scheduled entry keeps the fence exactly as
+    // built; before this release the fence measured a
+    // called-in entry against the shift's end anyway, refused
+    // every after-hours clock-out, and so stranded both the
+    // entry and the window it was meant to close.
+    const shift = entry.unscheduled || entry.called_in
+      ? null
+      : await shiftFor(pool(), businessId, me.id, inLocal.weekday);
     let earlyDeparture = false;
     if (shift && inLocal.dateStr === outLocal.dateStr) {
       const end = hhmmToMinutes(shift.end_time);
@@ -970,7 +983,9 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
     const autoLogoutAt = await startAutoLogout(pool(), businessId, me.id, now);
     // A call-in window lives until this person clocks out
     // (owner's ruling, Nov 20, 2026): the clock-out closes it,
-    // and the grace above is what follows.
+    // and the grace above is what follows. Release 363: this
+    // line is now reachable for after-hours call-ins too — the
+    // fence above no longer refuses their clock-out first.
     await closeCallIn(pool(), businessId, me.id, {
       byId: req.user.id,
       byStaffId: me.id,
