@@ -18,6 +18,17 @@
  *       (active id NULL) is now judged by their staff business:
  *       refused outside the window, admitted inside it, and a
  *       past-deadline session dies on its next move.
+ *   (e) release 363 (the owner's ruling, Nov 23, 2026, proven
+ *       by her hand the same night): a called-in entry carries
+ *       NO clock-out fence — she clocked in through a window at
+ *       20:56 against a shift that ended at 18:00 and the out
+ *       door refused her ("up to 10 minutes after your shift
+ *       ends"), stranding the entry AND the window it was
+ *       meant to close, under an instant Missed clock-out flag.
+ *       Now: the called-in clock out at any time, that
+ *       clock-out closes the window, a live called-in entry
+ *       wears no missed flag, and a scheduled entry's fence is
+ *       byte-identical.
  *
  * Real Express app over HTTP against pg-mem, same as every
  * phase; timezone trick shared with t7 (a zone whose local time
@@ -523,4 +534,139 @@ test('bracket strictness: a switched-in member with NO schedule is refused (the 
   assert.equal(refused.status, 403);
   assert.equal(refused.json.error, 'staff_outside_window');
   assert.equal(refused.json.next_shift_start, null);
+});
+
+// ---- (e) release 363: the called-in clock-out carries no fence ----------------
+
+test('release 363: a called-in entry clocks out hours after the shift ended, wears no missed flag while open, and its clock-out closes the window', async () => {
+  const tz = pickTimezone();
+  const { ownerCookie, business, owner } = await setup(tz, 'clk-363-owner');
+  const staff = await addTeamMember(business, owner.id, 'clk-363@example.com');
+  const { weekday, minutes } = localNow(tz);
+  // The owner's live shape (Nov 23, 2026): a shift exists on
+  // paper for today and ended HOURS ago (hers: 10:00–18:00,
+  // called in at 20:56). start stays a valid HH:MM because the
+  // picked zone is at 08:00 at the earliest.
+  await setShift(business.id, staff.staffId, weekday, minutes - 300, minutes - 180);
+
+  const open = await req(`${WF(business.id)}/call-in/${staff.staffId}`, { method: 'POST', body: {}, cookie: ownerCookie });
+  assert.equal(open.status, 201);
+
+  const session = await login(staff.email, staff.password);
+  assert.equal(session.status, 200, 'the open window admits sign-in after hours');
+  const cookie = cookieFrom(session.setCookie);
+
+  const inRes = await req(`${WF(business.id)}/clock/in`, { method: 'POST', body: {}, cookie });
+  assert.equal(inRes.status, 201);
+  assert.equal(inRes.json.entry.called_in, true, 'the entry began through the window');
+  assert.equal(inRes.json.entry.unscheduled, false, 'a shift exists on paper today — the owner\u2019s exact shape');
+  const entryId = inRes.json.entry.id;
+
+  // While the called-in entry is still open it is NOT a missed
+  // clock-out: no flag on the entries read (the owner's read
+  // also runs the claim pass), no claim stamp, no bell.
+  const entries = await req(`${WF(business.id)}/entries`, { cookie: ownerCookie });
+  assert.equal(entries.status, 200);
+  const row = entries.json.entries.find((e) => e.id === entryId);
+  assert.equal(row.missed_clock_out, null, 'a live called-in entry wears no missed flag');
+  const { rows: claimRows } = await pool.query('SELECT missed_flagged_at FROM time_entries WHERE id = $1', [entryId]);
+  assert.equal(claimRows[0].missed_flagged_at, null, 'the claim ledger never stamps a called-in entry');
+  const bells = await pool.query(
+    `SELECT COUNT(*)::int AS n FROM workforce_notifications
+      WHERE business_id = $1 AND event = 'missed_clock_out' AND entry_id = $2`,
+    [business.id, entryId],
+  );
+  assert.equal(bells.rows[0].n, 0, 'no missed bell rings for a called-in entry');
+
+  // The clock-out itself: three hours past the shift's end,
+  // far beyond the scheduled fence's end + 10 — before this
+  // release it was refused with clock_too_late, every time.
+  const outRes = await req(`${WF(business.id)}/clock/out`, { method: 'POST', body: {}, cookie });
+  assert.equal(outRes.status, 200, 'the called-in clock-out lands at any time');
+  assert.ok(outRes.json.entry.clock_out_at, 'the entry is closed');
+  assert.equal(outRes.json.entry.early_departure, false, 'a called-in entry is not measured against the shift at all');
+  assert.ok(outRes.json.auto_logout_at, 'the usual grace follows');
+
+  // And the clock-out closed the window, by the designed path.
+  const listed = await req(`${WF(business.id)}/call-in`, { cookie: ownerCookie });
+  assert.equal(listed.json.windows.length, 0, 'the window is closed on the owner\u2019s side');
+  const { rows: winRows } = await pool.query(
+    'SELECT closed_at, close_reason FROM call_in_windows WHERE business_id = $1 AND staff_member_id = $2',
+    [business.id, staff.staffId],
+  );
+  assert.equal(winRows.length, 1);
+  assert.ok(winRows[0].closed_at, 'the window row is stamped closed');
+  assert.equal(winRows[0].close_reason, 'clock_out', 'closed by the clock-out, not by hand');
+});
+
+test('release 363: a called-in entry also clocks out BEFORE the scheduled shift, with no note demanded', async () => {
+  const tz = pickTimezone();
+  const { ownerCookie, business, owner } = await setup(tz, 'clk-363early-owner');
+  const staff = await addTeamMember(business, owner.id, 'clk-363early@example.com');
+  const { weekday, minutes } = localNow(tz);
+  // Today's shift starts two hours from now; the window lets
+  // the member in ahead of it, and "any time" runs both ways:
+  // leaving again before the shift even begins is theirs to
+  // do, without the early-departure note a scheduled entry
+  // would owe (the note measures against the shift too).
+  await setShift(business.id, staff.staffId, weekday, minutes + 120, minutes + 300);
+  await req(`${WF(business.id)}/call-in/${staff.staffId}`, { method: 'POST', body: {}, cookie: ownerCookie });
+  const session = await login(staff.email, staff.password);
+  assert.equal(session.status, 200);
+  const cookie = cookieFrom(session.setCookie);
+  const inRes = await req(`${WF(business.id)}/clock/in`, { method: 'POST', body: {}, cookie });
+  assert.equal(inRes.status, 201);
+  assert.equal(inRes.json.entry.called_in, true);
+  const outRes = await req(`${WF(business.id)}/clock/out`, { method: 'POST', body: {}, cookie });
+  assert.equal(outRes.status, 200, 'no note is demanded of a called-in entry');
+  assert.equal(outRes.json.entry.early_departure, false);
+  const listed = await req(`${WF(business.id)}/call-in`, { cookie: ownerCookie });
+  assert.equal(listed.json.windows.length, 0, 'the early clock-out closes the window too');
+});
+
+test('release 363: a scheduled (not called-in) entry is still refused after its fence — the fence is byte-identical', async () => {
+  const tz = pickTimezone();
+  const { business, owner } = await setup(tz, 'clk-363fence-owner');
+  const staff = await addTeamMember(business, owner.id, 'clk-363fence@example.com');
+  const { weekday, minutes } = localNow(tz);
+  await setShift(business.id, staff.staffId, weekday, minutes - 180, minutes - 60);
+  // An entry opened during the shift, planted directly (the
+  // t7 shape): called_in is false, so nothing about its road
+  // changes in this release.
+  const entryId = crypto.randomUUID();
+  await pool.query(
+    `INSERT INTO time_entries (id, business_id, staff_member_id, clock_in_at, unscheduled, called_in)
+     VALUES ($1, $2, $3, $4, false, false)`,
+    [entryId, business.id, staff.staffId, zonedTimeToUtc(localDateStr(tz), minutes - 180, tz).toISOString()],
+  );
+  const session = await login(staff.email, staff.password);
+  assert.equal(session.status, 200, 'the open entry admits its owner');
+  const cookie = cookieFrom(session.setCookie);
+  const outRes = await req(`${WF(business.id)}/clock/out`, { method: 'POST', body: { note: 'stayed late' }, cookie });
+  assert.equal(outRes.status, 400);
+  assert.equal(outRes.json.error, 'clock_too_late');
+  assert.equal(
+    outRes.json.message,
+    'You can clock out up to 10 minutes after your shift ends. Ask your manager or the owner for help with this entry.',
+  );
+  const { rows } = await pool.query('SELECT clock_out_at FROM time_entries WHERE id = $1', [entryId]);
+  assert.equal(rows[0].clock_out_at, null, 'the refused entry stays open for the owner to correct');
+});
+
+test('release 363: the owner\u2019s manual Close window still works exactly as before', async () => {
+  const tz = pickTimezone();
+  const { ownerCookie, business, owner } = await setup(tz, 'clk-363close-owner');
+  const staff = await addTeamMember(business, owner.id, 'clk-363close@example.com');
+  const { weekday } = localNow(tz);
+  await setShift(business.id, staff.staffId, (weekday + 1) % 7, 540, 1020); // tomorrow only — the bracket binds
+  const open = await req(`${WF(business.id)}/call-in/${staff.staffId}`, { method: 'POST', body: {}, cookie: ownerCookie });
+  assert.equal(open.status, 201);
+  const admitted = await login(staff.email, staff.password);
+  assert.equal(admitted.status, 200, 'the window admits while open');
+  const closed = await req(`${WF(business.id)}/call-in/${staff.staffId}`, { method: 'DELETE', cookie: ownerCookie });
+  assert.equal(closed.status, 200);
+  assert.ok(closed.json.window.closed_at, 'the manual close stamps the window');
+  assert.equal(closed.json.window.close_reason, 'closed_early', 'a hand close keeps its own reason');
+  const shut = await login(staff.email, staff.password);
+  assert.equal(shut.status, 403, 'after the manual close the door is shut again');
 });
