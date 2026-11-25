@@ -150,6 +150,10 @@ const FR_FR_COGNATE_KEYS = new Set([
   // is the genuine French word for the import field too — the
   // same cognate as products.colPhoto above, verified.
   'importLib.field.photo',
+  // Product form batch (Nov 24, 2026): "Format" is the genuine
+  // French word for the field — verified.
+  'productForm.formatLabel', 'productDetails.rowFormat', 'importLib.field.format',
+  'importLib.updateField.format',
 ]);
 const FR_CA_COGNATE_KEYS = new Set([
   // Restaurant operations batch (Nov 23, 2026): Same French cognates as fr-FR — verified.
@@ -190,6 +194,10 @@ const FR_CA_COGNATE_KEYS = new Set([
   // Import robustness batch (release 365, Nov 23, 2026): "Photo"
   // — same French cognate as fr-FR, verified.
   'importLib.field.photo',
+  // Product form batch (Nov 24, 2026): "Format" is the genuine
+  // French word for the field — verified.
+  'productForm.formatLabel', 'productDetails.rowFormat', 'importLib.field.format',
+  'importLib.updateField.format',
 ]);
 const PT_BR_COGNATE_KEYS = new Set([
   // Restaurant operations batch (Nov 23, 2026): "Status", "Total" and "Item" are the genuine Portuguese words, "g" is the gram symbol, and the scale names are spelled the same in Portuguese — verified.
@@ -242,6 +250,10 @@ const DE_COGNATE_KEYS = new Set([
   // "Status" are the genuine German words — verified.
   'nav.group.restaurant', 'training.module.restaurant', 'restaurant.eyebrow',
   'recipes.statusLabel',
+  // Product form batch (Nov 24, 2026): "Format" is the genuine
+  // German word for the field — verified.
+  'productForm.formatLabel', 'productDetails.rowFormat', 'importLib.field.format',
+  'importLib.updateField.format',
 ]);
 const IT_COGNATE_KEYS = new Set([
   // Restaurant operations batch (Nov 23, 2026): "Per" is the genuine Italian preposition ("Per 1 {unit}"), "PO {number}" is the purchase-order code format, "g" is the gram symbol, and the scale names are spelled the same in Italian — verified.
@@ -290,6 +302,10 @@ const TR_COGNATE_KEYS = new Set([
   // Restaurant corner batch (Nov 23, 2026): "Par" is the kept
   // domain term — verified.
   'guide.colPar',
+  // Product form batch (Nov 24, 2026): Turkish keeps "Format"
+  // as its own word for the field — verified.
+  'productForm.formatLabel', 'productDetails.rowFormat', 'importLib.field.format',
+  'importLib.updateField.format',
 ]);
 const KN_COGNATE_KEYS = new Set([
   // Restaurant operations batch (Nov 23, 2026): "PO {number}" is the purchase-order code format and "g" is the gram symbol — verified.
@@ -339,6 +355,10 @@ const ID_COGNATE_KEYS = new Set([
   // "Edit", "Status" and the domain term "Par" — verified.
   'recipes.editButton', 'recipes.statusLabel', 'pars.editTitle',
   'guide.colPar',
+  // Product form batch (Nov 24, 2026): Indonesian keeps "Format"
+  // as its own word for the field — verified.
+  'productForm.formatLabel', 'productDetails.rowFormat', 'importLib.field.format',
+  'importLib.updateField.format',
 ]);
 const MS_COGNATE_KEYS = new Set([
   // Restaurant operations batch (Nov 23, 2026): Malay keeps "Status", "Total", "Unit", "Item", "Per", "Transfer" and "Total margin" in these forms, "PO {number}" is the code format, "g" is the gram symbol, and the scale names are spelled the same — verified word-by-word.
@@ -364,6 +384,10 @@ const MS_COGNATE_KEYS = new Set([
   // "Edit", "Status" and the domain term "Par" — verified.
   'recipes.editButton', 'recipes.statusLabel', 'pars.editTitle',
   'guide.colPar',
+  // Product form batch (Nov 24, 2026): Malay keeps "Format" as
+  // its own word for the field — verified.
+  'productForm.formatLabel', 'productDetails.rowFormat', 'importLib.field.format',
+  'importLib.updateField.format',
 ]);
 const TH_COGNATE_KEYS = new Set([
   // Restaurant operations batch (Nov 23, 2026): "PO {number}" is the purchase-order code format and "g" is the gram symbol — verified.
@@ -451,6 +475,12 @@ const TL_COGNATE_KEYS = new Set([
   'recipes.lineYield', 'recipes.lineRecipePrefix', 'pars.supplierLabel',
   'pars.parLabel', 'guide.colPar', 'guide.colOrder',
   'guide.colSupplier',
+  // Product form batch (Nov 24, 2026): the Philippine book trade
+  // lists "Format", "Paperback" and "Hardcover" in English, as
+  // its bookstores do — verified.
+  'productForm.formatLabel', 'productDetails.rowFormat', 'importLib.field.format',
+  'importLib.updateField.format',
+  'productForm.formatPaperback', 'productForm.formatHardcover',
 ]);
 const HA_COGNATE_KEYS = new Set([
   // Restaurant operations batch (Nov 23, 2026): "PO {number}" is the purchase-order code format, "g" is the gram symbol, and the scale names are kept in Hausa — verified.
@@ -506,6 +536,10 @@ const JV_COGNATE_KEYS = new Set([
   // Restaurant corner batch (Nov 23, 2026): Javanese keeps
   // "Status" and the domain term "Par" — verified.
   'recipes.statusLabel', 'guide.colPar',
+  // Product form batch (Nov 24, 2026): Javanese keeps "Format"
+  // in this form for the field — verified.
+  'productForm.formatLabel', 'productDetails.rowFormat', 'importLib.field.format',
+  'importLib.updateField.format',
 ]);
 const PCM_COGNATE_KEYS = new Set([
   // eBay storefront batch (release 362, Nov 23, 2026): Pidgin keeps

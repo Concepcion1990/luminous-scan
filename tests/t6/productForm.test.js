@@ -14,6 +14,14 @@
  *    pairs cut the owner's codes off mid-number on her phone (SKU
  *    "BK-QUIET-0…", ISBN "978-3-16-1…") — and the pairs return
  *    unchanged on wider screens.
+ *  - Stacking everywhere + the Format field (Nov 24, 2026,
+ *    superseding the Nov 20 shape above): the pairs never return —
+ *    every field takes its own full-width row at EVERY width, the
+ *    website too, in her field order (name, SKU, category, ISBN,
+ *    author, format, UPC/EAN, barcode, QR, then the rest as they
+ *    were), and the form gains her Format row (Paperback /
+ *    Hardcover). The full pin set for this batch lives in t64;
+ *    the stacking test below is updated to the new shape.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -205,28 +213,21 @@ test('scan capture: the code-taken lookup covers the QR field too', () => {
   assert.ok(lookup.includes("{ qr_code: { $regex: pattern, $options: 'i' } }"), 'the loose-pass lookup matches qr_code');
 });
 
-test('mobile stacking: every paired grid is one-per-row below sm, pairs return at sm', () => {
-  // No bare multi-column grid may survive in either half of the
-  // form: an unprefixed grid-cols-2/3 would pair fields at phone
-  // widths again and cut the codes off mid-number.
+test('stacking: every field takes its own full-width row at every width (Nov 23 ruling, superseding the Nov 20 mobile-only shape)', () => {
+  // No multi-column field grid may survive in either half of the
+  // form, prefixed or not: the pairs paired fields at phone widths
+  // and cut the codes off mid-number (Nov 20), and the owner then
+  // ruled the stack for every width, the website too (Nov 23).
   for (const [name, source] of [['dialog', dialog], ['details', details]]) {
     assert.ok(
-      !/(?<!sm:)grid-cols-[23]/.test(source),
-      `${name}: every multi-column grid waits for the sm breakpoint`,
+      !/grid-cols-[23]/.test(source),
+      `${name}: no multi-column field grid survives at any width`,
+    );
+    assert.ok(
+      !/sm:grid-cols/.test(source),
+      `${name}: no breakpoint brings the pairs back`,
     );
   }
-  const dialogPairs = dialog.match(/grid-cols-1 gap-3 sm:grid-cols-2/g) || [];
-  assert.equal(dialogPairs.length, 3, 'SKU/Category, ISBN/Author and Barcode/QR stack on mobile');
-  assert.ok(
-    dialog.includes("canAlerts ? 'sm:grid-cols-3' : 'sm:grid-cols-2'"),
-    'the cost/price(/reorder) row stacks on mobile too',
-  );
-  assert.ok(
-    dialog.includes('grid-cols-1 gap-3 sm:grid-cols-3'),
-    'the rollback sale price/start/end row stacks on mobile too',
-  );
-  const detailPairs = details.match(/grid-cols-1 gap-3 sm:grid-cols-2/g) || [];
-  assert.equal(detailPairs.length, 7, 'all seven More-details pairs stack on mobile');
 });
 
 test('scan button: plan-independent — no plan or entitlement check touches the scanner', () => {
