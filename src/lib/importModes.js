@@ -45,6 +45,7 @@ export const UPDATE_FIELDS = [
   { key: 'dimensions', get label() { return t('importLib.updateField.dimensions'); } },
   { key: 'notes', get label() { return t('importLib.updateField.notes'); } },
   { key: 'author', get label() { return t('importLib.updateField.author'); } },
+  { key: 'format', get label() { return t('importLib.updateField.format'); } },
   { key: 'brand', get label() { return t('importLib.updateField.brand'); } },
   { key: 'publisher', get label() { return t('importLib.updateField.publisher'); } },
   { key: 'unit', get label() { return t('importLib.updateField.unit'); }, kind: 'unit' },
@@ -91,6 +92,13 @@ const UPDATE_SYNONYMS = {
   dimensions: ['dimensions', 'measurements', 'size'],
   notes: ['notes', 'note', 'memo', 'comments'],
   author: ['author', 'writer'],
+  // The product's own Format field (Nov 24, 2026) — with the same
+  // care as the create importer's NEVER_AUTO_MATCH guard: the
+  // bare word 'format' is NOT a synonym here, because on a
+  // marketplace sheet "Format" names the listing type (fixed
+  // price / auction), never the book's format. Only headers that
+  // name the book's own format marry it on their own.
+  format: ['bookformat', 'binding'],
   brand: ['brand', 'make'],
   publisher: ['publisher', 'imprint'],
   unit: ['unit', 'uom', 'unitofmeasure'],

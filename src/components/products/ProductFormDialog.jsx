@@ -44,12 +44,19 @@ import {
 
 const CONDITIONS = ['New', 'Like new', 'Very good', 'Good', 'Acceptable'];
 
+// The product's Format (owner ruling, Nov 23, 2026): the book
+// trade's own field — Paperback / Hardcover. The stored values
+// are the canonical English words, exactly like Condition above;
+// the labels translate at render and the value itself never does.
+const FORMATS = ['Paperback', 'Hardcover'];
+
 const empty = {
   name: '',
   sku: '',
   upc: '',
   isbn: '',
   author: '',
+  format: '',
   condition: '',
   category: '',
   unit: 'each',
@@ -191,6 +198,37 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
   const initialCategoryRef = useRef('');
   const initialSubcategoryRef = useRef('');
 
+  const FORMAT_LABELS = {
+    Paperback: t('productForm.formatPaperback'),
+    Hardcover: t('productForm.formatHardcover'),
+  };
+
+  // The Format pick-list (owner correction, Nov 24, 2026): a
+  // pick-list, not free text. Paperback and Hardcover are built
+  // in; the owner can ADD more formats of their own (Spiral-bound,
+  // Board book, …) and those join THIS BUSINESS's list, pickable
+  // from then on. Owner-added formats ride the same per-business
+  // vocabulary table as categories (kind 'format' in the Category
+  // entity, through the same AddVocabularyDialog door and the
+  // same categories.manage gate as minting a category) — no new
+  // machinery. addedFormats holds the ones born during this
+  // session, before the vocabulary refetch lands.
+  const [addedFormats, setAddedFormats] = useState([]);
+  const [addFormatOpen, setAddFormatOpen] = useState(false);
+  const formatOptions = (() => {
+    const seen = new Set();
+    const options = [];
+    for (const name of [...FORMATS, ...(vocabulary.formats || []), ...addedFormats, form.format]) {
+      const trimmed = String(name || '').trim();
+      if (!trimmed) continue;
+      const key = trimmed.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      options.push(trimmed);
+    }
+    return options;
+  })();
+
   const CONDITION_LABELS = {
     New: t('products.conditionNew'),
     'Like new': t('products.conditionLikeNew'),
@@ -224,6 +262,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
         upc: product.upc || '',
         isbn: product.isbn || '',
         author: product.author || '',
+        format: product.format || '',
         condition: product.condition || '',
         category: product.category || '',
         supplier_id: product.supplier_id || '',
@@ -267,6 +306,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
         name: seed.name || '',
         isbn: seed.isbn || '',
         author: seed.author || '',
+        format: seed.format || '',
         category: seed.category || '',
         subcategory: seed.subcategory || '',
         brand: seed.brand || '',
@@ -348,6 +388,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
       setCodeTaken(null);
       setAddNewField(null);
       setAddedNames({ category: [], subcategory: [] });
+      setAddedFormats([]);
       setEditLevels([]);
       setEditLevelsLoaded(false);
       prefillKeyRef.current = '';
@@ -635,6 +676,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
       upc: form.upc.trim(),
       isbn: form.isbn.trim(),
       author: form.author.trim(),
+      format: form.format,
       condition: form.condition,
       category: categoryVerdict.value,
       unit: form.unit,
@@ -787,80 +829,120 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
             <Input id="name" value={form.name} onChange={set('name')} placeholder={t('productForm.namePlaceholder')} />
           </div>
 
-          {/* Mobile stacking (owner ruling, Nov 20, 2026): below the
-              sm breakpoint every field in this form takes its own
-              full-width row — the half-width pairs cut her codes off
-              mid-number on her phone (SKU "BK-QUIET-0…", ISBN
-              "978-3-16-1…"). Wider screens keep the two-per-row
-              pairs exactly. The same rule shapes every paired grid
-              below and in ProductDetailsFields. */}
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div className="grid gap-2">
-              <Label htmlFor="sku">{t('productForm.skuLabel')}</Label>
-              <div className="flex gap-2">
-                <Input
-                  id="sku"
-                  value={form.sku}
-                  onChange={(e) => {
-                    set('sku')(e);
-                    if (codeTaken?.field === 'sku') setCodeTaken(null);
-                  }}
-                  placeholder="BK-QUIET-01"
-                  className="min-w-0 flex-1 font-mono"
-                />
-                <Button type="button" variant="outline" className="shrink-0" onClick={() => openCodeScanner('sku')} aria-label={t('productForm.scanCode')}>
-                  <ScanBarcode className="h-4 w-4" />
-                </Button>
-              </div>
-              {codeTaken?.field === 'sku' && (
-                <p className="text-xs font-medium text-destructive">
-                  {t('productForm.codeTakenNotice', { name: codeTaken.name })}
-                </p>
-              )}
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="category">{t('productForm.categoryLabel')}</Label>
-              <VocabularyCombobox
-                id="category"
-                value={form.category}
-                onChange={set('category')}
-                options={vocabulary.categories}
-                placeholder={t('productForm.categoryPlaceholder')}
-                label={t('productForm.categoryLabel')}
-                addNewLabel={t('productForm.addNewCategory')}
-                onAddNewRequest={canManageCategories ? () => setAddNewField('category') : undefined}
+          {/* Stacking (owner rulings, Nov 20 + Nov 23, 2026): every
+              field in this form takes its own full-width row at
+              EVERY width — first on her phone, where the half-width
+              pairs cut her codes off mid-number (SKU "BK-QUIET-0…",
+              ISBN "978-3-16-1…"), then everywhere, the website too,
+              in her field order: name, SKU, category, ISBN, author,
+              format, UPC/EAN, barcode, QR code — then the rest as
+              they were. The same rule shapes every grid below and
+              in ProductDetailsFields: no multi-column field grid
+              survives anywhere in this form. */}
+          <div className="grid gap-2">
+            <Label htmlFor="sku">{t('productForm.skuLabel')}</Label>
+            <div className="flex gap-2">
+              <Input
+                id="sku"
+                value={form.sku}
+                onChange={(e) => {
+                  set('sku')(e);
+                  if (codeTaken?.field === 'sku') setCodeTaken(null);
+                }}
+                placeholder="BK-QUIET-01"
+                className="min-w-0 flex-1 font-mono"
               />
+              <Button type="button" variant="outline" className="shrink-0" onClick={() => openCodeScanner('sku')} aria-label={t('productForm.scanCode')}>
+                <ScanBarcode className="h-4 w-4" />
+              </Button>
             </div>
+            {codeTaken?.field === 'sku' && (
+              <p className="text-xs font-medium text-destructive">
+                {t('productForm.codeTakenNotice', { name: codeTaken.name })}
+              </p>
+            )}
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="category">{t('productForm.categoryLabel')}</Label>
+            <VocabularyCombobox
+              id="category"
+              value={form.category}
+              onChange={set('category')}
+              options={vocabulary.categories}
+              placeholder={t('productForm.categoryPlaceholder')}
+              label={t('productForm.categoryLabel')}
+              addNewLabel={t('productForm.addNewCategory')}
+              onAddNewRequest={canManageCategories ? () => setAddNewField('category') : undefined}
+            />
           </div>
 
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div className="grid gap-2">
-              <Label htmlFor="isbn">{t('productForm.isbnLabel')}</Label>
-              <div className="flex gap-2">
-                <Input
-                  id="isbn"
-                  value={form.isbn}
-                  onChange={(e) => {
-                    set('isbn')(e);
-                    if (codeTaken?.field === 'isbn') setCodeTaken(null);
-                  }}
-                  placeholder="978-3-16-148410-0"
-                  className="min-w-0 flex-1 font-mono"
-                />
-                <Button type="button" variant="outline" className="shrink-0" onClick={() => setIsbnReaderOpen(true)} aria-label={t('productForm.readIsbnTitle')}>
-                  <ScanText className="h-4 w-4" />
-                </Button>
-              </div>
-              {codeTaken?.field === 'isbn' && (
-                <p className="text-xs font-medium text-destructive">
-                  {t('productForm.codeTakenNotice', { name: codeTaken.name })}
-                </p>
-              )}
+          <div className="grid gap-2">
+            <Label htmlFor="isbn">{t('productForm.isbnLabel')}</Label>
+            <div className="flex gap-2">
+              <Input
+                id="isbn"
+                value={form.isbn}
+                onChange={(e) => {
+                  set('isbn')(e);
+                  if (codeTaken?.field === 'isbn') setCodeTaken(null);
+                }}
+                placeholder="978-3-16-148410-0"
+                className="min-w-0 flex-1 font-mono"
+              />
+              <Button type="button" variant="outline" className="shrink-0" onClick={() => setIsbnReaderOpen(true)} aria-label={t('productForm.readIsbnTitle')}>
+                <ScanText className="h-4 w-4" />
+              </Button>
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="author">{t('productForm.authorLabel')}</Label>
-              <Input id="author" value={form.author} onChange={set('author')} placeholder={t('productForm.authorPlaceholder')} />
-            </div>
+            {codeTaken?.field === 'isbn' && (
+              <p className="text-xs font-medium text-destructive">
+                {t('productForm.codeTakenNotice', { name: codeTaken.name })}
+              </p>
+            )}
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="author">{t('productForm.authorLabel')}</Label>
+            <Input id="author" value={form.author} onChange={set('author')} placeholder={t('productForm.authorPlaceholder')} />
+          </div>
+
+          {/* The Format row (owner ruling, Nov 23, 2026; corrected
+              to a pick-list Nov 24, 2026): her own book-trade field,
+              riding with the bibliographic block it belongs to —
+              ISBN, author, format — in the same unset-or-pick shape
+              as Condition below. Both plans, like every field in
+              this form. The list starts with Paperback / Hardcover
+              and carries this business's own added formats; the
+              "Add a format…" row (only for a person who may mint
+              vocabulary, the categories.manage gate — the same one
+              that guards minting a category) opens the vocabulary
+              window, and the name born there joins the list and is
+              picked for this product at once. */}
+          <div className="grid gap-2">
+            <Label>{t('productForm.formatLabel')}</Label>
+            <Select
+              value={form.format || 'unset'}
+              onValueChange={(value) => {
+                if (value === '__add_format__') {
+                  setAddFormatOpen(true);
+                  return;
+                }
+                setForm((f) => ({ ...f, format: value === 'unset' ? '' : value }));
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder={t('productForm.notSet')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="unset">{t('productForm.notSet')}</SelectItem>
+                {formatOptions.map((format) => (
+                  <SelectItem key={format} value={format}>
+                    {FORMAT_LABELS[format] || format}
+                  </SelectItem>
+                ))}
+                {canManageCategories && (
+                  <SelectItem value="__add_format__">{t('productForm.addFormatOption')}</SelectItem>
+                )}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="grid gap-2">
@@ -887,56 +969,54 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
             )}
           </div>
 
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div className="grid gap-2">
-              <Label htmlFor="barcode">{t('productForm.barcodeLabel')}</Label>
-              <div className="flex gap-2">
-                <Input
-                  id="barcode"
-                  value={form.barcode}
-                  onChange={(e) => {
-                    set('barcode')(e);
-                    if (codeTaken?.field === 'barcode') setCodeTaken(null);
-                  }}
-                  className="min-w-0 flex-1 font-mono"
-                />
-                <Button type="button" variant="outline" className="shrink-0" onClick={() => openCodeScanner('barcode')} aria-label={t('productForm.scanCode')}>
-                  <ScanBarcode className="h-4 w-4" />
-                </Button>
-              </div>
-              {codeTaken?.field === 'barcode' && (
-                <p className="text-xs font-medium text-destructive">
-                  {t('productForm.codeTakenNotice', { name: codeTaken.name })}
-                </p>
-              )}
+          <div className="grid gap-2">
+            <Label htmlFor="barcode">{t('productForm.barcodeLabel')}</Label>
+            <div className="flex gap-2">
+              <Input
+                id="barcode"
+                value={form.barcode}
+                onChange={(e) => {
+                  set('barcode')(e);
+                  if (codeTaken?.field === 'barcode') setCodeTaken(null);
+                }}
+                className="min-w-0 flex-1 font-mono"
+              />
+              <Button type="button" variant="outline" className="shrink-0" onClick={() => openCodeScanner('barcode')} aria-label={t('productForm.scanCode')}>
+                <ScanBarcode className="h-4 w-4" />
+              </Button>
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="qr_code">{t('productForm.qrLabel')}</Label>
-              <div className="flex gap-2">
-                <Input
-                  id="qr_code"
-                  value={form.qr_code}
-                  onChange={(e) => {
-                    set('qr_code')(e);
-                    if (codeTaken?.field === 'qr_code') setCodeTaken(null);
-                  }}
-                  className="min-w-0 flex-1 font-mono"
-                />
-                {qrPreviewMatrix && (
-                  <span data-tour="product-qr-preview" className="h-10 w-10 shrink-0 overflow-hidden rounded-md border border-border">
-                    <QrSvg value={qrPreviewValue} className="block h-full w-full" />
-                  </span>
-                )}
-                <Button type="button" variant="outline" className="shrink-0" onClick={() => openCodeScanner('qr_code')} aria-label={t('productForm.scanCode')}>
-                  <ScanBarcode className="h-4 w-4" />
-                </Button>
-              </div>
-              {codeTaken?.field === 'qr_code' && (
-                <p className="text-xs font-medium text-destructive">
-                  {t('productForm.codeTakenNotice', { name: codeTaken.name })}
-                </p>
+            {codeTaken?.field === 'barcode' && (
+              <p className="text-xs font-medium text-destructive">
+                {t('productForm.codeTakenNotice', { name: codeTaken.name })}
+              </p>
+            )}
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="qr_code">{t('productForm.qrLabel')}</Label>
+            <div className="flex gap-2">
+              <Input
+                id="qr_code"
+                value={form.qr_code}
+                onChange={(e) => {
+                  set('qr_code')(e);
+                  if (codeTaken?.field === 'qr_code') setCodeTaken(null);
+                }}
+                className="min-w-0 flex-1 font-mono"
+              />
+              {qrPreviewMatrix && (
+                <span data-tour="product-qr-preview" className="h-10 w-10 shrink-0 overflow-hidden rounded-md border border-border">
+                  <QrSvg value={qrPreviewValue} className="block h-full w-full" />
+                </span>
               )}
+              <Button type="button" variant="outline" className="shrink-0" onClick={() => openCodeScanner('qr_code')} aria-label={t('productForm.scanCode')}>
+                <ScanBarcode className="h-4 w-4" />
+              </Button>
             </div>
+            {codeTaken?.field === 'qr_code' && (
+              <p className="text-xs font-medium text-destructive">
+                {t('productForm.codeTakenNotice', { name: codeTaken.name })}
+              </p>
+            )}
           </div>
 
           <div className="grid gap-2 rounded-lg border p-3" data-tour="product-generate">
@@ -1111,7 +1191,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
             </p>
           </div>
 
-          <div className={`grid grid-cols-1 ${canAlerts ? 'sm:grid-cols-3' : 'sm:grid-cols-2'} gap-3`}>
+          <div className="grid gap-3">
             <div className="grid gap-2">
               <Label htmlFor="cost">{t('productForm.costLabel')}</Label>
               <Input id="cost" type="number" inputMode="decimal" value={form.cost} onChange={set('cost')} />
@@ -1248,7 +1328,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
                 )}
                 {form.pricing_mode === 'rollback' && (
                   <>
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                    <div className="grid gap-3">
                       <div className="grid gap-2">
                         <Label htmlFor="sale_price">{t('pricing.salePriceLabel')}</Label>
                         <Input
@@ -1378,6 +1458,28 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
             )}
             onCreated={(name) => handleVocabularyCreated(addNewField, name)}
             onCancel={() => setAddNewField(null)}
+          />
+        )}
+
+        {/* Add-a-format window: the same vocabulary door as
+            categories (owner correction, Nov 24, 2026) — the name
+            born here is stored as this business's vocabulary
+            (kind 'format'), joins the Format pick-list for every
+            product from then on, and is picked for THIS product
+            at once. Cancel creates nothing. */}
+        {addFormatOpen && (
+          <AddVocabularyDialog
+            businessId={activeId}
+            kind="format"
+            initialName=""
+            existingNames={formatOptions}
+            title={t('productForm.addFormatOption')}
+            onCreated={(name) => {
+              setAddedFormats((prev) => [...prev, name]);
+              setForm((f) => ({ ...f, format: name }));
+              setAddFormatOpen(false);
+            }}
+            onCancel={() => setAddFormatOpen(false)}
           />
         )}
 

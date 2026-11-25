@@ -12,6 +12,7 @@ export const IMPORT_FIELDS = [
   { key: 'barcode', get label() { return t('importLib.field.barcode'); } },
   { key: 'isbn', get label() { return t('importLib.field.isbn'); } },
   { key: 'author', get label() { return t('importLib.field.author'); } },
+  { key: 'format', get label() { return t('importLib.field.format'); } },
   { key: 'category', get label() { return t('importLib.field.category'); } },
   { key: 'subcategory', get label() { return t('importLib.field.subcategory'); } },
   { key: 'tags', get label() { return t('importLib.field.tags'); } },
@@ -51,6 +52,7 @@ const SYNONYMS = {
   barcode: ['barcode', 'barcodeno', 'scan'],
   isbn: ['isbn', 'isbn10', 'isbn13', 'pisbn', 'isbnnumber'],
   author: ['author', 'by', 'writer'],
+  format: ['bookformat', 'binding'],
   category: ['category', 'department', 'type', 'collection', 'categoryname', 'category1name', 'storecategory'],
   subcategory: ['subcategory', 'subtype', 'subdepartment'],
   tags: ['tags', 'tag', 'keywords', 'labels'],
@@ -77,6 +79,16 @@ const SYNONYMS = {
  * never the product's format, and "Variation details" is not a
  * description. These never auto-match; the owner can still marry
  * any of them by hand.
+ *
+ * The guard matters MORE, not less, since the product gained a
+ * real Format field of its own (Nov 24, 2026): 'format' stays in
+ * this set, so a marketplace "Format" column still never marries
+ * the product's Format on its own — and the field's synonyms
+ * ('bookformat', 'binding') deliberately exclude the bare word,
+ * so no header that normalizes to 'format' can score for it
+ * either. A sheet whose column genuinely names the book's format
+ * ("Book format", "Binding") auto-matches; the owner marries a
+ * bare "Format" column by hand only when it truly is one.
  */
 const NEVER_AUTO_MATCH = new Set([
   'itemnumber',
@@ -331,6 +343,7 @@ export function draftFromRow(picked) {
     barcode: String(picked.barcode || '').trim(),
     isbn: String(picked.isbn || '').trim(),
     author: String(picked.author || '').trim(),
+    format: String(picked.format || '').trim(),
     category: String(picked.category || '').trim(),
     subcategory: String(picked.subcategory || '').trim(),
     tags: String(picked.tags || '')

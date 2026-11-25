@@ -122,6 +122,7 @@ export default function ProductDetailsDialog({ product, locations = [], currency
             <Row label={t('productDetails.rowBrand')} value={product.brand} />
             <Row label={t('productDetails.rowManufacturer')} value={product.manufacturer} />
             <Row label={t('productDetails.rowAuthor')} value={product.author} />
+            <Row label={t('productDetails.rowFormat')} value={product.format} />
             <Row label={t('productDetails.rowPublisher')} value={[product.publisher, product.edition].filter(Boolean).join(' · ')} />
             <Row label={t('productDetails.rowCondition')} value={product.condition} />
             <Row label={t('productDetails.rowUnit')} value={product.unit} />

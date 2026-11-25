@@ -47,6 +47,11 @@ export function useCatalogVocabulary(businessId) {
   return {
     categories: names('category'),
     subcategories: names('subcategory'),
+    // The product Format pick-list's owner-added formats ride the
+    // same per-business vocabulary table (kind 'format', Nov 24,
+    // 2026): the built-in Paperback / Hardcover live in the form
+    // itself; everything the owner adds lives here, per business.
+    formats: names('format'),
     tags: names('tag'),
     loaded: Boolean(businessId) && loadedFor === businessId,
   };

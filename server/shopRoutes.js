@@ -568,6 +568,7 @@ export function createShopRouter({ getPool: getPoolFn }) {
         barcode: String(row.barcode || '').trim(),
         isbn: String(row.isbn || '').trim(),
         author: String(row.author || '').trim(),
+        format: String(row.format || '').trim(),
         category: String(row.category || '').trim(),
         subcategory: String(row.subcategory || '').trim(),
         tags: Array.isArray(row.tags) ? row.tags : String(row.tags || '').split(',').map((t) => t.trim()).filter(Boolean),

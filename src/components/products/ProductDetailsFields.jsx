@@ -81,145 +81,131 @@ export default function ProductDetailsFields({
             />
           </div>
 
-          {/* Paired grids here follow the product form's mobile
-              stacking rule (owner ruling, Nov 20, 2026 — see
-              ProductFormDialog): one full-width field per row below
-              the sm breakpoint, the pairs return on wider screens. */}
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div className="grid gap-2">
-              <Label htmlFor="brand">{t('productForm.brandLabel')}</Label>
-              <Input id="brand" value={form.brand} onChange={set('brand')} />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="manufacturer">{t('productForm.manufacturerLabel')}</Label>
-              <Input id="manufacturer" value={form.manufacturer} onChange={set('manufacturer')} />
-            </div>
+          {/* Fields here follow the product form's stacking rule
+              (owner rulings, Nov 20 + Nov 23, 2026 — see
+              ProductFormDialog): one full-width field per row at
+              every width, in the order they were always in. */}
+          <div className="grid gap-2">
+            <Label htmlFor="brand">{t('productForm.brandLabel')}</Label>
+            <Input id="brand" value={form.brand} onChange={set('brand')} />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="manufacturer">{t('productForm.manufacturerLabel')}</Label>
+            <Input id="manufacturer" value={form.manufacturer} onChange={set('manufacturer')} />
           </div>
 
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div className="grid gap-2">
-              <Label htmlFor="publisher">{t('productForm.publisherLabel')}</Label>
-              <Input id="publisher" value={form.publisher} onChange={set('publisher')} />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="edition">{t('productForm.editionLabel')}</Label>
-              <Input id="edition" value={form.edition} onChange={set('edition')} />
-            </div>
+          <div className="grid gap-2">
+            <Label htmlFor="publisher">{t('productForm.publisherLabel')}</Label>
+            <Input id="publisher" value={form.publisher} onChange={set('publisher')} />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="edition">{t('productForm.editionLabel')}</Label>
+            <Input id="edition" value={form.edition} onChange={set('edition')} />
           </div>
 
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div className="grid gap-2">
-              <Label htmlFor="subcategory">{t('productForm.subcategoryLabel')}</Label>
-              <VocabularyCombobox
-                id="subcategory"
-                value={form.subcategory}
-                onChange={set('subcategory')}
-                options={vocabulary.subcategories || []}
-                label={t('productForm.subcategoryLabel')}
-                addNewLabel={t('productForm.addNewSubcategory')}
-                onAddNewRequest={() => setAddNewField('subcategory')}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="tags">{t('productForm.tagsLabel')}</Label>
-              <Input
-                id="tags"
-                value={form.tags_text}
-                onChange={set('tags_text')}
-                placeholder={t('productForm.tagsPlaceholder')}
-              />
-              {vocabulary.tags?.length > 0 && (
-                <p className="text-[11px] leading-snug text-muted-foreground">
-                  {t('productForm.savedTags', { tags: vocabulary.tags.join(', ') })}
-                </p>
-              )}
-            </div>
+          <div className="grid gap-2">
+            <Label htmlFor="subcategory">{t('productForm.subcategoryLabel')}</Label>
+            <VocabularyCombobox
+              id="subcategory"
+              value={form.subcategory}
+              onChange={set('subcategory')}
+              options={vocabulary.subcategories || []}
+              label={t('productForm.subcategoryLabel')}
+              addNewLabel={t('productForm.addNewSubcategory')}
+              onAddNewRequest={() => setAddNewField('subcategory')}
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="tags">{t('productForm.tagsLabel')}</Label>
+            <Input
+              id="tags"
+              value={form.tags_text}
+              onChange={set('tags_text')}
+              placeholder={t('productForm.tagsPlaceholder')}
+            />
+            {vocabulary.tags?.length > 0 && (
+              <p className="text-[11px] leading-snug text-muted-foreground">
+                {t('productForm.savedTags', { tags: vocabulary.tags.join(', ') })}
+              </p>
+            )}
           </div>
 
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div className="grid gap-2">
-              <Label>{t('productForm.statusLabel')}</Label>
-              <Select value={form.status} onValueChange={set('status')}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {STATUSES.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid gap-2">
-              <Label>{t('productForm.fulfillmentLabel')}</Label>
-              <Select value={form.fulfillment_method} onValueChange={set('fulfillment_method')}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {FULFILLMENT.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="grid gap-2">
+            <Label>{t('productForm.statusLabel')}</Label>
+            <Select value={form.status} onValueChange={set('status')}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {STATUSES.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid gap-2">
+            <Label>{t('productForm.fulfillmentLabel')}</Label>
+            <Select value={form.fulfillment_method} onValueChange={set('fulfillment_method')}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {FULFILLMENT.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div className="grid gap-2">
-              <Label htmlFor="acquired">{t('productForm.acquiredLabel')}</Label>
-              <Input
-                id="acquired"
-                type="date"
-                value={form.acquisition_date}
-                onChange={set('acquisition_date')}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="expires">{t('productForm.expiresLabel')}</Label>
-              <Input
-                id="expires"
-                type="date"
-                value={form.expiration_date}
-                onChange={set('expiration_date')}
-              />
-            </div>
+          <div className="grid gap-2">
+            <Label htmlFor="acquired">{t('productForm.acquiredLabel')}</Label>
+            <Input
+              id="acquired"
+              type="date"
+              value={form.acquisition_date}
+              onChange={set('acquisition_date')}
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="expires">{t('productForm.expiresLabel')}</Label>
+            <Input
+              id="expires"
+              type="date"
+              value={form.expiration_date}
+              onChange={set('expiration_date')}
+            />
           </div>
 
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div className="grid gap-2">
-              <Label htmlFor="batch">{t('productForm.batchLabel')}</Label>
-              <Input id="batch" value={form.batch_lot} onChange={set('batch_lot')} />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="serial">{t('productForm.serialLabel')}</Label>
-              <Input
-                id="serial"
-                value={form.serial_number}
-                onChange={set('serial_number')}
-                className="font-mono"
-              />
-            </div>
+          <div className="grid gap-2">
+            <Label htmlFor="batch">{t('productForm.batchLabel')}</Label>
+            <Input id="batch" value={form.batch_lot} onChange={set('batch_lot')} />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="serial">{t('productForm.serialLabel')}</Label>
+            <Input
+              id="serial"
+              value={form.serial_number}
+              onChange={set('serial_number')}
+              className="font-mono"
+            />
           </div>
 
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div className="grid gap-2">
-              <Label htmlFor="weight">{t('productForm.weightLabel')}</Label>
-              <Input id="weight" value={form.weight} onChange={set('weight')} placeholder="320 g" />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="dimensions">{t('productForm.dimensionsLabel')}</Label>
-              <Input
-                id="dimensions"
-                value={form.dimensions}
-                onChange={set('dimensions')}
-                placeholder={t('productForm.dimensionsPlaceholder')}
-              />
-            </div>
+          <div className="grid gap-2">
+            <Label htmlFor="weight">{t('productForm.weightLabel')}</Label>
+            <Input id="weight" value={form.weight} onChange={set('weight')} placeholder="320 g" />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="dimensions">{t('productForm.dimensionsLabel')}</Label>
+            <Input
+              id="dimensions"
+              value={form.dimensions}
+              onChange={set('dimensions')}
+              placeholder={t('productForm.dimensionsPlaceholder')}
+            />
           </div>
 
           <div className="grid gap-2">
