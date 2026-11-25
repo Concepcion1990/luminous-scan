@@ -144,10 +144,10 @@ test('store-logo upload stores the image on the business record', async () => {
   // Wrong type, oversize, and strangers are all refused.
   const wrongType = await upload('data:text/plain;base64,aGVsbG8=');
   assert.equal(wrongType.status, 400);
-  // 2.8 MB of base64 decodes to ~2.1 MB — over the route's 2 MB
-  // limit but under the JSON parser's 3 MB limit, so the route's
-  // own clear 400 answers (not the parser's 413).
-  const huge = await upload(`data:image/png;base64,${'A'.repeat(Math.floor(2.8 * 1024 * 1024))}`);
+  // Over the universal 25 MB ceiling (owner ruling, Nov 23, 2026):
+  // the logo path's widened parser lets the body through, so the
+  // route's own clear 400 answers (not the parser's 413).
+  const huge = await upload(`data:image/png;base64,${Buffer.alloc(25 * 1024 * 1024 + 1, 0x41).toString('base64')}`);
   assert.equal(huge.status, 400);
   const stranger = await registerVerifiedUser('whitelabel-logo-stranger@example.com');
   const forbidden = await upload(TINY_PNG, stranger.cookie);

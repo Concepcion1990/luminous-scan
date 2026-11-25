@@ -305,10 +305,10 @@ test('file rules: type and size refusals carry the registered message; titles ar
   assert.equal(badType.json.error, 'staff_document_invalid');
   assert.equal(
     badType.json.message,
-    'Send a PDF, text, Word, OpenDocument or image file under 2 MB.',
+    'Send a PDF, text, Word, OpenDocument or image file under 25 MB.',
   );
 
-  const oversize = Buffer.alloc(2 * 1024 * 1024 + 1, 65).toString('base64');
+  const oversize = Buffer.alloc(25 * 1024 * 1024 + 1, 65).toString('base64');
   const tooBig = await req(`${DOCS(bid)}/${sam.member.id}`, {
     method: 'POST',
     cookie: owner.cookie,

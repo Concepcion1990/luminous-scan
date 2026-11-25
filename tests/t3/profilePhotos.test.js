@@ -360,7 +360,7 @@ test('a photo that is not an image is refused; a decision with nothing waiting i
     body: { dataUrl: 'data:text/plain;base64,aGVsbG8=' },
   });
   assert.equal(bad.status, 400, bad.text);
-  assert.equal(bad.json.message, 'Send a PNG, JPG or WebP image under 2 MB.');
+  assert.equal(bad.json.message, 'Send a PNG, JPG or WebP image under 25 MB.');
 
   const nothing = await req(`${base(owner)}/${member.memberId}/approve`, {
     method: 'POST',

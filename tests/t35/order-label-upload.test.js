@@ -10,7 +10,7 @@
  * (order_shipping_labels, migration 025) — one label, two doors:
  * attach here and it shows there; replace or remove in either
  * place and both agree. Same file rules in both doors (PDF/PNG/
- * JPG, under 2 MB, byte-exact, authenticated business route),
+ * JPG, under 25 MB, byte-exact, authenticated business route),
  * both plans.
  *
  * On a NEW order the file stages in the form and attaches the
@@ -65,7 +65,7 @@ test('label field: the same route, the same rulebook as the Print Center', () =>
   assert.ok(field.includes('/shipping-label'), 'posts to the carrier-label route');
   assert.ok(field.includes('`/api/businesses/${businessId}/orders/${newOrderId}/shipping-label`'), 'the staged attach posts to the very route the Print Center uses');
   assert.ok(field.includes("from '@/components/print/CarrierLabelPanel'"), 'shared constants come from the Print Center panel');
-  assert.ok(field.includes('LABEL_MAX_BYTES') && field.includes('LABEL_TYPES'), 'the 2 MB cap and PDF/PNG/JPG rule are the shared ones');
+  assert.ok(field.includes('LABEL_MAX_BYTES') && field.includes('LABEL_TYPES'), 'the 25 MB cap and PDF/PNG/JPG rule are the shared ones');
   assert.ok(panel.includes('export const LABEL_MAX_BYTES'), 'the panel exports the shared cap');
   assert.ok(panel.includes('export const LABEL_TYPES'), 'the panel exports the shared types');
   assert.ok(panel.includes('export function savedDate'), 'the panel exports the saved-date formatter both doors use');

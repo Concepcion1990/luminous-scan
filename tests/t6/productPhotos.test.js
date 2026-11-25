@@ -4,7 +4,7 @@
  * (migration 020) and served publicly by unguessable id from
  * /api/photos/:id — the form's own promise ("anyone with the link
  * can open them") — while uploads require business membership and
- * follow the logo's discipline (PNG/JPG/WebP, 2 MB). The 6-per-
+ * follow the logo's discipline (PNG/JPG/WebP, 25 MB). The 6-per-
  * product cap is enforced where photo_urls are saved.
  */
 import { test, after, beforeEach } from 'node:test';
@@ -83,7 +83,7 @@ test('non-image payloads and oversize images are refused', async () => {
   const gif = await upload(owner.cookie, owner.business.id, 'data:image/gif;base64,R0lGODlhAQABAAAAACw=');
   assert.equal(gif.status, 400);
   assert.equal(gif.json.error, 'invalid_photo');
-  const big = Buffer.alloc(2 * 1024 * 1024 + 1, 7).toString('base64');
+  const big = Buffer.alloc(25 * 1024 * 1024 + 1, 7).toString('base64');
   const oversize = await upload(owner.cookie, owner.business.id, `data:image/png;base64,${big}`);
   assert.equal(oversize.status, 400);
   assert.equal(oversize.json.error, 'invalid_photo');

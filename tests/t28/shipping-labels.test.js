@@ -119,7 +119,7 @@ test('carrier label: bad types and oversize files are refused, nothing stored', 
   assert.equal(badType.status, 400);
   assert.equal(badType.json.error, 'invalid_label');
 
-  const big = Buffer.alloc(2 * 1024 * 1024 + 16, 7);
+  const big = Buffer.alloc(25 * 1024 * 1024 + 16, 7);
   const tooBig = await req(path, {
     method: 'POST',
     body: { dataUrl: dataUrl('application/pdf', big), filename: 'big.pdf' },

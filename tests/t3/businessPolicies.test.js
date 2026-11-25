@@ -33,7 +33,7 @@ after(close);
 beforeEach(() => resetRateLimits());
 
 const OWNER_ONLY_MESSAGE = "Only the owner can change this store's policies and terms.";
-const FILE_INVALID_MESSAGE = 'Send a PDF, text, Word or OpenDocument file under 2 MB.';
+const FILE_INVALID_MESSAGE = 'Send a PDF, text, Word or OpenDocument file under 25 MB.';
 const TEXT_TOO_LONG_MESSAGE =
   'That document is too long to type here. You can upload it as a file instead.';
 
@@ -281,7 +281,7 @@ test('file rules: wrong type and oversize are refused with the plain sentence', 
   assert.equal(exe.json.error, 'policy_file_invalid');
   assert.equal(exe.json.message, FILE_INVALID_MESSAGE);
 
-  const big = Buffer.alloc(2 * 1024 * 1024 + 1, 0x41);
+  const big = Buffer.alloc(25 * 1024 * 1024 + 1, 0x41);
   const oversize = await req(`/api/businesses/${owner.business.id}/policies/policies/file`, {
     method: 'POST',
     ...as(owner),
