@@ -4,6 +4,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
+import { generateAppIcons } from './scripts/app-icons.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -33,11 +34,39 @@ function stampServiceWorker() {
   }
 }
 
+// Emit the raster icon family into dist/ (app-icon fix,
+// 2026-11-24; diagnosis ~/workspace/diagnosis-app-icon/report.md).
+// The manifest offered the globe only as SVG, and Windows/Android/
+// iOS install surfaces need raster icons — with none, Chrome fell
+// back to a generated letter tile ("L") for the installed app.
+// scripts/app-icons.mjs decodes the PNG masters inside the public
+// SVG wrappers and writes real icon-192.png / icon-512.png, a
+// maskable 512, an apple-touch-icon and a favicon.ico. No binary
+// ever rides the text-only GitHub push: the PNGs are born here,
+// from text already in the repo, and the artwork is the masters'
+// own bytes/resizes — never redrawn. Like the SW stamper this
+// works on dist/ directly, so it runs for the client build (the
+// SSR build's dist-server output carries no icons and needs none).
+function emitAppIcons() {
+  return {
+    name: 'emit-app-icons',
+    apply: 'build',
+    closeBundle() {
+      const distDir = path.join(__dirname, 'dist')
+      const publicDir = path.join(__dirname, 'public')
+      if (!existsSync(path.join(publicDir, 'icon-192.svg'))) return
+      if (!existsSync(path.join(publicDir, 'icon-512.svg'))) return
+      generateAppIcons({ publicDir, outDir: distDir })
+    },
+  }
+}
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(),
     stampServiceWorker(),
+    emitAppIcons(),
   ],
   resolve: {
     // The `@/` alias used across src/ was previously provided by the
