@@ -2,16 +2,22 @@
  * Clock administration — the clock build (Nov 21, 2026), from the
  * owner's rulings of Nov 20, 2026 (~9:14 PM + ~9:24 PM):
  *
- *   - THE TICK. One enrollment tick, `staff.clock`, covers the
- *     whole family: opening/closing call-in windows and correcting
- *     time entries. It follows the established grant pattern
- *     (src/lib/staff.js): stored in the member's own permissions,
- *     in no preset, off by default, held by the owner by birth.
- *     It takes effect only for a MANAGER-level member — a staff
- *     row's stored tick stays inert, enforced everywhere the tick
- *     is consulted. (One tick for the family: the owner was read
- *     back "one family" on Nov 21, 2026 and did not correct it;
- *     the publish record says so, so she can split it later.)
+ *   - THE TICKS. The clock build shipped with ONE enrollment
+ *     tick, `staff.clock`, covering the whole family. The owner
+ *     split it (her ruling, Nov 23, 2026, ~4:46 PM; built Nov 24,
+ *     2026): TWO ticks now, each its own door —
+ *       staff.clockBoard — the team clock board + missed
+ *         clock-outs (the board, the flags and their bell, and
+ *         correcting time entries);
+ *       staff.callins — call-ins (opening/closing call-in
+ *         windows).
+ *     Holders of the old tick received BOTH (migration 054) —
+ *     nobody lost a power they had. Each follows the established
+ *     grant pattern (src/lib/staff.js): stored in the member's
+ *     own permissions, in no preset, off by default, held by the
+ *     owner by birth. Each takes effect only for a MANAGER-level
+ *     member — a staff row's stored tick stays inert, enforced
+ *     everywhere the tick is consulted.
  *
  *   - THE CALL-IN WINDOW. A member may clock in only when a
  *     scheduled shift covers now, or when a call-in window is
@@ -50,7 +56,8 @@ import {
   memberLevel,
 } from './staffWindow.js';
 
-export const CLOCK_ADMIN_TICK = 'staff.clock';
+export const CLOCK_BOARD_TICK = 'staff.clockBoard';
+export const CALL_IN_TICK = 'staff.callins';
 
 /** The permission set a staff row actually lives under (mirrors
  *  trainingCore.effectivePermissions / authz permissionsOfRole). */
@@ -65,16 +72,56 @@ function effectivePermissions(row, customRoles, planKey) {
 }
 
 /** True when this member row is a manager the owner trusted with
- *  the clock tick. The owner is not a member row — callers check
- *  access.isOwner separately, as everywhere else. */
-export async function memberHasClockTick(pool, business, memberRow) {
+ *  the clock board tick. The missed-clock-out bell rings for the
+ *  board's holders — the board is where the flags live. The
+ *  owner is not a member row — callers check access.isOwner
+ *  separately, as everywhere else. */
+/**
+ * The one-time conversion (Nov 24, 2026): every stored grant of
+ * the retired single tick becomes BOTH new ticks, on member rows
+ * and on role presets alike, so nobody loses reach they had.
+ * This rides code rather than a .sql migration on purpose: the
+ * migration runner is SQL-only, and an exact-token text replace
+ * is not portable to the pg-mem engine the suite proves against
+ * (no replace / regexp_replace / split_part / strpos there).
+ * The sweep is exact (it parses the JSON array and swaps the
+ * one element), idempotent (a converted row no longer matches),
+ * and runs at boot after migrations, before the first request.
+ * Returns how many rows were converted.
+ */
+export async function convertLegacyClockTicks(pool) {
+  if (!pool) return 0;
+  let converted = 0;
+  for (const table of ['staff_members', 'staff_roles']) {
+    const { rows } = await pool.query(
+      `SELECT id, permissions FROM ${table} WHERE permissions LIKE '%"staff.clock"%'`,
+    );
+    for (const row of rows) {
+      const stored = parseJsonArray(row.permissions);
+      if (!stored.includes('staff.clock')) continue;
+      const next = [];
+      for (const key of stored) {
+        if (key === 'staff.clock') next.push(CLOCK_BOARD_TICK, CALL_IN_TICK);
+        else next.push(key);
+      }
+      await pool.query(
+        `UPDATE ${table} SET permissions = $1 WHERE id = $2`,
+        [JSON.stringify([...new Set(next)]), row.id],
+      );
+      converted += 1;
+    }
+  }
+  return converted;
+}
+
+export async function memberHasClockBoardTick(pool, business, memberRow) {
   if (!memberRow || memberLevel(memberRow) !== 'manager') return false;
   const planKey = await planFor(pool, business.id);
   const { rows: customRoles } = await pool.query(
     'SELECT * FROM staff_roles WHERE business_id = $1',
     [business.id],
   );
-  return effectivePermissions(memberRow, customRoles, planKey).includes(CLOCK_ADMIN_TICK);
+  return effectivePermissions(memberRow, customRoles, planKey).includes(CLOCK_BOARD_TICK);
 }
 
 // ---- Call-in windows ------------------------------------------------------
@@ -217,14 +264,15 @@ export async function flagMissedClockOuts(pool, business, { now = new Date(), lo
     );
     if (!openEntries.length) return 0;
     const timeZone = businessTimezone(business);
-    // Recipients: the owner, plus every manager holding the tick.
+    // Recipients: the owner, plus every manager holding the
+    // clock board tick (the missed flags are the board's).
     const recipients = [{ userId: business.owner_id, staffId: null, role: 'owner' }];
     const { rows: team } = await pool.query(
       "SELECT * FROM staff_members WHERE business_id = $1 AND status = 'active'",
       [business.id],
     );
     for (const member of team) {
-      if (!(await memberHasClockTick(pool, business, member))) continue;
+      if (!(await memberHasClockBoardTick(pool, business, member))) continue;
       const user = (
         await pool.query('SELECT id FROM users WHERE LOWER(email) = LOWER($1) LIMIT 1', [member.email])
       ).rows[0];

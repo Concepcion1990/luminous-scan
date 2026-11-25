@@ -16,7 +16,7 @@ import { fixTimeEntry } from '@/lib/workforce';
 /**
  * The time-entry correction door (the clock build, Nov 21,
  * 2026) — opened from the Staff page, on the person's record.
- * The owner, or a manager holding the staff.clock tick, sets or
+ * The owner, or a manager holding the clock board tick, sets or
  * changes the clock-in, the clock-out, and the break out/in
  * times. Times are read and written in the BUSINESS's timezone
  * — the same frame the schedule is written in — so what the

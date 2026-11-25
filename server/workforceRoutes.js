@@ -70,7 +70,8 @@ import { requireAuth } from './sessions.js';
 import { resolveAccess, staffRowForEmail, parseJsonArray } from './authz.js';
 import { startAutoLogout, cancelAutoLogout, zonedTimeToUtc } from './staffWindow.js';
 import {
-  CLOCK_ADMIN_TICK,
+  CLOCK_BOARD_TICK,
+  CALL_IN_TICK,
   openCallInWindow,
   openCallInWindows,
   openCallIn,
@@ -573,16 +574,24 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
   }
 
   // ---- Clock administration (the clock build, Nov 21, 2026) ---------------
-  // One tick (staff.clock, server/clockAdmin.js) covers call-in
-  // windows and time-entry corrections: the owner by birth, or a
-  // MANAGER the owner ticked — server-enforced here, never
-  // trusted from the client. The hierarchy mirrors schedules: a
-  // manager acts on staff only; a manager's own call-ins and
-  // entries are the owner's to manage.
+  // TWO ticks since the split (the owner's ruling, Nov 23, 2026,
+  // ~4:46 PM; server/clockAdmin.js): staff.clockBoard covers the
+  // team clock board + missed clock-outs (and the corrections
+  // that clear them); staff.callins covers call-in windows. Each
+  // door: the owner by birth, or a MANAGER the owner ticked with
+  // THAT tick — server-enforced here, never trusted from the
+  // client. The hierarchy mirrors schedules: a manager acts on
+  // staff only; a manager's own call-ins and entries are the
+  // owner's to manage.
 
-  function canClockAdmin(access, level) {
+  function canClockBoard(access, level) {
     if (access.isOwner) return true;
-    return level === 'manager' && access.can(CLOCK_ADMIN_TICK);
+    return level === 'manager' && access.can(CLOCK_BOARD_TICK);
+  }
+
+  function canCallInAdmin(access, level) {
+    if (access.isOwner) return true;
+    return level === 'manager' && access.can(CALL_IN_TICK);
   }
 
   // Staff documents (Nov 21, 2026): the same shape — the owner,
@@ -595,9 +604,18 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
     return level === 'manager' && access.can(STAFF_DOCUMENTS_TICK);
   }
 
-  function assertClockAdmin(access, level, target) {
-    if (!canClockAdmin(access, level)) {
-      throw err(403, 'clock_admin_not_granted', 'Only the owner, or a manager the owner has trusted with call-ins and clock corrections, can do that.');
+  function assertClockBoard(access, level, target) {
+    if (!canClockBoard(access, level)) {
+      throw err(403, 'clock_admin_not_granted', 'Only the owner, or a manager the owner has trusted with the clock board and missed clock-outs, can do that.');
+    }
+    if (level === 'manager' && personLevel(target) === 'manager') {
+      throw err(403, 'forbidden', 'Only the owner can manage a manager’s call-ins and time entries.');
+    }
+  }
+
+  function assertCallInAdmin(access, level, target) {
+    if (!canCallInAdmin(access, level)) {
+      throw err(403, 'clock_admin_not_granted', 'Only the owner, or a manager the owner has trusted with call-ins, can do that.');
     }
     if (level === 'manager' && personLevel(target) === 'manager') {
       throw err(403, 'forbidden', 'Only the owner can manage a manager’s call-ins and time entries.');
@@ -663,11 +681,14 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
       self_clock_enabled: settings.self_clock_enabled !== false,
       dd_enabled: settings.dd_enabled === true,
       plan: access.planKey,
-      // Clock administration (Nov 21, 2026): the owner, or a
-      // manager holding the staff.clock tick — the Staff page
-      // hangs its call-in + time-fix doors on this one boolean;
-      // the server re-checks on every write regardless.
-      clock_admin: canClockAdmin(access, level),
+      // Clock administration (Nov 21, 2026; split Nov 24,
+      // 2026): the owner, or a manager holding the matching
+      // tick — clock_board_admin for the board + missed
+      // clock-outs + time fixes, call_in_admin for the call-in
+      // windows. The Staff page hangs each door on its own
+      // boolean; the server re-checks on every write regardless.
+      clock_board_admin: canClockBoard(access, level),
+      call_in_admin: canCallInAdmin(access, level),
       // Staff documents (Nov 21, 2026): the owner, or a manager
       // holding the staff.documents tick — the Staff page hangs
       // its documents area on this one boolean; the server
@@ -1042,7 +1063,7 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
     // the backstop for when nobody is looking. The claim makes
     // the two paths race-safe; the flag itself is computed live
     // below either way.
-    if (canClockAdmin(access, level)) {
+    if (canClockBoard(access, level)) {
       await flagMissedClockOuts(pool(), access.business, {});
     }
     let query = 'SELECT * FROM time_entries WHERE business_id = $1';
@@ -1077,15 +1098,17 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
   }));
 
   // ---- Call-in windows + time-entry corrections -----------------------------
-  // The clock build (Nov 21, 2026). Windows are opened/closed by
-  // the owner or a ticked manager (assertClockAdmin); corrections
-  // live on the same tick. The Staff page hangs its doors on the
-  // context's clock_admin boolean; every write re-checks here.
+  // The clock build (Nov 21, 2026); the doors split with the
+  // ticks (Nov 24, 2026). Windows are opened/closed by the owner
+  // or a call-ins-ticked manager (assertCallInAdmin); corrections
+  // live on the clock board tick (assertClockBoard). The Staff
+  // page hangs its doors on the context's two booleans; every
+  // write re-checks here.
 
   router.get(`${base}/call-in`, asyncHandler(async (req, res) => {
     const { access, level } = await ctx(req);
-    if (!canClockAdmin(access, level)) {
-      throw err(403, 'clock_admin_not_granted', 'Only the owner, or a manager the owner has trusted with call-ins and clock corrections, can do that.');
+    if (!canCallInAdmin(access, level)) {
+      throw err(403, 'clock_admin_not_granted', 'Only the owner, or a manager the owner has trusted with call-ins, can do that.');
     }
     const windows = await openCallInWindows(pool(), req.params.bid);
     return res.json({ windows });
@@ -1094,7 +1117,7 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
   router.post(`${base}/call-in/:staffId`, asyncHandler(async (req, res) => {
     const { access, level, me } = await ctx(req);
     const target = await personOr404(pool(), req.params.bid, req.params.staffId);
-    assertClockAdmin(access, level, target);
+    assertCallInAdmin(access, level, target);
     await assertNotInGrace(pool(), req.params.bid);
     const opened = await openCallIn(pool(), req.params.bid, target.id, {
       userId: req.user.id,
@@ -1107,7 +1130,7 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
   router.delete(`${base}/call-in/:staffId`, asyncHandler(async (req, res) => {
     const { access, level, me } = await ctx(req);
     const target = await personOr404(pool(), req.params.bid, req.params.staffId);
-    assertClockAdmin(access, level, target);
+    assertCallInAdmin(access, level, target);
     await assertNotInGrace(pool(), req.params.bid);
     const closed = await closeCallIn(pool(), req.params.bid, target.id, {
       byId: req.user.id,
@@ -1133,7 +1156,7 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
     const entry = entryRows[0];
     if (!entry) throw err(404, 'not_found', 'Time entry not found.');
     const target = await personOr404(pool(), businessId, entry.staff_member_id);
-    assertClockAdmin(access, level, target);
+    assertClockBoard(access, level, target);
     await assertNotInGrace(pool(), businessId);
     const timeZone = businessTimezone(access.business);
     const parseLocal = (value) => {

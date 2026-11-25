@@ -39,7 +39,7 @@
  * THE CALL-IN WINDOW (the clock build, Nov 21, 2026 — owner's
  * rulings Nov 20, 2026): a member with no shift covering now may
  * still be let in when a call-in window is open for them (opened
- * by the owner, or by a manager holding the staff.clock tick —
+ * by the owner, or by a manager holding the call-ins tick —
  * server/clockAdmin.js). An open window admits exactly like an
  * open clock-in entry: it is the person's sign-in path as well
  * as their clock-in path. It closes when they clock out (the

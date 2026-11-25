@@ -13,6 +13,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Landmark, PenLine, Printer, Send, Undo2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import MyDocumentsCard from '@/components/staff/MyDocumentsCard';
 import { useToast } from '@/components/ui/use-toast';
 import { useBusiness } from '@/hooks/useBusiness';
 import { formatFullDate, formatShortDate } from '@/lib/dates';
@@ -1089,6 +1090,14 @@ export default function Payroll() {
       </div>
 
       {ctx.me_profile && <MyProfileSection profile={ctx.me_profile} businessId={activeId} reload={load} />}
+
+      {/* My documents (the staff-documents self-door, Nov 24,
+          2026): the person's OWN paperwork file, read-only —
+          here in the personal cluster, where they already find
+          their details on file and their own stubs. The card
+          self-gates on having a staff row in this business;
+          the server binds the file to their own row. */}
+      <MyDocumentsCard />
 
       {profiles.length > 0 && (
         <ProfilesSection businessId={activeId} profiles={profiles} canSetPay={Boolean(ctx.can_set_pay ?? ctx.is_owner)} reload={load} />

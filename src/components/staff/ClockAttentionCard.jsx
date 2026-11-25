@@ -15,17 +15,21 @@ import {
 import TimeEntryFixDialog from './TimeEntryFixDialog';
 
 /**
- * Call-ins & missed clock-outs (the clock build, Nov 21, 2026)
- * — the Staff page's clock card. It renders ONLY for a clock
- * admin: the owner, or a manager holding the staff.clock tick
- * (the workforce context's clock_admin boolean; the server
- * re-checks every write). From here they:
+ * Call-ins & missed clock-outs (the clock build, Nov 21, 2026;
+ * the doors split with the ticks, Nov 24, 2026) — the Staff
+ * page's clock card. It renders ONLY for a clock admin: the
+ * owner, or a manager holding one of the two clock ticks (the
+ * workforce context's clock_board_admin / call_in_admin
+ * booleans; the server re-checks every write). Each half of
+ * the card hangs on its own tick:
  *
- *   - open a call-in window for a person (their door to sign in
- *     and clock in with no shift scheduled), and close one early;
- *   - see each missed clock-out flagged on the person's record
- *     (scheduled start – end, never clocked out) and correct the
- *     entry's times through the fix dialog.
+ *   - call-ins (the call-ins tick): open a call-in window for a
+ *     person (their door to sign in and clock in with no shift
+ *     scheduled), and close one early;
+ *   - the board (the clock board tick): see each missed
+ *     clock-out flagged on the person's record (scheduled
+ *     start – end, never clocked out) and correct the entry's
+ *     times through the fix dialog.
  *
  * It renders nothing for anyone else, and nothing at all when
  * there is nobody to call in and nothing missed — the doors
@@ -49,18 +53,23 @@ export default function ClockAttentionCard() {
     try {
       const context = await getWorkforceContext(activeId);
       setCtx(context);
-      if (!context.clock_admin) {
+      if (!context.clock_board_admin && !context.call_in_admin) {
         setLoaded(true);
         return;
       }
-      const [peopleData, entriesData, windowsData] = await Promise.all([
-        listPeople(activeId),
-        listEntries(activeId),
-        listCallInWindows(activeId),
-      ]);
+      // Each half loads only behind its own tick: the windows
+      // door refuses a board-only manager (and the entries are
+      // the board's to read), so neither is fetched without it.
+      const peopleData = await listPeople(activeId);
       setPeople(peopleData.people ?? []);
-      setEntries(entriesData.entries ?? []);
-      setWindows(windowsData.windows ?? []);
+      if (context.clock_board_admin) {
+        const entriesData = await listEntries(activeId);
+        setEntries(entriesData.entries ?? []);
+      }
+      if (context.call_in_admin) {
+        const windowsData = await listCallInWindows(activeId);
+        setWindows(windowsData.windows ?? []);
+      }
     } catch {
       // A failed load hides the card rather than breaking the page.
       setCtx(null);
@@ -112,7 +121,7 @@ export default function ClockAttentionCard() {
     });
   }, [people, ctx, openWindowByPerson]);
 
-  if (!loaded || !ctx?.clock_admin) return null;
+  if (!loaded || (!ctx?.clock_board_admin && !ctx?.call_in_admin)) return null;
   if (!missed.length && !windows.length && !candidates.length) return null;
 
   const formatWhen = (iso) => {
@@ -168,7 +177,7 @@ export default function ClockAttentionCard() {
         <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{t('staff.callIn.desc')}</p>
       </div>
 
-      {missed.length > 0 && (
+      {ctx.clock_board_admin && missed.length > 0 && (
         <ul className="space-y-2">
           {missed.map((entry) => (
             <li
@@ -197,7 +206,7 @@ export default function ClockAttentionCard() {
         </ul>
       )}
 
-      {windows.length > 0 && (
+      {ctx.call_in_admin && windows.length > 0 && (
         <ul className="space-y-2">
           {windows.map((win) => (
             <li
@@ -231,7 +240,7 @@ export default function ClockAttentionCard() {
         </ul>
       )}
 
-      {candidates.length > 0 && (
+      {ctx.call_in_admin && candidates.length > 0 && (
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
           <div className="grid flex-1 gap-1.5">
             <label className="text-xs font-medium text-muted-foreground" htmlFor="call-in-person">

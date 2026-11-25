@@ -92,10 +92,12 @@ export const LESSON_REQUIREMENTS = {
   'mgr-reports-alerts': ['reports.view'],
   'staff-builds': ['builds.manage'],
   'mgr-staff-permissions': ['staff.manage', 'staff.roster'],
-  // The clock tick's lesson (Nov 21, 2026): the tick IS the
-  // door — granting staff.clock assigns it, unticking mirrors
-  // it out of future scope; completed history is never removed.
-  'mgr-clock-callin': ['staff.clock'],
+  // The clock ticks' lesson (Nov 21, 2026; split Nov 24, 2026):
+  // a tick IS the door — granting EITHER clock tick assigns the
+  // one lesson (it teaches both ticks, each step gated to its
+  // own tick below), unticking both mirrors it out of future
+  // scope; completed history is never removed.
+  'mgr-clock-callin': ['staff.clockBoard', 'staff.callins'],
   // The documents tick's lesson (Nov 21, 2026): same law —
   // granting staff.documents assigns it, unticking mirrors it
   // out of future scope; completed history is never removed.
@@ -119,6 +121,11 @@ export const LESSON_REQUIREMENTS = {
  *  shows only to a person carrying that door. */
 export const STEP_GATES = {
   'products-find-edit': { 10: 'settings.gs1', 11: 'owner' },
+  // The clock lesson (split, Nov 24, 2026): step 1 introduces
+  // both ticks and shows to either holder; the call-in steps
+  // (2–3) belong to the call-ins tick, the missed clock-out and
+  // correction steps (4–5) to the clock board tick.
+  'mgr-clock-callin': { 2: 'staff.callins', 3: 'staff.callins', 4: 'staff.clockBoard', 5: 'staff.clockBoard' },
 };
 
 export function isCoreLesson(lesson, level) {

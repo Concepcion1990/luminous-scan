@@ -296,7 +296,10 @@ export const MODULE_BY_PERMISSION = {
   "staff.roster": [
     "staff"
   ],
-  "staff.clock": [
+  "staff.clockBoard": [
+    "workforce"
+  ],
+  "staff.callins": [
     "workforce"
   ],
   "staff.documents": [

@@ -403,26 +403,32 @@ export function isTrainingGrant(key) {
 }
 
 /**
- * Owner-granted call-ins & clock corrections (the owner's
- * rulings, Nov 20, 2026). ONE tick for the whole family — the
- * owner was read back "one family" on Nov 21, 2026 and did not
- * correct it. Same pattern as the grants above: the key lives
- * in the member's own permissions array, deliberately NOT part
- * of PERMISSION_GROUPS / ALL_PERMISSIONS / the preset roles,
- * and is edited in the member dialog as its own tick, so the
- * permission picker can never wipe it and no role carries it by
- * default — a manager included. Holding it lets a MANAGER open
- * and close call-in windows (the door that lets an unscheduled
- * person sign in and clock in) and correct time entries from
- * the Staff page (clock-in, clock-out, break times). Like the
- * roster tick, it is offered for every role but takes effect
- * only for a MANAGER-level member — a staff member's stored
- * tick stays inert, enforced server-side
- * (server/clockAdmin.js). Either plan: the time clock lives on
- * both.
+ * Owner-granted clock ticks (the owner's rulings, Nov 20,
+ * 2026; split by her ruling of Nov 23, 2026, ~4:46 PM). The
+ * clock build shipped ONE tick for the whole family; she split
+ * it in two, each grantable on its own:
+ *   - staff.clockBoard — the team clock board + missed
+ *     clock-outs: see the board, the missed flags and their
+ *     bell, and correct time entries from the Staff page
+ *     (clock-in, clock-out, break times);
+ *   - staff.callins — call-ins: open and close call-in windows
+ *     (the door that lets an unscheduled person sign in and
+ *     clock in).
+ * Holders of the old tick received BOTH (migration 054).
+ * Same pattern as the grants above: the keys live in the
+ * member's own permissions array, deliberately NOT part of
+ * PERMISSION_GROUPS / ALL_PERMISSIONS / the preset roles, and
+ * are edited in the member dialog as their own ticks, so the
+ * permission picker can never wipe them and no role carries
+ * them by default — a manager included. Like the roster tick,
+ * they are offered for every role but take effect only for a
+ * MANAGER-level member — a staff member's stored tick stays
+ * inert, enforced server-side (server/clockAdmin.js). Either
+ * plan: the time clock lives on both.
  */
 export const CLOCK_GRANTS = [
-  { key: 'staff.clock', get label() { return t('staffLib.perm.staffClock'); } },
+  { key: 'staff.clockBoard', get label() { return t('staffLib.perm.staffClockBoard'); } },
+  { key: 'staff.callins', get label() { return t('staffLib.perm.staffCallins'); } },
 ];
 
 export const CLOCK_GRANT_KEYS = CLOCK_GRANTS.map((grant) => grant.key);
@@ -447,8 +453,11 @@ export function isClockGrant(key) {
  * roster and clock ticks, it is offered for every role but
  * takes effect only for a MANAGER-level member — a staff
  * member's stored tick stays inert, enforced server-side
- * (server/staffDocuments.js). The document's own subject has no
- * door at all. Either plan: the Staff page lives on both.
+ * (server/staffDocuments.js). The document's own subject has a
+ * separate read-only door to their OWN file (her ruling, Nov
+ * 23, 2026) — it hangs on no tick at all and never reaches
+ * anyone else's file. Either plan: the Staff page lives on
+ * both.
  */
 export const DOCUMENTS_GRANTS = [
   { key: 'staff.documents', get label() { return t('staffLib.perm.staffDocuments'); } },

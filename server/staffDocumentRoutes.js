@@ -6,6 +6,8 @@
  *   POST   /api/businesses/:bid/staff-documents/:memberId          { title?, filename, dataUrl }
  *   GET    /api/businesses/:bid/staff-documents/:memberId/:docId/file
  *   DELETE /api/businesses/:bid/staff-documents/:memberId/:docId   owner only
+ *   GET    /api/businesses/:bid/staff-documents/mine               the subject's own file (read-only)
+ *   GET    /api/businesses/:bid/staff-documents/mine/:docId/file  the subject's own bytes (read-only)
  *
  * The owner's rulings (Nov 19 + Nov 20, 2026):
  *   - Each member has a documents file: the paperwork the owner
@@ -21,11 +23,20 @@
  *   - Access is ONE owner-grant tick, `staff.documents`: the
  *     owner by birth, or a MANAGER the owner ticked — granted
  *     only through the red-warning confirm in the member dialog.
- *     The server enforces the tick on EVERY read and write here:
- *     plain staff get 403, an unticked manager gets 403, and the
- *     document's own subject gets 403 — the subject has no door
- *     to their own file (her ruling; flagged in the publish
- *     record so she can extend it later).
+ *     The server enforces the tick on EVERY read and write on
+ *     the admin stem above: plain staff get 403, an unticked
+ *     manager gets 403, and the document's own subject gets 403
+ *     there too.
+ *   - THE SUBJECT'S OWN DOOR (the owner's ruling, Nov 23, 2026,
+ *     ~4:50 PM; built Nov 24, 2026): the person a file is ABOUT
+ *     can open their OWN file read-only — view, download, print,
+ *     never edit — through the /mine stem below. It is separate
+ *     from the tick: it needs no grant, it is bound to the
+ *     caller's own staff row (there is no member id in the path
+ *     to aim at anyone else), and it has NO write routes at all.
+ *     A document id that belongs to a colleague is simply not
+ *     found under the caller's own row — the same 404 as a
+ *     document that does not exist.
  *   - The hierarchy follows the clock family: a ticked manager
  *     reaches STAFF-level members' files only. A manager-level
  *     member's documents are the owner's alone, and manager-level
@@ -184,6 +195,42 @@ export function createStaffDocumentRouter({ getPool: getPoolFn }) {
     return rows.map(shapeDocument);
   }
 
+  /** Serve one version's bytes — shared by the admin file
+   *  route and the subject's own door. The query binds the
+   *  document to the member id the CALLER was authorized for,
+   *  so a document that belongs to anyone else is a plain 404,
+   *  indistinguishable from one that does not exist. */
+  async function serveDocumentFile(res, bid, memberId, docId) {
+    const { rows } = await pool().query(
+      'SELECT content_type, filename, data_base64 FROM staff_documents WHERE id = $1 AND business_id = $2 AND staff_member_id = $3',
+      [docId, bid, memberId],
+    );
+    const file = rows[0];
+    if (!file) throw err(404, 'staff_document_not_found', STAFF_DOCUMENT_NOT_FOUND_MESSAGE);
+    res.setHeader('Content-Type', file.content_type);
+    res.setHeader('Cache-Control', 'private, no-store');
+    res.setHeader(
+      'Content-Disposition',
+      `inline; filename="${cleanFilename(file.filename) || 'document'}"`,
+    );
+    return res.send(Buffer.from(file.data_base64, 'base64'));
+  }
+
+  /** The subject's own door: the caller must hold a staff row
+   *  in THIS business; the file they reach is that row's, and
+   *  no one else's — there is no member id in the /mine path to
+   *  point anywhere else. A caller with no row here (the owner
+   *  without a member row, say) has no own file: the admin stem
+   *  is their door, and this one answers the member-not-found
+   *  refusal. */
+  async function ownFileOr404(req) {
+    const access = await resolveAccess(pool(), req.user, req.params.bid);
+    if (!access) throw err(403, 'forbidden', 'You do not have access to this workspace.');
+    const me = access.staffRow;
+    if (!me) throw err(404, 'staff_document_member_not_found', STAFF_DOCUMENT_MEMBER_NOT_FOUND_MESSAGE);
+    return { access, me };
+  }
+
   // The member list for the documents area: names + counts only.
   // No emails, no contact fields, no pay — this list exists to
   // pick a person's file, and it carries nothing else. A ticked
@@ -220,6 +267,25 @@ export function createStaffDocumentRouter({ getPool: getPoolFn }) {
         doc_count: counts.get(row.id) ?? 0,
       })),
     });
+  }));
+
+  // The subject's own file (Nov 24, 2026): every kept version
+  // of the CALLER's paperwork, newest first — read-only. These
+  // routes are registered before the /:memberId stem on
+  // purpose: 'mine' is a door, never a member id.
+  router.get(`${base}/mine`, asyncHandler(async (req, res) => {
+    const { me } = await ownFileOr404(req);
+    return res.json({
+      member: { id: me.id, full_name: me.full_name },
+      documents: await listDocuments(req.params.bid, me.id),
+    });
+  }));
+
+  // The subject's own bytes: view / download / print ride this
+  // one route, exactly as on the admin stem.
+  router.get(`${base}/mine/:docId/file`, asyncHandler(async (req, res) => {
+    const { me } = await ownFileOr404(req);
+    return serveDocumentFile(res, req.params.bid, me.id, req.params.docId);
   }));
 
   // One person's file: every kept version, newest first.
@@ -278,19 +344,7 @@ export function createStaffDocumentRouter({ getPool: getPoolFn }) {
   router.get(`${base}/:memberId/:docId/file`, asyncHandler(async (req, res) => {
     const access = await documentsAdminOr403(req);
     const member = await memberOr404(req, access);
-    const { rows } = await pool().query(
-      'SELECT content_type, filename, data_base64 FROM staff_documents WHERE id = $1 AND business_id = $2 AND staff_member_id = $3',
-      [req.params.docId, req.params.bid, member.id],
-    );
-    const file = rows[0];
-    if (!file) throw err(404, 'staff_document_not_found', STAFF_DOCUMENT_NOT_FOUND_MESSAGE);
-    res.setHeader('Content-Type', file.content_type);
-    res.setHeader('Cache-Control', 'private, no-store');
-    res.setHeader(
-      'Content-Disposition',
-      `inline; filename="${cleanFilename(file.filename) || 'document'}"`,
-    );
-    return res.send(Buffer.from(file.data_base64, 'base64'));
+    return serveDocumentFile(res, req.params.bid, member.id, req.params.docId);
   }));
 
   // Remove ONE version — the owner's deliberate act, behind the

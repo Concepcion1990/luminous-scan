@@ -862,13 +862,14 @@ export default function StaffMemberDialog({
             </p>
           </div>
 
-          {/* Owner-granted call-ins & clock corrections (Nov 21,
-              2026): ONE tick for the whole family — opening and
-              closing call-in windows, and correcting time entries
-              from the Staff page. Managers only: the tick stays
-              inert on a staff row (the server enforces the same
-              split). Offered for every role, off by default, on
-              both plans. */}
+          {/* Owner-granted clock ticks (Nov 21, 2026; split
+              Nov 24, 2026): TWO ticks, each its own — the clock
+              board & missed clock-outs (correcting time entries
+              from the Staff page), and call-ins (opening and
+              closing call-in windows). Managers only: a tick
+              stays inert on a staff row (the server enforces the
+              same split). Offered for every role, off by default,
+              on both plans. */}
           <div className="space-y-1.5">
             <Label>{t('staffLib.area.clockAccess')}</Label>
             <div className="rounded-lg border border-border p-2.5">

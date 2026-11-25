@@ -126,6 +126,19 @@ export function staffDocumentFileUrl(businessId, memberId, docId) {
   return `${documentsBase(businessId)}/${encodeURIComponent(memberId)}/${encodeURIComponent(docId)}/file`;
 }
 
+// The subject's own door (Nov 24, 2026): a member reads their
+// OWN documents file — view, download, print; never edit. The
+// /mine stem names no member: the server binds the file to the
+// caller's own staff row, so these calls can only ever reach
+// the caller's own paperwork.
+export function listMyDocuments(businessId) {
+  return apiRequest(`${documentsBase(businessId)}/mine`);
+}
+
+export function myDocumentFileUrl(businessId, docId) {
+  return `${documentsBase(businessId)}/mine/${encodeURIComponent(docId)}/file`;
+}
+
 export function listNotifications(businessId) {
   return apiRequest(`${base(businessId)}/notifications`);
 }

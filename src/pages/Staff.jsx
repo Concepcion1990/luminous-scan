@@ -248,11 +248,13 @@ export default function Staff() {
           (owner-only; renders nothing when nobody waits). */}
       {activeId && <PhotoApprovalsCard isOwner={isAdmin} />}
 
-      {/* Call-ins & missed clock-outs (Nov 21, 2026): renders
+      {/* Call-ins & missed clock-outs (Nov 21, 2026; the
+          doors split with the ticks, Nov 24, 2026): renders
           only for a clock admin — the owner or a manager holding
-          the staff.clock tick — and only when there is something
-          to act on. The card self-gates on the workforce
-          context; the server enforces every write. */}
+          one of the two clock ticks, each half on its own tick —
+          and only when there is something to act on. The card
+          self-gates on the workforce context; the server
+          enforces every write. */}
       {activeId && <ClockAttentionCard />}
 
       {/* Staff documents (Nov 21, 2026): renders only for a

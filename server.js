@@ -19,7 +19,7 @@ import { config, configuredSecretNames } from './server/config.js';
 import { runMigrations } from './server/migrate.js';
 import { setPoolOverride, getPool } from './server/db.js';
 import { startSweepScheduler } from './server/sweepScheduler.js';
-import { startMissedClockOutScheduler } from './server/clockAdmin.js';
+import { startMissedClockOutScheduler, convertLegacyClockTicks } from './server/clockAdmin.js';
 import { startPhotoJobScheduler } from './server/photoJobs.js';
 
 const app = createApp();
@@ -43,6 +43,14 @@ async function main() {
     console.warn('[twin] using in-memory pg-mem Postgres (local dev only — data is lost on restart).');
   }
   await runMigrations();
+  // The clock tick split (Nov 24, 2026): stored grants of the
+  // retired single staff.clock tick become the two new ticks
+  // before the first request lands. Idempotent — a no-op once
+  // every row is converted.
+  const convertedTicks = await convertLegacyClockTicks(getPool());
+  if (convertedTicks > 0) {
+    console.log(`[twin] converted ${convertedTicks} legacy staff.clock grant(s) to the split ticks`);
+  }
   app.listen(config.port, () => {
     console.log(`[twin] Luminous StockHaven listening on port ${config.port}`);
     // Billing sweeps (Nov 18, 2026): the wipe sweep (T4 — deletes
