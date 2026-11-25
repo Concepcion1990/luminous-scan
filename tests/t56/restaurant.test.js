@@ -745,10 +745,12 @@ test('plan presentation: the corner joins Business includes + comparison only', 
   assert.ok(!welcomeEssentials.includes.some((line) => /restaurant|order guide/i.test(line)), 'Welcome Essentials gains nothing');
   const rows = COMPARISON_ROWS.filter((row) => /restaurant|order guide/i.test(row.label));
   // Release 361 added the corner's second pair of lines
-  // (restaurantOps + restaurantDaily, pinned by t59): the
-  // restaurant family on the comparison table is now four
-  // rows, every one Business-only.
-  assert.equal(rows.length, 4);
+  // (restaurantOps + restaurantDaily, pinned by t59). Release
+  // 377 regrouped all four lines into the six shelf lines
+  // (Kitchen, Stock, Money, Safety, Floor, Team — each starting
+  // "Restaurant,"), so the restaurant family on the comparison
+  // table is now six rows, every one Business-only.
+  assert.equal(rows.length, 6);
   for (const row of rows) {
     assert.equal(row.business, true);
     assert.equal(row.essentials, false);
@@ -759,11 +761,11 @@ test('plan presentation: the corner joins Business includes + comparison only', 
 test('nav: the corner hangs under its own subheading, behind the feature', () => {
   const group = NAV_GROUPS.find((g) => g.labelKey === 'nav.group.restaurant');
   assert.ok(group, 'the Restaurant group exists');
-  // The 359 doors still lead the group; release 361 hung
-  // twelve more doors under the same subheading (the full
-  // fourteen-door list is pinned by t59).
-  assert.deepEqual(group.items.map((i) => i.to).slice(0, 2), ['/restaurant', '/restaurant/order-guide']);
-  assert.equal(group.items.length, 14);
+  // Release 377: the group is ONE door — the Restaurant home
+  // (the Today page); the shelves and features live inside the
+  // corner (anti-clutter rule, pinned in full by t69).
+  assert.deepEqual(group.items.map((i) => i.to), ['/restaurant']);
+  assert.equal(group.items.length, 1);
   assert.ok(group.items.every((i) => i.feature === 'restaurant'));
 });
 

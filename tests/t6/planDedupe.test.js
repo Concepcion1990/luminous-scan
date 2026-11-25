@@ -82,10 +82,12 @@ test('the deduped Business lists are exactly the everything line plus Business-o
     'plansLib.includes.pricing',
     'plansLib.includes.sendPo',
     'plansLib.includes.documents',
-    'plansLib.businessIncludes.restaurant',
-    'plansLib.businessIncludes.orderGuide',
-    'plansLib.businessIncludes.restaurantOps',
-    'plansLib.businessIncludes.restaurantDaily',
+    'plansLib.businessIncludes.restaurantKitchen',
+    'plansLib.businessIncludes.restaurantStock',
+    'plansLib.businessIncludes.restaurantMoney',
+    'plansLib.businessIncludes.restaurantSafety',
+    'plansLib.businessIncludes.restaurantFloor',
+    'plansLib.businessIncludes.restaurantTeam',
     'plansLib.businessIncludes.xstoreMessages',
   ]);
   assert.deepEqual(welcomeBusinessKeys, [
@@ -107,10 +109,12 @@ test('the deduped Business lists are exactly the everything line plus Business-o
     'plansLib.includes.pricing',
     'plansLib.includes.sendPo',
     'plansLib.includes.documents',
-    'plansLib.businessIncludes.restaurant',
-    'plansLib.businessIncludes.orderGuide',
-    'plansLib.businessIncludes.restaurantOps',
-    'plansLib.businessIncludes.restaurantDaily',
+    'plansLib.businessIncludes.restaurantKitchen',
+    'plansLib.businessIncludes.restaurantStock',
+    'plansLib.businessIncludes.restaurantMoney',
+    'plansLib.businessIncludes.restaurantSafety',
+    'plansLib.businessIncludes.restaurantFloor',
+    'plansLib.businessIncludes.restaurantTeam',
     'plansLib.businessIncludes.xstoreMessages',
   ]);
 });

@@ -66,6 +66,22 @@ test('every signed-in app screen appears in the nav (menu audit)', () => {
     // pay stub: reached from the Recipes list (itself a menu
     // door), printed as the dish card, never a menu door.
     '/restaurant/recipes/:id',
+    // Release 377 (Nov 25, 2026): the Restaurant corner's screens
+    // are reached from the Restaurant home (the Today page) — the
+    // six shelves and every feature behind them — never from the
+    // All screens menu, whose Restaurant group is the one
+    // '/restaurant' door (the anti-clutter rule). The shelf pages
+    // and the feature pages are all in this set for the same
+    // reason: in-section doors, not menu doors.
+    '/restaurant/recipes',
+    '/restaurant/kitchen', '/restaurant/stock', '/restaurant/money',
+    '/restaurant/safety', '/restaurant/floor', '/restaurant/team',
+    '/restaurant/locations',
+    '/restaurant/order-guide', '/restaurant/invoices', '/restaurant/waste',
+    '/restaurant/expiry', '/restaurant/allergens', '/restaurant/temp-logs',
+    '/restaurant/86', '/restaurant/transfers', '/restaurant/staff-meals',
+    '/restaurant/menu', '/restaurant/variance', '/restaurant/prep',
+    '/restaurant/ledger',
   ]);
   const appScreens = routePaths.filter((p) => !publicRoutes.has(p));
   assert.ok(appScreens.length >= 30, `audit covers the full screen list (saw ${appScreens.length})`);

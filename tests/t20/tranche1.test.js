@@ -145,6 +145,10 @@ const FR_FR_COGNATE_KEYS = new Set([
   // "Active" and "Description" are the genuine French words,
   // and "Par" is the kept domain term — verified word-by-word.
   'nav.group.restaurant', 'training.module.restaurant', 'restaurant.eyebrow',
+  // Restaurant IA batch (release 377, Nov 25, 2026): "Restaurant"
+  // is the genuine French word for the corner's own nav door
+  // too — the same cognate as nav.group.restaurant above.
+  'nav.restaurant',
   'recipes.statusActive', 'recipes.descriptionLabel', 'guide.colPar',
   // Import robustness batch (release 365, Nov 23, 2026): "Photo"
   // is the genuine French word for the import field too — the
@@ -190,6 +194,9 @@ const FR_CA_COGNATE_KEYS = new Set([
   // "Active" and "Description" are the genuine French words,
   // and "Par" is the kept domain term — verified word-by-word.
   'nav.group.restaurant', 'training.module.restaurant', 'restaurant.eyebrow',
+  // Restaurant IA batch (release 377, Nov 25, 2026): "Restaurant"
+  // — same French cognate as fr-FR, for the corner's nav door.
+  'nav.restaurant',
   'recipes.statusActive', 'recipes.descriptionLabel', 'guide.colPar',
   // Import robustness batch (release 365, Nov 23, 2026): "Photo"
   // — same French cognate as fr-FR, verified.
@@ -249,6 +256,9 @@ const DE_COGNATE_KEYS = new Set([
   // Restaurant corner batch (Nov 23, 2026): "Restaurant" and
   // "Status" are the genuine German words — verified.
   'nav.group.restaurant', 'training.module.restaurant', 'restaurant.eyebrow',
+  // Restaurant IA batch (release 377, Nov 25, 2026): "Restaurant"
+  // is the genuine German word for the corner's nav door too.
+  'nav.restaurant',
   'recipes.statusLabel',
   // Product form batch (Nov 24, 2026): "Format" is the genuine
   // German word for the field — verified.
@@ -471,6 +481,9 @@ const TL_COGNATE_KEYS = new Set([
   // these kitchen terms in English, as it does throughout —
   // verified word-by-word.
   'nav.group.restaurant', 'training.module.restaurant', 'restaurant.eyebrow',
+  // Restaurant IA batch (release 377, Nov 25, 2026): Tagalog
+  // keeps "Restaurant" for the corner's own nav door too.
+  'nav.restaurant',
   'recipes.statusDraft', 'recipes.detailYield', 'recipes.qLabel',
   'recipes.lineYield', 'recipes.lineRecipePrefix', 'pars.supplierLabel',
   'pars.parLabel', 'guide.colPar', 'guide.colOrder',
@@ -613,6 +626,12 @@ const PCM_COGNATE_KEYS = new Set([
   // Restaurant corner batch (Nov 23, 2026): Pidgin keeps these
   // short kitchen labels in English — verified word-by-word.
   'nav.group.restaurant', 'nav.orderGuide', 'staffLib.area.restaurantAccess',
+  // Restaurant IA batch (release 377, Nov 25, 2026): Pidgin keeps
+  // these three short labels in English too — the corner's nav
+  // door, the Today page's name and the Locations open door —
+  // same register; the subtitle, attention lines and shelf
+  // names are translated.
+  'nav.restaurant', 'restaurant.today.title', 'restaurant.locations.open',
   'training.module.restaurant', 'training.lessons.mgr-restaurant-money.title', 'restaurant.eyebrow',
   'recipes.newButton', 'recipes.openButton', 'recipes.editButton',
   'recipes.deleteButton', 'recipes.cardTrueCost', 'recipes.statusActive',

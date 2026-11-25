@@ -914,11 +914,23 @@ test('Essentials: all eight ops entities are invisible — writes refused, lists
 // Presentation: plans, nav, training, client wiring, movements.
 // ---------------------------------------------------------------------------
 
-test('plan presentation: restaurantOps + restaurantDaily join Business includes + comparison only', () => {
-  const opsLine = en['plansLib.businessIncludes.restaurantOps'];
-  const dailyLine = en['plansLib.businessIncludes.restaurantDaily'];
-  assert.ok(opsLine && dailyLine, 'both plan lines exist in English');
-  for (const line of [opsLine, dailyLine]) {
+test('plan presentation: the six shelf lines carry the corner on Business includes + comparison only', () => {
+  // Release 377 regrouped the plan pages: the restaurantOps /
+  // restaurantDaily lines were replaced by the six shelf lines
+  // (Kitchen, Stock, Money, Safety, Floor, Team) in PLANS, on the
+  // Welcome cards and in the comparison table. The old keys stay in
+  // the dictionaries and in FEATURES (gate labels / training
+  // scoping), but no plan page prints them any more.
+  const shelfLines = [
+    en['plansLib.businessIncludes.restaurantKitchen'],
+    en['plansLib.businessIncludes.restaurantStock'],
+    en['plansLib.businessIncludes.restaurantMoney'],
+    en['plansLib.businessIncludes.restaurantSafety'],
+    en['plansLib.businessIncludes.restaurantFloor'],
+    en['plansLib.businessIncludes.restaurantTeam'],
+  ];
+  for (const line of shelfLines) {
+    assert.ok(line, 'the shelf plan line exists in English');
     assert.ok(PLANS.business.includes.includes(line), 'PLANS business includes carries the line');
     assert.ok(!PLANS.essentials.includes.includes(line), 'Essentials includes never carries it');
     const welcomeBusiness = WELCOME_OPTIONS.find((o) => o.key === 'business');
@@ -930,29 +942,20 @@ test('plan presentation: restaurantOps + restaurantDaily join Business includes 
     assert.equal(row.business, true);
     assert.equal(row.essentials, false);
   }
-  assert.equal(FEATURES.restaurantOps, opsLine);
-  assert.equal(FEATURES.restaurantDaily, dailyLine);
+  const opsLine = en['plansLib.businessIncludes.restaurantOps'];
+  const dailyLine = en['plansLib.businessIncludes.restaurantDaily'];
+  for (const line of [opsLine, dailyLine]) {
+    assert.ok(!PLANS.business.includes.includes(line), 'the superseded line leaves the plan pages');
+    assert.ok(!COMPARISON_ROWS.some((r) => r.label === line), 'the superseded line leaves the comparison table');
+  }
+  assert.equal(FEATURES.restaurantOps, opsLine, 'the FEATURES label stays for gate/training use');
+  assert.equal(FEATURES.restaurantDaily, dailyLine, 'the FEATURES label stays for gate/training use');
 });
 
-test('nav: the restaurant group lists all fourteen doors behind the restaurant feature', () => {
+test('nav: the restaurant group is one door — the Today page (Release 377 anti-clutter)', () => {
   const group = NAV_GROUPS.find((g) => g.labelKey === 'nav.group.restaurant');
   assert.ok(group, 'the Restaurant group exists');
-  assert.deepEqual(group.items.map((i) => i.to), [
-    '/restaurant',
-    '/restaurant/order-guide',
-    '/restaurant/invoices',
-    '/restaurant/waste',
-    '/restaurant/expiry',
-    '/restaurant/allergens',
-    '/restaurant/temp-logs',
-    '/restaurant/86',
-    '/restaurant/transfers',
-    '/restaurant/staff-meals',
-    '/restaurant/menu',
-    '/restaurant/variance',
-    '/restaurant/prep',
-    '/restaurant/ledger',
-  ]);
+  assert.deepEqual(group.items.map((i) => i.to), ['/restaurant']);
   assert.ok(group.items.every((i) => i.feature === 'restaurant'));
 });
 
