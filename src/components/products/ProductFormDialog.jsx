@@ -15,6 +15,8 @@ import { judgeVocabularyValue } from '@/lib/vocabulary';
 import { qrMatrix } from '@/lib/qr';
 import BarcodeScanner from '@/components/scan/BarcodeScanner';
 import IsbnReader from '@/components/scan/IsbnReader';
+import PhotoCapture from '@/components/scan/PhotoCapture';
+import { photoDoorDecision } from '@/lib/photoCapture';
 import QrSvg from '@/components/print/QrSvg';
 import VocabularyCombobox from './VocabularyCombobox';
 import AddVocabularyDialog from './AddVocabularyDialog';
@@ -157,6 +159,15 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
   // picker only, with no way to photograph the product on the
   // spot). Both choices feed the same addPhotos pipeline.
   const [photoChooserOpen, setPhotoChooserOpen] = useState(false);
+  // Take a photo (Nov 24, 2026): the chooser's camera button used
+  // to click a hidden input whose `capture` attribute desktop
+  // browsers ignore — on a laptop it opened the file picker, not
+  // a camera. Where the browser can open a live camera, the
+  // PhotoCapture overlay opens instead; where it cannot, the
+  // capture input remains the door (the native camera on phones,
+  // the picker where no camera exists). The decision is
+  // photoDoorDecision's (src/lib/photoCapture.js).
+  const [photoCaptureOpen, setPhotoCaptureOpen] = useState(false);
   // In-form code scanner (Nov 14, 2026): the UPC, Barcode and QR
   // fields each get a Scan button that opens the camera scanner as an
   // overlay INSIDE this dialog — the form never unmounts, so a
@@ -1143,7 +1154,11 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
                   size="sm"
                   onClick={() => {
                     setPhotoChooserOpen(false);
-                    cameraFileRef.current?.click();
+                    if (photoDoorDecision(navigator.mediaDevices) === 'camera') {
+                      setPhotoCaptureOpen(true);
+                    } else {
+                      cameraFileRef.current?.click();
+                    }
                   }}
                 >
                   <Camera className="mr-1.5 h-3.5 w-3.5" /> {t('productForm.takePhoto')}
@@ -1507,6 +1522,32 @@ export default function ProductFormDialog({ open, onOpenChange, product, seed, d
               <p className="text-sm font-medium">{t('productForm.readIsbnTitle')}</p>
               <IsbnReader onFill={handleIsbnFill} />
               <Button type="button" variant="outline" className="w-full" onClick={() => setIsbnReaderOpen(false)}>
+                {t('productForm.cancel')}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Photo capture overlay: same shell as the scanner and
+            the ISBN reader — the form underneath never unmounts.
+            A used photo lands in addPhotos exactly like a picked
+            file; the gallery exit closes the overlay and opens
+            the gallery input, so a camera that cannot be used
+            never strands the owner. */}
+        {photoCaptureOpen && (
+          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 p-4">
+            <div className="w-full max-w-sm space-y-3 rounded-xl bg-card p-4 shadow-lg">
+              <PhotoCapture
+                onCapture={(file) => {
+                  setPhotoCaptureOpen(false);
+                  addPhotos([file]);
+                }}
+                onUseGallery={() => {
+                  setPhotoCaptureOpen(false);
+                  fileRef.current?.click();
+                }}
+              />
+              <Button type="button" variant="outline" className="w-full" onClick={() => setPhotoCaptureOpen(false)}>
                 {t('productForm.cancel')}
               </Button>
             </div>
