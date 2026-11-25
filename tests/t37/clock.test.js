@@ -328,7 +328,7 @@ test('the tick: unticked manager and staff are refused; ticked manager works sta
   const staff = await addTeamMember(business, owner.id, 'clk-tick-staff@example.com');
   const plainMgr = await addTeamMember(business, owner.id, 'clk-tick-mgr@example.com', { manager: true });
   const tickedMgr = await addTeamMember(business, owner.id, 'clk-tick-mgr2@example.com', {
-    manager: true, name: 'Tina Ticked', permissions: ['staff.clock'],
+    manager: true, name: 'Tina Ticked', permissions: ['staff.clockBoard', 'staff.callins'],
   });
   const otherMgr = await addTeamMember(business, owner.id, 'clk-tick-mgr3@example.com', { manager: true, name: 'Omar Other' });
   const { weekday, minutes } = localNow(tz);
@@ -344,7 +344,7 @@ test('the tick: unticked manager and staff are refused; ticked manager works sta
   const listTry = await req(`${WF(business.id)}/call-in`, { cookie: plainCookie });
   assert.equal(listTry.status, 403);
   assert.equal(listTry.json.error, 'clock_admin_not_granted');
-  assert.equal(listTry.json.message, 'Only the owner, or a manager the owner has trusted with call-ins and clock corrections, can do that.');
+  assert.equal(listTry.json.message, 'Only the owner, or a manager the owner has trusted with call-ins, can do that.');
   const mgrTry = await req(`${WF(business.id)}/call-in/${staff.staffId}`, { method: 'POST', body: {}, cookie: plainCookie });
   assert.equal(mgrTry.status, 403);
   assert.equal(mgrTry.json.error, 'clock_admin_not_granted');
@@ -363,8 +363,9 @@ test('the tick brings its training: catalog, module map, and lesson requirements
   assert.ok(lesson, 'the lesson ships in the server catalog');
   assert.equal(lesson.module, 'workforce');
   assert.equal(lesson.track, 'manager');
-  assert.deepEqual(MODULE_BY_PERMISSION['staff.clock'], ['workforce']);
-  assert.deepEqual(LESSON_REQUIREMENTS['mgr-clock-callin'], ['staff.clock']);
+  assert.deepEqual(MODULE_BY_PERMISSION['staff.clockBoard'], ['workforce']);
+  assert.deepEqual(MODULE_BY_PERMISSION['staff.callins'], ['workforce']);
+  assert.deepEqual(LESSON_REQUIREMENTS['mgr-clock-callin'], ['staff.clockBoard', 'staff.callins']);
   assert.equal(TRAINING_LESSONS.length, 115, '115 since the eBay storefront batch (release 362, Nov 23, 2026) added 1 (owner-ebay-connect); 114 since the restaurant operations batch (Nov 23, 2026) added 4 (owner-restaurant-ops, staff-restaurant-daily, mgr-restaurant-invoices, mgr-restaurant-reports); the catalog grew by exactly the one lesson in the clock build (100); the staff documents build (Nov 21, 2026) added two more (owner-staff-documents, mgr-staff-documents), for 102; the restaurant corner build (Nov 23, 2026) added five more, for 107; the cross-store messages build (Nov 23, 2026) added three more (one per track), for 110');
 });
 
@@ -392,7 +393,7 @@ async function missedFixture(prefix) {
 test('missed clock-out: flagged on entries and payroll with the scheduled times; owner and ticked manager belled exactly once', async () => {
   const f = await missedFixture('clk-missed');
   const tickedMgr = await addTeamMember(f.business, f.owner.id, 'clk-missed-mgr@example.com', {
-    manager: true, name: 'Tina Ticked', permissions: ['staff.clock'],
+    manager: true, name: 'Tina Ticked', permissions: ['staff.clockBoard', 'staff.callins'],
   });
   void tickedMgr;
 
@@ -433,7 +434,7 @@ test('corrections: owner fixes the missed entry and the flag clears; validations
   const f = await missedFixture('clk-fix');
   const plainMgr = await addTeamMember(f.business, f.owner.id, 'clk-fix-mgr@example.com', { manager: true });
   const tickedMgr = await addTeamMember(f.business, f.owner.id, 'clk-fix-mgr2@example.com', {
-    manager: true, name: 'Tina Ticked', permissions: ['staff.clock'],
+    manager: true, name: 'Tina Ticked', permissions: ['staff.clockBoard', 'staff.callins'],
   });
   const { weekday, minutes } = localNow(f.tz);
   for (const m of [plainMgr, tickedMgr]) await setShift(f.business.id, m.staffId, weekday, minutes - 30, minutes + 180);
@@ -511,7 +512,7 @@ test('corrections: a break outside the entry range is refused; a valid break sav
 
 test('the Staff door hangs for a clock-tick holder (no dangling tick)', () => {
   const nav = fs.readFileSync(new URL('../../src/components/layout/navGroups.js', import.meta.url), 'utf8');
-  assert.match(nav, /anyPerm: \['staff\.roster', 'staff\.clock', 'staff\.documents'\]/, 'the Staff nav item carries the clock alternative (and, since the staff documents build, the documents tick — the documents area lives on this page)');
+  assert.match(nav, /anyPerm: \['staff\.roster', 'staff\.clockBoard', 'staff\.callins', 'staff\.documents'\]/, 'the Staff nav item carries the clock alternative (and, since the staff documents build, the documents tick — the documents area lives on this page)');
 });
 
 test('clock status: a profile-less owner gets the readable shape, not a refusal', async () => {

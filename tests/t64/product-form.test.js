@@ -345,13 +345,13 @@ test('strings: the seven format keys exist in English and in every one of the 52
     'importLib.field.format',
     'importLib.updateField.format',
   ];
-  assert.equal(Object.keys(en).length, 5812, 'the keyset stands at 5812');
+  assert.equal(Object.keys(en).length, 5818, 'the keyset stands at 5818');
   for (const key of keys) assert.ok(en[key], `en missing ${key}`);
   assert.equal(en['productForm.formatPaperback'], 'Paperback');
   assert.equal(en['productForm.formatHardcover'], 'Hardcover');
   assert.equal(en['productForm.addFormatOption'], 'Add a format…');
   for (const [code, dict] of Object.entries(LOCALES)) {
-    assert.equal(Object.keys(dict).length, 5812, `${code} keyset`);
+    assert.equal(Object.keys(dict).length, 5818, `${code} keyset`);
     for (const key of keys) assert.ok(dict[key], `${code} missing ${key}`);
   }
 });

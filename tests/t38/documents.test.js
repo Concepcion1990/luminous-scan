@@ -413,7 +413,7 @@ test('the Staff page door and the billing wipe know the documents build', () => 
   const here = path.dirname(fileURLToPath(import.meta.url));
   const nav = fs.readFileSync(path.join(here, '../../src/components/layout/navGroups.js'), 'utf8');
   assert.ok(
-    nav.includes("anyPerm: ['staff.roster', 'staff.clock', 'staff.documents']"),
+    nav.includes("anyPerm: ['staff.roster', 'staff.clockBoard', 'staff.callins', 'staff.documents']"),
     'a documents-only manager can reach the Staff page',
   );
   const billing = fs.readFileSync(path.join(here, '../../server/billing.js'), 'utf8');
