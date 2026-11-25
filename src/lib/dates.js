@@ -131,6 +131,21 @@ export function formatTimeOnly(value, code) {
   return intlFormat(value, { hour: 'numeric', minute: '2-digit' }, code);
 }
 
+/** A stored "HH:MM" wall time (a schedule's start_time/end_time —
+ * the database format, NOT an instant) in the locale's own clock
+ * convention ("6:00 PM" in en-US, "18:00" in de-DE). The stored
+ * string is parsed onto a fixed reference day and formatted
+ * through the same Intl path as every other time, so no locale
+ * is handed the raw 24-hour storage format. An unparseable
+ * value renders '' like its sibling helpers. Display only: the
+ * stored format and the <input type="time"> values never move. */
+export function formatHhmm(hhmm, code) {
+  const match = /^(\d{1,2}):(\d{2})(?::\d{2})?\s*$/.exec(String(hhmm ?? '').trim());
+  if (!match) return '';
+  const date = new Date(2026, 0, 1, Number(match[1]), Number(match[2]));
+  return intlFormat(date, { hour: 'numeric', minute: '2-digit' }, code);
+}
+
 /** Medium date + short time, the locale's own styles. */
 export function formatDateTime(value, code) {
   return intlFormat(value, { dateStyle: 'medium', timeStyle: 'short' }, code);

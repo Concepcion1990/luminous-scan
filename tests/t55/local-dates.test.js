@@ -29,6 +29,20 @@
  *    in src outside the locale dictionaries; Payroll no longer
  *    feeds a raw ISO slice into the period sentence;
  *  - zero new strings from this release: the keyset it froze at 5136 ×52 stands at 5308 since the restaurant batch (5333 since cross-store messages; 5723 since restaurant operations).
+ *
+ * The military-time fix (post-361 batch, Nov 24, 2026) adds:
+ *  - formatHhmm — a stored "HH:MM" wall time (a schedule's
+ *    start_time/end_time, the database format, not an instant)
+ *    rendered in the reader's own clock convention, closing
+ *    diagnosis §F: the Workforce "Today's shift" line and the
+ *    schedule read view interpolated the stored strings
+ *    verbatim, so a US reader saw "10:00 – 18:00";
+ *  - the wiring pins: both surfaces route through formatHhmm,
+ *    and the non-regression pair — the schedule save still
+ *    posts raw "HH:MM" and the <input type="time"> editors
+ *    still bind the raw stored values (display only moved).
+ *  Zero new strings from that fix too: the keyset stands at
+ *  5801 ×52 (the print family added the last 5).
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -48,6 +62,7 @@ const {
   formatShortDate,
   formatNumericDate,
   formatDayTime,
+  formatHhmm,
 } = await import('../../src/lib/dates.js');
 const { formatPrintedAt } = await import('../../src/lib/docStyle.js');
 const { setLocale, LOCALES } = await import('../../src/lib/i18n.js');
@@ -170,6 +185,38 @@ test('wiring: the named surfaces read through the helpers', () => {
   assert.doesNotMatch(payroll, /payroll\.stubs\.period', \{ start: String\(/);
   assert.match(payroll, /formatShortDate\(String\(run\.period_start\)/);
   assert.doesNotMatch(read('src/pages/PayStubPrint.jsx'), /start: String\(stub\.period_start\)/);
+});
+
+test('formatHhmm: a stored HH:MM wall time renders in the reader’s own clock convention', () => {
+  assert.equal(formatHhmm('10:00', 'en'), '10:00 AM');
+  assert.equal(formatHhmm('18:00', 'en'), '6:00 PM');
+  assert.equal(formatHhmm('00:30', 'en'), '12:30 AM');
+  // 24-hour locales stay 24-hour — the same code path, Intl decides.
+  assert.equal(formatHhmm('10:00', 'de-DE'), '10:00');
+  assert.equal(formatHhmm('18:00', 'de-DE'), '18:00');
+  assert.equal(formatHhmm('18:00', 'en-GB'), '18:00');
+  // The Mexico/Spain clock split holds for wall times too.
+  assert.equal(formatHhmm('18:00', 'es-MX'), '6:00 p.m.');
+  assert.equal(formatHhmm('18:00', 'es-ES'), '18:00');
+  // An unparseable value renders '' like its sibling helpers.
+  assert.equal(formatHhmm('', 'en'), '');
+  assert.equal(formatHhmm(null, 'en'), '');
+  assert.equal(formatHhmm('not-a-time', 'en'), '');
+});
+
+test('wiring: the Workforce shift lines route through formatHhmm; the stored format never moves', () => {
+  const workforce = read('src/pages/Workforce.jsx');
+  // The Time Clock card's "Today's shift" line (diagnosis §F1).
+  assert.match(workforce, /todayShift', \{ start: formatHhmm\(status\.today_shift\.start_time\), end: formatHhmm\(status\.today_shift\.end_time\) \}/);
+  assert.doesNotMatch(workforce, /todayShift', \{ start: status\.today_shift\.start_time/);
+  // The schedule read view's per-weekday pair (diagnosis §F2).
+  assert.match(workforce, /`\$\{formatHhmm\(value\.start_time\)\} – \$\{formatHhmm\(value\.end_time\)\}`/);
+  assert.doesNotMatch(workforce, /`\$\{value\.start_time\} – \$\{value\.end_time\}`/);
+  // Non-regression: the save still posts the raw stored format and
+  // the time editors still bind it — display only moved.
+  assert.match(workforce, /start_time: v\.start_time, end_time: v\.end_time/);
+  assert.match(workforce, /value=\{value\?\.start_time \|\| ''\}/);
+  assert.match(workforce, /value=\{value\?\.end_time \|\| ''\}/);
 });
 
 test('zero new strings from 358: the keyset stands at 5801 in every locale (5136 through 358; the restaurant batch added 172, cross-store messages 25, restaurant operations 390, eBay storefront 46, the photo door fix 8)', () => {

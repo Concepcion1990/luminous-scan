@@ -29,7 +29,7 @@ import {
   rewardValueText,
   voidReward,
 } from '@/lib/rewards';
-import { formatShortDate, formatShortDay, formatTimeOnly, toLocalDate } from '@/lib/dates';
+import { formatHhmm, formatShortDate, formatShortDay, formatTimeOnly, toLocalDate } from '@/lib/dates';
 import ProfileAvatar from '@/components/business/ProfileAvatar';
 import { buildVoiceWav, createPcmCapture } from '@/lib/voiceCapture';
 import {
@@ -207,7 +207,7 @@ function ClockTab({ businessId, ctx, peopleById, onEvent }) {
         )}
         {status.today_shift ? (
           <p className="text-sm">
-            {t('workforce.todayShift', { start: status.today_shift.start_time, end: status.today_shift.end_time })}
+            {t('workforce.todayShift', { start: formatHhmm(status.today_shift.start_time), end: formatHhmm(status.today_shift.end_time) })}
           </p>
         ) : (
           <p className="text-sm text-muted-foreground">{t('workforce.noShiftToday')}</p>
@@ -481,7 +481,7 @@ function ScheduleTab({ businessId, ctx, people }) {
                 </>
               ) : (
                 <span className="text-sm text-muted-foreground">
-                  {value ? `${value.start_time} – ${value.end_time}` : t('workforce.schedule.off')}
+                  {value ? `${formatHhmm(value.start_time)} – ${formatHhmm(value.end_time)}` : t('workforce.schedule.off')}
                 </span>
               )}
             </div>
