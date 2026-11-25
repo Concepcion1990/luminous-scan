@@ -86,8 +86,7 @@ export const STOCKHAVEN_TERMS_OF_SERVICE_VI = Object.freeze({
     {
       id: 'access-retention', title: '10. Thanh toán thất bại, quyền truy cập và lưu giữ',
       paragraphs: [
-        'Các khoản thanh toán định kỳ không thành công có thể dẫn đến thông báo, cơ hội cập nhật thông tin thanh toán, và các hạn chế đối với tính năng đã trả phí tuân theo bất kỳ thời gian ân hạn đã công bố nào và luật áp dụng.',
-        'Chúng tôi sẽ không coi một khoản thanh toán chưa xác minh là bằng chứng rằng một đăng ký đã gia hạn. Việc hủy bỏ hoặc thanh toán thất bại tự nó không ủy quyền việc xóa ngay lập tức dữ liệu doanh nghiệp của bạn. Sau khi thời gian ân hạn 15 ngày kết thúc, tài khoản của bạn và mọi thông tin của nó bị xóa vĩnh viễn và không thể khôi phục. Xem mục 6 để biết đầy đủ điều khoản thời gian ân hạn.',
+        'Nếu chúng tôi không thể thu một khoản thanh toán, đăng ký của bạn sẽ tiếp tục với quyền truy cập đầy đủ trong 14 ngày, kèm theo một lời nhắc trước thời hạn; nếu khoản thanh toán không được nhận, đăng ký sẽ bị hủy bỏ, tiếp theo là 15 ngày truy cập chỉ xem, sau đó không gian làm việc của bạn và dữ liệu của nó sẽ bị xóa.',
         'Khôi phục tài khoản, yêu cầu xóa và lưu giữ dữ liệu sẽ được điều chỉnh bởi các thủ tục bảo mật và lưu giữ tài khoản cuối cùng đã công bố.',
       ],
     },

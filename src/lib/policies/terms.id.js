@@ -86,8 +86,7 @@ export const STOCKHAVEN_TERMS_OF_SERVICE_ID = Object.freeze({
     {
       id: 'access-retention', title: '10. Kegagalan pembayaran, akses, dan retensi',
       paragraphs: [
-        'Pembayaran berulang yang tidak berhasil dapat mengakibatkan pemberitahuan, kesempatan untuk memperbarui informasi pembayaran, dan pembatasan pada fitur berbayar, tunduk pada masa tenggang yang diungkapkan dan hukum yang berlaku.',
-        'Kami tidak akan memperlakukan pembayaran yang belum terverifikasi sebagai bukti bahwa langganan telah diperpanjang. Pembatalan atau kegagalan pembayaran itu sendiri tidak mengizinkan penghapusan segera data bisnis Anda. Setelah masa tenggang 15 hari berakhir, akun Anda dan semua informasinya dihapus secara permanen dan tidak dapat dipulihkan. Lihat bagian 6 untuk syarat masa tenggang selengkapnya.',
+        'Jika kami tidak dapat menagih pembayaran, langganan Anda berlanjut dengan akses penuh selama 14 hari, dengan pengingat sebelum batas waktu; jika pembayaran tidak diterima, langganan dibatalkan, diikuti oleh 15 hari akses hanya-lihat, setelah itu ruang kerja Anda dan datanya dihapus.',
         'Pemulihan akun, permintaan penghapusan, dan retensi data akan diatur oleh prosedur privasi dan retensi akun final yang diterbitkan.',
       ],
     },

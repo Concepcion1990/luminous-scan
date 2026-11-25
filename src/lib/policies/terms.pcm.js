@@ -86,8 +86,7 @@ export const STOCKHAVEN_TERMS_OF_SERVICE_PCM = Object.freeze({
     {
       id: 'access-retention', title: '10. When payment fail, access and how long we keep data',
       paragraphs: [
-        'If recurring payment dem no succeed, e fit lead to notice, chance make you update your payment information, and restriction dem for paid feature dem, as any grace period wey dem don disclose and di law wey apply allow am.',
-        'We no go treat payment wey dem never verify as proof say subscription don renew. Cancellation or payment failure by imself no dey authorize immediate deletion of your business data. After di 15-day grace period finish, your account and all im information go delete permanently and dem no fit recover am. See section 6 for di full grace-period terms.',
+        'If we no fit collect payment, your subscription go continue with full access for 14 days, with reminder before di deadline; if dem no receive di payment, dem go cancel di subscription, follow by 15 days of view-only access, after which dem go delete your workspace and im data.',
         'How dem go recover account, request dem for deletion and how dem go keep data, na di final procedure dem for privacy and account retention wey dem publish go govern dem.',
       ],
     },

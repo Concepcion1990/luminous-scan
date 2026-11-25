@@ -86,8 +86,7 @@ export const STOCKHAVEN_TERMS_OF_SERVICE_PT_BR = Object.freeze({
     {
       id: 'access-retention', title: '10. Falhas de pagamento, acesso e retenção',
       paragraphs: [
-        'Pagamentos recorrentes sem sucesso podem resultar em aviso, uma oportunidade de atualizar as informações de pagamento e restrições aos recursos pagos, sujeitos a qualquer período de tolerância divulgado e à lei aplicável.',
-        'Não trataremos um pagamento não verificado como prova de que uma assinatura foi renovada. O cancelamento ou a falha de pagamento, por si só, não autoriza a exclusão imediata dos seus dados empresariais. Depois que o período de tolerância de 15 dias terminar, sua conta e todas as suas informações são excluídas permanentemente e não podem ser recuperadas. Veja a seção 6 para os termos completos do período de tolerância.',
+        'Se não conseguirmos cobrar um pagamento, sua assinatura continua com acesso completo por 14 dias, com um lembrete antes do prazo final; se o pagamento não for recebido, a assinatura é cancelada, seguida de 15 dias de acesso somente para leitura, após os quais seu espaço de trabalho e seus dados são excluídos.',
         'A recuperação de conta, as solicitações de exclusão e a retenção de dados serão regidas pelos procedimentos finais publicados de privacidade e retenção de conta.',
       ],
     },

@@ -26,7 +26,12 @@
  *   (3) the DIFF-AUDIT: applying the inverse of the sanctioned
  *       token set to every prose string of a variant reproduces
  *       the English source byte-for-byte — the editions differ
- *       ONLY in spelling/formatting tokens;
+ *       ONLY in spelling/formatting tokens. A string the variant
+ *       carries IDENTICALLY to its source passes as a zero-token
+ *       difference: the owner-approved Terms §10 payment sentence
+ *       (Wording 2, Nov 23, 2026) says 'cancelled' in the US base
+ *       itself, so all four editions carry that one sentence
+ *       verbatim — pinned positively below;
  *   (4) skeletons (section ids, counts, paragraph counts) and
  *       frozen furniture (id, version, status, owner, application)
  *       identical; entity name exact at every occurrence;
@@ -129,13 +134,28 @@ test('diff-audit: each edition differs from its source ONLY in sanctioned tokens
       // Prose: inverse-adapted variant == source, string by string.
       const vs = proseStrings(document); const ss = proseStrings(source);
       assert.equal(vs.length, ss.length, `${kind}/${code} prose string count`);
-      vs.forEach((s, i) => assert.equal(invert(s, cfg), ss[i], `${kind}/${code} prose string ${i} differs beyond sanctioned tokens`));
+      vs.forEach((s, i) => assert.equal(s === ss[i] ? s : invert(s, cfg), ss[i], `${kind}/${code} prose string ${i} differs beyond sanctioned tokens`));
       // Entity name exact at every occurrence.
       const inVariant = (JSON.stringify(document).match(/The Luminous Book Shop, LLC/g) || []).length;
       const inSource = (JSON.stringify(source).match(/The Luminous Book Shop, LLC/g) || []).length;
       assert.equal(inVariant, inSource, `${kind}/${code} entity occurrences`);
       assert.ok(inVariant > 0, `${kind}/${code} entity name missing`);
     }
+  }
+});
+
+test('the owner-approved Terms §10 sentence rides verbatim in the base and all four editions', () => {
+  const sentence = 'If we are unable to collect a payment, your subscription continues with full access for 14 days, with a reminder before the deadline; if payment is not received, the subscription is cancelled, followed by 15 days of view-only access, after which your workspace and its data are deleted.';
+  assert.ok(sentence.includes('cancelled'), "the approved sentence itself says 'cancelled'");
+  const baseSec = ENGLISH.terms.sections.find((s) => s.id === 'access-retention');
+  assert.equal(baseSec.paragraphs[0], sentence, 'US base §10 carries the approved sentence');
+  assert.equal(baseSec.paragraphs.length, 2, 'US base §10 is two paragraphs');
+  for (const code of VARIANTS) {
+    const { document } = getPolicyDocument('terms', code);
+    const sec = document.sections.find((s) => s.id === 'access-retention');
+    assert.equal(sec.paragraphs[0], sentence, `${code} §10 carries the sentence verbatim, 'cancelled' included`);
+    assert.equal(sec.paragraphs.length, 2, `${code} §10 is two paragraphs`);
+    assert.equal(document.version, '2026-11-24-v6', `${code} Terms mirrors the v6 bump`);
   }
 });
 

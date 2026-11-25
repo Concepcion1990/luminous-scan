@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { STOCKHAVEN_TERMS_OF_SERVICE as terms } from './stockhavenTermsOfService.js';
 import { STOCKHAVEN_SUBSCRIPTION_POLICY as policy } from './stockhavenSubscriptionPolicy.js';
-import { CANCELLATION_GRACE_PARAGRAPH, CANCELLATION_WIPE_SENTENCE } from './cancellationGrace.js';
+import { CANCELLATION_GRACE_PARAGRAPH } from './cancellationGrace.js';
 
 const body = terms.sections.flatMap(s => [s.title, ...s.paragraphs]).join('\n');
 const policyBody = policy.sections.flatMap(s => s.paragraphs).join('\n');
@@ -11,9 +11,9 @@ const read = file => fs.readFileSync(file, 'utf8');
 
 test('Terms are effective, name Stripe as the payment provider, and never name Wix', () => {
   assert.equal(terms.status, 'effective');
-  assert.equal(terms.version, '2026-11-09-v5');
+  assert.equal(terms.version, '2026-11-24-v6');
   assert.equal(terms.effectiveDate, 'November 9, 2026');
-  assert.equal(terms.lastReviewed, 'November 9, 2026');
+  assert.equal(terms.lastReviewed, 'November 24, 2026');
   // T1 twin: the "switching to Stripe" launchNotice is REMOVED entirely —
   // the twin IS Stripe from day one, so there is no switch to announce.
   assert.equal(terms.launchNotice, undefined, 'no launchNotice on the twin');
@@ -55,17 +55,22 @@ test('Trials cancel, refund and paid-through rules match canonical refund policy
   assert.match(policyBody, /within three days \(72 hours\)/i);
   assert.match(policyBody, /provider-confirmed paid-through date/i);
 });
-test('Terms state the canonical grace + wipe rule in section 6 and section 10 (audit findings 1/34)', () => {
+test('Terms state the canonical grace paragraph in section 6 and the approved payment sentence in section 10', () => {
   const cancel = terms.sections.find(s => s.id === 'cancellation');
   assert.ok(cancel, 'section 6 exists');
   assert.ok(cancel.paragraphs.join('\n').includes(CANCELLATION_GRACE_PARAGRAPH),
     'section 6 states the canonical grace paragraph verbatim');
   const retention = terms.sections.find(s => s.id === 'access-retention');
   assert.ok(retention, 'section 10 exists');
-  const retentionBody = retention.paragraphs.join('\n');
-  assert.ok(retentionBody.includes(CANCELLATION_WIPE_SENTENCE),
-    'section 10 states the wipe sentence');
-  assert.match(retentionBody, /See section 6 for the full grace-period terms/);
+  // The owner's approved Wording 2 (Nov 23, 2026) replaced section 10's
+  // old paragraphs 1-2 as ONE paragraph, verbatim — including its own
+  // word 'cancelled' in the US base. The account-recovery paragraph
+  // that followed them stays as paragraph 2.
+  assert.equal(retention.paragraphs.length, 2, 'section 10 carries two paragraphs');
+  assert.equal(retention.paragraphs[0],
+    'If we are unable to collect a payment, your subscription continues with full access for 14 days, with a reminder before the deadline; if payment is not received, the subscription is cancelled, followed by 15 days of view-only access, after which your workspace and its data are deleted.',
+    'section 10 states the owner-approved payment sentence verbatim');
+  assert.match(retention.paragraphs[1], /Account recovery, requests for deletion and data retention/);
   assert.doesNotMatch(body, /does not automatically delete your account/i);
   assert.doesNotMatch(body, /Your data is not deleted/i);
   assert.doesNotMatch(body, /Data is never deleted/i);
@@ -73,7 +78,6 @@ test('Terms state the canonical grace + wipe rule in section 6 and section 10 (a
 test('Customer records, same-subscription upgrades and launch limits are explicit', () => {
   assert.match(body, /SAME existing account and subscription/i);
   assert.match(body, /existing business identity, inventory, staff, history and trial records are preserved/i);
-  assert.match(body, /does not itself authorize the immediate deletion/i);
   assert.match(body, /customer.*retain ownership/i);
 });
 test('Public route is outside auth gate and the new page never charges', () => {

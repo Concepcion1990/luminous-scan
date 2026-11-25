@@ -86,8 +86,7 @@ export const STOCKHAVEN_TERMS_OF_SERVICE_TR = Object.freeze({
     {
       id: 'access-retention', title: '10. Ödeme başarısızlıkları, erişim ve saklama',
       paragraphs: [
-        'Başarısız yinelenen ödemeler, bildirime, ödeme bilgilerini güncelleme fırsatına ve açıklanan ek süreye ve geçerli yasaya tabi olarak ücretli özelliklerde kısıtlamalara yol açabilir.',
-        'Doğrulanmamış bir ödemeyi, bir aboneliğin yenilendiğinin kanıtı olarak ele almayacağız. İptal veya ödeme başarısızlığı tek başına işletme verilerinizin hemen silinmesine yetki vermez. 15 günlük ek süre bittikten sonra hesabınız ve tüm bilgileri kalıcı olarak silinir ve kurtarılamaz. Tam ek süre şartları için 6. bölüme bakınız.',
+        'Bir ödemeyi tahsil edemezsek, aboneliğiniz son tarihten önce bir hatırlatma ile birlikte 14 gün boyunca tam erişimle devam eder; ödeme alınmazsa, abonelik iptal edilir ve bunu 15 günlük salt görüntüleme erişimi izler, ardından çalışma alanınız ve verileri silinir.',
         'Hesap kurtarma, silme istekleri ve veri saklama, nihai yayımlanan gizlilik ve hesap saklama prosedürlerine göre düzenlenecektir.',
       ],
     },

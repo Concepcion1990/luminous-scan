@@ -86,8 +86,7 @@ export const STOCKHAVEN_TERMS_OF_SERVICE_TL = Object.freeze({
     {
       id: 'access-retention', title: '10. Mga pagkabigo sa bayad, access at pagpapanatili',
       paragraphs: [
-        'Ang mga hindi matagumpay na paulit-ulit na bayad ay maaaring magresulta sa abiso, pagkakataong i-update ang impormasyon ng bayad, at mga paghihigpit sa mga bayad na feature na napapailalim sa anumang ibinunyag na palugit at sa naaangkop na batas.',
-        'Hindi namin ituturing ang isang hindi na-verify na bayad bilang patunay na nag-renew ang isang subscription. Ang pagkansela o pagkabigo sa bayad ay hindi mismo nagpapahintulot sa agarang pagbura ng datos ng iyong negosyo. Pagkatapos matapos ang 15 araw na palugit, permanenteng mabubura ang iyong account at lahat ng impormasyon nito at hindi na mababawi. Tingnan ang seksyon 6 para sa buong mga tuntunin ng palugit.',
+        'Kung hindi kami makakolekta ng bayad, magpapatuloy ang iyong subscription nang may ganap na access sa loob ng 14 na araw, na may paalala bago ang takdang panahon; kung hindi matanggap ang bayad, makakansela ang subscription, na susundan ng 15 araw ng access na pagtingin lamang, pagkatapos nito ay mabubura ang iyong workspace at ang datos nito.',
         'Ang pagbawi ng account, mga kahilingan sa pagbura at pagpapanatili ng datos ay pamamahalaan ng mga pinal na inilathalang pamamaraan sa privacy at pagpapanatili ng account.',
       ],
     },

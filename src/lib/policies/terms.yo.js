@@ -86,8 +86,7 @@ export const STOCKHAVEN_TERMS_OF_SERVICE_YO = Object.freeze({
     {
       id: 'access-retention', title: '10. Àwọn ìkùnà ìsanwó, ìwọlé àti ìpamọ́',
       paragraphs: [
-        'Àwọn ìsanwó tí ń tún ṣẹlẹ̀ tí kò ṣàṣeyọrí lè yọrí sí ìfitónilétí, àǹfààní láti ṣe àtúnṣe ìsọfúnni ìsanwó, àti àwọn ìdènà lórí àwọn ẹ̀yà tí a sanwó fún ní ìbámu pẹ̀lú àkókò oore-ọ̀fẹ́ èyíkéyìí tí a ṣàfihàn àti òfin tí ó wúlò.',
-        'A kì yóò ka ìsanwó tí a kò jẹ́rìí sí gẹ́gẹ́ bí ẹ̀rí pé ìforúkọsílẹ̀ ti tún ṣe. Fífagilé tàbí ìkùnà ìsanwó fúnra rẹ̀ kò fúnni ní àṣẹ píparẹ́ dátà iṣẹ́ òwò rẹ lẹ́sẹ̀kẹsẹ̀. Lẹ́yìn tí àkókò oore-ọ̀fẹ́ ọjọ́ 15 bá parí, a ó pa àkọọ́lẹ̀ rẹ àti gbogbo ìsọfúnni rẹ̀ rẹ́ pátápátá, a kò sì le gba wọ́n padà. Wo apá 6 fún àwọn ìlànà oore-ọ̀fẹ́ ní kíkún.',
+        'Tí a kò bá le gba ìsanwó, ìforúkọsílẹ̀ rẹ ń bá a lọ pẹ̀lú ìwọlé kíkún fún ọjọ́ 14, pẹ̀lú ìránnilétí ṣáájú ọjọ́ ìparí; tí a kò bá gba ìsanwó náà, a ó fagilé ìforúkọsílẹ̀ náà, tí ọjọ́ 15 ti ìwọlé wíwo nìkan yóò tẹ̀lé, lẹ́yìn náà a ó pa àyè iṣẹ́ rẹ àti dátà rẹ̀ rẹ́.',
         'Ìgbàpadà àkọọ́lẹ̀, àwọn ìbéèrè fún píparẹ́ àti ìpamọ́ dátà ni àwọn ìlànà ìkọ̀kọ̀ àti ìpamọ́ àkọọ́lẹ̀ ìkẹyìn tí a tẹ̀ jáde yóò ṣàkóso.',
       ],
     },

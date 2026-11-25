@@ -86,8 +86,7 @@ export const STOCKHAVEN_TERMS_OF_SERVICE_IT = Object.freeze({
     {
       id: 'access-retention', title: '10. Mancati pagamenti, accesso e conservazione',
       paragraphs: [
-        'Pagamenti ricorrenti non riusciti possono comportare un avviso, un\'opportunità di aggiornare le informazioni di pagamento e restrizioni sulle funzionalità a pagamento, nel rispetto di qualsiasi periodo di tolleranza dichiarato e della legge applicabile.',
-        'Non tratteremo un pagamento non verificato come prova che un abbonamento si è rinnovato. L\'annullamento o il mancato pagamento non autorizzano di per sé l\'eliminazione immediata dei tuoi dati aziendali. Dopo la fine del periodo di tolleranza di 15 giorni, il tuo account e tutte le sue informazioni vengono eliminati in modo permanente e non possono essere recuperati. Consulta la sezione 6 per i termini completi del periodo di tolleranza.',
+        'Se non riusciamo a riscuotere un pagamento, il tuo abbonamento continua con accesso completo per 14 giorni, con un promemoria prima della scadenza; se il pagamento non viene ricevuto, l\'abbonamento viene annullato, seguito da 15 giorni di accesso in sola visualizzazione, dopo i quali il tuo spazio di lavoro e i suoi dati vengono eliminati.',
         'Il recupero dell\'account, le richieste di eliminazione e la conservazione dei dati saranno disciplinati dalle procedure finali pubblicate in materia di privacy e conservazione dell\'account.',
       ],
     },

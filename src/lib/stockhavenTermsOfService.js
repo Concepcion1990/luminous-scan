@@ -11,10 +11,10 @@
  */
 export const STOCKHAVEN_TERMS_OF_SERVICE = Object.freeze({
   id: 'stockhaven-website-terms-of-service',
-  version: '2026-11-09-v5',
+  version: '2026-11-24-v6',
   status: 'effective',
   effectiveDate: 'November 9, 2026',
-  lastReviewed: 'November 9, 2026',
+  lastReviewed: 'November 24, 2026',
   owner: 'The Luminous Book Shop, LLC',
   application: 'Luminous StockHaven',
   tagline: 'A home for everything your business carries.',
@@ -99,8 +99,7 @@ export const STOCKHAVEN_TERMS_OF_SERVICE = Object.freeze({
     {
       id: 'access-retention', title: '10. Payment failures, access and retention',
       paragraphs: [
-        'Unsuccessful recurring payments may result in notice, an opportunity to update payment information, and restrictions on paid features subject to any disclosed grace period and applicable law.',
-        'We will not treat an unverified payment as proof that a subscription has renewed. Cancellation or payment failure does not itself authorize the immediate deletion of your business data. After the 15-day grace period ends, your account and all its information are permanently deleted and cannot be recovered. See section 6 for the full grace-period terms.',
+        'If we are unable to collect a payment, your subscription continues with full access for 14 days, with a reminder before the deadline; if payment is not received, the subscription is cancelled, followed by 15 days of view-only access, after which your workspace and its data are deleted.',
         'Account recovery, requests for deletion and data retention will be governed by the final published privacy and account-retention procedures.',
       ],
     },

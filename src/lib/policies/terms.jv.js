@@ -86,8 +86,7 @@ export const STOCKHAVEN_TERMS_OF_SERVICE_JV = Object.freeze({
     {
       id: 'access-retention', title: '10. Kegagalan pembayaran, akses, lan panyimpenan',
       paragraphs: [
-        'Pembayaran ambalan ingkang mboten kasil saged ndadosaken wara-wara, kalodhangan kangge nganyari informasi pembayaran, lan watesan fitur ingkang dipunbayar adhedhasar wekdal luwih punapa kemawon ingkang dipunwedharaken lan hukum ingkang lumaku.',
-        'Kula mboten badhé nganggep pembayaran ingkang dereng kaverifikasi dados bukti bilih langganan sampun anyar. Pambatalan utawi kegagalan pembayaran piyambak mboten maringi idin pambusakan langsung data bisnis Panjenengan. Sasampunipun wekdal luwih 15 dinten pungkasan, akun Panjenengan lan sedaya informasinipun dipunbusak kanthi permanen lan mboten saged dipunwangsulaken. Pirsani perangan 6 kangge sarat wekdal luwih jangkep.',
+        'Menawi kula mboten saged narik pembayaran, langganan Panjenengan lajeng kanthi akses jangkep salebeting 14 dinten, kanthi pangeling sadèrèngipun wates wekdal; menawi pembayaran mboten dipuntampi, langganan dipunbatalaken, dipunlajengaken 15 dinten akses namung-mirsani, sasampunipun punika papan kerja Panjenengan lan datanipun dipunbusak.',
         'Pamulihan akun, panyuwunan pambusakan, lan panyimpenan data badhé dipunatur dening prosedur privasi lan panyimpenan akun pungkasan ingkang dipunterbitaken.',
       ],
     },

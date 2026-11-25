@@ -86,8 +86,7 @@ export const STOCKHAVEN_TERMS_OF_SERVICE_SW = Object.freeze({
     {
       id: 'access-retention', title: '10. Kushindwa kwa malipo, ufikiaji na uhifadhi',
       paragraphs: [
-        'Malipo yanayojirudia yasiyofanikiwa yanaweza kusababisha taarifa, fursa ya kusasisha taarifa za malipo, na vizuizi vya vipengele vilivyolipwa kwa kuzingatia kipindi chochote cha neema kilichofichuliwa na sheria inayotumika.',
-        'Hatutachukulia malipo ambayo hayajathibitishwa kama uthibitisho kwamba usajili umehuishwa. Kughairi au kushindwa kwa malipo yenyewe hakuidhinishi ufutaji wa mara moja wa data yako ya biashara. Baada ya kipindi cha neema cha siku 15 kuisha, akaunti yako na taarifa zake zote hufutwa kabisa na haziwezi kurejeshwa. Angalia sehemu ya 6 kwa masharti kamili ya kipindi cha neema.',
+        'Tukishindwa kukusanya malipo, usajili wako unaendelea na ufikiaji kamili kwa siku 14, ukiwa na ukumbusho kabla ya tarehe ya mwisho; ikiwa malipo hayakupokelewa, usajili unaghairiwa, na kufuatiwa na siku 15 za ufikiaji wa kuona tu, baada ya hapo nafasi yako ya kazi na data yake hufutwa.',
         'Urejeshaji wa akaunti, maombi ya ufutaji na uhifadhi wa data vitadhibitiwa na taratibu za mwisho zilizochapishwa za faragha na uhifadhi wa akaunti.',
       ],
     },

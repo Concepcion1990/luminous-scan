@@ -86,8 +86,7 @@ export const STOCKHAVEN_TERMS_OF_SERVICE_DE = Object.freeze({
     {
       id: 'access-retention', title: '10. Zahlungsausfälle, Zugang und Aufbewahrung',
       paragraphs: [
-        'Erfolglose wiederkehrende Zahlungen können zu einer Benachrichtigung, einer Gelegenheit zur Aktualisierung der Zahlungsinformationen und zu Einschränkungen der bezahlten Funktionen führen, vorbehaltlich einer offengelegten Kulanzzeit und des anwendbaren Rechts.',
-        'Wir behandeln eine unbestätigte Zahlung nicht als Nachweis, dass ein Abonnement verlängert wurde. Eine Kündigung oder ein Zahlungsausfall allein berechtigt nicht zur sofortigen Löschung Ihrer Geschäftsdaten. Nach Ende der 15-tägigen Kulanzzeit werden Ihr Konto und alle seine Informationen dauerhaft gelöscht und können nicht wiederhergestellt werden. Siehe Abschnitt 6 für die vollständigen Bedingungen der Kulanzzeit.',
+        'Wenn wir eine Zahlung nicht einziehen können, läuft Ihr Abonnement 14 Tage lang mit vollem Zugang weiter, mit einer Erinnerung vor der Frist; wenn die Zahlung nicht eingeht, wird das Abonnement gekündigt, gefolgt von 15 Tagen Zugang nur zur Ansicht, nach denen Ihr Arbeitsbereich und seine Daten gelöscht werden.',
         'Kontowiederherstellung, Löschanfragen und Datenaufbewahrung werden von den endgültigen veröffentlichten Verfahren zu Datenschutz und Kontoaufbewahrung geregelt.',
       ],
     },

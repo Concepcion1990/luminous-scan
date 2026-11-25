@@ -86,8 +86,7 @@ export const STOCKHAVEN_TERMS_OF_SERVICE_ES_US = Object.freeze({
     {
       id: 'access-retention', title: '10. Fallos de pago, acceso y retención',
       paragraphs: [
-        'Los pagos recurrentes no exitosos pueden dar lugar a un aviso, una oportunidad de actualizar la información de pago y restricciones en las funciones pagadas, sujeto a cualquier período de gracia divulgado y a la ley aplicable.',
-        'No trataremos un pago no verificado como prueba de que una suscripción se ha renovado. La cancelación o el fallo de pago no autoriza por sí mismo la eliminación inmediata de sus datos comerciales. Después de que termine el período de gracia de 15 días, su cuenta y toda su información se eliminan de forma permanente y no pueden recuperarse. Consulte la sección 6 para conocer los términos completos del período de gracia.',
+        'Si no podemos cobrar un pago, su suscripción continúa con acceso completo durante 14 días, con un recordatorio antes de la fecha límite; si el pago no se recibe, la suscripción se cancela, seguida de 15 días de acceso de solo lectura, después de los cuales su espacio de trabajo y sus datos se eliminan.',
         'La recuperación de la cuenta, las solicitudes de eliminación y la retención de datos se regirán por los procedimientos finales publicados de privacidad y retención de cuentas.',
       ],
     },

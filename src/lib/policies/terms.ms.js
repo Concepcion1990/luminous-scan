@@ -86,8 +86,7 @@ export const STOCKHAVEN_TERMS_OF_SERVICE_MS = Object.freeze({
     {
       id: 'access-retention', title: '10. Kegagalan bayaran, capaian dan pengekalan',
       paragraphs: [
-        'Bayaran berulang yang tidak berjaya mungkin mengakibatkan notis, peluang untuk mengemas kini maklumat bayaran, dan sekatan ke atas ciri berbayar tertakluk pada sebarang tempoh ihsan yang didedahkan dan undang-undang yang berkenaan.',
-        'Kami tidak akan menganggap bayaran yang tidak disahkan sebagai bukti bahawa langganan telah diperbaharui. Pembatalan atau kegagalan bayaran itu sendiri tidak membenarkan pemadaman serta-merta data perniagaan anda. Selepas tempoh ihsan 15 hari tamat, akaun anda dan semua maklumatnya dipadamkan secara kekal dan tidak boleh dipulihkan. Lihat bahagian 6 untuk terma tempoh ihsan penuh.',
+        'Jika kami tidak dapat mengutip bayaran, langganan anda berterusan dengan capaian penuh selama 14 hari, dengan peringatan sebelum tarikh akhir; jika bayaran tidak diterima, langganan dibatalkan, diikuti oleh 15 hari capaian lihat sahaja, selepas itu ruang kerja anda dan datanya dipadamkan.',
         'Pemulihan akaun, permintaan pemadaman dan pengekalan data akan dikawal oleh prosedur privasi dan pengekalan akaun akhir yang diterbitkan.',
       ],
     },

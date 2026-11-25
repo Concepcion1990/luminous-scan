@@ -86,8 +86,7 @@ export const STOCKHAVEN_TERMS_OF_SERVICE_HA = Object.freeze({
     {
       id: 'access-retention', title: '10. Rashin nasarar biya, dama da riƙewa',
       paragraphs: [
-        'Biyan maimaitawa da bai yi nasara ba na iya haifar da sanarwa, damar sabunta bayanan biya, da ƙuntatawa kan fasalolin da aka biya gwargwadon duk lokacin alheri da aka bayyana da doka mai aiki.',
-        'Ba za mu ɗauki biyan da ba a tabbatar ba a matsayin shaida cewa an sabunta rajista. Sokewa ko rashin nasarar biya da kansa ba ya ba da izinin share bayanan kasuwancinka nan take. Bayan lokacin alheri na kwana 15 ya ƙare, ana share asusunka da duk bayanansa har abada kuma ba za a iya dawo da su ba. Duba sashe na 6 don cikakkun sharuɗɗan lokacin alheri.',
+        'Idan ba mu iya karɓar biya ba, rajistarka tana ci gaba da cikakken dama na kwana 14, tare da tunatarwa kafin ranar ƙarshe; idan ba a karɓi biyan ba, ana soke rajistar, sannan kwana 15 na duba kawai, bayan haka ana share wurin aikinka da bayanansa.',
         'Maidowar asusu, buƙatun sharewa da riƙe bayanai za su kasance ƙarƙashin hanyoyin sirri da riƙe asusu na ƙarshe da aka buga.',
       ],
     },

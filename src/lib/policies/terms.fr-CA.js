@@ -86,8 +86,7 @@ export const STOCKHAVEN_TERMS_OF_SERVICE_FR_CA = Object.freeze({
     {
       id: 'access-retention', title: '10. Échecs de paiement, accès et conservation',
       paragraphs: [
-        'Les paiements récurrents non réussis peuvent entraîner un avis, une occasion de mettre à jour les renseignements de paiement, et des restrictions sur les fonctions payées, sous réserve de toute période de grâce divulguée et de la loi applicable.',
-        'Nous ne traiterons pas un paiement non vérifié comme une preuve qu’un abonnement s’est renouvelé. Une annulation ou un échec de paiement n’autorise pas en soi la suppression immédiate des données de votre entreprise. Après la fin de la période de grâce de 15 jours, votre compte et tous ses renseignements sont supprimés de façon permanente et ne peuvent pas être récupérés. Voir la section 6 pour les conditions complètes de la période de grâce.',
+        'Si nous ne parvenons pas à percevoir un paiement, votre abonnement se poursuit avec un accès complet pendant 14 jours, avec un rappel avant l’échéance; si le paiement n’est pas reçu, l’abonnement est annulé, suivi de 15 jours d’accès en lecture seule, après quoi votre espace de travail et ses données sont supprimés.',
         'La récupération de compte, les demandes de suppression et la conservation des données seront régies par les procédures finales publiées de confidentialité et de conservation des comptes.',
       ],
     },
