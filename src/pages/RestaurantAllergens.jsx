@@ -10,6 +10,7 @@ import { listRecipes } from '@/lib/recipes';
 import { ALLERGENS, dishAllergens, parseAllergens } from '@/lib/restaurantOps';
 import { parseUnitConversions } from '@/lib/recipes';
 import { t } from '@/lib/i18n';
+import RestaurantCrumbs from '@/components/restaurant/RestaurantCrumbs';
 
 /**
  * The allergen matrix (release 361, Nov 23, 2026): every
@@ -52,6 +53,7 @@ export default function RestaurantAllergens() {
 
   return (
     <div className="space-y-5">
+      <RestaurantCrumbs route="/restaurant/allergens" />
       <div>
         <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
           {t('restaurant.eyebrow')}

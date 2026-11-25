@@ -10,6 +10,7 @@ import { formatMoney } from '@/lib/inventory';
 import { listPars, guideRows } from '@/lib/recipes';
 import { poNumber } from '@/lib/purchasing';
 import { t } from '@/lib/i18n';
+import RestaurantCrumbs from '@/components/restaurant/RestaurantCrumbs';
 
 /**
  * Pars and the order guide (release 359, Nov 23, 2026). A par
@@ -131,6 +132,7 @@ export default function OrderGuide() {
 
   return (
     <div className="space-y-5">
+      <RestaurantCrumbs route="/restaurant/order-guide" />
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">

@@ -97,10 +97,19 @@ export const PLANS = {
         t('plansLib.includes.pricing'),
         t('plansLib.includes.sendPo'),
         t('plansLib.includes.documents'),
-        t('plansLib.businessIncludes.restaurant'),
-        t('plansLib.businessIncludes.orderGuide'),
-        t('plansLib.businessIncludes.restaurantOps'),
-        t('plansLib.businessIncludes.restaurantDaily'),
+        // The restaurant lines are grouped by shelf (release
+        // 377, Nov 25, 2026): the corner's Today page and six
+        // shelves are how the features are organized in the
+        // app, so the plan copy names them the same way — the
+        // same features as the four flat lines they replaced
+        // (359's corner + order guide, 361's operations and
+        // daily sets), nothing added, nothing dropped.
+        t('plansLib.businessIncludes.restaurantKitchen'),
+        t('plansLib.businessIncludes.restaurantStock'),
+        t('plansLib.businessIncludes.restaurantMoney'),
+        t('plansLib.businessIncludes.restaurantSafety'),
+        t('plansLib.businessIncludes.restaurantFloor'),
+        t('plansLib.businessIncludes.restaurantTeam'),
         t('plansLib.businessIncludes.xstoreMessages'),
       ];
     },
@@ -350,10 +359,12 @@ export const WELCOME_OPTIONS = [
         t('plansLib.includes.pricing'),
         t('plansLib.includes.sendPo'),
         t('plansLib.includes.documents'),
-        t('plansLib.businessIncludes.restaurant'),
-        t('plansLib.businessIncludes.orderGuide'),
-        t('plansLib.businessIncludes.restaurantOps'),
-        t('plansLib.businessIncludes.restaurantDaily'),
+        t('plansLib.businessIncludes.restaurantKitchen'),
+        t('plansLib.businessIncludes.restaurantStock'),
+        t('plansLib.businessIncludes.restaurantMoney'),
+        t('plansLib.businessIncludes.restaurantSafety'),
+        t('plansLib.businessIncludes.restaurantFloor'),
+        t('plansLib.businessIncludes.restaurantTeam'),
         t('plansLib.businessIncludes.xstoreMessages'),
       ];
     },
@@ -435,10 +446,12 @@ export const COMPARISON_ROWS = [
   { get label() { return t('plansLib.includes.languages'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
   { get label() { return t('plansLib.includes.branding'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
   { get label() { return t('plansLib.includes.crossStore'); }, mobile: false, essentials: false, business: true },
-  { get label() { return t('plansLib.businessIncludes.restaurant'); }, get mobile() { return t('plansLib.unset'); }, essentials: false, business: true },
-  { get label() { return t('plansLib.businessIncludes.orderGuide'); }, get mobile() { return t('plansLib.unset'); }, essentials: false, business: true },
-  { get label() { return t('plansLib.businessIncludes.restaurantOps'); }, get mobile() { return t('plansLib.unset'); }, essentials: false, business: true },
-  { get label() { return t('plansLib.businessIncludes.restaurantDaily'); }, get mobile() { return t('plansLib.unset'); }, essentials: false, business: true },
+  { get label() { return t('plansLib.businessIncludes.restaurantKitchen'); }, get mobile() { return t('plansLib.unset'); }, essentials: false, business: true },
+  { get label() { return t('plansLib.businessIncludes.restaurantStock'); }, get mobile() { return t('plansLib.unset'); }, essentials: false, business: true },
+  { get label() { return t('plansLib.businessIncludes.restaurantMoney'); }, get mobile() { return t('plansLib.unset'); }, essentials: false, business: true },
+  { get label() { return t('plansLib.businessIncludes.restaurantSafety'); }, get mobile() { return t('plansLib.unset'); }, essentials: false, business: true },
+  { get label() { return t('plansLib.businessIncludes.restaurantFloor'); }, get mobile() { return t('plansLib.unset'); }, essentials: false, business: true },
+  { get label() { return t('plansLib.businessIncludes.restaurantTeam'); }, get mobile() { return t('plansLib.unset'); }, essentials: false, business: true },
   { get label() { return t('plansLib.businessIncludes.xstoreMessages'); }, mobile: false, essentials: false, business: true },
   { get label() { return t('plansLib.includes.pricing'); }, mobile: false, essentials: false, business: true },
   { get label() { return t('plansLib.includes.sendPo'); }, mobile: false, essentials: false, business: true },

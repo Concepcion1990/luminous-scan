@@ -9,6 +9,7 @@ import { formatMoney } from '@/lib/inventory';
 import { listRecipes } from '@/lib/recipes';
 import { menuEngineering } from '@/lib/restaurantOps';
 import { t } from '@/lib/i18n';
+import RestaurantCrumbs from '@/components/restaurant/RestaurantCrumbs';
 
 /**
  * Menu engineering (release 361, Nov 23, 2026): every dish
@@ -50,6 +51,7 @@ export default function RestaurantMenu() {
 
   return (
     <div className="space-y-5">
+      <RestaurantCrumbs route="/restaurant/menu" />
       <div>
         <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
           {t('restaurant.eyebrow')}

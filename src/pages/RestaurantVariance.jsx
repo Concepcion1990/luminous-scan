@@ -7,6 +7,7 @@ import { useBusiness } from '@/hooks/useBusiness';
 import { scoped } from '@/lib/scoped';
 import { varianceRows } from '@/lib/restaurantOps';
 import { t } from '@/lib/i18n';
+import RestaurantCrumbs from '@/components/restaurant/RestaurantCrumbs';
 
 /**
  * Variance (release 361, Nov 23, 2026): per product, what
@@ -42,6 +43,7 @@ export default function RestaurantVariance() {
 
   return (
     <div className="space-y-5">
+      <RestaurantCrumbs route="/restaurant/variance" />
       <div>
         <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
           {t('restaurant.eyebrow')}

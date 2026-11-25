@@ -11,6 +11,7 @@ import { resolveDocStyle } from '@/lib/docStyle';
 import { formatShortDate } from '@/lib/dates';
 import { daysUntilExpiry, expiringSoon, fefoOrder } from '@/lib/restaurantOps';
 import { t } from '@/lib/i18n';
+import RestaurantCrumbs from '@/components/restaurant/RestaurantCrumbs';
 
 /**
  * Expiry & FEFO (release 361, Nov 23, 2026): stock batches
@@ -89,6 +90,7 @@ export default function RestaurantExpiry() {
 
   return (
     <div className="space-y-5">
+      <RestaurantCrumbs route="/restaurant/expiry" />
       <div className="no-print flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">

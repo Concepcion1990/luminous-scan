@@ -11,6 +11,7 @@ import { EXPORTS, exportDataset } from '@/lib/exportData';
 import { formatMoney } from '@/lib/inventory';
 import { listRecipes } from '@/lib/recipes';
 import { t } from '@/lib/i18n';
+import RestaurantCrumbs from '@/components/restaurant/RestaurantCrumbs';
 
 /**
  * The accounting export (release 361, Nov 23, 2026): one
@@ -134,6 +135,7 @@ export default function RestaurantLedger() {
 
   return (
     <div className="space-y-5">
+      <RestaurantCrumbs route="/restaurant/ledger" />
       <div>
         <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
           {t('restaurant.eyebrow')}

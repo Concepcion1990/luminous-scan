@@ -30,17 +30,6 @@ import {
   CreditCard,
   Inbox,
   Receipt,
-  FileText,
-  Trash2,
-  Wheat,
-  Thermometer,
-  Ban,
-  ArrowRightLeft,
-  UtensilsCrossed,
-  TrendingUp,
-  Scale,
-  NotebookPen,
-  BookOpen,
 } from 'lucide-react';
 
 /**
@@ -105,30 +94,24 @@ export const NAV_GROUPS = [
     ],
   },
   // The restaurant corner (the owner's ruling, Nov 21, 2026):
-  // its own subheading, Business only. Both entries carry the
+  // its own subheading, Business only. The entry carries the
   // restaurant feature, so on Essentials the group is empty
   // and never renders — the corner leaves no trace. Its pages
   // read the shared app's products, locations, suppliers and
   // purchase orders — no silo. Looking is free for every
-  // member (no perm on either door); the doing splits inside
+  // member (no perm on the door); the doing splits inside
   // the pages on the owner's three ticks.
+  // Release 377 (Nov 25, 2026): the corner is a Today page
+  // over six shelves, and the menu carries ONE door into it —
+  // the fourteen flat entries the corner grew in 359/361 now
+  // live on the shelves inside the section (Today → shelf →
+  // feature, ≤2 taps), per the owner's anti-clutter rules:
+  // nothing new lands on the app's main navigation, and all
+  // growth stays inside the Restaurant section.
   {
     label: 'Restaurant', labelKey: 'nav.group.restaurant',
     items: [
-      { to: '/restaurant', label: 'Recipes & dishes', labelKey: 'nav.recipes', icon: ChefHat, feature: 'restaurant' },
-      { to: '/restaurant/order-guide', label: 'Order guide', labelKey: 'nav.orderGuide', icon: ClipboardList, feature: 'restaurant' },
-      { to: '/restaurant/invoices', label: 'Supplier invoices', labelKey: 'nav.invoices', icon: FileText, feature: 'restaurant' },
-      { to: '/restaurant/waste', label: 'Waste log', labelKey: 'nav.waste', icon: Trash2, feature: 'restaurant' },
-      { to: '/restaurant/expiry', label: 'Expiry & dates', labelKey: 'nav.expiry', icon: CalendarClock, feature: 'restaurant' },
-      { to: '/restaurant/allergens', label: 'Allergens', labelKey: 'nav.allergens', icon: Wheat, feature: 'restaurant' },
-      { to: '/restaurant/temp-logs', label: 'Temperature logs', labelKey: 'nav.tempLogs', icon: Thermometer, feature: 'restaurant' },
-      { to: '/restaurant/86', label: '86 board', labelKey: 'nav.eightySix', icon: Ban, feature: 'restaurant' },
-      { to: '/restaurant/transfers', label: 'Transfers', labelKey: 'nav.transfers', icon: ArrowRightLeft, feature: 'restaurant' },
-      { to: '/restaurant/staff-meals', label: 'Staff meals', labelKey: 'nav.staffMeals', icon: UtensilsCrossed, feature: 'restaurant' },
-      { to: '/restaurant/menu', label: 'Menu engineering', labelKey: 'nav.menu', icon: TrendingUp, feature: 'restaurant' },
-      { to: '/restaurant/variance', label: 'Variance', labelKey: 'nav.variance', icon: Scale, feature: 'restaurant' },
-      { to: '/restaurant/prep', label: 'Prep sheets', labelKey: 'nav.prep', icon: NotebookPen, feature: 'restaurant' },
-      { to: '/restaurant/ledger', label: 'Accounting export', labelKey: 'nav.ledger', icon: BookOpen, feature: 'restaurant' },
+      { to: '/restaurant', label: 'Restaurant', labelKey: 'nav.restaurant', icon: ChefHat, feature: 'restaurant' },
     ],
   },
   {

@@ -8,6 +8,7 @@ import { scoped } from '@/lib/scoped';
 import { formatMoney } from '@/lib/inventory';
 import { formatShortDate } from '@/lib/dates';
 import { t } from '@/lib/i18n';
+import RestaurantCrumbs from '@/components/restaurant/RestaurantCrumbs';
 
 /**
  * The waste log (release 361, Nov 23, 2026): everything the
@@ -48,6 +49,7 @@ export default function RestaurantWaste() {
 
   return (
     <div className="space-y-5">
+      <RestaurantCrumbs route="/restaurant/waste" />
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">

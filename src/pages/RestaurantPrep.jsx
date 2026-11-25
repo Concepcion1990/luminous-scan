@@ -12,6 +12,7 @@ import { formatDateTime } from '@/lib/dates';
 import { listPars, listRecipes } from '@/lib/recipes';
 import { prepRows } from '@/lib/restaurantOps';
 import { t } from '@/lib/i18n';
+import RestaurantCrumbs from '@/components/restaurant/RestaurantCrumbs';
 
 /**
  * Prep (release 361, Nov 23, 2026). Two halves: batch
@@ -76,6 +77,9 @@ export default function RestaurantPrep() {
 
   return (
     <div className="space-y-6">
+      <div className="no-print">
+        <RestaurantCrumbs route="/restaurant/prep" />
+      </div>
       <div className="no-print flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">

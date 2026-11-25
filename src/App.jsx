@@ -29,6 +29,8 @@ import InventoryCategories from '@/pages/InventoryCategories';
 import Categories from '@/pages/Categories';
 import Materials from '@/pages/Materials';
 import Restaurant from '@/pages/Restaurant';
+import RestaurantRecipes from '@/pages/RestaurantRecipes';
+import RestaurantShelf from '@/pages/RestaurantShelf';
 import RecipeDetail from '@/pages/RecipeDetail';
 import OrderGuide from '@/pages/OrderGuide';
 import RestaurantInvoices from '@/pages/RestaurantInvoices';
@@ -167,10 +169,74 @@ const AuthenticatedApp = () => {
             }
           />
           <Route
+            path="/restaurant/recipes"
+            element={
+              <PlanRedirect feature="restaurant">
+                <RestaurantRecipes />
+              </PlanRedirect>
+            }
+          />
+          <Route
             path="/restaurant/recipes/:id"
             element={
               <PlanRedirect feature="restaurant">
                 <RecipeDetail />
+              </PlanRedirect>
+            }
+          />
+          <Route
+            path="/restaurant/kitchen"
+            element={
+              <PlanRedirect feature="restaurant">
+                <RestaurantShelf shelfId="kitchen" />
+              </PlanRedirect>
+            }
+          />
+          <Route
+            path="/restaurant/stock"
+            element={
+              <PlanRedirect feature="restaurant">
+                <RestaurantShelf shelfId="stock" />
+              </PlanRedirect>
+            }
+          />
+          <Route
+            path="/restaurant/money"
+            element={
+              <PlanRedirect feature="restaurant">
+                <RestaurantShelf shelfId="money" />
+              </PlanRedirect>
+            }
+          />
+          <Route
+            path="/restaurant/safety"
+            element={
+              <PlanRedirect feature="restaurant">
+                <RestaurantShelf shelfId="safety" />
+              </PlanRedirect>
+            }
+          />
+          <Route
+            path="/restaurant/floor"
+            element={
+              <PlanRedirect feature="restaurant">
+                <RestaurantShelf shelfId="floor" />
+              </PlanRedirect>
+            }
+          />
+          <Route
+            path="/restaurant/team"
+            element={
+              <PlanRedirect feature="restaurant">
+                <RestaurantShelf shelfId="team" />
+              </PlanRedirect>
+            }
+          />
+          <Route
+            path="/restaurant/locations"
+            element={
+              <PlanRedirect feature="restaurant">
+                <RestaurantShelf shelfId="locations" />
               </PlanRedirect>
             }
           />

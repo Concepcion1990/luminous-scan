@@ -27,6 +27,7 @@ import { resolveDocStyle } from '@/lib/docStyle';
 import { formatDateTime } from '@/lib/dates';
 import { recordMovement } from '@/lib/inventory';
 import { t } from '@/lib/i18n';
+import RestaurantCrumbs from '@/components/restaurant/RestaurantCrumbs';
 
 /**
  * Transfer documents (release 361, Nov 23, 2026): the
@@ -161,6 +162,7 @@ export default function RestaurantTransfers() {
 
   return (
     <div className="space-y-5">
+      <RestaurantCrumbs route="/restaurant/transfers" />
       <div className="no-print flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">

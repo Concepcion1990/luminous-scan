@@ -12,6 +12,7 @@ import { formatMoney } from '@/lib/inventory';
 import { listRecipes, recipeCostPerMake, recipeCostPerUnit, yieldQtyOf } from '@/lib/recipes';
 import { resolveDocStyle } from '@/lib/docStyle';
 import { t } from '@/lib/i18n';
+import RestaurantCrumbs from '@/components/restaurant/RestaurantCrumbs';
 
 /**
  * One dish, whole (release 359, Nov 23, 2026): its photo,
@@ -128,6 +129,7 @@ export default function RecipeDetail() {
 
   return (
     <div className="space-y-5">
+      <RestaurantCrumbs route="/restaurant/recipes" />
       <div className="no-print flex flex-wrap items-center justify-between gap-3">
         <Button asChild variant="ghost" size="sm">
           <Link to="/restaurant"><ArrowLeft className="mr-1.5 h-4 w-4" /> {t('recipes.backToList')}</Link>
