@@ -29,16 +29,31 @@ import { config } from './config.js';
 import { emailStringsFor, fillEmail } from './emailStrings.js';
 
 /**
- * The language an account reads in, resolved server-side: the
- * language of the first business the account owns, else of any
- * business it belongs to, else null (callers fall back to the
- * request's language, then English). There is no per-user language
- * column — the reader's chosen language lives on their business
- * (it is the language they picked at signup and in Settings).
+ * The language an account reads in, resolved server-side. The
+ * person's own language home comes first (users.language,
+ * migration 052 — the language they picked, carried on the
+ * account itself). Until an account is seeded, the fallbacks
+ * mirror the shell's seeding order: the business the person is
+ * standing in (their active business), then the first business
+ * the account owns, then any business it belongs to, else null
+ * (callers fall back to the request's language, then English).
  */
 export async function resolveAccountLanguage(pool, userId) {
   if (!pool || !userId) return null;
   try {
+    const account = await pool.query(
+      'SELECT language, active_business_id FROM users WHERE id = $1',
+      [userId],
+    );
+    if (account.rows[0]?.language) return account.rows[0].language;
+    const activeBusinessId = account.rows[0]?.active_business_id;
+    if (activeBusinessId) {
+      const active = await pool.query(
+        'SELECT language FROM businesses WHERE id = $1',
+        [activeBusinessId],
+      );
+      if (active.rows[0]?.language) return active.rows[0].language;
+    }
     const owned = await pool.query(
       'SELECT language FROM businesses WHERE owner_id = $1 ORDER BY created_at ASC LIMIT 1',
       [userId],

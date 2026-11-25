@@ -149,21 +149,30 @@ test('registration: the create call carries the chosen locale', () => {
   );
 });
 
-test('sign-in: a door pick wins and becomes the saved language; with no pick, the saved language governs (Nov 18, 2026)', () => {
+test('sign-in: a door pick wins and becomes the saved language; with no pick, the saved language governs (Nov 18, 2026; account home Nov 24, 2026)', () => {
   // Supersedes the Nov 14 door rule. That rule restored the
   // workspace's saved language over whatever the visitor picked at
   // the door — and the owner's hand-test (Nov 18, 2026) showed it
   // stranding a Spanish reader in an English app: she picked
   // Español on the login page, signed in, and everything opened in
-  // English. Her reversal: an explicit door pick WINS at sign-in,
-  // and for the business's owner it is written into the business
-  // record, so the pick BECOMES the saved language and the two
-  // never disagree again. With no door pick, the saved language
-  // still governs sign-in, exactly as Nov 14 wanted. The public
-  // picker's choice still seeds a NEW account at signup (above).
+  // English. Her reversal: an explicit door pick WINS at sign-in
+  // and becomes the saved language, so the two never disagree
+  // again. With no door pick, the saved language still governs
+  // sign-in, exactly as Nov 14 wanted. The public picker's choice
+  // still seeds a NEW account at signup (above).
+  //
+  // Nov 24, 2026 (the language carry fix): the saved language's
+  // home moved from the entered business's record to the ACCOUNT
+  // record (users.language, migration 052) — under the Nov 18
+  // shape the saved language lived per business, so switching
+  // businesses flipped the whole app (her Nov 23 catch). The pick
+  // now writes to /api/auth/me; for the active business's owner it
+  // still mirrors into that business's record so its documents
+  // follow; and with no pick the ACCOUNT's language governs —
+  // the entered business's language is never applied.
   const layout = read('src/components/Layout.jsx');
   assert.ok(
-    layout.includes('if (!profile || !activeId) return;'),
+    layout.includes('if (!user || !profile || !activeId) return;'),
     'Layout applies a language before the workspace has loaded',
   );
   assert.ok(
@@ -171,16 +180,20 @@ test('sign-in: a door pick wins and becomes the saved language; with no pick, th
     'Layout does not read the door pick',
   );
   assert.ok(
-    layout.includes('if (pick && pick !== businessCode) {'),
-    'Layout does not let a door pick win over the saved language',
+    layout.includes("apiRequest('/api/auth/me', {"),
+    'Layout does not save the winning pick to the account record',
   );
   assert.ok(
     layout.includes('body: { language: pick }'),
-    'Layout does not save the winning pick into the business record',
+    'Layout does not save the winning pick',
   );
   assert.ok(
-    layout.includes('if (businessCode !== getLocale()) setLocale(businessCode);'),
-    'Layout does not restore the saved language when there is no door pick',
+    layout.includes('if (accountCode !== getLocale()) setLocale(accountCode);'),
+    'Layout does not restore the account language when there is no door pick',
+  );
+  assert.ok(
+    !layout.includes('setLocale(businessCode)'),
+    'Layout applies the entered business language over the account',
   );
 });
 

@@ -381,8 +381,16 @@ function BossSettings() {
   // single-field PATCH carrying only that one field — so the
   // switch neither saves nor discards any other unsaved edit on
   // this form; everything else keeps the Save / Reset behavior.
-  // The persisted value lands in the workspace profile, so Reset
-  // to saved values keeps it too (it IS a saved value now).
+  // The persisted value lands in the workspace, so Reset to
+  // saved values keeps it too (it IS a saved value now).
+  //
+  // The two paths land in different homes (Nov 24, 2026):
+  // currency belongs to the business, so it PATCHes the business
+  // record as always. Language belongs to the PERSON, so it
+  // PATCHes the account record (users.language, migration 052) —
+  // the write that decides success — and then mirrors into this
+  // business's record, best-effort, so the business's own
+  // documents keep speaking the language its owner reads in.
   const applyPreference = async (key, value) => {
     // For language, the value being replaced is the app's LIVE
     // locale, not the form's copy — the copy can lag behind it
@@ -392,10 +400,25 @@ function BossSettings() {
     setValues((current) => ({ ...current, [key]: value }));
     if (key === 'language') setLocale(value);
     try {
-      await apiRequest(`/api/businesses/${encodeURIComponent(activeId)}`, {
-        method: 'PATCH',
-        body: { [key]: value },
-      });
+      if (key === 'language') {
+        await apiRequest('/api/auth/me', {
+          method: 'PATCH',
+          body: { language: value },
+        });
+        await apiRequest(`/api/businesses/${encodeURIComponent(activeId)}`, {
+          method: 'PATCH',
+          body: { [key]: value },
+        }).catch(() => {
+          // Best-effort mirror (a member cannot rewrite the
+          // business record, and their language is fully theirs
+          // without it); the account write above already landed.
+        });
+      } else {
+        await apiRequest(`/api/businesses/${encodeURIComponent(activeId)}`, {
+          method: 'PATCH',
+          body: { [key]: value },
+        });
+      }
       await queryClient.invalidateQueries({ queryKey: ['workspace'] });
     } catch (err) {
       setValues((current) => ({ ...current, [key]: previous }));

@@ -6,7 +6,7 @@
  *   POST /api/auth/*      register, verify, resend-otp, login, logout,
  *                         forgot-password, reset-password (server/authRoutes.js)
  *   GET  /api/auth/me     the signed-in user, or 401.
- *   PATCH /api/auth/me    switch the active business (membership-checked).
+ *   PATCH /api/auth/me    switch the active business (membership-checked) / set the account language.
  *   GET  /api/businesses  the caller's businesses.
  *   POST /api/businesses  create a business (Essentials 1-business cap).
  *   POST /api/businesses/:id/switch  switch the active business.

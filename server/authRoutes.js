@@ -7,7 +7,7 @@
  *   POST /api/auth/login           { email, password } -> 200 + session cookie
  *   POST /api/auth/logout          -> 200, session revoked, cookie cleared
  *   GET  /api/auth/me              -> 200 user | 401
- *   PATCH /api/auth/me             { active_business_id } -> 200 user
+ *   PATCH /api/auth/me             { active_business_id?, language? } -> 200 user
  *   POST /api/auth/forgot-password { email }           -> 200 (always; no enumeration)
  *   POST /api/auth/reset-password  { resetToken, newPassword } -> 200
  *   GET  /api/businesses           -> 200 { items: [...] }
@@ -126,6 +126,10 @@ function publicUser(row) {
     email: row.email,
     email_verified: row.email_verified,
     active_business_id: row.active_business_id ?? null,
+    // The person's own language (migration 052): the account's
+    // server-side language home. Null until seeded — the shell
+    // seeds it from the business the person is standing in.
+    language: row.language ?? null,
     created_date: row.created_at,
   };
 }
@@ -541,11 +545,31 @@ export function createAuthRouter({ getPool }) {
         if (!user) {
           const passwordHash = await hashPassword(password);
           const id = crypto.randomUUID();
+          // The account is born speaking the language it was
+          // created in (owner's rule): the request language the
+          // client already sends — the same value the verification
+          // email below speaks — is stamped onto the account row
+          // (migration 052), so the person's language home exists
+          // from their first moment, on every device.
           const inserted = await client.query(
-            `INSERT INTO users (id, email, password_hash) VALUES ($1, $2, $3) RETURNING *`,
-            [id, email, passwordHash],
+            `INSERT INTO users (id, email, password_hash, language) VALUES ($1, $2, $3, $4) RETURNING *`,
+            [id, email, passwordHash, requestLanguage(req)],
           );
           user = inserted.rows[0];
+        }
+        // Re-registering an unverified account whose language was
+        // never stamped (created before the account home existed)
+        // is seeded the same way; a language already on the row is
+        // the person's and is never overwritten here.
+        if (user && !user.language) {
+          const bornLanguage = requestLanguage(req);
+          if (bornLanguage) {
+            const stamped = await client.query(
+              'UPDATE users SET language = $1, updated_at = NOW() WHERE id = $2 RETURNING *',
+              [bornLanguage, user.id],
+            );
+            user = stamped.rows[0];
+          }
         }
         // Re-registering an unverified account just (re)issues its code.
         const { code } = await issueOtp(client, user.id, 'verify');
@@ -811,19 +835,43 @@ export function createAuthRouter({ getPool }) {
 
   router.patch('/auth/me', authed, async (req, res) => {
     const pool = getPool();
-    const activeBusinessId = req.body?.active_business_id ?? null;
-    if (activeBusinessId !== null) {
-      const { rows } = await pool.query(
-        `SELECT 1 FROM business_memberships WHERE business_id = $1 AND user_id = $2`,
-        [activeBusinessId, req.user.id],
-      );
-      if (!rows.length) {
-        return res.status(403).json({ error: 'not_a_member', message: 'You are not a member of that business.' });
+    const body = req.body || {};
+    // Each field rides only when the caller actually sent it, so
+    // the two writers of this route — the business switcher and
+    // the language home — can never stomp each other: a language
+    // write leaves the active business exactly where it was, and
+    // a switch leaves the language alone.
+    const sets = [];
+    const params = [];
+    if (Object.prototype.hasOwnProperty.call(body, 'active_business_id')) {
+      const activeBusinessId = body.active_business_id ?? null;
+      if (activeBusinessId !== null) {
+        const { rows } = await pool.query(
+          `SELECT 1 FROM business_memberships WHERE business_id = $1 AND user_id = $2`,
+          [activeBusinessId, req.user.id],
+        );
+        if (!rows.length) {
+          return res.status(403).json({ error: 'not_a_member', message: 'You are not a member of that business.' });
+        }
       }
+      params.push(activeBusinessId);
+      sets.push(`active_business_id = $${params.length}`);
     }
+    if (Object.prototype.hasOwnProperty.call(body, 'language')) {
+      // The person's own language (migration 052), validated
+      // against the same allowlist the business record uses.
+      const language = String(body.language || '').trim();
+      if (!SUPPORTED_LANGUAGES.includes(language)) {
+        return res.status(400).json({ error: 'unsupported_language', message: 'That language is not available yet.' });
+      }
+      params.push(language);
+      sets.push(`language = $${params.length}`);
+    }
+    if (!sets.length) return res.json(publicUser(req.user));
+    params.push(req.user.id);
     const updated = await pool.query(
-      'UPDATE users SET active_business_id = $1, updated_at = NOW() WHERE id = $2 RETURNING *',
-      [activeBusinessId, req.user.id],
+      `UPDATE users SET ${sets.join(', ')}, updated_at = NOW() WHERE id = $${params.length} RETURNING *`,
+      params,
     );
     return res.json(publicUser(updated.rows[0]));
   });

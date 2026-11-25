@@ -16,14 +16,20 @@
  *     Login and the policy pages) applies the visitor's choice
  *     immediately and marks it as a door pick (`stockhaven.localePick`).
  *   - At sign-in, Layout reconciles once: a door pick WINS over the
- *     business's older stored language and, for the business's
- *     owner, is written into the business record — the account's one
+ *     account's stored language and is written into the ACCOUNT
+ *     record (`users.language`, migration 052) — the person's one
  *     server-side language home — so the next sign-in on any device
- *     opens in it. With no door pick, the business record's language
- *     (`language` on the business — Settings → Details) applies.
+ *     opens in it, in every business they enter. With no door pick,
+ *     the account record's language applies; an account that has
+ *     never been seeded is seeded once, from the business the
+ *     person is standing in. The business record keeps its own
+ *     `language` for that business's documents, and the owner's
+ *     picks mirror into the active business's record so its
+ *     documents follow — but a business switch never moves the
+ *     person's language again.
  *   - Inside the app, Settings' language select applies immediately
  *     and saves itself with a single-field PATCH (Settings.jsx
- *     applyPreference), which lands in the same business record.
+ *     applyPreference) to the same account record.
  *
  * The last applied locale is mirrored to localStorage
  * (`stockhaven.locale`) so a returning visitor never sees an English

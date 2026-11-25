@@ -1,0 +1,29 @@
+-- 052_account_language.sql — the language carry fix
+-- (post-361 fix batch, Nov 24, 2026):
+--
+-- Language belongs to the PERSON, not to the room they are
+-- standing in (the owner's standing rule). Until now the app's
+-- only server-side language home was businesses.language, so
+-- an owner with several businesses saw the app change language
+-- on every business switch — Spanish in the business where she
+-- picked it, English in the ones born earlier.
+--
+--   users.language — the account's own language: the person's
+--     one server-side home. The shell sources the session
+--     locale from it; account-addressed mail resolves from it.
+--
+-- NULLABLE on purpose, with NO default and NO backfill: NULL
+-- means "this account has not been seeded yet". Seeding is a
+-- client moment, not a data rewrite — on the first load after
+-- this migration, the shell seeds the account from the
+-- business the person is standing in (their active context),
+-- never from their oldest business. Server-side readers use
+-- the same order: account, then the active business, then
+-- the oldest owned business, then any membership.
+--
+-- The per-business column stays exactly as it is: a business's
+-- own documents (invoices, purchase orders, labels, reports)
+-- legitimately render in that business's language. It simply
+-- stops governing the signed-in person's interface.
+
+ALTER TABLE users ADD COLUMN IF NOT EXISTS language TEXT;

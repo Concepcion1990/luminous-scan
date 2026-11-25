@@ -51,7 +51,7 @@
  * them unchanged — no store machinery is invented here.
  */
 import crypto from 'node:crypto';
-import { sendMail, trialReminderDay4Email, trialReminderFinalEmail } from './email.js';
+import { sendMail, trialReminderDay4Email, trialReminderFinalEmail, resolveAccountLanguage } from './email.js';
 
 const HOUR_MS = 60 * 60 * 1000;
 
@@ -134,20 +134,25 @@ export async function runTrialReminderSweep(pool, { now = new Date(), logger = c
         skipped += 1; // already sent, or another sweep holds the claim
         continue;
       }
+      // A reminder is mail to the PERSON about their account, so
+      // it speaks the account's language first (migration 052);
+      // the subscription's business language is only the fallback
+      // for an account that has not been seeded yet.
+      const lang = (await resolveAccountLanguage(pool, sub.owner_id)) || sub.business_language;
       const message = kind === 'email_day4'
         ? trialReminderDay4Email({
           to: sub.owner_email,
           plan: sub.plan,
           trialEndsAt: sub.trial_ends_at,
           cancelAtPeriodEnd: sub.cancel_at_period_end === true,
-          lang: sub.business_language,
+          lang,
         })
         : trialReminderFinalEmail({
           to: sub.owner_email,
           plan: sub.plan,
           trialEndsAt: sub.trial_ends_at,
           cancelAtPeriodEnd: sub.cancel_at_period_end === true,
-          lang: sub.business_language,
+          lang,
         });
       try {
         await sendMail(message);

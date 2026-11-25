@@ -17,7 +17,7 @@ import crypto from 'node:crypto';
 import { Router } from 'express';
 import { requireAuth } from './sessions.js';
 import { getPool } from './db.js';
-import { sendMail, staffInviteEmail, EmailNotConfigured } from './email.js';
+import { sendMail, staffInviteEmail, EmailNotConfigured, resolveAccountLanguage } from './email.js';
 import { resolveAccess, loadBusiness, staffRowForEmail, isTrustedStaffRow } from './authz.js';
 import {
   planFor,
@@ -1374,7 +1374,12 @@ export function createShopRouter({ getPool: getPoolFn }) {
     try {
       const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'https';
       const registerUrl = `${protocol}://${req.get('host')}/register?email=${encodeURIComponent(email)}&invite=${encodeURIComponent(inviteToken)}`;
-      await sendMail(staffInviteEmail({ to: email, businessName: access.business.name, inviterName: req.user.email, lang: access.business.language, registerUrl }));
+      // The invite is sent BY a person: it speaks the inviter's
+      // account language first (migration 052) — the invitee has
+      // no language of their own yet — and the business's
+      // language only as the fallback.
+      const inviteLang = (await resolveAccountLanguage(pool(), req.user.id)) || access.business.language;
+      await sendMail(staffInviteEmail({ to: email, businessName: access.business.name, inviterName: req.user.email, lang: inviteLang, registerUrl }));
     } catch (error) {
       if (!(error instanceof EmailNotConfigured)) console.error('[twin] staff invite email failed:', error.message);
     }

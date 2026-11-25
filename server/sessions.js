@@ -127,7 +127,7 @@ export async function loadSessionUser(pool, signedValue) {
   if (!sessionId) return null;
   const { rows } = await pool.query(
     `SELECT s.id AS session_id, s.expires_at, s.revoked_at, s.scope,
-            u.id, u.email, u.email_verified, u.active_business_id, u.created_at
+            u.id, u.email, u.email_verified, u.active_business_id, u.language, u.created_at
        FROM sessions s JOIN users u ON u.id = s.user_id
       WHERE s.id = $1`,
     [sessionId],
@@ -145,6 +145,10 @@ export async function loadSessionUser(pool, signedValue) {
       email: row.email,
       email_verified: row.email_verified,
       active_business_id: row.active_business_id,
+      // The person's own language (migration 052) rides the
+      // session user so /auth/me can serve it without a second
+      // read; null until the account has been seeded.
+      language: row.language ?? null,
       created_at: row.created_at,
     },
   };

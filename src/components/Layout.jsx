@@ -71,61 +71,105 @@ export default function Layout() {
     else clearBrandColor();
   }, [profile?.brand_color]);
   // Language reconciliation — ONE source of truth (owner catches,
-  // Nov 18, 2026). While the workspace is still loading nothing is
-  // applied: the language already active (the visitor's own choice)
-  // keeps rendering, never a guessed English — the old effect read
-  // a missing profile as 'en' and stomped the door pick before the
-  // business even arrived. Once the business is known:
+  // Nov 18, 2026; the account home, Nov 24, 2026). The language
+  // belongs to the PERSON (the owner's standing rule), so the
+  // session locale is sourced from the ACCOUNT record
+  // (users.language, migration 052) — never from the business
+  // being entered. While the workspace is still loading nothing
+  // is applied: the language already active (the visitor's own
+  // choice) keeps rendering, never a guessed English — the old
+  // effect read a missing profile as 'en' and stomped the door
+  // pick before the business even arrived. Once known:
   //
-  //   - A door pick (a language chosen on the public pages, marked
-  //     by the LanguagePicker) WINS over the business's older stored
-  //     language. It is already the active locale; for the business's
-  //     owner it is also written into the business record — the
-  //     account's one server-side language home — so it persists
-  //     across logout/login and across devices. A member of someone
-  //     else's business cannot rewrite its record, so their pick
-  //     governs this session only and is then spent.
-  //   - With no door pick, the business record governs, as before:
-  //     its language becomes the active locale. Later changes of the
-  //     record (a business switch, the owner saving Settings) apply
-  //     the same way.
+  //   - A door pick (a language chosen on the public pages,
+  //     marked by the LanguagePicker) WINS over the account's
+  //     stored language. It is already the active locale; it is
+  //     written into the person's own account record — any
+  //     signed-in user may write their own language — so it
+  //     persists across logout/login, across devices, and across
+  //     every business they enter. For the active business's
+  //     owner it ALSO mirrors into that business's record, so
+  //     the business's own documents keep speaking it; a member
+  //     of someone else's business cannot rewrite its record,
+  //     and their pick needs no mirror to be fully theirs.
+  //   - With no door pick, the account record governs: its
+  //     language becomes the active locale. A business switch
+  //     re-runs this effect but can only re-apply the same
+  //     account language — the entered business's stored
+  //     language is never a locale authority again.
+  //   - An account with no stored language yet (seeded nowhere:
+  //     created before the account home existed, and no door
+  //     pick or Settings choice since) is seeded ONCE, from the
+  //     business the person is standing in — the language they
+  //     are actively using — never from their oldest business,
+  //     and written to the account so it is theirs from then on.
   //
-  // The handled-business guard keeps a failed owner save from
-  // retrying on every render; the pick stays marked, so the next
+  // The handled guard keeps a failed save from retrying on every
+  // render; a door pick stays marked on failure, so the next
   // full load tries the save again.
   const localeHandledFor = useRef(null);
   const refreshRef = useRef(refresh);
   refreshRef.current = refresh;
   useEffect(() => {
-    if (!profile || !activeId) return;
-    const businessCode = LOCALES[profile.language] ? profile.language : 'en';
+    if (!user || !profile || !activeId) return;
+    const accountCode = LOCALES[user.language] ? user.language : null;
     const pick = readLocalePick();
-    if (pick && pick !== businessCode) {
-      if (localeHandledFor.current === activeId) return;
-      localeHandledFor.current = activeId;
-      if (getLocale() !== pick) setLocale(pick);
-      if (user && profile.owner_id === user.id) {
-        apiRequest(`/api/businesses/${encodeURIComponent(activeId)}`, {
-          method: 'PATCH',
-          body: { language: pick },
-        })
-          .then(() => {
-            clearLocalePick();
-            refreshRef.current();
-          })
-          .catch(() => {
-            // The session already renders the picked language; the
-            // marked pick makes a later load retry the save.
-          });
-      } else {
+    if (pick) {
+      if (pick === accountCode) {
         clearLocalePick();
+        if (getLocale() !== pick) setLocale(pick);
+        return;
       }
+      if (localeHandledFor.current === `pick:${pick}`) return;
+      localeHandledFor.current = `pick:${pick}`;
+      if (getLocale() !== pick) setLocale(pick);
+      const accountWrite = apiRequest('/api/auth/me', {
+        method: 'PATCH',
+        body: { language: pick },
+      });
+      const mirrorWrite =
+        profile.owner_id === user.id
+          ? apiRequest(`/api/businesses/${encodeURIComponent(activeId)}`, {
+              method: 'PATCH',
+              body: { language: pick },
+            }).catch(() => {
+              // The mirror is a courtesy to the business's
+              // documents; the account write is the one that
+              // decides whether the pick was saved.
+            })
+          : Promise.resolve();
+      Promise.all([accountWrite, mirrorWrite])
+        .then(() => {
+          clearLocalePick();
+          refreshRef.current();
+        })
+        .catch(() => {
+          // The session already renders the picked language; the
+          // marked pick makes a later load retry the save.
+        });
       return;
     }
-    if (pick) clearLocalePick();
-    if (businessCode !== getLocale()) setLocale(businessCode);
+    if (accountCode) {
+      if (accountCode !== getLocale()) setLocale(accountCode);
+      return;
+    }
+    if (localeHandledFor.current === `seed:${user.id}`) return;
+    localeHandledFor.current = `seed:${user.id}`;
+    const seed = LOCALES[profile.language] ? profile.language : getLocale();
+    if (getLocale() !== seed) setLocale(seed);
+    apiRequest('/api/auth/me', {
+      method: 'PATCH',
+      body: { language: seed },
+    })
+      .then(() => {
+        refreshRef.current();
+      })
+      .catch(() => {
+        // The session already renders the seeded language; the
+        // next full load tries the save again.
+      });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profile?.language, profile?.owner_id, activeId, user?.id]);
+  }, [user?.language, profile?.language, profile?.owner_id, activeId, user?.id]);
   // T6 i18n: the nav renders through t() (English until the owner
   // picks the first translation language). The English `label` stays
   // as the fallback for any entry without a key.

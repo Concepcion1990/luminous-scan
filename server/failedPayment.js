@@ -49,7 +49,7 @@
  */
 import crypto from 'node:crypto';
 import { withTx } from './billing.js';
-import { sendMail, paymentFailedWarningEmail } from './email.js';
+import { sendMail, paymentFailedWarningEmail, resolveAccountLanguage } from './email.js';
 import { stripeApi } from './stripeClient.js';
 
 export const FAILED_PAYMENT_GRACE_DAYS = 14;
@@ -225,11 +225,15 @@ export async function runFailedPaymentSweep(pool, { now = new Date(), logger = c
         [now.toISOString(), sub.id],
       );
       if (!claim.rows.length) continue; // another sweep holds it
+      // The warning is mail to the PERSON about their account,
+      // so it speaks the account's language first (migration
+      // 052); the business's language is only the fallback for
+      // an account that has not been seeded yet.
       const message = paymentFailedWarningEmail({
         to: sub.owner_email,
         plan: sub.plan,
         graceEndsAt: sub.payment_grace_ends_at,
-        lang: sub.business_language,
+        lang: (await resolveAccountLanguage(pool, sub.biz_owner_id)) || sub.business_language,
       });
       try {
         await sendMail(message);

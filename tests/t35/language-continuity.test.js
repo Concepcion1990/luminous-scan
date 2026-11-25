@@ -115,11 +115,36 @@ test('Layout: the nav renders from the one active locale — no local locale sta
 
 test('Layout: reconciliation — loading applies nothing, a door pick wins and is saved for the owner', () => {
   const src = readSrc('components/Layout.jsx');
-  assert.match(src, /if \(!profile \|\| !activeId\) return;/, 'a loading workspace must not stomp the active language');
+  assert.match(src, /if \(!user \|\| !profile \|\| !activeId\) return;/, 'a loading workspace must not stomp the active language');
   assert.match(src, /readLocalePick\(\)/);
   assert.match(src, /profile\.owner_id === user\.id/, 'only the owner writes the business record');
   assert.match(src, /body: \{ language: pick \}/, 'the pick is saved as the business language');
   assert.match(src, /clearLocalePick\(\)/, 'a reconciled pick is spent');
+});
+
+test('Layout: the account is the locale authority — a business switch never moves the language (Nov 24, 2026)', () => {
+  // The carry fix: language lives on the ACCOUNT (users.language,
+  // migration 052). The reconciliation sources the session locale
+  // from the signed-in user, writes a door pick back to
+  // /api/auth/me (the person's own record — any signed-in user,
+  // not only a business owner), and seeds an unseeded account
+  // once from the business the person is standing in. The entered
+  // business's stored language must never be applied: that was
+  // the Nov 23 flip (Spanish in Business 3, English in 1 and 2).
+  const src = readSrc('components/Layout.jsx');
+  assert.match(src, /const accountCode = LOCALES\[user\.language\] \? user\.language : null;/, 'the locale is sourced from the account record');
+  assert.match(src, /apiRequest\('\/api\/auth\/me', \{\s+method: 'PATCH',\s+body: \{ language: pick \}/, 'a door pick writes back to the account, not only to the active business');
+  assert.match(src, /apiRequest\('\/api\/auth\/me', \{\s+method: 'PATCH',\s+body: \{ language: seed \}/, 'an unseeded account is seeded onto the account record');
+  assert.match(src, /const seed = LOCALES\[profile\.language\] \? profile\.language : getLocale\(\);/, 'the seed comes from the business the person is standing in');
+  assert.doesNotMatch(src, /setLocale\(businessCode\)/, 'the entered business language must never stomp the session locale');
+  assert.doesNotMatch(src, /const businessCode = LOCALES\[profile\.language\]/, 'the business record is no longer read as a locale authority');
+});
+
+test('Settings: the language write targets the account; currency still targets the business', () => {
+  const page = readSrc('pages/Settings.jsx');
+  const apply = page.slice(page.indexOf('const applyPreference'), page.indexOf('const save ='));
+  assert.match(apply, /apiRequest\('\/api\/auth\/me', \{\s+method: 'PATCH',\s+body: \{ language: value \}/, 'language persists to the account record');
+  assert.match(apply, /body: \{ \[key\]: value \}/, 'the business record still receives its single-field writes (currency, and the language mirror)');
 });
 
 test('the public picker marks its choice as a door pick', () => {
