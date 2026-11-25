@@ -71,11 +71,11 @@ async function accessOr403(pool, user, businessId) {
   return access;
 }
 
-// The photo cap follows the store logo's: the app prepares the
-// image for the person before upload (src/lib/imagePrep.js), so
-// 2 MB of prepared image is generous, and anything past it is
-// not a profile photo.
-const PROFILE_PHOTO_MAX_BYTES = 2 * 1024 * 1024;
+// The photo cap is the universal upload ceiling (25 MB — owner
+// ruling, Nov 23, 2026): the app prepares the image for the
+// person before upload (src/lib/imagePrep.js), so the cap judges
+// the prepared image and effectively never trips on a real photo.
+const PROFILE_PHOTO_MAX_BYTES = 25 * 1024 * 1024;
 const PROFILE_PHOTO_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
 
 function parseProfilePhotoDataUrl(value) {
@@ -211,7 +211,7 @@ export function createProfilePhotoRouter({ getPool: getPoolFn }) {
     if (!key) throw err(400, 'no_staff_profile', 'Only team members with a staff profile can do this.');
     const parsed = parseProfilePhotoDataUrl(req.body?.dataUrl);
     if (!parsed) {
-      throw err(400, 'invalid_photo', 'Send a PNG, JPG or WebP image under 2 MB.');
+      throw err(400, 'invalid_photo', 'Send a PNG, JPG or WebP image under 25 MB.');
     }
     const bid = req.params.bid;
     if (access.isOwner) {

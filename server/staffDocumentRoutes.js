@@ -45,7 +45,7 @@
  *   - Bytes follow the app's private-file discipline (carrier
  *     labels, business policy files): base64 in Postgres, served
  *     ONLY here behind the session + tick check, never through a
- *     public URL. 2 MB cap, document types plus images (an ID
+ *     public URL. 25 MB cap, document types plus images (an ID
  *     copy arrives as a photo).
  */
 import crypto from 'node:crypto';
@@ -80,16 +80,18 @@ export const STAFF_DOCUMENTS_OWNER_ONLY_FOR_MANAGER_MESSAGE =
 export const STAFF_DOCUMENTS_REMOVE_OWNER_ONLY_MESSAGE =
   'Only the owner can remove a staff document.';
 export const STAFF_DOCUMENT_FILE_INVALID_MESSAGE =
-  'Send a PDF, text, Word, OpenDocument or image file under 2 MB.';
+  'Send a PDF, text, Word, OpenDocument or image file under 25 MB.';
 export const STAFF_DOCUMENT_NOT_FOUND_MESSAGE = 'That document is not on file.';
 export const STAFF_DOCUMENT_MEMBER_NOT_FOUND_MESSAGE =
   'That team member is not in this business.';
 
-/** The file rules: the business-policy discipline (2 MB, which
- *  also keeps the base64 body inside the app's 3 MB JSON limit),
+/** The file rules: the business-policy discipline at the
+ *  universal upload ceiling (25 MB — owner ruling, Nov 23, 2026;
+ *  this door's path carries a widened JSON parser in server/app.js
+ *  so an over-size file reaches this cap and its plain refusal),
  *  document types — plus PNG/JPEG/WebP, because an ID copy
  *  arrives as a photo. */
-export const STAFF_DOCUMENT_MAX_BYTES = 2 * 1024 * 1024;
+export const STAFF_DOCUMENT_MAX_BYTES = 25 * 1024 * 1024;
 export const STAFF_DOCUMENT_TYPES = [
   'application/pdf',
   'text/plain',

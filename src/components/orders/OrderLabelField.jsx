@@ -26,7 +26,7 @@ import {
  * (order_shipping_labels, migration 025). A label attached here
  * shows in the Print Center, and one attached there shows here —
  * view, replace and remove behave the same in both places, under
- * the same rules (PDF/PNG/JPG, under 2 MB, stored byte-exact,
+ * the same rules (PDF/PNG/JPG, under 25 MB, stored byte-exact,
  * behind the session and the business check).
  *
  * On an EXISTING order the doors act on the saved order at once,

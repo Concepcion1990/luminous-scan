@@ -18,7 +18,10 @@ import { decodeHtmlEntities } from './csvImport.js';
 
 const XLSX_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
-export const MAX_IMPORT_BYTES = 12 * 1024 * 1024;
+// The universal upload rule (owner ruling, Nov 23, 2026): the
+// import doors take files up to 25 MB — this reader's own cap
+// agrees with the workbenches' refusal, never below it.
+export const MAX_IMPORT_BYTES = 25 * 1024 * 1024;
 export const MAX_IMPORT_ROWS = 20000;
 
 const UNSAFE_SHEET_CHARS = /[\\/?*[\]:]/g;
@@ -120,7 +123,7 @@ function sheetTable(worksheet) {
 export async function readWorkbookFile(file) {
   if (!file) throw new Error('Choose a spreadsheet first.');
   if (file.size > MAX_IMPORT_BYTES) {
-    throw new Error('That workbook is larger than 12 MB. Split it into smaller files and import them in turn.');
+    throw new Error('That workbook is larger than 25 MB. Split it into smaller files and import them in turn.');
   }
   const buffer = await file.arrayBuffer();
   const workbook = new ExcelJS.Workbook();

@@ -6,7 +6,7 @@ import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 
-export const LABEL_MAX_BYTES = 2 * 1024 * 1024;
+export const LABEL_MAX_BYTES = 25 * 1024 * 1024;
 export const LABEL_TYPES = ['application/pdf', 'image/png', 'image/jpeg'];
 
 /**

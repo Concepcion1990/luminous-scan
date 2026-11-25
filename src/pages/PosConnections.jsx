@@ -432,6 +432,14 @@ function PosConnectionsInner() {
   const onCsvFile = async (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
+    // The universal upload rule (owner ruling, Nov 23, 2026): this
+    // door takes files up to 25 MB — and says so plainly past it,
+    // before a byte is read (the importer's own wording).
+    if (file.size > 25 * 1024 * 1024) {
+      toast({ title: t('import.fileTooLarge'), variant: 'destructive' });
+      event.target.value = '';
+      return;
+    }
     const text = await file.text();
     const result = await act('csv', () => importPosCsv(activeId, text));
     if (result) setCsvResult(result);

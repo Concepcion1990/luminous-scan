@@ -27,6 +27,13 @@ export default function useImportSheet(guess = () => '') {
     const file = event.target.files?.[0];
     event.target.value = '';
     if (!file) return;
+    // The universal upload rule (owner ruling, Nov 23, 2026): this
+    // door takes files up to 25 MB — and says so plainly past it,
+    // before a byte is read (the create door's own wording).
+    if (file.size > 25 * 1024 * 1024) {
+      setError(t('import.fileTooLarge'));
+      return;
+    }
     setError('');
     setReading(true);
     try {

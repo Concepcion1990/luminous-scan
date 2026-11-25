@@ -339,7 +339,11 @@ function validateBusinessPatch(patch) {
       if (!['imperial', 'metric'].includes(text)) return { error: 'Choose imperial or metric.' };
       clean.unit_system = text;
     } else if (key === 'logo_url') {
-      if (text.length > 3_000_000) return { error: 'That logo is too large.' };
+      // A data-URL logo rides this field as base64 text: the
+      // universal 25 MB upload ceiling (owner ruling, Nov 23,
+      // 2026) is ~34.96M base64 characters, so the guard sits
+      // just past it — the same line as the logo door itself.
+      if (text.length > 35_000_000) return { error: 'That logo is too large.' };
       if (text && !text.startsWith('data:image/') && !text.startsWith('https://')) {
         return { error: 'A logo must be an uploaded image or a secure link.' };
       }

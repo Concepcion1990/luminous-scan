@@ -36,7 +36,7 @@ import {
 
 // The file rules mirror the server's (and the business-policy
 // files'): document types plus images — an ID copy arrives as
-// a photo. The 2 MB cap is the server's; the client names it
+// a photo. The 25 MB cap is the server's; the client names it
 // before sending so the refusal is never a dead end.
 const FILE_TYPES = [
   'application/pdf',
@@ -140,7 +140,7 @@ export default function StaffDocumentsDialog({ open, onOpenChange, businessId, m
   const upload = async () => {
     if (!file) return;
     const mime = fileTypeOf(file);
-    if (!mime || file.size > 2 * 1024 * 1024) {
+    if (!mime || file.size > 25 * 1024 * 1024) {
       toast({ title: t('staff.documents.fileInvalid'), variant: 'destructive' });
       return;
     }

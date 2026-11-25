@@ -74,13 +74,19 @@ async function accessOr403(pool, user, businessId, permission) {
   return access;
 }
 
-const LOGO_MAX_BYTES = 2 * 1024 * 1024;
+/** The universal upload rule (owner ruling, Nov 23, 2026): every
+ *  upload door in the app takes files up to 25 MB. These doors'
+ *  paths carry a widened JSON parser in server/app.js (a 25 MB
+ *  file travels as ~33 MB of base64), so an over-size file reaches
+ *  this cap and its plain refusal — never the parser's 413. */
+const LOGO_MAX_BYTES = 25 * 1024 * 1024;
 const LOGO_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
 
 /** Product photos share the logo's discipline exactly: the same
- *  three image types and the same 2 MB cap (which also keeps the
- *  base64 body inside the app's 3 MB JSON limit). */
-const PHOTO_MAX_BYTES = LOGO_MAX_BYTES;
+ *  three image types and the same 25 MB cap. The app prepares
+ *  (downscales) photos before upload, so the cap judges the
+ *  prepared image and effectively never trips on a real photo. */
+const PHOTO_MAX_BYTES = 25 * 1024 * 1024;
 const PHOTO_TYPES = LOGO_TYPES;
 
 function parsePhotoDataUrl(value) {
@@ -441,7 +447,7 @@ export function createT6Router({ getPool: getPoolFn }) {
       throw err(
         400,
         'invalid_logo',
-        'Send a PNG, JPG or WebP image under 2 MB.',
+        'Send a PNG, JPG or WebP image under 25 MB.',
       );
     }
     const updated = await pool().query(
@@ -469,7 +475,7 @@ export function createT6Router({ getPool: getPoolFn }) {
       throw err(
         400,
         'invalid_photo',
-        'Send a PNG, JPG or WebP image under 2 MB.',
+        'Send a PNG, JPG or WebP image under 25 MB.',
       );
     }
     const id = crypto.randomUUID();
@@ -496,6 +502,9 @@ export function createT6Router({ getPool: getPoolFn }) {
   // through the public /api/photos/:id route. The file is stored
   // byte-exact (no re-encode): it is a record, not a picture.
   const LABEL_TYPES = ['application/pdf', 'image/png', 'image/jpeg'];
+  // The label door's own cap — the universal 25 MB (owner ruling,
+  // Nov 23, 2026), matching the client panels' LABEL_MAX_BYTES.
+  const LABEL_MAX_BYTES = 25 * 1024 * 1024;
 
   function parseLabelDataUrl(value) {
     const text = String(value || '');
@@ -509,7 +518,7 @@ export function createT6Router({ getPool: getPoolFn }) {
     } catch {
       return null;
     }
-    if (!bytes.length || bytes.length > PHOTO_MAX_BYTES) return null;
+    if (!bytes.length || bytes.length > LABEL_MAX_BYTES) return null;
     return { mime, bytes, base64: match[2] };
   }
 
@@ -546,7 +555,7 @@ export function createT6Router({ getPool: getPoolFn }) {
     if (!order) throw err(404, 'order_not_found', 'That order is not in this business.');
     const parsed = parseLabelDataUrl(req.body?.dataUrl);
     if (!parsed) {
-      throw err(400, 'invalid_label', 'Send a PDF, PNG or JPG label file under 2 MB.');
+      throw err(400, 'invalid_label', 'Send a PDF, PNG or JPG label file under 25 MB.');
     }
     await pool().query(
       `INSERT INTO order_shipping_labels (order_id, business_id, content_type, filename, size_bytes, data_base64)

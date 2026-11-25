@@ -49,8 +49,8 @@ const DOCS = [
 ];
 
 /** The file rules, mirroring the server's (businessPolicyRoutes):
- *  document types only, up to 2 MB. */
-const FILE_MAX_BYTES = 2 * 1024 * 1024;
+ *  document types only, up to 25 MB. */
+const FILE_MAX_BYTES = 25 * 1024 * 1024;
 const FILE_TYPES = [
   'application/pdf',
   'text/plain',

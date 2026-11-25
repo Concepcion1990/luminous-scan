@@ -352,7 +352,7 @@ function BossSettings() {
       // a picture themselves (owner's rule, Nov 14, 2026). The size
       // check judges the PREPARED image and is only a backstop.
       const prepared = await prepareImageForUpload(file, { preserveFormat: true });
-      if (prepared.size > 2 * 1024 * 1024) {
+      if (prepared.size > 25 * 1024 * 1024) {
         setError(t('settings.logo.sizeError'));
         return;
       }

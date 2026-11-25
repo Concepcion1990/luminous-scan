@@ -54,7 +54,10 @@ export const PHOTO_JOB_BATCH = 200;
 // this was stranded by a dead process and is re-queued.
 export const PHOTO_CLAIM_STALE_MS = 10 * 60 * 1000;
 
-const PHOTO_MAX_BYTES = 2 * 1024 * 1024; // the photo pipeline's own cap
+// The import door's photo carriage follows the universal upload
+// ceiling (25 MB — owner ruling, Nov 23, 2026): a seller's linked
+// photo is refused only past the same line as every upload.
+const PHOTO_MAX_BYTES = 25 * 1024 * 1024;
 const BROWSER_USER_AGENT =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36';
 
@@ -121,7 +124,7 @@ export async function fetchPhotoToStorage(
   const buffer = Buffer.from(await response.arrayBuffer());
   if (!buffer.length) return { problem: 'The photo link returned an empty file.' };
   if (buffer.length > PHOTO_MAX_BYTES) {
-    return { problem: 'The photo at that link is over 2 MB — too large to bring in.' };
+    return { problem: 'The photo at that link is over 25 MB — too large to bring in.' };
   }
   const mime = photoMime(buffer, response.headers.get('content-type'));
   if (!mime) return { problem: 'The link did not return a PNG, JPG or WebP photo.' };

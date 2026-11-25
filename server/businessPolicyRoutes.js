@@ -80,16 +80,17 @@ export const POLICY_TEXT_MAX = 100_000;
 export const POLICY_OWNER_ONLY_MESSAGE =
   "Only the owner can change this store's policies and terms.";
 export const POLICY_FILE_INVALID_MESSAGE =
-  'Send a PDF, text, Word or OpenDocument file under 2 MB.';
+  'Send a PDF, text, Word or OpenDocument file under 25 MB.';
 export const POLICY_TEXT_TOO_LONG_MESSAGE =
   'That document is too long to type here. You can upload it as a file instead.';
 
 /** The file rules, matching the app's private-file discipline:
- *  the same 2 MB cap as carrier labels and product photos (which
- *  also keeps the base64 body inside the app's 3 MB JSON limit),
- *  and document types only — PDF, plain text, Word (.doc/.docx),
- *  RTF and OpenDocument text. */
-export const POLICY_FILE_MAX_BYTES = 2 * 1024 * 1024;
+ *  the universal upload ceiling (25 MB — owner ruling, Nov 23,
+ *  2026; this door's path carries a widened JSON parser in
+ *  server/app.js so an over-size file reaches this cap and its
+ *  plain refusal), and document types only — PDF, plain text,
+ *  Word (.doc/.docx), RTF and OpenDocument text. */
+export const POLICY_FILE_MAX_BYTES = 25 * 1024 * 1024;
 export const POLICY_FILE_TYPES = [
   'application/pdf',
   'text/plain',

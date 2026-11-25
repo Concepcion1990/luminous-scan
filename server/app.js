@@ -130,8 +130,28 @@ export function createApp() {
     '/api/businesses/:bid/restaurant/invoices/:invoiceId/file',
     express.json({ limit: '40mb' }),
   );
-  // 3 MB JSON bodies: a store logo (up to 2 MB as a data URL) must
-  // reach the logo endpoint's own clear 400, not the parser's 413.
+  // The universal 25 MB upload sweep (owner ruling, Nov 23, 2026):
+  // every remaining upload door now takes files up to 25 MB, and
+  // each of those doors' paths gets the same widened parser, so an
+  // over-size file reaches the door's own plain refusal in the
+  // reader's language — never the parser's 413. (The POS CSV door
+  // sends its file as JSON text rather than base64; 40 MB covers
+  // a 25 MB sheet with room to spare.)
+  app.use(
+    [
+      '/api/businesses/:bid/logo',
+      '/api/businesses/:bid/product-photos',
+      '/api/businesses/:bid/orders/:oid/shipping-label',
+      '/api/businesses/:bid/staff-documents/:memberId',
+      '/api/businesses/:bid/policies/:kind/file',
+      '/api/businesses/:bid/profile-photos/me',
+      '/api/businesses/:bid/pos/csv-import',
+    ],
+    express.json({ limit: '40mb' }),
+  );
+  // 3 MB JSON bodies for everything else: an ordinary request
+  // must still reach its endpoint's own clear answer, not the
+  // parser's 413.
   app.use(express.json({ limit: '3mb' }));
 
   app.get('/health', async (_req, res) => {
