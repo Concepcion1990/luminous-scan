@@ -3330,7 +3330,7 @@ export const esUS = {
   "workforce.breakOut": "Registrar salida por descanso",
   "workforce.breakStarted": "Descanso iniciado.",
   "workforce.clockedInMsg": "Su entrada está registrada.",
-  "workforce.clockedInSince": "Entrada registrada desde las {time}",
+  "workforce.clockedInSince": "Entrada registrada el {date} a las {time}",
   "workforce.clockedOutMsg": "Salida registrada. Que tenga un buen resto del día.",
   "workforce.clockIn": "Registrar entrada",
   "workforce.clockOut": "Registrar salida",
