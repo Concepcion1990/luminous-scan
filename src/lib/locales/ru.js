@@ -3330,7 +3330,7 @@ export const ru = {
   "workforce.breakOut": "Уйти на перерыв",
   "workforce.breakStarted": "Перерыв начался.",
   "workforce.clockedInMsg": "Вы отметили приход.",
-  "workforce.clockedInSince": "Приход отмечен в {time}",
+  "workforce.clockedInSince": "Приход отмечен {date} в {time}",
   "workforce.clockedOutMsg": "Вы отметили уход. Хорошего остатка дня.",
   "workforce.clockIn": "Отметить приход",
   "workforce.clockOut": "Отметить уход",
