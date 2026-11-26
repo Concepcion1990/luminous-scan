@@ -1,6 +1,7 @@
 import { BrowserMultiFormatReader } from '@zxing/browser';
 import { BarcodeFormat, DecodeHintType } from '@zxing/library';
 import { readSupplementFromCanvas } from './supplementReader.js';
+import { readUpceFromCanvas } from './upceReader.js';
 
 /**
  * Everything the universal scanner tries to decode, in one pass.
@@ -19,6 +20,12 @@ import { readSupplementFromCanvas } from './supplementReader.js';
  * build-it-ourselves ruling) reads one standing alone, and only after
  * the main decode found nothing — a frame holding a main code behaves
  * exactly as it always has.
+ * UPC-E is the mirror case: a real standalone code the native engine
+ * reads but the library's fallback cannot (its UPC-E decode is broken
+ * inside the library itself — pinned at the coverage build); the
+ * hand-built UPC-E pass (upceReader.js, the owner's repair ruling)
+ * fixes the fallback, returning the symbol's UPC-A expansion, and
+ * likewise runs only after the main decode found nothing.
  */
 export const ZXING_FORMATS = [
   BarcodeFormat.QR_CODE,
@@ -94,9 +101,11 @@ export async function createCodeReader() {
       try {
         return reader.decodeFromCanvas(canvas).getText();
       } catch {
-        // The main decode found nothing: only now may a standalone
-        // supplement speak, so combined frames keep their main code.
-        return readSupplementFromCanvas(canvas);
+        // The main decode found nothing: only now may our own UPC-E
+        // pass and the standalone supplement speak, so combined
+        // frames keep their main code. UPC-E first — it is a whole
+        // product code; a supplement only ever names a price.
+        return readUpceFromCanvas(canvas) ?? readSupplementFromCanvas(canvas);
       }
     },
   };

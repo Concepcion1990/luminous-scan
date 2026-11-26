@@ -32,6 +32,14 @@
  * the native BarcodeDetector path reads it where the platform offers
  * it, and the pin turns red the day a library upgrade repairs the
  * reader, which is the day this note must be revisited.
+ *
+ * FLIPPED Nov 25, 2026 (UPC-E repair build, t75): the owner ruled
+ * "repaired ourselves" and the fallback now carries the app's own
+ * UPC-E pass (src/lib/upceReader.js), so the dedicated test below
+ * PROVES THE READ — the symbol decodes to its UPC-A expansion —
+ * while keeping the library assertion as the tripwire above. The
+ * repair build's record names the further defects found inside the
+ * library's UPC-E path while mirroring it; the full battery is t75.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -46,6 +54,7 @@ import {
   NotFoundException,
 } from '@zxing/library';
 import { createCodeReader, ZXING_FORMATS, NATIVE_FORMATS } from '../../src/lib/codeReader.js';
+import { readUpceFromBitmap } from '../../src/lib/upceReader.js';
 
 const fixtures = JSON.parse(readFileSync(new URL('./fixtures.json', import.meta.url), 'utf8'));
 const factorySource = readFileSync(new URL('../../src/lib/codeReader.js', import.meta.url), 'utf8');
@@ -139,21 +148,31 @@ for (const [id, fixture] of Object.entries(fixtures)) {
   });
 }
 
-test('UPC-E: pinned known defect in @zxing/library 0.21.3 (ZXing path only)', () => {
-  // The fixture is a spec-correct UPC-E (digits, L/G parity and the
-  // UPC-A checksum all verify against the reader's own tables). The
-  // library's decodeRow nevertheless throws NotFound: it searches for
-  // the EAN end pattern inside UPC-E's 010101 end guard and its
-  // quiet-zone check then trips on the guard's own last bar. Proven
-  // identical under the pre-change list — pre-existing, not a
-  // regression. UPC-E stays in the list: the native path reads it, and
-  // this pin is the tripwire for a future library fix.
+test('UPC-E: the library defect stands (history), and the app\u2019s own pass reads the symbol', () => {
+  // HISTORY (the coverage build's pin, kept verbatim as the
+  // tripwire): the fixture is a spec-correct UPC-E (digits, L/G
+  // parity and the UPC-A checksum all verify against the reader's
+  // own tables). The library's decodeRow nevertheless throws
+  // NotFound: it searches for the EAN end pattern inside UPC-E's
+  // 010101 end guard and its quiet-zone check then trips on the
+  // guard's own last bar. Proven identical under the pre-change
+  // list — pre-existing, not a regression. UPC-E stays in the list:
+  // the native path reads it. The library behavior is UNCHANGED by
+  // the repair, so this assertion still holds — and turns red the
+  // day a library upgrade heals the reader, which is the day the
+  // app-side pass can retire.
   const fixture = fixtures.upc_e;
   assert.ok(ZXING_FORMATS.includes(BarcodeFormat.UPC_E));
   assert.throws(
     () => new MultiFormatReader().decode(toBitmap(fixture), factoryHints()),
     NotFoundException,
   );
+  // FLIPPED Nov 25, 2026 (UPC-E repair build): what the pin pinned
+  // as an accepted failure is now a proven read. The app's own pass
+  // decodes the symbol on the fallback path and returns its UPC-A
+  // expansion — the value the native path yields for the same
+  // symbol. Full battery: t75.
+  assert.equal(readUpceFromBitmap(toBitmap(fixture)), '012345000065');
 });
 
 test('native path: the factory hands the detector the new formats, filtered by the platform', async () => {

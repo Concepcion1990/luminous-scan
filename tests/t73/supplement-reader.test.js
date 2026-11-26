@@ -159,9 +159,15 @@ test('combined EAN-13 + EAN-5: the normal decode returns the main code', () => {
 
 test('factory wiring: the supplement pass is a fallback in both engines, never a first resort', () => {
   // ZXing branch: inside the catch of the main decode.
+  // AMENDED Nov 25, 2026 (UPC-E repair build, t75): the catch now
+  // chains the app's own UPC-E pass ahead of the supplement pass —
+  // the supplement remains a fallback inside the same catch, never
+  // a first resort, and still speaks only when nothing before it
+  // produced a value. The original pin's text is superseded by the
+  // chained line below; the native-branch pin after it is unchanged.
   assert.match(
     factorySource,
-    /catch \{\s*\n\s*\/\/ The main decode found nothing: only now may a standalone\s*\n\s*\/\/ supplement speak, so combined frames keep their main code\.\s*\n\s*return readSupplementFromCanvas\(canvas\);/,
+    /catch \{\s*\n\s*\/\/ The main decode found nothing: only now may our own UPC-E\s*\n\s*\/\/ pass and the standalone supplement speak, so combined\s*\n\s*\/\/ frames keep their main code\. UPC-E first — it is a whole\s*\n\s*\/\/ product code; a supplement only ever names a price\.\s*\n\s*return readUpceFromCanvas\(canvas\) \?\? readSupplementFromCanvas\(canvas\);/,
   );
   // Native branch: only when the detector returned no codes.
   assert.match(
