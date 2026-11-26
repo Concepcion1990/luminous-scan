@@ -3330,7 +3330,7 @@ export const sw = {
   "workforce.breakOut": "Toka kwa mapumziko",
   "workforce.breakStarted": "Mapumziko yameanza.",
   "workforce.clockedInMsg": "Umeingia kazini.",
-  "workforce.clockedInSince": "Umeingia kazini tangu {time}",
+  "workforce.clockedInSince": "Umeingia kazini tangu {date}, {time}",
   "workforce.clockedOutMsg": "Umetoka kazini. Uwe na mwendelezo mwema wa siku yako.",
   "workforce.clockIn": "Ingia kazini",
   "workforce.clockOut": "Toka kazini",

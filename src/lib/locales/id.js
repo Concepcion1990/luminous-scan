@@ -3330,7 +3330,7 @@ export const id = {
   "workforce.breakOut": "Keluar untuk istirahat",
   "workforce.breakStarted": "Istirahat dimulai.",
   "workforce.clockedInMsg": "Anda sudah absen masuk.",
-  "workforce.clockedInSince": "Absen masuk sejak {time}",
+  "workforce.clockedInSince": "Absen masuk sejak {date}, {time}",
   "workforce.clockedOutMsg": "Absen keluar. Selamat beristirahat di sisa hari Anda.",
   "workforce.clockIn": "Absen masuk",
   "workforce.clockOut": "Absen keluar",
