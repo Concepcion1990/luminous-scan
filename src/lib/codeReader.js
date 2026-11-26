@@ -5,31 +5,45 @@ import { BarcodeFormat, DecodeHintType } from '@zxing/library';
  * Everything the universal scanner tries to decode, in one pass.
  * QR codes are listed first so the JavaScript decoder attempts them before
  * the slower one-dimensional readers.
+ *
+ * Coverage completed Nov 25, 2026 on the owner's ruling ("it should scan
+ * anything"): PDF417, Code 93 and GS1 DataBar (RSS_14) join the original
+ * eleven — every standalone symbology either engine can read. Two formats
+ * stay OFF on evidence, not oversight: RSS_EXPANDED (the library itself
+ * warns its reader is not production-ready, and a confident wrong number
+ * is the worst failure this app can make) and MAXICODE (named in the
+ * library's enum but never ported — no reader exists to switch on).
+ * EAN-5/EAN-2 are not standalone codes in either engine.
  */
-const ZXING_FORMATS = [
+export const ZXING_FORMATS = [
   BarcodeFormat.QR_CODE,
   BarcodeFormat.DATA_MATRIX,
   BarcodeFormat.AZTEC,
+  BarcodeFormat.PDF_417,
   BarcodeFormat.UPC_A,
   BarcodeFormat.UPC_E,
   BarcodeFormat.EAN_13,
   BarcodeFormat.EAN_8,
   BarcodeFormat.CODE_128,
   BarcodeFormat.CODE_39,
+  BarcodeFormat.CODE_93,
   BarcodeFormat.ITF,
   BarcodeFormat.CODABAR,
+  BarcodeFormat.RSS_14,
 ];
 
-const NATIVE_FORMATS = [
+export const NATIVE_FORMATS = [
   'qr_code',
   'data_matrix',
   'aztec',
+  'pdf417',
   'upc_a',
   'upc_e',
   'ean_13',
   'ean_8',
   'code_128',
   'code_39',
+  'code_93',
   'itf',
   'codabar',
 ];
