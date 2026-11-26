@@ -3330,7 +3330,7 @@ export const tg = {
   "workforce.breakOut": "Рафтан ба танаффус",
   "workforce.breakStarted": "Танаффус оғоз шуд.",
   "workforce.clockedInMsg": "Шумо омаданатонро қайд кардед.",
-  "workforce.clockedInSince": "Омадан аз {time} қайд шудааст",
+  "workforce.clockedInSince": "Омадан аз {date}, {time} қайд шудааст",
   "workforce.clockedOutMsg": "Шумо рафтанатонро қайд кардед. Рӯзи хуби боқимонда дошта бошед.",
   "workforce.clockIn": "Қайди омадан",
   "workforce.clockOut": "Қайди рафтан",
