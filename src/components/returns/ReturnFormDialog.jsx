@@ -34,6 +34,7 @@ import {
 import { returnTaxInfo } from '@/lib/taxRate';
 import { findProductsByCode } from '@/lib/inventory';
 import { money, todayIso } from '@/lib/purchasing';
+import { firstShipFromLocation, shipFromLocations } from '@/lib/locations';
 import AddLocationInline from '@/components/locations/AddLocationInline';
 import { useBusiness } from '@/hooks/useBusiness';
 import { withBusiness } from '@/lib/scoped';
@@ -117,7 +118,7 @@ export default function ReturnFormDialog({
         order_number: record.order_number || '',
         customer_name: record.customer_name || '',
         received_date: record.received_date || todayIso(),
-        location_id: record.location_id || locations[0]?.id || '',
+        location_id: record.location_id || firstShipFromLocation(locations)?.id || '',
         refund_amount: record.refund_amount ?? '',
         tax_amount: taxInit,
         notes: record.notes || '',
@@ -137,7 +138,7 @@ export default function ReturnFormDialog({
         order_number: '',
         customer_name: '',
         received_date: todayIso(),
-        location_id: locations[0]?.id || '',
+        location_id: firstShipFromLocation(locations)?.id || '',
         refund_amount: '',
         tax_amount: '',
         notes: '',
@@ -430,7 +431,15 @@ export default function ReturnFormDialog({
             </div>
             <div className="grid gap-1">
               <Label className="text-xs">{t('returns.returnedTo')}</Label>
-              {localLocations.length === 0 ? (
+              {/* Returned to names the STORE, never a shelf
+                  (the owner's ruling, Nov 25, 2026, closing the
+                  352 flag): the options are this business's
+                  operating sites — the Ships From wall — with a
+                  legacy stored value appended once so an old
+                  return keeps showing what it holds. The
+                  customer sees the store's name and address on
+                  the return document. */}
+              {shipFromLocations(localLocations, form.location_id).length === 0 ? (
                 <AddLocationInline
                   businessId={activeId}
                   onCreated={(created) => {
@@ -448,7 +457,7 @@ export default function ReturnFormDialog({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">{t('returns.chooseLocation')}</SelectItem>
-                    {localLocations.map((l) => (
+                    {shipFromLocations(localLocations, form.location_id).map((l) => (
                       <SelectItem key={l.id} value={l.id}>
                         {l.name}
                       </SelectItem>

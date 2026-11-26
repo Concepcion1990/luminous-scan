@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { money, openQty, receiveOrder } from '@/lib/purchasing';
+import { firstShipFromLocation, shipFromLocations } from '@/lib/locations';
 import { t } from '@/lib/i18n';
 
 export default function ReceiveDialog({ open, onOpenChange, order, products, locations, currency, onReceived }) {
@@ -34,7 +35,7 @@ export default function ReceiveDialog({ open, onOpenChange, order, products, loc
     setError('');
     setNote('');
     setBusy(false);
-    setLocationId(order.location_id || locations[0]?.id || '');
+    setLocationId(order.location_id || firstShipFromLocation(locations)?.id || '');
     const next = {};
     (order.lines || []).forEach((line, index) => {
       next[index] = String(openQty(line));
@@ -84,7 +85,13 @@ export default function ReceiveDialog({ open, onOpenChange, order, products, loc
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">{t('purchasing.chooseLocation')}</SelectItem>
-                {locations.map((l) => (
+                {/* Receiving names the STORE, never a shelf
+                    (the owner's ruling, Nov 25, 2026): the
+                    Ships From wall's sites, with the order's
+                    stored value appended once when it is a
+                    legacy shelf, so nothing is rewritten
+                    behind the owner's back. */}
+                {shipFromLocations(locations, locationId).map((l) => (
                   <SelectItem key={l.id} value={l.id}>
                     {l.name}
                   </SelectItem>

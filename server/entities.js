@@ -2321,7 +2321,16 @@ export async function listEntities(pool, user, name, filter = {}, options = {}) 
       // that gains its own row is governed by it from that read on.
       const { record, inheritedFrom } = await entitlementInheritance(pool, businessId);
       if (record && inheritedFrom) {
-        businessRows = [publicRow(def, { ...record, business_id: businessId })];
+        // The synthesized row is MARKED with its source
+        // (the smalls bundle, Nov 25, 2026): the client must
+        // be able to tell a riding business from a holding
+        // one, because inside a riding business the Upgrade
+        // door is not offered at all — a note names the
+        // business that holds the plan instead. Display only,
+        // like the synthesis itself; nothing is stored.
+        const shaped = publicRow(def, { ...record, business_id: businessId });
+        shaped.inherited_from = inheritedFrom;
+        businessRows = [shaped];
       }
     }
     if (name === 'Product' && !featureAllowed(access.planKey, 'pricing')) {

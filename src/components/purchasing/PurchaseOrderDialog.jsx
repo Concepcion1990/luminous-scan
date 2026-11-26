@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { blankLine, money, poNumber, poTotals, todayIso } from '@/lib/purchasing';
+import { shipFromLocations } from '@/lib/locations';
 import { useBusiness } from '@/hooks/useBusiness';
 import { withBusiness } from '@/lib/scoped';
 import { t } from '@/lib/i18n';
@@ -273,6 +274,12 @@ export default function PurchaseOrderDialog({
 
           <div className="grid gap-2">
             <Label>{t('purchasing.receivingLocation')}</Label>
+            {/* Receiving names the STORE, never a shelf (the
+                owner's ruling, Nov 25, 2026, closing the 352
+                flag): the options are this business's operating
+                sites — the same Ships From wall — with a legacy
+                stored value appended once so an old order keeps
+                showing what it holds. Shelves stay in counts. */}
             <Select
               value={form.location_id || 'none'}
               onValueChange={(v) => setForm((f) => ({ ...f, location_id: v === 'none' ? '' : v }))}
@@ -282,7 +289,7 @@ export default function PurchaseOrderDialog({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">{t('purchasing.chooseLocation')}</SelectItem>
-                {locations.map((l) => (
+                {shipFromLocations(locations, form.location_id).map((l) => (
                   <SelectItem key={l.id} value={l.id}>
                     {l.name}
                   </SelectItem>

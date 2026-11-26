@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, Check, Clock3, Smartphone } from 'lucide-react';
 import useEntitlements from '@/hooks/useEntitlements';
+import { useBusiness } from '@/hooks/useBusiness';
 import { trialDaysLeft, trialWarningDetails } from '@/lib/entitlements';
 import { trialInAppNotice } from '@/lib/trialNotices';
 import { formatShortDate } from '@/lib/dates';
@@ -26,7 +27,14 @@ function formatDate(value) {
 
 /** The plan this business is on, always reachable after onboarding. */
 export default function PlanSummaryCard() {
-  const { plan, record, isEssentials, isLoading } = useEntitlements();
+  const { plan, record, isEssentials, isLoading, inheritedFrom } = useEntitlements();
+  const { businesses } = useBusiness();
+  // A riding business (release 356 inheritance) shows the
+  // note naming the plan's holder instead of the Plan &
+  // limits door (the owner's Road B ruling, Nov 25, 2026).
+  const holder = inheritedFrom
+    ? businesses.find((business) => business.id === inheritedFrom)
+    : null;
   const days = trialDaysLeft(record);
   const status = record?.status || 'pending_checkout';
   const notice = trialWarningDetails(record);
@@ -133,9 +141,15 @@ export default function PlanSummaryCard() {
         <Link to="/plans" className="inline-flex items-center gap-1 underline underline-offset-2 hover:text-foreground">
           {t('plans.compareAllPlans')} <ArrowRight className="h-3 w-3" />
         </Link>
-        <Link to="/upgrade" className="underline underline-offset-2 hover:text-foreground">
-          {t('plans.planAndLimits')}
-        </Link>
+        {inheritedFrom ? (
+          <span className="leading-relaxed text-muted-foreground">
+            {t('plans.inheritedNote', { name: holder?.name || '' })}
+          </span>
+        ) : (
+          <Link to="/upgrade" className="underline underline-offset-2 hover:text-foreground">
+            {t('plans.planAndLimits')}
+          </Link>
+        )}
       </div>
     </div>
   );

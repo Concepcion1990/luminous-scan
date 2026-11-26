@@ -1,7 +1,7 @@
 import DocPhoto from './DocPhoto';
 import { DecoFooter, DecoHeader, DocFrame, PrintedAt } from './DocChrome';
 import { docRootClass, docRootStyle } from '@/lib/docStyle';
-import { formatShortDate } from '@/lib/dates';
+import { formatBusinessDate } from '@/lib/dates';
 import { t } from '@/lib/i18n';
 
 /**
@@ -32,11 +32,11 @@ export default function DateLabelDoc({ batches, business, docStyle }) {
             <div className="mt-2 grid gap-y-0.5 text-[9pt]">
               <p>
                 <span className="font-mono text-[6.5pt] uppercase tracking-wide text-black/60">{t('print.labelReceived')} </span>
-                {batch.created_date ? formatShortDate(batch.created_date) : '—'}
+                {batch.created_date ? formatBusinessDate(batch.created_date, business) : '—'}
               </p>
               <p>
                 <span className="font-mono text-[6.5pt] uppercase tracking-wide text-black/60">{t('print.labelUseBy')} </span>
-                <span className="font-semibold">{batch.expires_on ? formatShortDate(batch.expires_on) : '—'}</span>
+                <span className="font-semibold">{batch.expires_on ? formatBusinessDate(batch.expires_on, business) : '—'}</span>
               </p>
               <p>
                 <span className="font-mono text-[6.5pt] uppercase tracking-wide text-black/60">{t('print.labelQuantity')} </span>

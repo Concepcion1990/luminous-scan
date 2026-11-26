@@ -3,7 +3,8 @@ import { AlarmClock, Loader2, PhoneCall, X } from 'lucide-react';
 import { useBusiness } from '@/hooks/useBusiness';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
-import { getLocale, t } from '@/lib/i18n';
+import { t } from '@/lib/i18n';
+import { formatDayTime, formatTimeOnly } from '@/lib/dates';
 import {
   closeCallInWindow,
   getWorkforceContext,
@@ -124,21 +125,15 @@ export default function ClockAttentionCard() {
   if (!loaded || (!ctx?.clock_board_admin && !ctx?.call_in_admin)) return null;
   if (!missed.length && !windows.length && !candidates.length) return null;
 
-  const formatWhen = (iso) => {
-    const date = new Date(iso);
-    if (Number.isNaN(date.getTime())) return '';
-    return new Intl.DateTimeFormat(getLocale(), {
-      month: 'short',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-    }).format(date);
-  };
-  const formatTime = (iso) => {
-    const date = new Date(iso);
-    if (Number.isNaN(date.getTime())) return '';
-    return new Intl.DateTimeFormat(getLocale(), { hour: 'numeric', minute: '2-digit' }).format(date);
-  };
+  // Stored timestamps read through the house machinery
+  // (lib/dates — toLocalDate under every formatter), never a
+  // raw `new Date(...)`: the stored values are UTC, and a raw
+  // parse reads a zone-less value as LOCAL time, which moves
+  // the hour — and, near midnight, the day — on a card whose
+  // whole job is naming the right day (the smalls bundle,
+  // Nov 25, 2026; flagged by the 379 sweep).
+  const formatWhen = (iso) => formatDayTime(iso);
+  const formatTime = (iso) => formatTimeOnly(iso);
 
   const openWindow = async () => {
     if (!pick) return;

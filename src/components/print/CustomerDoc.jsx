@@ -3,7 +3,7 @@ import DocPhoto from './DocPhoto';
 import { DecoFooter, DecoHeader, DocFrame, PrintedAt } from './DocChrome';
 import { channelLabel, orderShipAddressLines } from '@/lib/orders';
 import { formatMoney } from '@/lib/inventory';
-import { formatShortDate } from '@/lib/dates';
+import { formatBusinessDate } from '@/lib/dates';
 import { docRootClass, docRootStyle } from '@/lib/docStyle';
 import { t } from '@/lib/i18n';
 
@@ -13,16 +13,17 @@ const TITLES = {
   packing: 'print.packingSlipTitle',
 };
 
-function shortDate(value) {
-  if (!value) return '';
-  return formatShortDate(value) || String(value);
-}
-
 /**
  * Customer-facing paperwork built from a customer order: a priced invoice, a
  * compact receipt, or a packing slip that travels in the box with no prices on it.
  */
 export default function CustomerDoc({ order, business, mode = 'invoice', docStyle, photoById = {} }) {
+  // Paper dates follow the business's own date-format pick
+  // when it has one (the smalls bundle, Nov 25, 2026).
+  const shortDate = (value) => {
+    if (!value) return '';
+    return formatBusinessDate(value, business) || String(value);
+  };
   const packing = mode === 'packing';
   const receipt = mode === 'receipt';
   const lines = order.lines || [];

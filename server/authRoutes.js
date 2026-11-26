@@ -242,7 +242,10 @@ function publicBusiness(row) {
     website: row.website || '',
     address: row.address || '',
     timezone: row.timezone || '',
-    date_format: row.date_format || 'MMM d, yyyy',
+    // The date-format pick (the smalls bundle, Nov 25, 2026):
+    // an empty value is AUTOMATIC — the business's papers write
+    // dates the local way. Only a stored pattern is a pick.
+    date_format: row.date_format || '',
     unit_system: row.unit_system || 'imperial',
     language: row.language || 'en',
     // Document Style Studio choices (migration 025), always the
@@ -333,7 +336,10 @@ function validateBusinessPatch(patch) {
       if (!SUPPORTED_CURRENCIES.includes(text.toUpperCase())) return { error: 'Choose a supported currency.' };
       clean.currency = text.toUpperCase();
     } else if (key === 'date_format') {
-      if (!SUPPORTED_DATE_FORMATS.includes(text)) return { error: 'Choose a supported date format.' };
+      // '' is a real choice — Automatic (the smalls bundle,
+      // Nov 25, 2026): the picker's top option clears the pick
+      // and the business's papers go back to the local way.
+      if (text !== '' && !SUPPORTED_DATE_FORMATS.includes(text)) return { error: 'Choose a supported date format.' };
       clean.date_format = text;
     } else if (key === 'unit_system') {
       if (!['imperial', 'metric'].includes(text)) return { error: 'Choose imperial or metric.' };
@@ -1082,8 +1088,13 @@ export function createAuthRouter({ getPool }) {
         }
         const id = crypto.randomUUID();
         const inserted = await client.query(
-          `INSERT INTO businesses (id, owner_id, name, tagline, currency, language, created_by_id)
-           VALUES ($1, $2, $3, $4, $5, $6, $2) RETURNING *`,
+          // date_format starts EMPTY — Automatic — so a new
+          // business's papers write dates the local way until
+          // its owner picks a format (the smalls bundle,
+          // Nov 25, 2026; the column default would otherwise
+          // silently stand as a pick nobody made).
+          `INSERT INTO businesses (id, owner_id, name, tagline, currency, language, created_by_id, date_format)
+           VALUES ($1, $2, $3, $4, $5, $6, $2, '') RETURNING *`,
           [id, req.user.id, name, tagline, currency, language],
         );
         await client.query(

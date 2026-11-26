@@ -195,11 +195,22 @@ export default function DetailsCard({ values, onChange, onPreferenceChange }) {
 
           <div className="space-y-2">
             <Label>{t('settings.details.dateFormat')}</Label>
-            <Select value={values.date_format} onValueChange={pick('date_format')}>
+            {/* The picker is WIRED UP (the smalls bundle,
+                Nov 25, 2026 — the owner's Road B: "Wire it up
+                just in case they need it"). Automatic is the
+                top choice and stores an empty value; a picked
+                format governs this business's printed documents
+                and labels. The 'auto' sentinel stands for ''
+                because a Select cannot hold an empty value. */}
+            <Select
+              value={values.date_format || 'auto'}
+              onValueChange={(value) => pick('date_format')(value === 'auto' ? '' : value)}
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="auto">{t('settings.details.dateFormatAutomatic')}</SelectItem>
                 {DATE_FORMATS.map((format) => (
                   <SelectItem key={format.value} value={format.value}>
                     {format.label}
@@ -207,6 +218,7 @@ export default function DetailsCard({ values, onChange, onPreferenceChange }) {
                 ))}
               </SelectContent>
             </Select>
+            <p className="text-xs text-muted-foreground">{t('settings.details.dateFormatHint')}</p>
           </div>
 
           <div className="space-y-2">

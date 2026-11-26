@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/use-toast';
 import { t } from '@/lib/i18n';
+import { toLocalDate } from '@/lib/dates';
 import { fixTimeEntry } from '@/lib/workforce';
 
 /**
@@ -28,8 +29,13 @@ import { fixTimeEntry } from '@/lib/workforce';
 /** An ISO instant as a business-local "YYYY-MM-DDTHH:MM" input value. */
 function toWallInput(iso, timeZone) {
   if (!iso) return '';
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return '';
+  // The instant resolves through the house machinery
+  // (toLocalDate): stored values are UTC, and a raw
+  // `new Date(...)` reads a zone-less value as local time,
+  // shifting the wall time this dialog opens on (the smalls
+  // bundle sweep, Nov 25, 2026).
+  const date = toLocalDate(iso);
+  if (!date) return '';
   try {
     const parts = {};
     const fmt = new Intl.DateTimeFormat('en-CA', {

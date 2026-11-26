@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { formatDateTime } from '@/lib/dates';
-import { getLocale, t } from '@/lib/i18n';
+import { t } from '@/lib/i18n';
 import { listMyDocuments, myDocumentFileUrl } from '@/lib/workforce';
 
 /**
@@ -48,18 +48,11 @@ export default function MyDocumentsDialog({ open, onOpenChange, businessId }) {
     load();
   }, [open, load]);
 
-  const formatWhen = (iso) => {
-    const date = new Date(iso);
-    if (Number.isNaN(date.getTime())) return '';
-    try {
-      return new Intl.DateTimeFormat(getLocale(), {
-        dateStyle: 'medium',
-        timeStyle: 'short',
-      }).format(date);
-    } catch {
-      return formatDateTime(date);
-    }
-  };
+  // Stored timestamps read through the house machinery
+  // (lib/dates formatDateTime — toLocalDate underneath),
+  // never a raw `new Date(...)` parse (the smalls bundle
+  // sweep, Nov 25, 2026 — the ClockAttentionCard lesson).
+  const formatWhen = (iso) => formatDateTime(iso);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

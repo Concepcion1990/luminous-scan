@@ -95,6 +95,12 @@ export function resolveEntitlement(record, user = null, businessRecord = null) {
     plan,
     status: record?.status || 'pending_checkout',
     record: record || null,
+    // The business whose own row this business rides on
+    // (release 356 inheritance, marked on the synthesized
+    // read) — null for a business holding its own row. The
+    // Upgrade door reads this (the smalls bundle, Nov 25,
+    // 2026): inside a riding business there is no door.
+    inheritedFrom: record?.inherited_from || null,
     limits: plan.limits,
     limit: (key) => limitFor(planKey, key),
     can: (feature) => featureAllowed(planKey, feature),

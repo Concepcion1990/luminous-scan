@@ -1,6 +1,9 @@
-import { formatShortDate } from '@/lib/dates';
+import { formatBusinessDate } from '@/lib/dates';
 
-const today = () => formatShortDate(new Date());
+// The header date is the business's own paper date: its
+// picked format when it has one, the local way otherwise
+// (the date-format override, the smalls bundle, Nov 25, 2026).
+const today = (business) => formatBusinessDate(new Date(), business);
 
 function BlankField({ label, width = 'w-[26mm]' }) {
   return (
@@ -29,7 +32,7 @@ export default function DocHeader({ business, title, subtitle, fields = [], logo
             {subtitle && <p className="text-[7.5pt] text-black/70">{subtitle}</p>}
           </div>
         </div>
-        <p className="font-mono text-[7pt]">{today()}</p>
+        <p className="font-mono text-[7pt]">{today(business)}</p>
       </div>
       {fields.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-x-6 gap-y-1">

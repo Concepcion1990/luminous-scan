@@ -116,6 +116,17 @@ export default function BusinessSwitcher({ compact = false }) {
   const oldestPlanRow = plans.find((row) => row.business_id === oldestBusiness?.id) ?? null;
   const onBusinessPlan = effectivePlanKey(oldestPlanRow, user, oldestBusiness) === 'business';
 
+  // Inside a business riding on another business's plan
+  // (release 356 inheritance, marked on its synthesized plan
+  // row), the plan-change door is not offered at all (the
+  // owner's Road B ruling, Nov 25, 2026): where the door
+  // would have been, the note names the plan's holder.
+  const activePlanRow = plans.find((row) => row.business_id === activeId) ?? null;
+  const ridingFrom = activePlanRow?.inherited_from || null;
+  const ridingHolder = ridingFrom
+    ? businesses.find((business) => business.id === ridingFrom)
+    : null;
+
   return (
     <div className={compact ? 'space-y-1' : 'space-y-2'}>
       <div className={compact ? 'flex items-center gap-2' : 'space-y-2'}>
@@ -215,9 +226,13 @@ export default function BusinessSwitcher({ compact = false }) {
       {atBusinessLimit && (
         <p className="text-[11px] leading-snug text-primary-foreground/60">
           {t('settings.switcher.limitNote', { max: PLANS.business.limits.businesses })}{' '}
-          <Link to="/upgrade" className="font-medium text-primary-foreground underline underline-offset-2">
-            {onBusinessPlan ? t('upgrade.downgradeToEssentials') : t('settings.switcher.upgrade')}
-          </Link>
+          {ridingFrom ? (
+            <span>{t('plans.inheritedNote', { name: ridingHolder?.name || '' })}</span>
+          ) : (
+            <Link to="/upgrade" className="font-medium text-primary-foreground underline underline-offset-2">
+              {onBusinessPlan ? t('upgrade.downgradeToEssentials') : t('settings.switcher.upgrade')}
+            </Link>
+          )}
         </p>
       )}
 

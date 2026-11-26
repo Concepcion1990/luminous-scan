@@ -22,7 +22,10 @@ export const DEFAULT_BUSINESS = {
   address: '',
   currency: 'USD',
   timezone: '',
-  date_format: 'MMM d, yyyy',
+  // '' = Automatic: the business's papers write dates the
+  // local way until the owner picks a format (the smalls
+  // bundle, Nov 25, 2026 — the wired-up date-format picker).
+  date_format: '',
   unit_system: 'imperial',
   language: 'en',
   tax_rate: '',
@@ -137,7 +140,7 @@ export async function saveBusiness(record, values) {
     address: values.address?.trim() || '',
     currency: values.currency || 'USD',
     timezone: values.timezone || localTimeZoneName(),
-    date_format: values.date_format || 'MMM d, yyyy',
+    date_format: values.date_format || '',
     unit_system: values.unit_system || 'imperial',
     language: values.language || 'en',
     tax_rate: values.tax_rate?.trim() || '',

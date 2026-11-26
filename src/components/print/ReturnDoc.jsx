@@ -4,20 +4,19 @@ import { DecoFooter, DecoHeader, DocFrame, PrintedAt } from './DocChrome';
 import { conditionLabel, reasonLabel } from '@/lib/returns';
 import { formatTrailStamp, returnTrail } from '@/lib/trail';
 import { formatMoney } from '@/lib/inventory';
-import { formatShortDate } from '@/lib/dates';
+import { formatBusinessDate } from '@/lib/dates';
 import { docRootClass, docRootStyle } from '@/lib/docStyle';
 import { t } from '@/lib/i18n';
-
-function shortDate(value) {
-  if (!value) return '';
-  return formatShortDate(value) || String(value);
-}
 
 /**
  * Return / exchange paperwork: what came back, its condition, and whether it was
  * put back on the shelf. Refunds are the amount recorded by hand, nothing more.
  */
-export default function ReturnDoc({ ret, business, docStyle, photoById = {} }) {
+export default function ReturnDoc({ ret, business, docStyle, photoById = {}, locationAddress = '' }) {
+  const shortDate = (value) => {
+    if (!value) return '';
+    return formatBusinessDate(value, business) || String(value);
+  };
   const exchange = ret.kind === 'exchange';
   const lines = ret.lines || [];
   const exchangeLines = ret.exchange_lines || [];
@@ -60,6 +59,10 @@ export default function ReturnDoc({ ret, business, docStyle, photoById = {} }) {
             {t('print.returnedTo')}{' '}
           </span>
           {ret.location_name || '—'}
+          {/* The customer sees the STORE's name + address
+              (the owner's ruling, Nov 25, 2026): a return names
+              the store it came back to, never a shelf. */}
+          {locationAddress ? ` · ${locationAddress}` : ''}
         </p>
         {ret.notes && (
           <p className="whitespace-pre-line">

@@ -113,6 +113,78 @@ export function formatShortDay(value, code) {
   return intlFormat(value, { day: 'numeric', month: 'short' }, code);
 }
 
+/**
+ * The business's own date-format pick (the smalls bundle,
+ * Nov 25, 2026 — the owner's Road B ruling: "Wire it up just
+ * in case they need it"). The Settings Details card has always
+ * saved a `date_format` pattern on the business record, but
+ * since release 358 made every date automatic-local, nothing
+ * read it — the picker turned freely and changed nothing. Now
+ * it is a real override, scoped to the surfaces the business
+ * itself governs: its printed documents and labels (the 370
+ * doctrine — papers render in the business's own settings).
+ * The reader's app chrome stays on the reader's own locale
+ * (358), exactly as before.
+ *
+ * A record carrying one of the four patterns is a pick; an
+ * empty or absent value is automatic (formatShortDate — the
+ * locale's own way). The month NAMES still come from Intl in
+ * the reader's language; only the ordering, the separators
+ * and the numeric-vs-named month follow the pick, assembled
+ * from formatToParts so no translated month table exists.
+ */
+export const BUSINESS_DATE_PATTERNS = ['MMM d, yyyy', 'd MMM yyyy', 'M/d/yyyy', 'yyyy-MM-dd'];
+
+export function pickedDatePattern(business) {
+  const value = business?.date_format;
+  return BUSINESS_DATE_PATTERNS.includes(value) ? value : null;
+}
+
+export function formatPickedDate(value, pattern, code) {
+  const date = asDisplayDate(value);
+  if (!date || !BUSINESS_DATE_PATTERNS.includes(pattern)) return '';
+  const named = pattern === 'MMM d, yyyy' || pattern === 'd MMM yyyy';
+  const padded = pattern === 'yyyy-MM-dd';
+  const options = {
+    day: padded ? '2-digit' : 'numeric',
+    month: named ? 'short' : padded ? '2-digit' : 'numeric',
+    year: 'numeric',
+  };
+  const parts = {};
+  try {
+    for (const part of new Intl.DateTimeFormat(intlLocale(code), options).formatToParts(date)) {
+      parts[part.type] = part.value;
+    }
+  } catch {
+    try {
+      for (const part of new Intl.DateTimeFormat('en-US', options).formatToParts(date)) {
+        parts[part.type] = part.value;
+      }
+    } catch {
+      return '';
+    }
+  }
+  switch (pattern) {
+    case 'MMM d, yyyy':
+      return `${parts.month} ${parts.day}, ${parts.year}`;
+    case 'd MMM yyyy':
+      return `${parts.day} ${parts.month} ${parts.year}`;
+    case 'M/d/yyyy':
+      return `${parts.month}/${parts.day}/${parts.year}`;
+    case 'yyyy-MM-dd':
+      return `${parts.year}-${parts.month}-${parts.day}`;
+    default:
+      return '';
+  }
+}
+
+/** A date on the business's own papers: the business's picked
+ * pattern when it has one, the automatic local way otherwise. */
+export function formatBusinessDate(value, business, code) {
+  const pattern = pickedDatePattern(business);
+  return pattern ? formatPickedDate(value, pattern, code) : formatShortDate(value, code);
+}
+
 /** All-numeric date — the locale's own ordering and separators
  * (18/11/2026 day-first, 11/18/2026 in the US, 2026-11-18 in en-CA:
  * Intl decides, nobody hand-picks). */

@@ -25,6 +25,7 @@
  */
 
 import { apiErrorMessage } from './apiErrors.js';
+import { toLocalDate } from './dates.js';
 import { getLocale, t } from './i18n.js';
 
 const GOOGLE_UNAVAILABLE = new Error(
@@ -48,8 +49,8 @@ async function loginRequest(email, password) {
     if (data?.error === 'staff_outside_window') {
       let message = t('login.staffWindowClosed');
       if (data.next_shift_start) {
-        const when = new Date(data.next_shift_start);
-        if (!Number.isNaN(when.getTime())) {
+        const when = toLocalDate(data.next_shift_start);
+        if (when) {
           const formatted = new Intl.DateTimeFormat(getLocale(), {
             weekday: 'long',
             month: 'long',

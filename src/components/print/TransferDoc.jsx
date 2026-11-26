@@ -2,7 +2,7 @@ import DocHeader from './DocHeader';
 import DocPhoto from './DocPhoto';
 import { DecoFooter, DecoHeader, DocFrame, PrintedAt } from './DocChrome';
 import { docRootClass, docRootStyle } from '@/lib/docStyle';
-import { formatShortDate } from '@/lib/dates';
+import { formatBusinessDate } from '@/lib/dates';
 import { t } from '@/lib/i18n';
 
 /**
@@ -41,7 +41,7 @@ export default function TransferDoc({ doc, business, docStyle }) {
         </p>
         <p>
           <span className="font-mono text-[6.5pt] uppercase tracking-wide text-black/60">{t('print.transferDate')} </span>
-          {doc.date ? formatShortDate(doc.date) : '—'}
+          {doc.date ? formatBusinessDate(doc.date, business) : '—'}
           {doc.by ? ` · ${doc.by}` : ''}
         </p>
         {doc.reference ? (
