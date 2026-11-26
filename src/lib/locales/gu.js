@@ -3330,7 +3330,7 @@ export const gu = {
   "workforce.breakOut": "બ્રેક માટે ચેક આઉટ કરો",
   "workforce.breakStarted": "બ્રેક શરૂ થયો.",
   "workforce.clockedInMsg": "તમે ક્લોક ઇન છો.",
-  "workforce.clockedInSince": "{time} થી ક્લોક ઇન",
+  "workforce.clockedInSince": "{date}, {time} થી ક્લોક ઇન",
   "workforce.clockedOutMsg": "ક્લોક આઉટ થયું. તમારો બાકીનો દિવસ સારો જાય.",
   "workforce.clockIn": "ક્લોક ઇન",
   "workforce.clockOut": "ક્લોક આઉટ",
