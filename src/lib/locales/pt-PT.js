@@ -3330,7 +3330,7 @@ export const ptPT = {
   "workforce.breakOut": "Sair para uma pausa",
   "workforce.breakStarted": "Pausa iniciada.",
   "workforce.clockedInMsg": "Registou a entrada.",
-  "workforce.clockedInSince": "Entrada registada desde {time}",
+  "workforce.clockedInSince": "Entrada registada em {date} às {time}",
   "workforce.clockedOutMsg": "Saída registada. Tenha um bom resto de dia.",
   "workforce.clockIn": "Registar entrada",
   "workforce.clockOut": "Registar saída",
