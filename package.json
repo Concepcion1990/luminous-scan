@@ -14,7 +14,7 @@
     "lint:fix": "eslint . --fix",
     "preview": "vite preview",
     "start": "node server.js",
-    "test": "npm run test:t1 && npm run test:t2 && npm run test:t3 && npm run test:t4 && npm run test:t5 && npm run test:t6 && npm run test:t7 && npm run test:t8 && npm run test:t9 && npm run test:t10 && npm run test:t11 && npm run test:t12 && npm run test:t13 && npm run test:t14 && npm run test:t15 && npm run test:t16 && npm run test:t17 && npm run test:t18 && npm run test:t19 && npm run test:t20 && npm run test:t21 && npm run test:t22 && npm run test:t23 && npm run test:t24 && npm run test:t25 && npm run test:t26 && npm run test:t27 && npm run test:t28 && npm run test:t29 && npm run test:t30 && npm run test:t31 && npm run test:t32 && npm run test:t33 && npm run test:t34 && npm run test:t35 && npm run test:t36 && npm run test:t37 && npm run test:t38 && npm run test:t39 && npm run test:t40 && npm run test:t41 && npm run test:t42 && npm run test:t43 && npm run test:t44 && npm run test:t45 && npm run test:t46 && npm run test:t47 && npm run test:t48 && npm run test:t49 && npm run test:t50 && npm run test:t51 && npm run test:t52 && npm run test:t53 && npm run test:t54 && npm run test:t55 && npm run test:t56 && npm run test:t57 && npm run test:t58 && npm run test:t59 && npm run test:t60 && npm run test:t61 && npm run test:t62 && npm run test:t63 && npm run test:t64 && npm run test:t65 && npm run test:t66 && npm run test:t67 && npm run test:t68 && npm run test:t69 && npm run test:t70 && npm run test:t71 && npm run test:t72",
+    "test": "npm run test:t1 && npm run test:t2 && npm run test:t3 && npm run test:t4 && npm run test:t5 && npm run test:t6 && npm run test:t7 && npm run test:t8 && npm run test:t9 && npm run test:t10 && npm run test:t11 && npm run test:t12 && npm run test:t13 && npm run test:t14 && npm run test:t15 && npm run test:t16 && npm run test:t17 && npm run test:t18 && npm run test:t19 && npm run test:t20 && npm run test:t21 && npm run test:t22 && npm run test:t23 && npm run test:t24 && npm run test:t25 && npm run test:t26 && npm run test:t27 && npm run test:t28 && npm run test:t29 && npm run test:t30 && npm run test:t31 && npm run test:t32 && npm run test:t33 && npm run test:t34 && npm run test:t35 && npm run test:t36 && npm run test:t37 && npm run test:t38 && npm run test:t39 && npm run test:t40 && npm run test:t41 && npm run test:t42 && npm run test:t43 && npm run test:t44 && npm run test:t45 && npm run test:t46 && npm run test:t47 && npm run test:t48 && npm run test:t49 && npm run test:t50 && npm run test:t51 && npm run test:t52 && npm run test:t53 && npm run test:t54 && npm run test:t55 && npm run test:t56 && npm run test:t57 && npm run test:t58 && npm run test:t59 && npm run test:t60 && npm run test:t61 && npm run test:t62 && npm run test:t63 && npm run test:t64 && npm run test:t65 && npm run test:t66 && npm run test:t67 && npm run test:t68 && npm run test:t69 && npm run test:t70 && npm run test:t71 && npm run test:t72 && npm run test:t73",
     "test:t1": "node --test src/lib/stockhavenSubscriptionPolicy.test.js src/lib/stockhavenTermsOfService.test.js src/lib/stockhavenPrivacyPolicy.test.js src/lib/trademarkNotice.test.js src/lib/aboutFounder.test.js",
     "test:t2": "node --test tests/t2/*.test.js",
     "test:t3": "node --test tests/t3/*.test.js src/lib/xlsx.test.js src/lib/isbn.test.js",
@@ -86,7 +86,8 @@
     "test:t69": "node --test tests/t69/*.test.js",
     "test:t70": "node --test tests/t70/*.test.js",
     "test:t71": "node --test tests/t71/*.test.js",
-    "test:t72": "node --test tests/t72/*.test.js"
+    "test:t72": "node --test tests/t72/*.test.js",
+    "test:t73": "node --test tests/t73/*.test.js"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^17.0.0",

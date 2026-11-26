@@ -1,5 +1,6 @@
 import { BrowserMultiFormatReader } from '@zxing/browser';
 import { BarcodeFormat, DecodeHintType } from '@zxing/library';
+import { readSupplementFromCanvas } from './supplementReader.js';
 
 /**
  * Everything the universal scanner tries to decode, in one pass.
@@ -13,7 +14,11 @@ import { BarcodeFormat, DecodeHintType } from '@zxing/library';
  * warns its reader is not production-ready, and a confident wrong number
  * is the worst failure this app can make) and MAXICODE (named in the
  * library's enum but never ported — no reader exists to switch on).
- * EAN-5/EAN-2 are not standalone codes in either engine.
+ * EAN-5/EAN-2 supplements are not standalone codes in either engine;
+ * the hand-built supplement pass (supplementReader.js, the owner's
+ * build-it-ourselves ruling) reads one standing alone, and only after
+ * the main decode found nothing — a frame holding a main code behaves
+ * exactly as it always has.
  */
 export const ZXING_FORMATS = [
   BarcodeFormat.QR_CODE,
@@ -65,7 +70,11 @@ export async function createCodeReader() {
           engine: 'native',
           async read(canvas) {
             const codes = await detector.detect(canvas);
-            return codes.length ? String(codes[0].rawValue || '') : null;
+            if (codes.length) return String(codes[0].rawValue || '');
+            // The native API has no supplement format at all, so a
+            // lone EAN-5/EAN-2 strip falls through to the hand-built
+            // pass rather than being stranded by the engine choice.
+            return readSupplementFromCanvas(canvas);
           },
         };
       }
@@ -85,7 +94,9 @@ export async function createCodeReader() {
       try {
         return reader.decodeFromCanvas(canvas).getText();
       } catch {
-        return null;
+        // The main decode found nothing: only now may a standalone
+        // supplement speak, so combined frames keep their main code.
+        return readSupplementFromCanvas(canvas);
       }
     },
   };
