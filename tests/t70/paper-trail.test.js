@@ -568,10 +568,10 @@ const NEW_KEYS = [
   'training.lessons.mgr-restaurant-invoices.step5',
 ];
 
-test('i18n gate: 63 new keys in all 52 locales, keyset 5913, plan lines carry the new features', () => {
+test('i18n gate: 63 new keys in all 52 locales, keyset 5931, plan lines carry the new features', () => {
   assert.equal(NEW_KEYS.length, 63);
   for (const [code, locale] of Object.entries(LOCALES)) {
-    assert.equal(Object.keys(locale).length, 5913, `${code} keyset`);
+    assert.equal(Object.keys(locale).length, 5931, `${code} keyset`);
     for (const key of NEW_KEYS) {
       assert.ok(typeof locale[key] === 'string' && locale[key].length > 0, `${code} carries ${key}`);
     }
@@ -601,8 +601,8 @@ test('i18n gate: 63 new keys in all 52 locales, keyset 5913, plan lines carry th
   assert.ok(en['plansLib.includes.logBook'].startsWith('Manager log book'));
 });
 
-test('training: 116 lessons, catalogs agree, the log book lesson and the invoices step 5 ride along', () => {
-  assert.equal(clientCatalog.length, 116);
+test('training: 117 lessons, catalogs agree, the log book lesson and the invoices step 5 ride along', () => {
+  assert.equal(clientCatalog.length, 117);
   assert.deepEqual(
     serverCatalog.map((l) => l.id),
     clientCatalog.map((l) => l.id),
