@@ -5821,7 +5821,7 @@ export const wuu = {
   "training.lessons.mgr-restaurant-invoices.step2": "链接采购单之后，发票会逐行三方对账：订了啥、收了啥、开票了啥。一行好转来是对得上、勿够数、多出来、用另外一个价开票，或者根本勿勒订单浪向。",
   "training.lessons.mgr-restaurant-invoices.step3": "开票价搭产品记录成本勿一样个辰光，会弹出价格提醒。接受提醒会拿产品成本设成新个开票价；勿理伊啥也勿变。同一张发票搭同一只产品，同一辰光只会有一只开牢个提醒。",
   "training.lessons.mgr-restaurant-invoices.step4": "拿货当成一只带保质期个保质期批次收货，保质期页会留牢批次顶快到期先出。跑一次批次会拿一只配方做指定趟数：伊会用脱配方个原料，搭拿做好个备餐产品放转货架浪——配方要先链接到个数只备餐产品。",
-  "training.lessons.mgr-restaurant-invoices.step5": "当供应商针对发票退回款项时——破损个箱子、短缺个交货、修正个价格——拉发票页面上针对该发票记录为贷项通知单。供应商来自发票本身，通知单计入发票还欠个金额：发票显示其已应用个贷项搭应付余额。贷项永远勿好超过其发票，作废通知单会让其留在记录里，同时停止计数。",
+  "training.lessons.mgr-restaurant-invoices.step5": "当供应商针对发票退回款项时——破损个箱子、短缺个交货、修正个价格——拉发票页面上针对该发票记录为贷项通知单。供应商来自发票本身，通知单计入发票还欠个金额：发票显示其已应用个贷项搭应付余额。贷项永远勿好超过其发票，作废通知单会让其留在记录里，同时停止计数。 需要纸质版个辰光，可以从箇行打印箇张凭证——打印出来个单据是侬对供应商贷项个自有记录，并非供应商个单据。",
   "training.lessons.mgr-restaurant-reports.title": "菜单工程、差异搭账",
   "training.lessons.mgr-restaurant-reports.step1": "老板信任侬，拨侬“菜钞票”个勾选，伊还会开厨房个钞票报告：菜单工程、差异搭会计导出。搿眼数字会留勒生意里向，搭所有菜钞票一样。",
   "training.lessons.mgr-restaurant-reports.step2": "菜单工程按每只菜勒个数期间卖出几化搭赚到几化摆位。明星卖得好搭赚得多；耕马卖得好但是赚得少；谜题赚得多但是卖得少；狗两样侪勿行。",
@@ -5920,4 +5920,9 @@ export const wuu = {
   "training.lessons.owner-ebay-connect.step5": "销售通过刊登上个 SKU、UPC 或者 ISBN 进行匹配 — 以刊登所带个三样当中任意一样为准。假使一笔销售匹配勿到，伊会垃店面连接页面个“需要匹配个销售”下头等：拿伊关联到伊个产品一记，该笔销售 — 还有以后类似个销售 — 就会自家记录。“马上检查销售”会获取任何最近个内容，而断开连接会停止连接；已经记录个销售会保留。",
   "training.lessons.owner-ebay-connect.title": "连接侬个 eBay 店",
   "training.module.storefronts": "店面连接",
+  "plans.inheritedNote": "箇商家受 {name} 个套餐覆盖。要改套餐，请切换到箇商家。",
+  "settings.details.dateFormatAutomatic": "自动 — 本地格式",
+  "settings.details.dateFormatHint": "“自动”会按照箇商家个语言搭地区个写法来写日期。改为拣一种格式之后，箇商家个打印文档搭标签将遵循侬个选择。",
+  "print.creditMemoTitle": "贷项凭证",
+  "print.creditMemoRecordNote": "箇张单据是本商家对供应商所给贷项个自有记录，并非供应商个单据。",
 };
