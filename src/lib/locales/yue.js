@@ -3330,7 +3330,7 @@ export const yue = {
   "workforce.breakOut": "休息前打卡離開",
   "workforce.breakStarted": "休息已開始。",
   "workforce.clockedInMsg": "你已打卡上班。",
-  "workforce.clockedInSince": "自 {time} 起已打卡上班",
+  "workforce.clockedInSince": "自 {date} {time} 起已打卡上班",
   "workforce.clockedOutMsg": "已打卡下班。祝你今日剩下嘅時間愉快。",
   "workforce.clockIn": "上班打卡",
   "workforce.clockOut": "下班打卡",

@@ -3330,7 +3330,7 @@ export const wuu = {
   "workforce.breakOut": "休息开始打卡",
   "workforce.breakStarted": "休息已开始。",
   "workforce.clockedInMsg": "侬已上班打卡。",
-  "workforce.clockedInSince": "上班打卡时间：{time}",
+  "workforce.clockedInSince": "上班打卡时间：{date} {time}",
   "workforce.clockedOutMsg": "已下班打卡。祝侬今天余下个时间愉快。",
   "workforce.clockIn": "上班打卡",
   "workforce.clockOut": "下班打卡",
