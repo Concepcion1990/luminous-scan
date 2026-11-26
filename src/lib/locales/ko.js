@@ -3330,7 +3330,7 @@ export const ko = {
   "workforce.breakOut": "휴게를 위해 체크아웃",
   "workforce.breakStarted": "휴게가 시작되었습니다.",
   "workforce.clockedInMsg": "출근 체크인되었습니다.",
-  "workforce.clockedInSince": "{time}부터 출근 중",
+  "workforce.clockedInSince": "{date} {time}부터 출근 중",
   "workforce.clockedOutMsg": "퇴근 체크아웃되었습니다. 오늘 남은 시간도 편안히 보내십시오.",
   "workforce.clockIn": "출근",
   "workforce.clockOut": "퇴근",

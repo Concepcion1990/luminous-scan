@@ -3330,7 +3330,7 @@ export const vi = {
   "workforce.breakOut": "Tạm ra để nghỉ",
   "workforce.breakStarted": "Đã bắt đầu nghỉ.",
   "workforce.clockedInMsg": "Bạn đã chấm công vào.",
-  "workforce.clockedInSince": "Đã chấm công vào từ {time}",
+  "workforce.clockedInSince": "Đã chấm công vào từ {date}, {time}",
   "workforce.clockedOutMsg": "Đã chấm công ra. Chúc bạn phần còn lại của ngày tốt lành.",
   "workforce.clockIn": "Chấm công vào",
   "workforce.clockOut": "Chấm công ra",
