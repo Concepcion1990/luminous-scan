@@ -63,6 +63,7 @@ export const PLANS = {
         t('plansLib.includes.recordPrints'),
         t('plansLib.includes.ageCheck'),
         t('plansLib.includes.ownTraining'),
+        t('plansLib.includes.barcodePool'),
         t('plansLib.includes.recovery'),
         t('plansLib.includes.support'),
         t('plansLib.includes.offline'),
@@ -325,6 +326,7 @@ export const WELCOME_OPTIONS = [
         t('plansLib.includes.recordPrints'),
         t('plansLib.includes.ageCheck'),
         t('plansLib.includes.ownTraining'),
+        t('plansLib.includes.barcodePool'),
         t('plansLib.includes.recovery'),
         t('plansLib.includes.support'),
         t('plansLib.includes.offline'),
@@ -469,6 +471,11 @@ export const COMPARISON_ROWS = [
   // general feature on both plans. Mobile stays "Set at launch"
   // like the other team-era rows.
   { get label() { return t('plansLib.includes.ownTraining'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
+  // The barcode pool (Nov 25, 2026): the Print section mints
+  // barcodes ahead of products, into the business's own pool —
+  // a general feature on both plans. Mobile stays "Set at
+  // launch" like the other team-era rows.
+  { get label() { return t('plansLib.includes.barcodePool'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
   { get label() { return t('plansLib.includes.recovery'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
   { get label() { return t('plansLib.includes.support'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
   { get label() { return t('plansLib.includes.offline'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { base44, apiRequest } from '@/api/client';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ArrowRight, Check, IdCard, MapPin, PackageSearch, Plus, Printer, RotateCcw, TriangleAlert } from 'lucide-react';
+import { ArrowRight, Barcode, Check, IdCard, MapPin, PackageSearch, Plus, Printer, RotateCcw, TriangleAlert } from 'lucide-react';
 import BarcodeScanner from '@/components/scan/BarcodeScanner';
 import AgeCheckPanel from '@/components/scan/AgeCheckPanel';
 import ExternalCodePanel from '@/components/scan/ExternalCodePanel';
@@ -28,6 +28,7 @@ import {
   setReserved,
 } from '@/lib/inventory';
 import { classifyScan } from '@/lib/scanCode';
+import { checkPoolCode } from '@/lib/barcodePool';
 import { orderedLocations } from '@/lib/locations';
 import { scoped } from '@/lib/scoped';
 import { useBusiness } from '@/hooks/useBusiness';
@@ -120,6 +121,12 @@ export default function Scan() {
   const [matches, setMatches] = useState([]);
   const [levels, setLevels] = useState([]);
   const [notFound, setNotFound] = useState(null);
+  // The barcode pool (Nov 25, 2026): a scanned code that matches
+  // no product but IS one of this business's own printed pool
+  // codes, still unclaimed. It gets its own panel — the app
+  // recognises its own code and offers the add-product road —
+  // instead of the honest no-match an unknown code gets.
+  const [poolCode, setPoolCode] = useState(null);
   const [external, setExternal] = useState(null);
   const [action, setAction] = useState('receive');
   const [qty, setQty] = useState('1');
@@ -194,6 +201,7 @@ export default function Scan() {
     setLevels([]);
     setMatches([]);
     setNotFound(null);
+    setPoolCode(null);
     setExternal(null);
     tallyRef.current = null;
   };
@@ -261,7 +269,26 @@ export default function Scan() {
         const scanned = classifyScan(code);
         clearResult();
         if (scanned.kind === 'identifier') {
-          setNotFound(code);
+          // Before the honest no-match: is this one of OUR OWN
+          // printed pool codes, still unclaimed? The check is
+          // scoped to this business — another business's pool
+          // code answers no, and the no-match below stands,
+          // exactly as for any unknown code. A failed check
+          // (offline, server down) also falls through to the
+          // no-match: recognition is a courtesy, never a guess.
+          let claimable = null;
+          try {
+            const verdict = await checkPoolCode(activeId || '', code);
+            if (verdict?.pool && !verdict.claimed) claimable = verdict.code || code;
+          } catch {
+            claimable = null;
+          }
+          if (currentBusinessIdRef.current !== activeId) return;
+          if (claimable) {
+            setPoolCode(claimable);
+          } else {
+            setNotFound(code);
+          }
         } else if (scanned.kind !== 'empty') {
           setExternal(scanned);
         }
@@ -507,7 +534,7 @@ export default function Scan() {
     }
   };
 
-  const idle = !product && !notFound && !external && matches.length === 0;
+  const idle = !product && !notFound && !poolCode && !external && matches.length === 0;
 
   const navigate = useNavigate();
   // Walmart scanner item 5 (T5): print a shelf tag for the scanned item.
@@ -666,6 +693,29 @@ export default function Scan() {
               <div>
                 <p className="text-sm font-medium">{t('scan.noMatch')}</p>
                 <p className="numeric mt-1 text-xs text-muted-foreground">{notFound}</p>
+              </div>
+              <div className="flex flex-wrap justify-center gap-2">
+                {canCreateProducts && (
+                  <Button onClick={() => setCreateOpen(true)}>
+                    <Plus className="mr-1.5 h-4 w-4" /> {t('scan.createProduct')}
+                  </Button>
+                )}
+                <Button variant="ghost" onClick={scanNext}>
+                  <RotateCcw className="mr-1.5 h-3.5 w-3.5" /> {t('scan.scanNext')}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {poolCode && (
+            <div className="space-y-4 px-6 py-12 text-center">
+              <Barcode className="mx-auto h-6 w-6 text-ok" />
+              <div>
+                <p className="text-sm font-medium">{t('scan.pool.title')}</p>
+                <p className="mx-auto mt-1 max-w-[300px] text-xs leading-relaxed text-muted-foreground">
+                  {t('scan.pool.body')}
+                </p>
+                <p className="numeric mt-1 text-xs text-muted-foreground">{poolCode}</p>
               </div>
               <div className="flex flex-wrap justify-center gap-2">
                 {canCreateProducts && (
@@ -912,9 +962,10 @@ export default function Scan() {
       <ProductFormDialog
         open={scanVisible && createOpen}
         onOpenChange={setCreateOpen}
-        defaultCode={notFound}
+        defaultCode={notFound || poolCode}
         onSaved={async (saved) => {
           setNotFound(null);
+          setPoolCode(null);
           setProduct(saved);
           setLevels([]);
           setSession((s) => s + 1);

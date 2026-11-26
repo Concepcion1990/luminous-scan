@@ -151,6 +151,10 @@ export const TRAINING_LESSONS = [
   { id: 'owner-billing', track: 'owner', module: 'billing', heading: 'general', steps: 5 },
   { id: 'owner-trial-reminders', track: 'owner', module: 'billing', heading: 'general', steps: 4 },
   { id: 'owner-printing', track: 'owner', module: 'printing', heading: 'general', steps: 5 },
+  // The barcode pool (the barcode-pool build, Nov 25, 2026):
+  // a GENERAL-heading lesson — printing codes ahead of products
+  // is for every business, on both plans.
+  { id: 'owner-barcode-pool', track: 'owner', module: 'printing', heading: 'general', steps: 5 },
   { id: 'owner-import', track: 'owner', module: 'import', heading: 'general', steps: 5, essentialsOnly: true },
   { id: 'owner-import-export', track: 'owner', module: 'exports', heading: 'general', steps: 4, feature: 'exports' },
   { id: 'owner-builds', track: 'owner', module: 'builds', heading: 'general', steps: 4, feature: 'builds' },

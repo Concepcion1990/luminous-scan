@@ -48,7 +48,10 @@ test('the result card Scan next clears the result and returns the view to the sc
 
 test('no under-scanner button and no stale Scan-next hint on the captured card', () => {
   const labels = scan.match(/t\('scan\.scanNext'\)/g) || [];
-  assert.equal(labels.length, 2, 'Scan.jsx carries exactly the result-card and not-found Scan next buttons');
+  // Three since the barcode-pool build (Nov 25, 2026): the
+  // recognised pool-code panel is a third result surface and
+  // carries the same Scan next button as the other two.
+  assert.equal(labels.length, 3, 'Scan.jsx carries exactly the result-card, not-found and pool-code Scan next buttons');
   assert.ok(!scanner.includes('scanNextHint'), 'the captured card no longer tells the owner to press Scan next');
   assert.ok(scanner.includes("t('scan.codeCaptured')"), 'the captured confirmation remains');
 });

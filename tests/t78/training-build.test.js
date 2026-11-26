@@ -29,11 +29,14 @@
  *  person's better retest passing; review mode filing pending,
  *  then the owner's mark deciding).
  *
- *  Keyset: 5958 + 48 = 6006 ×52, uniform (the box's 41 plus
+ *  Keyset: 5958 + 48 = 6006 ×52 at this build, uniform (the box's 41 plus
  *  the seven own-training API wordings in the apiErrors
- *  registry). Training catalog: 118 + 1 = 119 (owner track,
- *  training module, GENERAL heading, 5 steps). Migration 056
- *  (the five custom-training tables).
+ *  registry); the barcode-pool build (Nov 25, 2026) takes the
+ *  keyset to 6027 and the catalog to 120, and the pins below
+ *  carry the current totals. Training catalog: 118 + 1 = 119
+ *  at this build (owner track, training module, GENERAL
+ *  heading, 5 steps). Migration 056 (the five
+ *  custom-training tables).
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -85,13 +88,13 @@ const NEW_KEYS = [
 
 /* ------------------------------------------------ i18n gate */
 
-test('keyset stands at 6006 in all 52 locales, uniform', () => {
+test('keyset stands at 6027 in all 52 locales, uniform', () => {
   const codes = Object.keys(LOCALES);
   assert.equal(codes.length, 52);
   const enKeys = Object.keys(LOCALES.en).sort();
-  assert.equal(enKeys.length, 6006);
+  assert.equal(enKeys.length, 6027);
   for (const code of codes) {
-    assert.equal(Object.keys(LOCALES[code]).length, 6006, `${code} keyset`);
+    assert.equal(Object.keys(LOCALES[code]).length, 6027, `${code} keyset`);
     assert.deepEqual(Object.keys(LOCALES[code]).sort(), enKeys, `${code} keyset differs from en`);
   }
 });
@@ -132,9 +135,9 @@ test('plan presentation: the own-training line rides Essentials on Plans + Welco
 
 /* -------------------------------------- (A) sectioned headings */
 
-test('catalogs stand at 119, client and server JSON-identical, every lesson carrying its heading', () => {
-  assert.equal(CLIENT_LESSONS.length, 119);
-  assert.equal(SERVER_LESSONS.length, 119);
+test('catalogs stand at 120, client and server JSON-identical, every lesson carrying its heading', () => {
+  assert.equal(CLIENT_LESSONS.length, 120);
+  assert.equal(SERVER_LESSONS.length, 120);
   assert.equal(JSON.stringify(CLIENT_LESSONS), JSON.stringify(SERVER_LESSONS), 'the two catalogs agree exactly');
   for (const lesson of CLIENT_LESSONS) {
     assert.ok(TRAINING_HEADINGS.includes(lesson.heading), `${lesson.id} heading is one of the two`);
@@ -145,7 +148,7 @@ test('catalogs stand at 119, client and server JSON-identical, every lesson carr
     );
   }
   assert.equal(CLIENT_LESSONS.filter((l) => l.heading === 'restaurant').length, 9, 'the nine restaurant lessons (359 + 361) sit under the Restaurant heading');
-  assert.equal(CLIENT_LESSONS.filter((l) => l.heading === 'general').length, 110);
+  assert.equal(CLIENT_LESSONS.filter((l) => l.heading === 'general').length, 111);
 });
 
 test('the new lesson: owner-own-training, owner track, training module, GENERAL heading, 5 steps', () => {

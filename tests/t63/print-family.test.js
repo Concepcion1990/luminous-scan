@@ -231,8 +231,11 @@ test('blank forms: the Print Center area is its own, for everyone — no plan ga
   assert.ok(!area.includes('isEssentials') && !area.includes('showSupplierDocs'), 'no plan gate on blank forms');
   assert.match(center, /<BlankFormDoc kind=\{blankKind\}/);
   assert.match(center, /pickBlankForm/);
-  // A blank form never routes to a server PDF.
-  assert.match(center, /if \(!activeId \|\| blankKind\) return null;/);
+  // A blank form never routes to a server PDF. (The barcode-pool
+  // build, Nov 25, 2026, added poolActive to the same guard: a
+  // minted pool batch has no server PDF either — its PDF is the
+  // client labels PDF, built from the batch itself.)
+  assert.match(center, /if \(!activeId \|\| blankKind \|\| poolActive\) return null;/);
 });
 
 test('blank forms: the five new wordings exist in all 52 languages, genuinely translated', () => {
@@ -243,9 +246,9 @@ test('blank forms: the five new wordings exist in all 52 languages, genuinely tr
     'print.colProductName',
     'print.colTime',
   ];
-  assert.equal(Object.keys(en).length, 6006);
+  assert.equal(Object.keys(en).length, 6027);
   for (const [code, strings] of Object.entries(LOCALES)) {
-    assert.equal(Object.keys(strings).length, 6006, code);
+    assert.equal(Object.keys(strings).length, 6027, code);
     for (const key of keys) assert.ok(strings[key], `${code} carries ${key}`);
   }
   // The Spanish wordings are Spanish, not English copies.

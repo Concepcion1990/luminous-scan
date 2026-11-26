@@ -19,6 +19,8 @@ import {
 import { usbAvailable, USB_UNAVAILABLE_COPY, printLabelsViaUsb } from '@/lib/usbPrint';
 import { downloadLabelsPdf, fetchPhotoDataUrl } from '@/lib/labelsPdf';
 import LabelCard, { TEMPLATES } from '@/components/print/LabelCard';
+import BarcodePoolCard from '@/components/print/BarcodePoolCard';
+import { poolCodeLabel } from '@/lib/barcodePool';
 import BlankFormDoc, { BLANK_FORMS } from '@/components/print/BlankFormDoc';
 import CountSheet from '@/components/print/CountSheet';
 import PickList from '@/components/print/PickList';
@@ -63,6 +65,15 @@ export default function PrintCenter() {
   // print style clear each other, so the preview always shows
   // exactly one thing.
   const [blankKind, setBlankKind] = useState('');
+  // The barcode pool (Nov 25, 2026): the codes from the latest
+  // mint at the Generate barcodes door. While a batch is live it
+  // takes over the preview — the labels print through the same
+  // machinery as product labels — and picking a print style or
+  // a blank form clears it, exactly like the blank forms clear
+  // the style.
+  const [poolBatch, setPoolBatch] = useState(null);
+  const poolActive = Array.isArray(poolBatch) && poolBatch.length > 0;
+  const previewRef = useRef(null);
   // The tapped document's editor is what she sees next (owner's
   // phone, Nov 15, 2026): the editor renders directly beneath
   // the document list — it used to sit below the whole Style
@@ -72,12 +83,14 @@ export default function PrintCenter() {
   const pickTemplate = (key) => {
     setTemplate(key);
     setBlankKind('');
+    setPoolBatch(null);
     requestAnimationFrame(() => {
       editorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   };
   const pickBlankForm = (key) => {
     setBlankKind(key);
+    setPoolBatch(null);
     requestAnimationFrame(() => {
       editorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
@@ -371,7 +384,9 @@ export default function PrintCenter() {
   // guard is the enforcement — the same shape as the export button.
   const supplierBlocked = isSupplierPrintTemplate(template) && !showSupplierDocs;
 
-  const nothingPicked = blankKind
+  const nothingPicked = poolActive
+    ? false
+    : blankKind
     ? false
     : isOrder
       ? !order
@@ -400,7 +415,7 @@ export default function PrintCenter() {
   // server PDF — they print through the browser only.
   const isLabelStyle = !isDocument && !pickedDoc;
   const serverPdfPath = () => {
-    if (!activeId || blankKind) return null;
+    if (!activeId || blankKind || poolActive) return null;
     if (isLabelStyle && selected.length) {
       return `/api/businesses/${activeId}/print/labels?product_ids=${selected.map((p) => p.id).join(',')}&copies=${copies}`;
     }
@@ -468,7 +483,9 @@ export default function PrintCenter() {
 
   const blankForm = BLANK_FORMS.find((entry) => entry.key === blankKind) || null;
 
-  const summaryTitle = blankForm
+  const summaryTitle = poolActive
+    ? t('print.pool.title')
+    : blankForm
     ? t(blankForm.labelKey)
     : isOrder
       ? order
@@ -503,7 +520,9 @@ export default function PrintCenter() {
 
   const templateLabel = activeTemplate?.labelKey ? t(activeTemplate.labelKey) : '';
 
-  const summarySub = blankForm
+  const summarySub = poolActive
+    ? t('print.labelsCount', { count: poolBatch.length, s: poolBatch.length === 1 ? '' : 's' })
+    : blankForm
     ? t('print.blankFormsHint')
     : isOrder
       ? `${templateLabel} · ${order ? order.supplier_name : t('print.pickOrder')}`
@@ -603,6 +622,31 @@ export default function PrintCenter() {
               ))}
             </div>
           </div>
+
+          {/* The barcode pool door (Nov 25, 2026): the owner's
+              Generate barcodes card — mint house codes with no
+              product attached, then print them now or save the
+              PDF. Owner-only, like every boss door on this page
+              (the Style Studio below); the server refuses a
+              non-owner mint whatever the screen shows. */}
+          {isBoss(user, profile) && (
+            <BarcodePoolCard
+              businessId={activeId}
+              businessName={profile.name}
+              batch={poolBatch}
+              onBatch={(codes) => {
+                setPoolBatch(codes);
+                // The batch previews as labels: if a document
+                // style was picked, step to the barcode label so
+                // the codes are what the preview shows.
+                if (!isLabelStyle) setTemplate('barcode');
+              }}
+              onPrintNow={() => {
+                previewRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                setTimeout(() => window.print(), 400);
+              }}
+            />
+          )}
 
           <div ref={editorRef} data-print-editor="true" className="scroll-mt-24 space-y-4">
           {isOrder ? (
@@ -762,20 +806,20 @@ export default function PrintCenter() {
           )}
         </div>
 
-        <div className="rounded-xl border border-border bg-card print:border-0">
+        <div ref={previewRef} className="rounded-xl border border-border bg-card print:border-0">
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-3 no-print">
             <div>
               <p className="text-sm font-medium">{summaryTitle}</p>
               <p className="text-[11px] text-muted-foreground">{summarySub}</p>
             </div>
-            {!blankKind && !pickedDoc && selected.length > 0 && (
+            {!blankKind && !poolActive && !pickedDoc && selected.length > 0 && (
               <Button variant="ghost" size="sm" onClick={() => setSelected([])}>
                 {t('print.clearSelection')}
               </Button>
             )}
           </div>
 
-          {!blankKind && !pickedDoc && selected.length > 0 && (
+          {!blankKind && !poolActive && !pickedDoc && selected.length > 0 && (
             <div className="flex flex-wrap gap-1.5 border-b border-border px-4 py-2 no-print">
               {selected.map((product) => (
                 <button
@@ -820,6 +864,18 @@ export default function PrintCenter() {
                         ? t('print.pickReturnHint')
                         : t('print.chooseStyleHint')}
                 </p>
+              </div>
+            ) : poolActive ? (
+              <div className="print-label-flow flex flex-wrap justify-center gap-3">
+                {poolBatch.map((code) => (
+                  <LabelCard
+                    key={code}
+                    template={isLabelStyle ? template : 'barcode'}
+                    label={poolCodeLabel(code, profile.name)}
+                    business={profile}
+                    docStyle={docStyle}
+                  />
+                ))}
               </div>
             ) : blankKind ? (
               <BlankFormDoc kind={blankKind} business={profile} docStyle={docStyle} />
