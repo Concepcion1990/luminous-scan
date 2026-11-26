@@ -42,8 +42,8 @@
  *    posts raw "HH:MM" and the <input type="time"> editors
  *    still bind the raw stored values (display only moved).
  *  Zero new strings from that fix too: the keyset stands at
- *  5845 ×52 (the restaurant IA batch, release 377, added the
- *  latest 27).
+ *  5908 ×52 (the restaurant IA batch, release 377, added 27;
+ *  the paper-trail batch, release 378, added the latest 63).
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -220,10 +220,10 @@ test('wiring: the Workforce shift lines route through formatHhmm; the stored for
   assert.match(workforce, /value=\{value\?\.end_time \|\| ''\}/);
 });
 
-test('zero new strings from 358: the keyset stands at 5845 in every locale (5136 through 358; the restaurant batch added 172, cross-store messages 25, restaurant operations 390, eBay storefront 46, the photo door fix 8, the print family 5, the product form batch 7, the photo capture batch 4)', () => {
+test('zero new strings from 358: the keyset stands at 5908 in every locale (5136 through 358; the restaurant batch added 172, cross-store messages 25, restaurant operations 390, eBay storefront 46, the photo door fix 8, the print family 5, the product form batch 7, the photo capture batch 4, the restaurant IA batch 27, the paper-trail batch 63)', () => {
   const counts = Object.entries(LOCALES).map(([code, dict]) => [code, Object.keys(dict).length]);
   for (const [code, count] of counts) {
-    assert.equal(count, 5845, `${code} keyset`);
+    assert.equal(count, 5908, `${code} keyset`);
   }
   assert.equal(counts.length, 52);
 });

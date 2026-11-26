@@ -810,9 +810,9 @@ test('nav: the storefronts door sits in Sales with no plan gate', () => {
   assert.equal(door.labelKey, 'nav.storefronts');
 });
 
-test('training: catalog 115, the eBay lesson agrees across catalogs and shows on both plans', () => {
-  assert.equal(CLIENT_LESSONS.length, 115);
-  assert.equal(SERVER_LESSONS.length, 115);
+test('training: catalog 116, the eBay lesson agrees across catalogs and shows on both plans', () => {
+  assert.equal(CLIENT_LESSONS.length, 116);
+  assert.equal(SERVER_LESSONS.length, 116);
   const server = SERVER_LESSONS.find((l) => l.id === 'owner-ebay-connect');
   const client = CLIENT_LESSONS.find((l) => l.id === 'owner-ebay-connect');
   assert.ok(server && client, 'the lesson exists in both catalogs');

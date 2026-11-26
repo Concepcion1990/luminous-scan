@@ -135,6 +135,18 @@ test('shelf model: cross-links are named cross-links and point at real primary d
   for (const shelf of SHELVES) {
     for (const door of shelf.doors) {
       if (!door.crossLink) continue;
+      if (!door.to.startsWith('/restaurant/')) {
+        // Release 378 (Nov 25, 2026): a cross-link may also
+        // point at a GENERAL feature's home outside the corner
+        // — the pattern the 377 record flagged for the Q1–Q4
+        // general features as they land. The two that exist
+        // are pinned by name in t70: Stock & Ordering -> the
+        // general Counts page, Team & Place -> the manager
+        // log book. A general cross-link has no shelf home by
+        // design; what it must never do is pose as a primary.
+        assert.equal(homeShelfForRoute(door.to), null, `${door.to} is a general route with no shelf home`);
+        continue;
+      }
       const home = homeShelfForRoute(door.to);
       assert.ok(home && home.id !== shelf.id, `${door.to} cross-linked from ${shelf.id} has its primary home elsewhere`);
     }

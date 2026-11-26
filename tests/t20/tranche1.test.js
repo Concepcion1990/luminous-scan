@@ -414,6 +414,11 @@ const TL_COGNATE_KEYS = new Set([
   // eBay storefront batch (release 362, Nov 23, 2026): "Order" is
   // the everyday Tagalog word for a placed order — verified.
   'storefronts.orderLabel',
+  // Paper-trail batch (release 378, Nov 25, 2026): Tagalog
+  // keeps "Invoice" for the credit memo's field and column
+  // and "Entry" for the log book's field label, the same
+  // loanwords it uses throughout — verified.
+  'ops.credits.colInvoice', 'ops.credits.invoiceLabel', 'logBook.bodyLabel',
   // Restaurant operations batch (Nov 23, 2026): Tagalog keeps these kitchen and menu-engineering terms in English, as it does throughout (the quadrant names are the menu-engineering proper names) — verified word-by-word.
   'nav.menu', 'ops.invoices.supplierLabel', 'ops.invoices.poLabel', 'ops.invoices.poPrefix',
   'ops.invoices.statusDraft', 'ops.invoices.colSupplier', 'batch.colRecipe', 'batch.colOutput',
@@ -553,6 +558,10 @@ const JV_COGNATE_KEYS = new Set([
   // in this form for the field — verified.
   'productForm.formatLabel', 'productDetails.rowFormat', 'importLib.field.format',
   'importLib.updateField.format',
+  // Paper-trail batch (release 378, Nov 25, 2026): Javanese
+  // keeps "Invoice" for the field and column, the same
+  // loanword its own invoices title uses — verified.
+  'ops.credits.colInvoice', 'ops.credits.invoiceLabel',
 ]);
 const PCM_COGNATE_KEYS = new Set([
   // eBay storefront batch (release 362, Nov 23, 2026): Pidgin keeps
@@ -650,6 +659,18 @@ const PCM_COGNATE_KEYS = new Set([
   'guide.colSupplier', 'print.recipeTitle', 'print.recipeIngredient',
   'print.recipeQuantity', 'print.recipeLineCost', 'print.recipePrice',
   'print.recipeTrueCost', 'print.recipeCostPerMake',
+  // Paper-trail batch (release 378, Nov 25, 2026): Pidgin
+  // keeps these short log-book and credit-memo labels,
+  // buttons, column heads and the lesson title in English —
+  // the same register as the batches above; every sentence,
+  // placeholder and lesson step is translated — verified
+  // word-by-word.
+  'nav.logBook', 'logBook.title', 'logBook.addButton', 'logBook.saveButton',
+  'logBook.bodyLabel', 'logBook.editTitle', 'ops.credits.newButton',
+  'ops.credits.colInvoice', 'ops.credits.colAmount', 'ops.credits.statusVoid',
+  'ops.credits.newTitle', 'ops.credits.editTitle', 'ops.credits.invoiceLabel',
+  'ops.credits.amountLabel', 'ops.credits.creditNumberLabel', 'ops.credits.dateLabel',
+  'ops.credits.reasonLabel', 'ops.credits.save', 'training.lessons.staff-log-book.title',
 ]);
 const GU_COGNATE_KEYS = new Set([
   // Restaurant operations batch (Nov 23, 2026): "PO {number}" is the purchase-order code format and "g" is the gram symbol — verified.

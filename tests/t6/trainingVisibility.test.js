@@ -102,13 +102,17 @@ test('plan-visible counts: Business whole, Essentials without the Business subje
   // ONE both-plans lesson (owner-ebay-connect, no feature tag —
   // storefront connections are both plans): owner 46 on
   // Business and 25 on Essentials; manager/staff unchanged.
+  // The paper-trail build (release 378, Nov 25, 2026) adds ONE
+  // both-plans staff lesson (staff-log-book, no feature tag —
+  // the manager log book is a general feature): staff 43 on
+  // Business and 35 on Essentials; owner/manager unchanged.
   assert.equal(count('owner', true), 46);
   assert.equal(count('manager', true), 26);
-  assert.equal(count('staff', true), 42);
+  assert.equal(count('staff', true), 43);
   // Essentials: 19 owner subjects hidden, owner-import in their place.
   assert.equal(count('owner', false), 25); // +1 confidentiality lesson (Nov 19, 2026); +1 eBay storefront lesson (release 362, both plans)
   assert.equal(count('manager', false), 14);
-  assert.equal(count('staff', false), 34);
+  assert.equal(count('staff', false), 35);
   // Payroll / workforce / direct-deposit lessons stay on Essentials.
   const essentialsStaff = client.visibleLessonsForTrack('staff', false).map((l) => l.id);
   for (const id of ['stub-yours', 'dd-submit', 'clock-basics']) {
