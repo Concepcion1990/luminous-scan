@@ -101,7 +101,7 @@ export const POLICY_FILE_TYPES = [
   'application/vnd.oasis.opendocument.text',
 ];
 
-function parsePolicyFileDataUrl(value) {
+export function parsePolicyFileDataUrl(value) {
   const text = String(value || '');
   const match = text.match(/^data:([a-z0-9.+-]+\/[a-z0-9.+-]+);base64,([A-Za-z0-9+/=]+)$/i);
   if (!match) return null;
@@ -117,7 +117,7 @@ function parsePolicyFileDataUrl(value) {
   return { mime, bytes, base64: match[2] };
 }
 
-const cleanPolicyFilename = (value) =>
+export const cleanPolicyFilename = (value) =>
   String(value || '')
     .split(/[\\/]/)
     .pop()

@@ -49,6 +49,7 @@ import { createRecoveryRouter } from './recoveryRoutes.js';
 import { createSupportRouter } from './supportRoutes.js';
 import { createBusinessPolicyRouter } from './businessPolicyRoutes.js';
 import { createPolicyQuizRouter } from './policyQuizRoutes.js';
+import { createCustomTrainingRouter } from './customTrainingRoutes.js';
 import { createProfilePhotoRouter } from './profilePhotoRoutes.js';
 import { createXstoreMessageRouter } from './xstoreMessageRoutes.js';
 import { createCompRouter } from './compRoutes.js';
@@ -144,6 +145,7 @@ export function createApp() {
       '/api/businesses/:bid/orders/:oid/shipping-label',
       '/api/businesses/:bid/staff-documents/:memberId',
       '/api/businesses/:bid/policies/:kind/file',
+      '/api/businesses/:bid/own-training/:id/file',
       '/api/businesses/:bid/profile-photos/me',
       '/api/businesses/:bid/pos/csv-import',
     ],
@@ -314,6 +316,10 @@ export function createApp() {
   app.use('/api', createBusinessPolicyRouter({ getPool }));
   // The owner's quiz on her own policies + terms (server/policyQuizRoutes.js):
   app.use('/api', createPolicyQuizRouter({ getPool }));
+  // "Add your own training" (server/customTrainingRoutes.js): the
+  // owner's own trainings + quizzes at the end of the Training
+  // page — both plans, per-business private, tick-assigned.
+  app.use('/api', createCustomTrainingRouter({ getPool }));
   // Profile photos + the owner's display name
   // (server/profilePhotoRoutes.js): owner-approved team photos
   // and the name that replaces "Owner".

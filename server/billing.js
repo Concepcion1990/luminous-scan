@@ -373,6 +373,14 @@ export async function runWipeSweep(pool, { now = new Date(), logger = console } 
         await client.query('DELETE FROM policy_questions WHERE business_id = $1', [businessId]);
         await client.query('DELETE FROM policy_quiz_settings WHERE business_id = $1', [businessId]);
         await client.query('DELETE FROM policy_quiz_attempts WHERE business_id = $1', [businessId]);
+        // The owner's own trainings (migration 056) carry no FK
+        // cascade either — the trainings, their files, questions,
+        // ticks and attempts die with the business.
+        await client.query('DELETE FROM custom_training_attempts WHERE business_id = $1', [businessId]);
+        await client.query('DELETE FROM custom_training_assignments WHERE business_id = $1', [businessId]);
+        await client.query('DELETE FROM custom_training_questions WHERE business_id = $1', [businessId]);
+        await client.query('DELETE FROM custom_training_files WHERE business_id = $1', [businessId]);
+        await client.query('DELETE FROM custom_trainings WHERE business_id = $1', [businessId]);
         await client.query('DELETE FROM import_events WHERE business_id = $1', [businessId]);
         // Profile photos (migration 034) carry no FK cascade —
         // a person's face dies with the business, never after it.
