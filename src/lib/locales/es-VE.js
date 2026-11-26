@@ -3330,7 +3330,7 @@ export const esVE = {
   "workforce.breakOut": "Registrar salida a descanso",
   "workforce.breakStarted": "Descanso iniciado.",
   "workforce.clockedInMsg": "Ya registraste tu entrada.",
-  "workforce.clockedInSince": "Entrada registrada desde las {time}",
+  "workforce.clockedInSince": "Entrada registrada el {date} a las {time}",
   "workforce.clockedOutMsg": "Salida registrada. Que tengas un buen resto del día.",
   "workforce.clockIn": "Registrar entrada",
   "workforce.clockOut": "Registrar salida",

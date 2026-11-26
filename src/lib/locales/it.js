@@ -3330,7 +3330,7 @@ export const it = {
   "workforce.breakOut": "Esci per una pausa",
   "workforce.breakStarted": "Pausa iniziata.",
   "workforce.clockedInMsg": "Hai timbrato l'entrata.",
-  "workforce.clockedInSince": "Entrata timbrata alle {time}",
+  "workforce.clockedInSince": "Entrata timbrata il {date} alle {time}",
   "workforce.clockedOutMsg": "Uscita timbrata. Buon proseguimento di giornata.",
   "workforce.clockIn": "Timbra l'entrata",
   "workforce.clockOut": "Timbra l'uscita",
