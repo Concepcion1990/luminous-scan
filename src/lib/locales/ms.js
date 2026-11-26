@@ -3330,7 +3330,7 @@ export const ms = {
   "workforce.breakOut": "Keluar untuk rehat",
   "workforce.breakStarted": "Rehat bermula.",
   "workforce.clockedInMsg": "Anda telah mendaftar masuk.",
-  "workforce.clockedInSince": "Didaftar masuk sejak {time}",
+  "workforce.clockedInSince": "Didaftar masuk sejak {date}, {time}",
   "workforce.clockedOutMsg": "Didaftar keluar. Selamat berehat untuk baki hari ini.",
   "workforce.clockIn": "Daftar masuk",
   "workforce.clockOut": "Daftar keluar",

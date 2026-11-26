@@ -3330,7 +3330,7 @@ export const tr = {
   "workforce.breakOut": "Mola için çıkış kaydet",
   "workforce.breakStarted": "Mola başladı.",
   "workforce.clockedInMsg": "Girişiniz kaydedildi.",
-  "workforce.clockedInSince": "{time} saatinden beri giriş yapıldı",
+  "workforce.clockedInSince": "{date} {time} saatinden beri giriş yapıldı",
   "workforce.clockedOutMsg": "Çıkışınız kaydedildi. Gününüzün geri kalanı güzel geçsin.",
   "workforce.clockIn": "Giriş yap",
   "workforce.clockOut": "Çıkış yap",
