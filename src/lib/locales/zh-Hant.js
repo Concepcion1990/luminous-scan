@@ -3330,7 +3330,7 @@ export const zhHant = {
   "workforce.breakOut": "休息開始簽退",
   "workforce.breakStarted": "休息已開始。",
   "workforce.clockedInMsg": "您已打卡上班。",
-  "workforce.clockedInSince": "自 {time} 起已打卡上班",
+  "workforce.clockedInSince": "自 {date} {time} 起已打卡上班",
   "workforce.clockedOutMsg": "已打卡下班。祝您今天剩下的時間愉快。",
   "workforce.clockIn": "打卡上班",
   "workforce.clockOut": "打卡下班",
