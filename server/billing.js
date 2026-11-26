@@ -381,6 +381,9 @@ export async function runWipeSweep(pool, { now = new Date(), logger = console } 
         await client.query('DELETE FROM custom_training_questions WHERE business_id = $1', [businessId]);
         await client.query('DELETE FROM custom_training_files WHERE business_id = $1', [businessId]);
         await client.query('DELETE FROM custom_trainings WHERE business_id = $1', [businessId]);
+        // The barcode pool (migration 057) carries no FK cascade
+        // either — the business's minted house codes die with it.
+        await client.query('DELETE FROM barcode_pool_codes WHERE business_id = $1', [businessId]);
         await client.query('DELETE FROM import_events WHERE business_id = $1', [businessId]);
         // Profile photos (migration 034) carry no FK cascade —
         // a person's face dies with the business, never after it.

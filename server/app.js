@@ -50,6 +50,7 @@ import { createSupportRouter } from './supportRoutes.js';
 import { createBusinessPolicyRouter } from './businessPolicyRoutes.js';
 import { createPolicyQuizRouter } from './policyQuizRoutes.js';
 import { createCustomTrainingRouter } from './customTrainingRoutes.js';
+import { createBarcodePoolRouter } from './barcodePoolRoutes.js';
 import { createProfilePhotoRouter } from './profilePhotoRoutes.js';
 import { createXstoreMessageRouter } from './xstoreMessageRoutes.js';
 import { createCompRouter } from './compRoutes.js';
@@ -320,6 +321,10 @@ export function createApp() {
   // owner's own trainings + quizzes at the end of the Training
   // page — both plans, per-business private, tick-assigned.
   app.use('/api', createCustomTrainingRouter({ getPool }));
+  // The barcode pool (server/barcodePoolRoutes.js): the Print
+  // section's Generate barcodes door — owner-minted house codes
+  // with no product attached, per-business, both plans.
+  app.use('/api', createBarcodePoolRouter({ getPool }));
   // Profile photos + the owner's display name
   // (server/profilePhotoRoutes.js): owner-approved team photos
   // and the name that replaces "Owner".

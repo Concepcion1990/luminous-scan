@@ -137,6 +137,8 @@ export const API_ERROR_MESSAGE_KEYS = {
   "One of the ticked people is not on this team.": "apiErrors.ownTrainingTickNotTeam",
   "No file is saved for that training.": "apiErrors.ownTrainingNoFile",
   "Written answers are checked against the key or sent to the owner.": "apiErrors.ownTrainingWrittenMode",
+  "Only the owner makes barcodes for the pool.": "apiErrors.poolOwnerMints",
+  "Say how many barcodes you need — a whole number of one or more.": "apiErrors.poolCount",
   "This lesson finishes with a short quiz — answer it correctly to complete the lesson.": "apiErrors.trainingQuizRequired",
   "The owner does not take quizzes.": "apiErrors.trainingOwnerExempt",
   "That quiz has changed — open it again and answer the questions shown.": "apiErrors.trainingQuizChanged",

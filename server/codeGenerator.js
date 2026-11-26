@@ -169,6 +169,17 @@ export async function loadTakenCodes(pool, businessId) {
   for (const row of minted.rows) {
     for (const form of codeForms(row.gtin)) taken.add(form);
   }
+  // The barcode pool (migration 057): a code waiting in the
+  // business's pool is spoken for — the per-product generator
+  // must never mint a product code that shadows a printed pool
+  // label still waiting to be claimed.
+  const pooled = await pool.query(
+    'SELECT code FROM barcode_pool_codes WHERE business_id = $1',
+    [businessId],
+  );
+  for (const row of pooled.rows) {
+    for (const form of codeForms(row.code)) taken.add(form);
+  }
   return taken;
 }
 
