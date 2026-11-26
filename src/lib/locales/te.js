@@ -3330,7 +3330,7 @@ export const te = {
   "workforce.breakOut": "విరామం కోసం చెక్ అవుట్ చేయండి",
   "workforce.breakStarted": "విరామం ప్రారంభమైంది.",
   "workforce.clockedInMsg": "మీరు క్లాక్ ఇన్ అయ్యారు.",
-  "workforce.clockedInSince": "{time} నుండి క్లాక్ ఇన్ అయ్యారు",
+  "workforce.clockedInSince": "{date}, {time} నుండి క్లాక్ ఇన్ అయ్యారు",
   "workforce.clockedOutMsg": "క్లాక్ అవుట్ అయ్యారు. మీ రోజు మిగిలిన భాగం బాగా గడవాలి.",
   "workforce.clockIn": "క్లాక్ ఇన్",
   "workforce.clockOut": "క్లాక్ అవుట్",
