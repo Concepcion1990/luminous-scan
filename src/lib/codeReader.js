@@ -112,6 +112,54 @@ export async function createCodeReader() {
 }
 
 /**
+ * The age check's reader (Nov 25, 2026): PDF417 only — the
+ * barcode on the back of a driver's license / state ID. The
+ * universal reader above is left exactly as it is; this one
+ * exists because a platform whose BarcodeDetector reads QR but
+ * NOT PDF417 would otherwise strand the license scan on the
+ * native engine. Native when the platform reads PDF417 itself,
+ * the ZXing fallback (PDF417 hinted, try harder) when it does
+ * not. It returns the payload text and nothing else — what the
+ * caller does with it (judge it, keep nothing) is the caller's
+ * law, in src/lib/ageCheck.js.
+ */
+export async function createAgeCheckReader() {
+  if (typeof window !== 'undefined' && typeof window.BarcodeDetector === 'function') {
+    try {
+      const supported = await window.BarcodeDetector.getSupportedFormats();
+      if (supported.includes('pdf417')) {
+        const detector = new window.BarcodeDetector({ formats: ['pdf417'] });
+        return {
+          engine: 'native',
+          async read(canvas) {
+            const codes = await detector.detect(canvas);
+            return codes.length ? String(codes[0].rawValue || '') : '';
+          },
+        };
+      }
+    } catch {
+      // Fall through to the JavaScript decoder below.
+    }
+  }
+
+  const hints = new Map();
+  hints.set(DecodeHintType.POSSIBLE_FORMATS, [BarcodeFormat.PDF_417]);
+  hints.set(DecodeHintType.TRY_HARDER, true);
+  const reader = new BrowserMultiFormatReader(hints);
+
+  return {
+    engine: 'zxing',
+    async read(canvas) {
+      try {
+        return reader.decodeFromCanvas(canvas).getText();
+      } catch {
+        return '';
+      }
+    },
+  };
+}
+
+/**
  * Returns a function that copies the current video frame onto a reusable
  * canvas, optionally cropped to the centre where the code is being held.
  */

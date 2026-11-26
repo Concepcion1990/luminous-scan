@@ -299,6 +299,57 @@ export default function DetailsCard({ values, onChange, onPreferenceChange }) {
           </div>
         </div>
       </SettingsCard>
+
+      {/* The owner's age lines (the age check build, Nov 25,
+          2026 — Road B: the owner sets the lines for their own
+          place's law). Ordinary form fields: they save with the
+          page's Save, like the tax rate. */}
+      <SettingsCard
+        title={t('settings.ageLines.title')}
+        description={t('settings.ageLines.description')}
+      >
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div className="space-y-2">
+            <Label htmlFor="business-age-alcohol">{t('settings.ageLines.alcohol')}</Label>
+            <Input
+              id="business-age-alcohol"
+              type="number"
+              inputMode="numeric"
+              min={0}
+              max={99}
+              value={values.age_alcohol ?? ''}
+              onChange={set('age_alcohol')}
+              className="numeric"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="business-age-tobacco">{t('settings.ageLines.tobacco')}</Label>
+            <Input
+              id="business-age-tobacco"
+              type="number"
+              inputMode="numeric"
+              min={0}
+              max={99}
+              value={values.age_tobacco ?? ''}
+              onChange={set('age_tobacco')}
+              className="numeric"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="business-age-other">{t('settings.ageLines.other')}</Label>
+            <Input
+              id="business-age-other"
+              type="number"
+              inputMode="numeric"
+              min={0}
+              max={99}
+              value={values.age_other ?? ''}
+              onChange={set('age_other')}
+              className="numeric"
+            />
+          </div>
+        </div>
+      </SettingsCard>
     </div>
   );
 }

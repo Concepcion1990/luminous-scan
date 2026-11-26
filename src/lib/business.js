@@ -30,6 +30,12 @@ export const DEFAULT_BUSINESS = {
   language: 'en',
   tax_rate: '',
   gs1_prefix: '',
+  // The owner's age lines (the age check build, Nov 25, 2026):
+  // the shipped defaults — the owner sets their own in Settings
+  // for their place's law (Road B).
+  age_alcohol: 21,
+  age_tobacco: 21,
+  age_other: 18,
 };
 
 export const BRAND_COLORS = [
@@ -128,6 +134,17 @@ export async function renameBusiness(businessId, name) {
   return base44.entities.Business.update(businessId, { name: name.trim() });
 }
 
+/** An age line as the owner typed it: a whole age wins; anything
+ * else (blank, half-typed) keeps the shipped default rather than
+ * failing the whole Settings save — the server re-validates. */
+function cleanAgeLine(value, fallback) {
+  if (value === null || value === undefined) return fallback;
+  const text = String(value).trim();
+  if (text === '') return fallback;
+  const n = typeof value === 'number' ? value : Number(text);
+  return Number.isInteger(n) && n >= 0 && n <= 99 ? n : fallback;
+}
+
 export async function saveBusiness(record, values) {
   const payload = {
     name: values.name?.trim() || 'Your business',
@@ -146,6 +163,9 @@ export async function saveBusiness(record, values) {
     tax_rate: values.tax_rate?.trim() || '',
     tax_mode: values.tax_mode === 'automatic' ? 'automatic' : 'fixed',
     gs1_prefix: values.gs1_prefix?.trim() || '',
+    age_alcohol: cleanAgeLine(values.age_alcohol, DEFAULT_BUSINESS.age_alcohol),
+    age_tobacco: cleanAgeLine(values.age_tobacco, DEFAULT_BUSINESS.age_tobacco),
+    age_other: cleanAgeLine(values.age_other, DEFAULT_BUSINESS.age_other),
   };
   return record?.id
     ? base44.entities.Business.update(record.id, payload)

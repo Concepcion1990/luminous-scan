@@ -2,8 +2,8 @@ import { Camera, CameraOff, Loader2 } from 'lucide-react';
 import { t } from '@/lib/i18n';
 import useBarcodeCamera from '@/components/scan/useBarcodeCamera';
 
-export default function BarcodeScanner({ onDetect }) {
-  const { videoRef, status, message } = useBarcodeCamera(onDetect);
+export default function BarcodeScanner({ onDetect, createReader, footerText }) {
+  const { videoRef, status, message } = useBarcodeCamera(onDetect, createReader);
 
   return (
     <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-primary">
@@ -51,7 +51,7 @@ export default function BarcodeScanner({ onDetect }) {
       )}
 
       <p className="absolute bottom-3 left-0 right-0 text-center font-mono text-[10px] uppercase tracking-[0.18em] text-primary-foreground/50">
-        UPC · EAN · ISBN · Code 128 · QR
+        {footerText || 'UPC · EAN · ISBN · Code 128 · QR'}
       </p>
     </div>
   );

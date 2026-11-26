@@ -89,6 +89,7 @@ export const TRAINING_LESSONS = [
   { id: 'scanner-move-stock', track: 'staff', module: 'scanner', steps: 4 },
   { id: 'scanner-name-lookup', track: 'staff', module: 'scanner', steps: 4 },
   { id: 'scanner-damaged', track: 'staff', module: 'scanner', steps: 4 },
+  { id: 'scanner-age-check', track: 'staff', module: 'scanner', steps: 5 },
   { id: 'print-shelf-tag', track: 'staff', module: 'printing', steps: 4 },
   { id: 'staff-record-prints', track: 'staff', module: 'printing', steps: 5 },
   { id: 'products-find-edit', track: 'staff', module: 'products', steps: 11 },

@@ -267,6 +267,14 @@ function publicBusiness(row) {
     // her own words for her store, '' = the app's standard
     // welcome. Read by the welcome page for the member it greets.
     staff_welcome_script: row.staff_welcome_script || '',
+    // The owner's age lines (migration 055, the age check
+    // build, Nov 25, 2026): whole ages the customer must reach
+    // for each kind of sale, judged by the Scan page's license
+    // scan. A row missing one reads with the shipped default —
+    // 21 alcohol, 21 tobacco, 18 other age-restricted goods.
+    age_alcohol: Number.isInteger(row.age_alcohol) ? row.age_alcohol : 21,
+    age_tobacco: Number.isInteger(row.age_tobacco) ? row.age_tobacco : 21,
+    age_other: Number.isInteger(row.age_other) ? row.age_other : 18,
   };
 }
 
@@ -277,7 +285,7 @@ const BUSINESS_UPDATE_FIELDS = [
   'name', 'tagline', 'logo_url', 'brand_color', 'contact_email',
   'contact_phone', 'website', 'address', 'currency', 'timezone',
   'date_format', 'unit_system', 'language', 'doc_style', 'tax_rate', 'tax_mode', 'gs1_prefix',
-  'staff_welcome_script',
+  'staff_welcome_script', 'age_alcohol', 'age_tobacco', 'age_other',
 ];
 const SUPPORTED_LANGUAGES = ['am', 'ar', 'bho', 'bn', 'de', 'en', 'en-AU', 'en-CA', 'en-GB', 'en-IN', 'es-CU', 'es-ES', 'es-MX', 'es-PR', 'es-US', 'es-VE', 'fa', 'fr-CA', 'fr-FR', 'gu', 'ha', 'hi', 'id', 'it', 'ja', 'jv', 'kn', 'ko', 'mr', 'ms', 'pa-Arab', 'pa-Guru', 'pcm', 'prs', 'pt-BR', 'pt-PT', 'ru', 'sw', 'ta', 'te', 'tg', 'th', 'tl', 'tr', 'uk', 'ur', 'vi', 'wuu', 'yo', 'yue', 'zh-Hans', 'zh-Hant'];
 // The language the reader is using right now, when the client sends
@@ -388,6 +396,16 @@ function validateBusinessPatch(patch) {
       // a document store.
       if (text.length > 2000) return { error: 'That welcome message is too long.' };
       clean.staff_welcome_script = text;
+    } else if (key === 'age_alcohol' || key === 'age_tobacco' || key === 'age_other') {
+      // The owner's age lines (migration 055, the age check
+      // build, Nov 25, 2026): a whole age from 0 to 99, sent as
+      // a number or its digits. Anything else is refused whole
+      // — a line is never rounded or guessed into being.
+      const n = typeof value === 'number' ? value : (/^\d{1,2}$/.test(text) ? Number(text) : NaN);
+      if (!Number.isInteger(n) || n < 0 || n > 99) {
+        return { error: 'Enter an age line as a whole number of years, from 0 to 99.' };
+      }
+      clean[key] = n;
     } else if (key === 'gs1_prefix') {
       // GS1 company prefix: blank unsets it; otherwise digits
       // only, 6–11 of them, exactly as GS1 issued it. GS1

@@ -24,7 +24,7 @@ const REARM_MS = 1200;
  */
 const ABSENT_TICKS_TO_REARM = 4;
 
-export default function useBarcodeCamera(onDetect) {
+export default function useBarcodeCamera(onDetect, createReader = createCodeReader) {
   const videoRef = useRef(null);
   const onDetectRef = useRef(onDetect);
   const [status, setStatus] = useState('starting');
@@ -100,7 +100,7 @@ export default function useBarcodeCamera(onDetect) {
       if (disposed) return stopCamera();
       setStatus('live');
 
-      const reader = await createCodeReader();
+      const reader = await createReader();
       if (disposed) return stopCamera();
       const grab = createFrameGrabber(1280);
 
