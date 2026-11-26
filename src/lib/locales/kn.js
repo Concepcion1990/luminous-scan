@@ -3330,7 +3330,7 @@ export const kn = {
   "workforce.breakOut": "ವಿರಾಮಕ್ಕಾಗಿ ಚೆಕ್ ಔಟ್ ಮಾಡಿ",
   "workforce.breakStarted": "ವಿರಾಮ ಪ್ರಾರಂಭವಾಗಿದೆ.",
   "workforce.clockedInMsg": "ನೀವು ಕ್ಲಾಕ್ ಇನ್ ಆಗಿದ್ದೀರಿ.",
-  "workforce.clockedInSince": "{time} ರಿಂದ ಕ್ಲಾಕ್ ಇನ್ ಆಗಿದೆ",
+  "workforce.clockedInSince": "{date}, {time} ರಿಂದ ಕ್ಲಾಕ್ ಇನ್ ಆಗಿದೆ",
   "workforce.clockedOutMsg": "ಕ್ಲಾಕ್ ಔಟ್ ಆಗಿದೆ. ನಿಮ್ಮ ದಿನದ ಉಳಿದ ಸಮಯ ಚೆನ್ನಾಗಿರಲಿ.",
   "workforce.clockIn": "ಕ್ಲಾಕ್ ಇನ್",
   "workforce.clockOut": "ಕ್ಲಾಕ್ ಔಟ್",
