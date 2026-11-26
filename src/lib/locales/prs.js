@@ -3330,7 +3330,7 @@ export const prs = {
   "workforce.breakOut": "خروج برای وقفه",
   "workforce.breakStarted": "وقفه شروع شد.",
   "workforce.clockedInMsg": "شما وارد کار شده‌اید.",
-  "workforce.clockedInSince": "از {time} وارد کار هستید",
+  "workforce.clockedInSince": "از {date}، {time} وارد کار هستید",
   "workforce.clockedOutMsg": "از کار خارج شدید. بقیه روزتان خوش بگذرد.",
   "workforce.clockIn": "شروع کار",
   "workforce.clockOut": "پایان کار",
