@@ -29,9 +29,9 @@ test('no lesson carries a visuals property — client catalog or server catalog'
   }
 });
 
-test('the catalog itself is untouched: 118 lessons (107 through 360; +3 cross-store messages lessons, +4 restaurant operations lessons, +1 eBay storefront lesson in 362, +1 log book lesson in 378, +1 record-prints lesson in the prints build, +1 age-check lesson in the age check build), spot step counts unchanged', () => {
-  assert.equal(CLIENT_LESSONS.length, 118, 'client catalog holds 118 lessons');
-  assert.equal(SERVER_LESSONS.length, 118, 'server catalog holds 118 lessons');
+test('the catalog itself is untouched: 119 lessons (107 through 360; +3 cross-store messages lessons, +4 restaurant operations lessons, +1 eBay storefront lesson in 362, +1 log book lesson in 378, +1 record-prints lesson in the prints build, +1 age-check lesson in the age check build, +1 own-training lesson in the training build), spot step counts unchanged', () => {
+  assert.equal(CLIENT_LESSONS.length, 119, 'client catalog holds 119 lessons');
+  assert.equal(SERVER_LESSONS.length, 119, 'server catalog holds 119 lessons');
   // Release 365 (Nov 23, 2026) deliberately grew owner-import
   // 2 -> 4 steps: the lesson gained the column-marriage step and
   // the dry-run-promise step (the owner's import rulings).

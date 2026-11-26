@@ -211,7 +211,7 @@ test('wiring: the mode switch on both Settings doors, the save payload, the orde
   assert.equal(plans.split("t('plansLib.includes.taxAuto')").length - 1, 3, 'Essentials lists x2 + the comparison row');
   for (const catalog of ['src/lib/trainingCatalog.js', 'server/trainingCatalog.js']) {
     const src = readFileSync(catalog, 'utf8');
-    assert.match(src, /\{ id: 'owner-tax-rate', track: 'owner', module: 'orders', steps: 4[ ,]/);
-    assert.match(src, /\{ id: 'mgr-tax-rate', track: 'manager', module: 'orders', steps: 5[ ,]/);
+    assert.match(src, /\{ id: 'owner-tax-rate', track: 'owner', module: 'orders', heading: 'general', steps: 4[ ,]/);
+    assert.match(src, /\{ id: 'mgr-tax-rate', track: 'manager', module: 'orders', heading: 'general', steps: 5[ ,]/);
   }
 });

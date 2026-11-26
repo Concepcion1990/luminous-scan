@@ -114,11 +114,15 @@ test('plan-visible counts: Business whole, Essentials without the Business subje
   // staff lesson (scanner-age-check, no feature tag — the age
   // check is a general feature): staff 45 on Business and 37
   // on Essentials; owner/manager unchanged.
-  assert.equal(count('owner', true), 46);
+  // The training build (Nov 25, 2026) adds ONE both-plans
+  // owner lesson (owner-own-training, no feature tag — adding
+  // your own training is a general feature): owner 47 on
+  // Business and 26 on Essentials; manager/staff unchanged.
+  assert.equal(count('owner', true), 47);
   assert.equal(count('manager', true), 26);
   assert.equal(count('staff', true), 45);
   // Essentials: 19 owner subjects hidden, owner-import in their place.
-  assert.equal(count('owner', false), 25); // +1 confidentiality lesson (Nov 19, 2026); +1 eBay storefront lesson (release 362, both plans)
+  assert.equal(count('owner', false), 26); // +1 confidentiality lesson (Nov 19, 2026); +1 eBay storefront lesson (release 362, both plans); +1 own-training lesson (the training build, both plans)
   assert.equal(count('manager', false), 14);
   assert.equal(count('staff', false), 37);
   // Payroll / workforce / direct-deposit lessons stay on Essentials.

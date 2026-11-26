@@ -23,7 +23,8 @@ import { t } from '@/lib/i18n';
 import { formatShortDate } from '@/lib/dates';
 import { resolveDocStyle } from '@/lib/docStyle';
 import TrainingRecordDoc from '@/components/print/TrainingRecordDoc';
-import { TRAINING_LESSONS, lessonVisibleOnPlan, visibleLessonsForTrack } from '@/lib/trainingCatalog';
+import { TRAINING_HEADINGS, TRAINING_LESSONS, lessonHeading, lessonVisibleOnPlan, visibleLessonsForTrack } from '@/lib/trainingCatalog';
+import { OwnTrainingBox, OwnTrainingCards } from '@/components/training/OwnTraining';
 import {
   addLessonComment,
   assignTraining,
@@ -1218,6 +1219,8 @@ export default function Training() {
 
       {!state.is_owner && <PolicyTrainings businessId={activeId} onDone={load} />}
 
+      {!state.is_owner && <OwnTrainingCards businessId={activeId} onDone={load} />}
+
       {state.tracks.map((track) => {
         // Scoping (Nov 20, 2026): a person sees only the lessons
         // their real doors open (the server's my_lesson_ids) — the
@@ -1232,24 +1235,42 @@ export default function Training() {
             title={trackTitle(track)}
             help={`${trackHelp(track)} ${t('training.lessonsDoneOf', { done: doneCount, total: lessons.length })}`}
           >
-            <div className="space-y-3">
-              {lessons.map((lesson) => (
-                <LessonCard
-                  key={lesson.id}
-                  businessId={activeId}
-                  lesson={lesson}
-                  visibleSteps={visibleStepsFor(lesson)}
-                  done={completedSet.has(lesson.id)}
-                  completedAt={completedAtById.get(lesson.id)}
-                  open={openLesson === lesson.id}
-                  onToggle={() => setOpenLesson(openLesson === lesson.id ? null : lesson.id)}
-                  onComplete={onComplete}
-                  onPassed={load}
-                  busy={busy}
-                  isOwner={state.is_owner}
-                  myComments={commentsByLesson.get(lesson.id)}
-                />
-              ))}
+            {/* The Training Organization Rule (owner ruling,
+                Nov 25, 2026): the page is SECTIONED BY HEADING —
+                general training under its own heading, Restaurant
+                training under its OWN heading. Each lesson's
+                heading rides in the catalog; the lessons
+                themselves are untouched. A heading with no
+                lessons on this plan does not render. */}
+            <div className="space-y-5">
+              {TRAINING_HEADINGS.map((heading) => {
+                const group = lessons.filter((lesson) => lessonHeading(lesson) === heading);
+                if (!group.length) return null;
+                return (
+                  <div key={heading}>
+                    <h3 className="font-heading text-base font-semibold">{t(`training.heading.${heading}`)}</h3>
+                    <div className="mt-3 space-y-3">
+                      {group.map((lesson) => (
+                        <LessonCard
+                          key={lesson.id}
+                          businessId={activeId}
+                          lesson={lesson}
+                          visibleSteps={visibleStepsFor(lesson)}
+                          done={completedSet.has(lesson.id)}
+                          completedAt={completedAtById.get(lesson.id)}
+                          open={openLesson === lesson.id}
+                          onToggle={() => setOpenLesson(openLesson === lesson.id ? null : lesson.id)}
+                          onComplete={onComplete}
+                          onPassed={load}
+                          busy={busy}
+                          isOwner={state.is_owner}
+                          myComments={commentsByLesson.get(lesson.id)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
               {!lessons.length && <p className="text-sm text-muted-foreground">{t('training.empty')}</p>}
             </div>
           </Section>
@@ -1259,6 +1280,12 @@ export default function Training() {
       {(state.level === 'owner' || state.level === 'manager') && (
         <TeamSection businessId={activeId} level={state.level} isBusiness={isBusiness} business={record} docStyle={docStyle} />
       )}
+
+      {/* "Add your own training" (her design, Nov 25, 2026):
+          the box sits at the very end of the training page,
+          the owner's alone, mirroring the Settings policies /
+          terms machinery. */}
+      {state.is_owner && <OwnTrainingBox businessId={activeId} />}
     </div>
   );
 }

@@ -93,6 +93,69 @@ export function reviewPolicyAttempt(businessId, attemptId, values) {
   });
 }
 
+// ---- "Add your own training" (Nov 25, 2026) --------------------------------
+// The owner's own trainings: written by the owner at the end of
+// the Training page, tick-assigned, scored on the server. The
+// owner reads the full shape (answer keys, ticks, results); a
+// member reads only the trainings ticked for them, key-free.
+
+const ownBase = (businessId) => `/api/businesses/${encodeURIComponent(businessId)}/own-training`;
+
+export function getOwnTrainings(businessId) {
+  return apiRequest(ownBase(businessId));
+}
+
+export function createOwnTraining(businessId) {
+  return apiRequest(ownBase(businessId), { method: 'POST', body: {} });
+}
+
+export function saveOwnTraining(businessId, trainingId, values) {
+  return apiRequest(`${ownBase(businessId)}/${encodeURIComponent(trainingId)}`, {
+    method: 'PUT',
+    body: values,
+  });
+}
+
+export function deleteOwnTraining(businessId, trainingId) {
+  return apiRequest(`${ownBase(businessId)}/${encodeURIComponent(trainingId)}`, { method: 'DELETE' });
+}
+
+export function uploadOwnTrainingFile(businessId, trainingId, values) {
+  return apiRequest(`${ownBase(businessId)}/${encodeURIComponent(trainingId)}/file`, {
+    method: 'POST',
+    body: values,
+  });
+}
+
+export function removeOwnTrainingFile(businessId, trainingId) {
+  return apiRequest(`${ownBase(businessId)}/${encodeURIComponent(trainingId)}/file`, { method: 'DELETE' });
+}
+
+export function ownTrainingFileUrl(businessId, trainingId) {
+  return `/api/businesses/${encodeURIComponent(businessId)}/own-training/${encodeURIComponent(trainingId)}/file`;
+}
+
+export function checkOwnTrainingAnswer(businessId, trainingId, questionId, choiceIndex) {
+  return apiRequest(`${ownBase(businessId)}/${encodeURIComponent(trainingId)}/check`, {
+    method: 'POST',
+    body: { question_id: questionId, choice_index: choiceIndex },
+  });
+}
+
+export function submitOwnTraining(businessId, trainingId, answers) {
+  return apiRequest(`${ownBase(businessId)}/${encodeURIComponent(trainingId)}/submit`, {
+    method: 'POST',
+    body: { answers },
+  });
+}
+
+export function reviewOwnTrainingAttempt(businessId, attemptId, values) {
+  return apiRequest(`${ownBase(businessId)}/attempts/${encodeURIComponent(attemptId)}/review`, {
+    method: 'POST',
+    body: values,
+  });
+}
+
 export function assignTraining(businessId, values) {
   return apiRequest(`${base(businessId)}/assignments`, { method: 'POST', body: values });
 }
