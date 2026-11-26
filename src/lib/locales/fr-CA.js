@@ -3330,7 +3330,7 @@ export const frCA = {
   "workforce.breakOut": "Pointer le départ pour une pause",
   "workforce.breakStarted": "Pause commencée.",
   "workforce.clockedInMsg": "Vous avez pointé votre arrivée.",
-  "workforce.clockedInSince": "Arrivée pointée depuis {time}",
+  "workforce.clockedInSince": "Arrivée pointée depuis le {date} à {time}",
   "workforce.clockedOutMsg": "Départ pointé. Bonne fin de journée.",
   "workforce.clockIn": "Pointer l’arrivée",
   "workforce.clockOut": "Pointer le départ",
