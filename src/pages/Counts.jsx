@@ -183,6 +183,7 @@ export default function Counts() {
               session={session}
               products={products}
               levels={levels}
+              locations={locations}
               user={user}
               canRun={canRunCounts}
               onChanged={(text) => {

@@ -51,8 +51,8 @@ export default function CountSessionDialog({ open, onOpenChange, products, locat
   );
 
   const preview = useMemo(
-    () => (locationId ? buildSheet({ products, levels, locationId, category }).length : 0),
-    [products, levels, locationId, category]
+    () => (locationId ? buildSheet({ products, levels, locations: localLocations, locationId, category }).length : 0),
+    [products, levels, localLocations, locationId, category]
   );
 
   const create = async () => {
@@ -64,7 +64,7 @@ export default function CountSessionDialog({ open, onOpenChange, products, locat
     setSaving(true);
     setError('');
     try {
-      const lines = buildSheet({ products, levels, locationId, category });
+      const lines = buildSheet({ products, levels, locations: localLocations, locationId, category });
       await base44.entities.CountSession.create(
         withBusiness(
           {

@@ -1,10 +1,25 @@
+import { Fragment } from 'react';
 import DocHeader from './DocHeader';
 import DocPhoto, { firstPhotoUrl } from './DocPhoto';
 import { DecoFooter, DecoHeader, DocFrame, PrintedAt } from './DocChrome';
 import { docRootClass, docRootStyle } from '@/lib/docStyle';
 import { t } from '@/lib/i18n';
 
-export default function CountSheet({ products, business, docStyle }) {
+/**
+ * The printed count sheet. Release 378 (Nov 25, 2026) adds
+ * shelf order: when the caller passes `groups` — the picked
+ * products grouped by their primary storage area, areas in
+ * walk order (src/lib/counts.js shelfOrderProducts) — each
+ * area's items sit under its own subheader so the paper
+ * walks the shelves the way the counter does. Numbering
+ * runs continuously across areas. Without groups (or with a
+ * single section) the sheet is the flat list it has always
+ * been, byte for byte.
+ */
+export default function CountSheet({ products, groups, business, docStyle }) {
+  const sections = groups && groups.length ? groups : [{ label: '', products: products || [] }];
+  const showHeaders = sections.length > 1;
+  let rowNumber = 0;
   return (
     <div
       className={`print-label print-page-break doc-root w-[180mm] bg-white p-2 text-black ${docRootClass(docStyle)}`}
@@ -35,7 +50,19 @@ export default function CountSheet({ products, business, docStyle }) {
           </tr>
         </thead>
         <tbody>
-          {products.map((product, index) => (
+          {sections.map((section, sectionIndex) => (
+            <Fragment key={`section-${sectionIndex}`}>
+              {showHeaders && section.label ? (
+                <tr className="break-inside-avoid border-b border-black bg-black/5">
+                  <td colSpan={5} className="py-1 font-mono text-[7pt] font-semibold uppercase tracking-wide">
+                    {section.label}
+                  </td>
+                </tr>
+              ) : null}
+              {section.products.map((product) => {
+                rowNumber += 1;
+                const index = rowNumber - 1;
+                return (
             <tr key={product.id} className="break-inside-avoid border-b border-black/25">
               <td className="py-1.5 font-mono text-[7pt] text-black/70">{index + 1}</td>
               <td className="truncate py-1.5 pr-1 font-mono text-[7pt]">{product.sku}</td>
@@ -59,6 +86,9 @@ export default function CountSheet({ products, business, docStyle }) {
                 <span className="block h-[6mm] border border-black/20" />
               </td>
             </tr>
+                );
+              })}
+            </Fragment>
           ))}
         </tbody>
       </table>

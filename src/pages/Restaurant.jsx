@@ -30,17 +30,22 @@ export default function Restaurant() {
 
   useEffect(() => {
     (async () => {
-      const [eightySixPage, tempLogPage, batchPage, runPage] = await Promise.all([
+      const [eightySixPage, tempLogPage, batchPage, runPage, logPage] = await Promise.all([
         base44.entities.EightySixItem.filter(scoped({}, activeId), { sort: '-created_date', limit: 300 }),
         base44.entities.TempLog.filter(scoped({}, activeId), { sort: '-created_date', limit: 300 }),
         base44.entities.StockBatch.filter(scoped({}, activeId), { limit: 500 }),
         base44.entities.BatchRun.filter(scoped({}, activeId), { sort: '-created_date', limit: 200 }),
+        // The manager log book (release 378) is a general
+        // feature; its latest entries ride the Today summary
+        // like every other source here.
+        base44.entities.LogBookEntry.filter(scoped({}, activeId), { sort: '-created_date', limit: 50 }),
       ]);
       setRows({
         eightySixItems: eightySixPage.items ?? [],
         tempLogs: tempLogPage.items ?? [],
         batches: batchPage.items ?? [],
         batchRuns: runPage.items ?? [],
+        logEntries: logPage.items ?? [],
       });
       setLoading(false);
     })();

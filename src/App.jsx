@@ -60,6 +60,7 @@ import Staff from '@/pages/Staff';
 import Orders from '@/pages/Orders';
 import Returns from '@/pages/Returns';
 import Counts from '@/pages/Counts';
+import LogBook from '@/pages/LogBook';
 import CrossStoreInbox from '@/pages/CrossStoreInbox';
 import PosConnections from '@/pages/PosConnections';
 import StorefrontConnections from '@/pages/StorefrontConnections';
@@ -409,6 +410,9 @@ const AuthenticatedApp = () => {
           <Route path="/storefronts" element={<StorefrontConnections />} />
           <Route path="/returns" element={<Returns />} />
           <Route path="/counts" element={<Counts />} />
+          {/* The manager log book (release 378): general, both
+              plans — no plan redirect, like /counts. */}
+          <Route path="/log-book" element={<LogBook />} />
           <Route
             path="/purchasing"
             element={

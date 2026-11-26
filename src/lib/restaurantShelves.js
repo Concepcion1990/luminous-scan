@@ -5,6 +5,7 @@ import {
   Boxes,
   CalendarClock,
   ChefHat,
+  ClipboardCheck,
   ClipboardList,
   FileText,
   MapPin,
@@ -81,6 +82,11 @@ export const SHELVES = [
     doors: [
       door('/restaurant/order-guide', 'nav.orderGuide', 'restaurant.doorOrderGuide', ClipboardList),
       door('/restaurant/transfers', 'nav.transfers', 'restaurant.doorTransfers', ArrowRightLeft),
+      // Release 378: stock counts are a general feature (both
+      // plans) whose home is the shared Counts page — the
+      // shelf cross-links to it, the 377 pattern for general
+      // features, now that its sheets walk in shelf order.
+      door('/counts', 'nav.counts', 'restaurant.doorCounts', ClipboardCheck, { crossLink: true }),
     ],
   },
   {
@@ -123,6 +129,11 @@ export const SHELVES = [
     icon: Users,
     doors: [
       door('/restaurant/staff-meals', 'nav.staffMeals', 'restaurant.doorStaffMeals', UtensilsCrossed),
+      // Release 378: the manager log book is a general
+      // feature (both plans, the owner's Q2 ruling) whose
+      // home is its own page — the shelf cross-links to it,
+      // the 377 pattern for the Q1–Q4 general features.
+      door('/log-book', 'nav.logBook', 'restaurant.doorLogBook', NotebookPen, { crossLink: true }),
     ],
   },
 ];
@@ -180,12 +191,15 @@ const sameLocalDay = (a, b) =>
  * - expiring: dated batches out of date or within a week,
  *   FEFO order — the expiry page's own `expiringSoon` window.
  * - runsToday: batch production runs made today.
+ * - logBook: the manager log book's latest entries (release
+ *   378) — the general feature's rows, read like every other
+ *   source here; the newest three, newest first.
  *
  * A section with nothing behind it comes back empty and the
  * page shows no card for it — no placeholder ever claims a
  * feature or a fact that is not there.
  */
-export function summarizeToday({ eightySixItems = [], tempLogs = [], batches = [], batchRuns = [], now = new Date() } = {}) {
+export function summarizeToday({ eightySixItems = [], tempLogs = [], batches = [], batchRuns = [], logEntries = [], now = new Date() } = {}) {
   const outNow = (eightySixItems || []).filter((item) => item.active !== false);
 
   const units = new Map();
@@ -215,7 +229,17 @@ export function summarizeToday({ eightySixItems = [], tempLogs = [], batches = [
     return when && Number.isFinite(when.getTime()) && sameLocalDay(when, now);
   });
 
-  return { outNow, temps, expiring, runsToday };
+  // The manager log book's latest entries (release 378):
+  // the plan's Today list names them — whoever opens next
+  // reads the last few entries first. The log book is a
+  // general feature (both plans); its rows are read here the
+  // same way as every other Today source, newest first,
+  // latest three.
+  const logBook = [...(logEntries || [])]
+    .sort((a, b) => String(b.created_date || '').localeCompare(String(a.created_date || '')))
+    .slice(0, 3);
+
+  return { outNow, temps, expiring, runsToday, logBook };
 }
 
 /** True when at least one Today card has something to say. */
@@ -224,6 +248,7 @@ export function todayHasContent(summary) {
     summary.outNow.length ||
     summary.temps.known ||
     summary.expiring.length ||
-    summary.runsToday.length,
+    summary.runsToday.length ||
+    (summary.logBook || []).length,
   );
 }

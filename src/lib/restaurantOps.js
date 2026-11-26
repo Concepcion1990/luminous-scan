@@ -136,6 +136,41 @@ export function matchInvoice(invoice, purchaseOrder) {
   return { lines, status: allOk ? 'match' : 'review' };
 }
 
+const round2Client = (value) => Math.round((Number(value) || 0) * 100) / 100;
+
+/**
+ * The credit standing of one invoice, previewed on the
+ * client (release 378 — the server's validator and read
+ * shaping are authoritative; this mirror only drives the
+ * credit memo dialog's remaining-balance line and its
+ * pre-save check): how much of the invoice applied credit
+ * memos have covered, and how much is still owed. Only
+ * 'applied' memos count; `excludeId` leaves the memo being
+ * edited out of its own weighing.
+ */
+export function creditStanding(invoice, memos, excludeId = '') {
+  if (!invoice) return { total: 0, credited: 0, owed: 0 };
+  let total = null;
+  if (invoice.total !== null && invoice.total !== undefined && invoice.total !== '') {
+    const stored = Number(invoice.total);
+    if (Number.isFinite(stored)) total = round2Client(stored);
+  }
+  if (total === null) {
+    total = round2Client(
+      (invoice.lines || []).reduce(
+        (sum, line) => sum + (Number(line?.quantity) || 0) * (Number(line?.unit_cost) || 0),
+        0,
+      ),
+    );
+  }
+  const credited = round2Client(
+    (memos || [])
+      .filter((memo) => memo && memo.status !== 'void' && memo.id !== excludeId)
+      .reduce((sum, memo) => sum + (Number(memo.amount) || 0), 0),
+  );
+  return { total, credited, owed: round2Client(total - credited) };
+}
+
 function inPeriod(row, period) {
   if (!period?.from && !period?.to) return true;
   const day = String(row?.created_date || '').slice(0, 10);

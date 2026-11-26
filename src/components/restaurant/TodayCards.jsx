@@ -95,6 +95,22 @@ export default function TodayCards({ summary }) {
     );
   }
 
+  // The log book's latest (release 378): whoever opens next
+  // reads the last entry first — its opening words and who
+  // wrote it. The book itself is a general feature; the card
+  // is a door straight to it.
+  if ((summary.logBook || []).length) {
+    const latest = summary.logBook[0];
+    cards.push(
+      <Card key="logbook" to="/log-book" icon={NotebookPen} title={t('nav.logBook')}>
+        <span className="block truncate text-xs text-muted-foreground">{latest.body}</span>
+        {latest.author_name ? (
+          <span className="block text-xs text-muted-foreground">{latest.author_name}</span>
+        ) : null}
+      </Card>,
+    );
+  }
+
   if (!cards.length) {
     return <p className="text-sm text-muted-foreground">{t('restaurant.today.allClear')}</p>;
   }

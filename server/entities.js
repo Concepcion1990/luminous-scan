@@ -62,7 +62,7 @@ import {
   yieldQtyOf,
 } from './recipes.js';
 import { recordMovementTx } from './movements.js';
-import { computeInvoiceMatch, priceAlertCandidates } from './restaurantOps.js';
+import { computeInvoiceMatch, priceAlertCandidates, creditStanding } from './restaurantOps.js';
 import { memberLevel } from './staffWindow.js';
 import { ensureDefaultLocation } from './defaultLocation.js';
 import { rememberOrderAddress } from './customerAddresses.js';
@@ -275,6 +275,24 @@ const DEFS = {
     planGate: 'restaurant',
     writePerm: 'restaurant.build',
   },
+  // Supplier credit memos (release 378, Nov 25, 2026;
+  // migration 054): the credit sibling on 361's invoices —
+  // a supplier's credit against ONE invoice, applied against
+  // what that invoice is still owed. Business-only with the
+  // corner, writes ride restaurant.build like the invoices
+  // they credit. The supplier on the row is a snapshot the
+  // SERVER derives from the invoice (validateCreditMemo);
+  // the cap — applied memos never exceed the invoice's
+  // total — is the validator's, proven by execution in t70.
+  CreditMemo: {
+    table: 'credit_memos',
+    json: [],
+    numeric: ['amount'],
+    bool: [],
+    required: ['invoice_id'],
+    planGate: 'restaurant',
+    writePerm: 'restaurant.build',
+  },
   BatchRun: {
     table: 'batch_runs',
     json: ['lines'],
@@ -326,6 +344,23 @@ const DEFS = {
     bool: [],
     required: [],
     writePerm: 'counts.run',
+  },
+  // The manager log book (release 378, Nov 25, 2026;
+  // migration 054): the official shift record for EVERY
+  // business — the owner's Q2 ruling made it general, both
+  // plans, so there is NO planGate here. It follows the 361
+  // daily-log fork: NO writePerm, because a log dies when
+  // writing it needs permission — any trusted member of the
+  // business may read and write it. Entries are named, never
+  // anonymous: author_name is stamped by the server at
+  // create (the CountSession started_by pattern) and can
+  // never be rewritten by an edit.
+  LogBookEntry: {
+    table: 'log_book_entries',
+    json: [],
+    numeric: [],
+    bool: [],
+    required: ['body'],
   },
   Listing: {
     table: 'listings',
@@ -419,6 +454,7 @@ export function toDbValues(def, values, { isCreate = false } = {}) {
  */
 const ATTRIBUTION_FIELDS = {
   CountSession: ['started_by', 'applied_by'],
+  LogBookEntry: ['author_name'],
   PurchaseOrder: ['received_by'],
   Order: ['reserved_by', 'shipped_by'],
   Return: ['approved_by', 'completed_by'],
@@ -990,6 +1026,53 @@ async function validateVendorPriceAlert(pool, business, candidate) {
   await assertSupplierInBusiness(pool, business.id, candidate.supplier_id);
 }
 
+/**
+ * A supplier credit memo (release 378): the credit belongs
+ * to ONE invoice of this business, and everything supplier-
+ * shaped on the memo is derived from that invoice here —
+ * the client's supplier fields are never trusted, so a memo
+ * cannot be pointed at one supplier's name over another
+ * supplier's invoice. The amount must be real money (greater
+ * than zero), and the memo may not push the invoice's
+ * applied credits past the invoice's own total: a credit is
+ * the supplier giving money back against a bill, so it can
+ * never exceed the bill. Voiding a memo frees its room
+ * again (only 'applied' memos count — creditStanding).
+ * `selfId` is the memo being updated, so it never counts
+ * against itself. Mutates `candidate` with the derived
+ * snapshot, the guardCreate/guardUpdate house style.
+ */
+async function validateCreditMemo(pool, business, candidate, selfId = '') {
+  const invoice = (
+    await pool.query('SELECT * FROM supplier_invoices WHERE id = $1 AND business_id = $2', [
+      candidate.invoice_id,
+      business.id,
+    ])
+  ).rows[0];
+  if (!invoice) throw err(400, 'invalid_reference', 'The invoice must belong to this business.');
+  candidate.supplier_id = invoice.supplier_id || '';
+  candidate.supplier_name = invoice.supplier_name || '';
+  candidate.invoice_number = invoice.invoice_number || '';
+  candidate.status = candidate.status === 'void' ? 'void' : 'applied';
+  const amount = Number(candidate.amount);
+  if (!Number.isFinite(amount) || !(amount > 0)) {
+    throw err(400, 'invalid_amount', 'Enter a credit amount greater than zero.');
+  }
+  candidate.amount = amount;
+  if (candidate.status === 'applied') {
+    const { rows } = await pool.query(
+      'SELECT * FROM credit_memos WHERE business_id = $1 AND invoice_id = $2',
+      [business.id, invoice.id],
+    );
+    const invoiceDef = entityDef('SupplierInvoice');
+    const standing = creditStanding(publicRow(invoiceDef, invoice), rows, selfId);
+    if (Math.round(amount * 100) > Math.round(standing.owed * 100)) {
+      throw err(400, 'credit_exceeds_invoice', 'A credit memo cannot be for more than the invoice it credits.');
+    }
+  }
+  return invoice;
+}
+
 async function validateBatchRun(pool, business, candidate) {
   const recipe = await assertRecipeInBusiness(pool, business.id, candidate.recipe_id);
   // A batch run PRODUCES the recipe's linked prep product:
@@ -1060,6 +1143,47 @@ async function shapeInvoiceMatch(pool, access, name, rows) {
       ])
     ).rows[0];
     row.match = computeInvoiceMatch(row, po ? publicRow(poDef, po) : null);
+  }
+  return rows;
+}
+
+/**
+ * Supplier invoice credit shaping (release 378): an invoice
+ * row gains its credit standing — credit_total (what applied
+ * credit memos have covered) and balance_due (what is still
+ * owed) — computed from the business's credit memos by the
+ * same pure math the memo validator enforces
+ * (server/restaurantOps.js creditStanding), so the number a
+ * reader sees and the cap a writer is held to can never
+ * disagree. An invoice with no memos reads 0 / its own total.
+ */
+async function shapeInvoiceCredits(pool, access, name, rows) {
+  if (name !== 'SupplierInvoice' || !rows.length) return rows;
+  const businessIds = [...new Set(rows.map((row) => row.business_id).filter(Boolean))];
+  for (const businessId of businessIds) {
+    const { rows: memos } = await pool.query(
+      'SELECT * FROM credit_memos WHERE business_id = $1',
+      [businessId],
+    );
+    if (!memos.length) continue;
+    const byInvoice = new Map();
+    for (const memo of memos) {
+      if (!byInvoice.has(memo.invoice_id)) byInvoice.set(memo.invoice_id, []);
+      byInvoice.get(memo.invoice_id).push(memo);
+    }
+    for (const row of rows) {
+      if (row.business_id !== businessId) continue;
+      const standing = creditStanding(row, byInvoice.get(row.id) || []);
+      row.credit_total = standing.credited;
+      row.balance_due = standing.owed;
+    }
+  }
+  for (const row of rows) {
+    if (row.credit_total === undefined) {
+      const standing = creditStanding(row, []);
+      row.credit_total = standing.credited;
+      row.balance_due = standing.owed;
+    }
   }
   return rows;
 }
@@ -1797,6 +1921,11 @@ async function guardCreate(pool, def, name, access, values) {
   if (name === 'VendorPriceAlert') {
     await validateVendorPriceAlert(pool, business, values);
   }
+  if (name === 'CreditMemo') {
+    // Derives the supplier snapshot from the invoice and
+    // holds the credit cap (release 378) — mutates values.
+    await validateCreditMemo(pool, business, values);
+  }
   if (name === 'BatchRun') {
     // The run's outcome fields are the server's alone
     // (release 361): the create hook writes what actually
@@ -2036,6 +2165,26 @@ async function guardUpdate(pool, def, name, access, row, patch) {
   if (name === 'VendorPriceAlert') {
     await validateVendorPriceAlert(pool, access.business, { ...row, ...patch });
   }
+  if (name === 'CreditMemo') {
+    // The merged row is validated (the credit cap weighs the
+    // invoice without this memo counting against itself),
+    // and the derived snapshot lands back on the patch: if
+    // the edit moves the memo to another invoice, the
+    // supplier it names moves with it (release 378).
+    const merged = { ...row, ...patch };
+    await validateCreditMemo(pool, access.business, merged, row.id);
+    patch.supplier_id = merged.supplier_id;
+    patch.supplier_name = merged.supplier_name;
+    patch.invoice_number = merged.invoice_number;
+    patch.status = merged.status;
+    patch.amount = merged.amount;
+  }
+  if (name === 'LogBookEntry') {
+    // The author is forever the person who wrote the entry:
+    // an edit can change the words, never the name on them
+    // (release 378 — the log book is the official record).
+    delete patch.author_name;
+  }
   if (name === 'BatchRun') {
     // A run that already happened is a record, not a recipe
     // card: its outcome fields never move by edit.
@@ -2234,6 +2383,7 @@ export async function listEntities(pool, user, name, filter = {}, options = {}) 
     // invoice carries its computed 3-way match (release 361).
     businessRows = shapeWasteMoney(access, name, businessRows);
     businessRows = await shapeInvoiceMatch(pool, access, name, businessRows);
+    businessRows = await shapeInvoiceCredits(pool, access, name, businessRows);
     if (!access.isOwner) {
       // Attribution fields carry names, never emails, to a
       // non-owner (rider + audit, Nov 21, 2026); the creator
@@ -2313,6 +2463,7 @@ export async function getEntity(pool, user, name, id) {
     await shapeRecipeMoney(pool, access, name, [shaped]);
     shapeWasteMoney(access, name, [shaped]);
     await shapeInvoiceMatch(pool, access, name, [shaped]);
+    await shapeInvoiceCredits(pool, access, name, [shaped]);
     await shapeAttribution(pool, access, name, [shaped]);
     return stripCreatedBy(shaped);
   }
@@ -2321,6 +2472,7 @@ export async function getEntity(pool, user, name, id) {
   await shapeRecipeMoney(pool, access, name, [shaped]);
   shapeWasteMoney(access, name, [shaped]);
   await shapeInvoiceMatch(pool, access, name, [shaped]);
+  await shapeInvoiceCredits(pool, access, name, [shaped]);
   return shaped;
 }
 
@@ -2360,6 +2512,11 @@ export async function createEntity(pool, user, name, values) {
     // the client (rider, Nov 21, 2026): the starter's display
     // name, so the shared board can never show an email.
     values = { ...values, started_by: await countActorName(pool, access) };
+  } else if (name === 'LogBookEntry') {
+    // Same rule (release 378): a log book entry is named by
+    // the server with its writer's display name — the entry
+    // can never be anonymous and never shows an email.
+    values = { ...values, author_name: await countActorName(pool, access) };
   } else {
     values = await stampAttribution(pool, access, name, values);
   }
@@ -2388,6 +2545,7 @@ export async function createEntity(pool, user, name, values) {
   if (name === 'SupplierInvoice') {
     await insertPriceAlertsForInvoice(pool, createdRow, user);
     await shapeInvoiceMatch(pool, access, name, [createdRow]);
+    await shapeInvoiceCredits(pool, access, name, [createdRow]);
   }
   shapeWasteMoney(access, name, [createdRow]);
   // The 90-day customer address book: an order save remembers /
@@ -2442,7 +2600,9 @@ export async function bulkCreateEntities(pool, user, name, rows) {
     const trailStamped = await stampTrailCreate(pool, access, name, stripped, user);
     const stamped = name === 'CountSession'
       ? { ...trailStamped, started_by: await countActorName(pool, access) }
-      : await stampAttribution(pool, access, name, trailStamped);
+      : name === 'LogBookEntry'
+        ? { ...trailStamped, author_name: await countActorName(pool, access) }
+        : await stampAttribution(pool, access, name, trailStamped);
     const inserted = await insertRow(pool, def, businessId, user, stamped);
     await shapeTrailActors(pool, access, name, [inserted]);
     created.push(inserted);
@@ -2555,6 +2715,7 @@ export async function updateEntity(pool, user, name, id, patch) {
   if (name === 'SupplierInvoice') {
     await insertPriceAlertsForInvoice(pool, result, user);
     await shapeInvoiceMatch(pool, access, name, [result]);
+    await shapeInvoiceCredits(pool, access, name, [result]);
   }
   shapeWasteMoney(access, name, [result]);
   if (!access.isOwner) {

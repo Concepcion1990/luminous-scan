@@ -59,6 +59,7 @@ export const PLANS = {
         t('plansLib.includes.ebaySync'),
         t('plansLib.includes.inviteLink'),
         t('plansLib.includes.inbox'),
+        t('plansLib.includes.logBook'),
         t('plansLib.includes.recovery'),
         t('plansLib.includes.support'),
         t('plansLib.includes.offline'),
@@ -317,6 +318,7 @@ export const WELCOME_OPTIONS = [
         t('plansLib.includes.ebaySync'),
         t('plansLib.includes.inviteLink'),
         t('plansLib.includes.inbox'),
+        t('plansLib.includes.logBook'),
         t('plansLib.includes.recovery'),
         t('plansLib.includes.support'),
         t('plansLib.includes.offline'),
@@ -440,6 +442,11 @@ export const COMPARISON_ROWS = [
   { get label() { return t('plansLib.includes.ebaySync'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
   { get label() { return t('plansLib.includes.inviteLink'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
   { get label() { return t('plansLib.includes.inbox'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
+  // The manager log book (release 378, Nov 25, 2026): a
+  // general feature on both plans — the owner's Q2 ruling
+  // gave it to every business, not just restaurants. Mobile
+  // stays "Set at launch" like the other team-era rows.
+  { get label() { return t('plansLib.includes.logBook'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
   { get label() { return t('plansLib.includes.recovery'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
   { get label() { return t('plansLib.includes.support'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
   { get label() { return t('plansLib.includes.offline'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },

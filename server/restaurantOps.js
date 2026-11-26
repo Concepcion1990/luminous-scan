@@ -124,6 +124,47 @@ export function computeInvoiceMatch(invoice, po) {
 }
 
 /**
+ * An invoice's own total for credit-cap purposes (release
+ * 378): the stored total when the invoice carries one, else
+ * the sum of its lines (quantity × unit cost). An invoice
+ * always has one or the other — the dialog writes the total
+ * from the same lines — but a total of zero is a total of
+ * zero: no credit fits against it.
+ */
+export function invoiceTotalForCredit(invoice) {
+  if (!invoice) return 0;
+  if (invoice.total !== null && invoice.total !== undefined && invoice.total !== '') {
+    const stored = Number(invoice.total);
+    if (Number.isFinite(stored)) return round2(stored);
+  }
+  const lines = Array.isArray(invoice.lines) ? invoice.lines : parseJsonArray(invoice.lines);
+  return round2(
+    lines.reduce((sum, line) => sum + (Number(line?.quantity) || 0) * (Number(line?.unit_cost) || 0), 0),
+  );
+}
+
+/**
+ * The credit standing of one invoice (release 378): how much
+ * of it supplier credit memos have covered, and how much is
+ * still owed. Only 'applied' memos count — a voided memo is
+ * kept on the record but covers nothing. `excludeId` lets an
+ * update weigh the invoice without the memo being saved
+ * counting against itself. Pure: the entity validator and
+ * the read shaping both take their numbers from here, and
+ * the client mirror (src/lib/restaurantOps.js) agrees.
+ */
+export function creditStanding(invoice, memos, excludeId = '') {
+  if (!invoice) return { total: 0, credited: 0, owed: 0 };
+  const total = invoiceTotalForCredit(invoice);
+  const credited = round2(
+    (memos || [])
+      .filter((memo) => memo && memo.status !== 'void' && memo.id !== excludeId)
+      .reduce((sum, memo) => sum + (Number(memo.amount) || 0), 0),
+  );
+  return { total, credited, owed: round2(total - credited) };
+}
+
+/**
  * The price-alert scan for one invoice (used by the
  * SupplierInvoice create/update hooks in server/entities.js):
  * given the invoice's lines and a lookup of the business's

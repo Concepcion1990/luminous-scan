@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { base44 } from '@/api/client';
 import { Check, FileText, Plus } from 'lucide-react';
 import InvoiceDialog from '@/components/restaurant/InvoiceDialog';
+import CreditMemoDialog from '@/components/restaurant/CreditMemoDialog';
 import { Button } from '@/components/ui/button';
 import { useBusiness } from '@/hooks/useBusiness';
 import useStaffAccess from '@/hooks/useStaffAccess';
@@ -19,11 +20,18 @@ import RestaurantCrumbs from '@/components/restaurant/RestaurantCrumbs';
  * product's current cost, a price alert opens below;
  * accepting one puts the new cost on the product. Entering
  * and answering rides the restaurant.build tick.
+ *
+ * Supplier credit memos (release 378, Nov 25, 2026) live
+ * below the invoices: the credit a supplier gives back
+ * against one invoice, counted by the server against what
+ * that invoice is still owed — each invoice row shows its
+ * credit applied and its balance due, both server-shaped.
  */
 export default function RestaurantInvoices() {
   const { activeId, record } = useBusiness();
   const { can: canStaff } = useStaffAccess();
   const [invoices, setInvoices] = useState([]);
+  const [memos, setMemos] = useState([]);
   const [alerts, setAlerts] = useState([]);
   const [products, setProducts] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
@@ -32,20 +40,24 @@ export default function RestaurantInvoices() {
   const [reload, setReload] = useState(0);
   const [editing, setEditing] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingMemo, setEditingMemo] = useState(null);
+  const [memoDialogOpen, setMemoDialogOpen] = useState(false);
   const [flash, setFlash] = useState(null);
 
   const canBuild = canStaff('restaurant.build');
 
   useEffect(() => {
     (async () => {
-      const [invoicePage, alertPage, productPage, supplierPage, poPage] = await Promise.all([
+      const [invoicePage, memoPage, alertPage, productPage, supplierPage, poPage] = await Promise.all([
         base44.entities.SupplierInvoice.filter(scoped({}, activeId), { sort: '-created_date', limit: 200 }),
+        base44.entities.CreditMemo.filter(scoped({}, activeId), { sort: '-created_date', limit: 200 }),
         base44.entities.VendorPriceAlert.filter(scoped({}, activeId), { sort: '-created_date', limit: 200 }),
         base44.entities.Product.filter(scoped({}, activeId), { sort: 'name', limit: 500 }),
         base44.entities.Supplier.filter(scoped({}, activeId), { sort: 'name', limit: 200 }),
         base44.entities.PurchaseOrder.filter(scoped({}, activeId), { limit: 200 }),
       ]);
       setInvoices(invoicePage.items ?? []);
+      setMemos(memoPage.items ?? []);
       setAlerts(alertPage.items ?? []);
       setProducts(productPage.items ?? []);
       setSuppliers(supplierPage.items ?? []);
@@ -55,6 +67,13 @@ export default function RestaurantInvoices() {
   }, [activeId, reload]);
 
   const openAlerts = alerts.filter((alert) => alert.status === 'open');
+
+  const voidMemo = async (memo) => {
+    if (!window.confirm(t('ops.credits.voidConfirm'))) return;
+    await base44.entities.CreditMemo.update(memo.id, { status: 'void' });
+    setFlash(t('ops.credits.voided'));
+    setReload((n) => n + 1);
+  };
 
   const answerAlert = async (alert, status) => {
     await base44.entities.VendorPriceAlert.update(alert.id, { status });
@@ -162,7 +181,23 @@ export default function RestaurantInvoices() {
                       </td>
                       <td className="px-3 py-2">{invoice.invoice_number || '—'}</td>
                       <td className="px-3 py-2">{invoice.invoice_date ? formatShortDate(invoice.invoice_date) : ''}</td>
-                      <td className="px-3 py-2 text-right">{formatMoney(invoice.total || 0, record?.currency, 2)}</td>
+                      <td className="px-3 py-2 text-right">
+                        {formatMoney(invoice.total || 0, record?.currency, 2)}
+                        {Number(invoice.credit_total) > 0 ? (
+                          <>
+                            <span className="block text-xs text-muted-foreground">
+                              {t('ops.invoices.creditApplied', {
+                                amount: formatMoney(invoice.credit_total, record?.currency, 2),
+                              })}
+                            </span>
+                            <span className="block text-xs font-medium">
+                              {t('ops.invoices.stillOwed', {
+                                amount: formatMoney(invoice.balance_due ?? invoice.total ?? 0, record?.currency, 2),
+                              })}
+                            </span>
+                          </>
+                        ) : null}
+                      </td>
                       <td className="px-3 py-2">
                         {invoice.match == null ? (
                           <span className="text-muted-foreground">{t('ops.invoices.matchNone')}</span>
@@ -198,6 +233,88 @@ export default function RestaurantInvoices() {
         </>
       )}
 
+      {!loading && (
+        <div className="space-y-3">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h2 className="text-base font-semibold">{t('ops.credits.title')}</h2>
+              <p className="mt-0.5 max-w-xl text-sm text-muted-foreground">{t('ops.credits.subtitle')}</p>
+            </div>
+            {canBuild ? (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setEditingMemo(null);
+                  setMemoDialogOpen(true);
+                }}
+              >
+                <Plus className="mr-1.5 h-4 w-4" /> {t('ops.credits.newButton')}
+              </Button>
+            ) : null}
+          </div>
+          {memos.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-border px-4 py-8 text-center">
+              <p className="text-sm font-medium">{t('ops.credits.emptyTitle')}</p>
+              <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">{t('ops.credits.emptyBody')}</p>
+            </div>
+          ) : (
+            <div className="overflow-hidden rounded-xl border border-border">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border bg-muted/40 text-left">
+                    <th className="px-3 py-2 font-medium">{t('ops.invoices.colSupplier')}</th>
+                    <th className="px-3 py-2 font-medium">{t('ops.credits.colInvoice')}</th>
+                    <th className="px-3 py-2 font-medium">{t('ops.invoices.colDate')}</th>
+                    <th className="px-3 py-2 text-right font-medium">{t('ops.credits.colAmount')}</th>
+                    <th className="px-3 py-2 font-medium">{t('ops.invoices.colStatus')}</th>
+                    {canBuild ? <th className="px-3 py-2" /> : null}
+                  </tr>
+                </thead>
+                <tbody>
+                  {memos.map((memo) => (
+                    <tr key={memo.id} className="border-b border-border/60 last:border-0">
+                      <td className="px-3 py-2">
+                        {memo.supplier_name}
+                        {memo.reason ? (
+                          <span className="block text-xs text-muted-foreground">{memo.reason}</span>
+                        ) : null}
+                      </td>
+                      <td className="px-3 py-2">{memo.invoice_number || '—'}</td>
+                      <td className="px-3 py-2">{memo.credit_date ? formatShortDate(memo.credit_date) : ''}</td>
+                      <td className="px-3 py-2 text-right">{formatMoney(memo.amount || 0, record?.currency, 2)}</td>
+                      <td className="px-3 py-2">
+                        {memo.status === 'void' ? t('ops.credits.statusVoid') : t('ops.credits.statusApplied')}
+                      </td>
+                      {canBuild ? (
+                        <td className="px-3 py-2 text-right">
+                          <div className="flex justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setEditingMemo(memo);
+                                setMemoDialogOpen(true);
+                              }}
+                            >
+                              {t('recipes.editButton')}
+                            </Button>
+                            {memo.status !== 'void' ? (
+                              <Button variant="ghost" size="sm" onClick={() => voidMemo(memo)}>
+                                {t('ops.credits.voidButton')}
+                              </Button>
+                            ) : null}
+                          </div>
+                        </td>
+                      ) : null}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
       <InvoiceDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
@@ -205,6 +322,18 @@ export default function RestaurantInvoices() {
         products={products}
         suppliers={suppliers}
         purchaseOrders={purchaseOrders}
+        onSaved={(text) => {
+          setFlash(text);
+          setReload((n) => n + 1);
+        }}
+      />
+      <CreditMemoDialog
+        open={memoDialogOpen}
+        onOpenChange={setMemoDialogOpen}
+        memo={editingMemo}
+        invoices={invoices}
+        memos={memos}
+        currency={record?.currency}
         onSaved={(text) => {
           setFlash(text);
           setReload((n) => n + 1);

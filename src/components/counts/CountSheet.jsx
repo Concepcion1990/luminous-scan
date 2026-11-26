@@ -18,9 +18,11 @@ import {
   saveCounts,
   submitCounts,
   tallyCountedLine,
+  wildCountLines,
 } from '@/lib/counts';
+import { locationPath } from '@/lib/locations';
 
-export default function CountSheet({ session, products, levels, user, canRun, onChanged }) {
+export default function CountSheet({ session, products, levels, locations = [], user, canRun, onChanged }) {
   const [lines, setLines] = useState(session.lines || []);
   // The tally path resolves codes asynchronously while the camera
   // keeps firing, so scan handling reads and writes the lines
@@ -49,6 +51,51 @@ export default function CountSheet({ session, products, levels, user, canRun, on
   }, [session.id, session.status]);
 
   const summary = useMemo(() => countSummary(lines), [lines]);
+
+  // Shelf order (release 378): when the sheet spans more
+  // than one area of the walk, each area's lines sit under
+  // its own subheader (the area's full path) so the counter
+  // always knows which shelf they are standing at. A
+  // single-area sheet renders exactly as it always has.
+  const renderRows = useMemo(() => {
+    const areaOf = (line) => line.location_id || session.location_id || '';
+    const multiArea = new Set(lines.map(areaOf)).size > 1;
+    const rows = [];
+    let lastArea = null;
+    for (const line of lines) {
+      const area = areaOf(line);
+      if (multiArea && area !== lastArea) {
+        const loc = locations.find((l) => l.id === area);
+        rows.push({
+          header: true,
+          key: `area-${area}`,
+          label: loc ? locationPath(locations, loc) : line.location_name || session.location_name || '',
+        });
+      }
+      lastArea = area;
+      rows.push({ header: false, key: `${area}|${line.product_id}`, line });
+    }
+    return rows;
+  }, [lines, locations, session.location_id, session.location_name]);
+
+  // "That count looks wrong" (release 378): before a save or
+  // a send for review, wildly-off lines are named and the
+  // counter is ASKED — never blocked. A genuine find (a case
+  // in the back nobody booked) saves exactly like any other
+  // count once the counter confirms it.
+  const confirmWild = () => {
+    const wild = wildCountLines(linesRef.current);
+    if (!wild.length) return true;
+    return window.confirm(
+      t('counts.wrongConfirm', {
+        lines: wild
+          .map((line) =>
+            t('counts.wrongLine', { name: line.product_name, counted: line.counted, expected: line.expected })
+          )
+          .join('\n'),
+      })
+    );
+  };
   const locked = ['applied', 'cancelled'].includes(session.status);
   // The floor split (owner ruling, Nov 19, 2026): a member
   // without counts.run works a count only while it is OPEN —
@@ -59,8 +106,18 @@ export default function CountSheet({ session, products, levels, user, canRun, on
   // counts.run holders; the server holds the same line.
   const floorLocked = locked || (!canRun && session.status !== 'open');
 
-  const setCount = (productId, value) => {
-    commitLines(linesRef.current.map((l) => (l.product_id === productId ? { ...l, counted: value } : l)));
+  // Shelf order (release 378): a product stocked in more
+  // than one of the walk's areas has one line per area, so a
+  // typed count lands on the line it was typed on — keyed by
+  // product AND area, never by product alone.
+  const setCount = (line, value) => {
+    commitLines(
+      linesRef.current.map((l) =>
+        l.product_id === line.product_id && (l.location_id || '') === (line.location_id || '')
+          ? { ...l, counted: value }
+          : l
+      )
+    );
     setDirty(true);
   };
 
@@ -149,6 +206,7 @@ export default function CountSheet({ session, products, levels, user, canRun, on
   };
 
   const save = async (message) => {
+    if (!confirmWild()) return;
     setBusy('save');
     setError('');
     try {
@@ -163,6 +221,7 @@ export default function CountSheet({ session, products, levels, user, canRun, on
   };
 
   const sendReview = async () => {
+    if (!confirmWild()) return;
     setBusy('review');
     setError('');
     try {
@@ -316,13 +375,22 @@ export default function CountSheet({ session, products, levels, user, canRun, on
         // fix stands).
         <div className="max-h-[320px] overflow-auto pr-1">
           <div className="min-w-[21rem]">
-            {lines.map((line) => (
-              <CountLineRow
-                key={line.product_id}
-                line={line}
-                onChange={floorLocked ? () => {} : (value) => setCount(line.product_id, value)}
-              />
-            ))}
+            {renderRows.map((row) =>
+              row.header ? (
+                <p
+                  key={row.key}
+                  className="border-b border-border/60 bg-muted/40 px-1 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground"
+                >
+                  {row.label}
+                </p>
+              ) : (
+                <CountLineRow
+                  key={row.key}
+                  line={row.line}
+                  onChange={floorLocked ? () => {} : (value) => setCount(row.line, value)}
+                />
+              )
+            )}
           </div>
         </div>
       )}

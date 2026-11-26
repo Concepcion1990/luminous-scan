@@ -97,6 +97,7 @@ export const TRAINING_LESSONS = [
   { id: 'locations-basics', track: 'staff', module: 'locations', steps: 4 },
   { id: 'movements-what', track: 'staff', module: 'movements', steps: 4 },
   { id: 'counts-run', track: 'staff', module: 'counts', steps: 4 },
+  { id: 'staff-log-book', track: 'staff', module: 'workforce', steps: 4 },
   { id: 'orders-basics', track: 'staff', module: 'orders', steps: 6 },
   { id: 'owner-tax-rate', track: 'owner', module: 'orders', steps: 4 },
   { id: 'mgr-tax-rate', track: 'manager', module: 'orders', steps: 5 },
@@ -200,7 +201,7 @@ export const TRAINING_LESSONS = [
   // reports ride restaurant.money (LESSON_REQUIREMENTS).
   { id: 'owner-restaurant-ops', track: 'owner', module: 'restaurant', steps: 5, feature: 'restaurant' },
   { id: 'staff-restaurant-daily', track: 'staff', module: 'restaurant', steps: 4, feature: 'restaurant' },
-  { id: 'mgr-restaurant-invoices', track: 'manager', module: 'restaurant', steps: 4, feature: 'restaurant' },
+  { id: 'mgr-restaurant-invoices', track: 'manager', module: 'restaurant', steps: 5, feature: 'restaurant' },
   { id: 'mgr-restaurant-reports', track: 'manager', module: 'restaurant', steps: 4, feature: 'restaurant' },
   // Cross-store messages (Nov 23, 2026): three lessons in the
   // messaging module under the Business-only xstoreMessages

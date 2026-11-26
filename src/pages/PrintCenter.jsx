@@ -6,6 +6,8 @@ import { t } from '@/lib/i18n';
 import { useBusiness } from '@/hooks/useBusiness';
 import useEntitlements from '@/hooks/useEntitlements';
 import { listAllProducts } from '@/lib/inventory';
+import { shelfOrderProducts } from '@/lib/counts';
+import { locationPath } from '@/lib/locations';
 import { orderShipAddressText } from '@/lib/orders';
 import { isSupplierPrintTemplate } from '@/lib/plans';
 import { scoped } from '@/lib/scoped';
@@ -92,6 +94,13 @@ export default function PrintCenter() {
   const [customerOrderId, setCustomerOrderId] = useState('');
   const [returnRecords, setReturnRecords] = useState([]);
   const [returnId, setReturnId] = useState('');
+  // Shelf order for the printed count sheet (release 378):
+  // the count template also reads the business's locations
+  // and stock levels, so the picked products can be grouped
+  // under the storage area that holds most of their stock,
+  // in walk order — the paper walks the shelves too.
+  const [countLocations, setCountLocations] = useState([]);
+  const [countLevels, setCountLevels] = useState([]);
   // Shipping label (both plans): orders carry no postal address, so
   // the address is typed here at print time and never saved. The
   // recipient name pre-fills from the picked order.
@@ -262,6 +271,32 @@ export default function PrintCenter() {
       cancelled = true;
     };
   }, [needsCustomerOrder, needsReturn, activeId]);
+
+  useEffect(() => {
+    if (template !== 'count' || !activeId) return;
+    let cancelled = false;
+    (async () => {
+      const [locPage, levelPage] = await Promise.all([
+        base44.entities.Location.filter(scoped({}, activeId), { sort: 'name', limit: 500 }),
+        base44.entities.StockLevel.filter(scoped({}, activeId), { limit: 2000 }),
+      ]);
+      if (cancelled) return;
+      setCountLocations(locPage.items ?? []);
+      setCountLevels(levelPage.items ?? []);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [template, activeId]);
+
+  const countGroups = useMemo(
+    () =>
+      shelfOrderProducts(selected, countLevels, countLocations).map((group) => ({
+        label: group.area ? locationPath(countLocations, group.area) : '',
+        products: group.products,
+      })),
+    [selected, countLevels, countLocations],
+  );
 
   const selectedIds = selected.map((product) => product.id);
 
@@ -826,7 +861,12 @@ export default function PrintCenter() {
             ) : isReturnDoc ? (
               <ReturnDoc ret={returnRecord} business={profile} docStyle={docStyle} photoById={photoById} />
             ) : isDocument ? (
-              <Sheet products={selected} business={profile} docStyle={docStyle} />
+              <Sheet
+                products={selected}
+                groups={template === 'count' ? countGroups : undefined}
+                business={profile}
+                docStyle={docStyle}
+              />
             ) : (
               <div className="print-label-flow flex flex-wrap justify-center gap-3">
                 {labels.map((product, index) => (

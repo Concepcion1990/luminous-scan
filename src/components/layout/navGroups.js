@@ -25,6 +25,7 @@ import {
   Users,
   CalendarClock,
   MessagesSquare,
+  NotebookPen,
   GraduationCap,
   Wallet,
   CreditCard,
@@ -170,6 +171,12 @@ export const NAV_GROUPS = [
       // the time clock and their own stubs. The server enforces the
       // owner > manager > staff hierarchy on every call.
       { to: '/workforce', label: 'Workforce', labelKey: 'nav.workforce', icon: CalendarClock },
+      // The manager log book (release 378, Nov 25, 2026): a
+      // general feature on BOTH plans (the owner's Q2 ruling)
+      // — the official shift record every business keeps. No
+      // perm, like Workforce: any trusted member of the
+      // business reads and writes it, the daily-log fork.
+      { to: '/log-book', label: 'Manager log book', labelKey: 'nav.logBook', icon: NotebookPen },
       // Cross-store messages (the owner's ruling, Nov 23,
       // 2026): the second messaging door — everyone on the
       // account, across all their businesses. Business only
