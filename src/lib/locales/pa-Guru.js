@@ -3330,7 +3330,7 @@ export const paGuru = {
   "workforce.breakOut": "ਬ੍ਰੇਕ ਲਈ ਚੈੱਕ ਆਊਟ ਕਰੋ",
   "workforce.breakStarted": "ਬ੍ਰੇਕ ਸ਼ੁਰੂ ਹੋ ਗਿਆ।",
   "workforce.clockedInMsg": "ਤੁਸੀਂ ਕਲੌਕ ਇਨ ਹੋ।",
-  "workforce.clockedInSince": "{time} ਤੋਂ ਕਲੌਕ ਇਨ",
+  "workforce.clockedInSince": "{date}, {time} ਤੋਂ ਕਲੌਕ ਇਨ",
   "workforce.clockedOutMsg": "ਕਲੌਕ ਆਊਟ ਹੋ ਗਿਆ। ਤੁਹਾਡਾ ਬਾਕੀ ਦਿਨ ਵਧੀਆ ਰਹੇ।",
   "workforce.clockIn": "ਕਲੌਕ ਇਨ",
   "workforce.clockOut": "ਕਲੌਕ ਆਊਟ",
