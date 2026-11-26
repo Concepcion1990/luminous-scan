@@ -3330,7 +3330,7 @@ export const ta = {
   "workforce.breakOut": "இடைவேளைக்கு வெளியேறிப் பதிவு செய்யவும்",
   "workforce.breakStarted": "இடைவேளை தொடங்கியது.",
   "workforce.clockedInMsg": "நீங்கள் பணி தொடக்கப் பதிவு செய்துள்ளீர்கள்.",
-  "workforce.clockedInSince": "{time} முதல் பணியில் உள்ளீர்கள்",
+  "workforce.clockedInSince": "{date}, {time} முதல் பணியில் உள்ளீர்கள்",
   "workforce.clockedOutMsg": "பணி முடிவுப் பதிவு செய்யப்பட்டது. உங்கள் நாளின் மீதி நன்றாக அமையட்டும்.",
   "workforce.clockIn": "பணி தொடக்கப் பதிவு",
   "workforce.clockOut": "பணி முடிவுப் பதிவு",

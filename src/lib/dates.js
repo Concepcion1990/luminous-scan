@@ -131,6 +131,33 @@ export function formatTimeOnly(value, code) {
   return intlFormat(value, { hour: 'numeric', minute: '2-digit' }, code);
 }
 
+/** Whether two instants fall on the same local calendar day,
+ * read through the same display-date path as every formatter
+ * above. An unreadable value counts as the same day, so a caller
+ * never invents a date for a value it cannot read. */
+export function sameLocalDay(a, b) {
+  const da = asDisplayDate(a);
+  const db = asDisplayDate(b);
+  if (!da || !db) return true;
+  return (
+    da.getFullYear() === db.getFullYear() &&
+    da.getMonth() === db.getMonth() &&
+    da.getDate() === db.getDate()
+  );
+}
+
+/** A clock time that names its own day when that day is not the
+ * anchor's day — the far end of a span that crossed midnight or
+ * was closed on a later day (an entry's clock-out, a break's
+ * return). Same day as the anchor: the plain time, exactly as
+ * before. Other day: formatDayTime — day and time from one Intl
+ * call, never a hand-joined pair. (The date-next-to-the-time
+ * rule, the owner's ruling of Nov 25, 2026: a bare time must
+ * never hide which day it belongs to.) */
+export function formatTimeFromDay(anchor, value, code) {
+  return sameLocalDay(anchor, value) ? formatTimeOnly(value, code) : formatDayTime(value, code);
+}
+
 /** A stored "HH:MM" wall time (a schedule's start_time/end_time —
  * the database format, NOT an instant) in the locale's own clock
  * convention ("6:00 PM" in en-US, "18:00" in de-DE). The stored

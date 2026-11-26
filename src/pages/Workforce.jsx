@@ -29,7 +29,7 @@ import {
   rewardValueText,
   voidReward,
 } from '@/lib/rewards';
-import { formatHhmm, formatShortDate, formatShortDay, formatTimeOnly, toLocalDate } from '@/lib/dates';
+import { formatHhmm, formatShortDate, formatShortDay, formatTimeFromDay, formatTimeOnly, toLocalDate } from '@/lib/dates';
 import ProfileAvatar from '@/components/business/ProfileAvatar';
 import { buildVoiceWav, createPcmCapture } from '@/lib/voiceCapture';
 import {
@@ -221,7 +221,16 @@ function ClockTab({ businessId, ctx, peopleById, onEvent }) {
           {open
             ? onBreak
               ? t('workforce.onBreak')
-              : t('workforce.clockedInSince', { time: formatTime(open.clock_in_at) })
+              : // The date rides beside the time, always (the
+                // owner's ruling, Nov 25, 2026): an open entry can
+                // be days old, and a bare "8:56 PM" hid which day
+                // it fell on. Both halves come from the locale
+                // machinery (release 358) — the pattern's own word
+                // order is each language's, the values are Intl's.
+                t('workforce.clockedInSince', {
+                  date: formatDay(open.clock_in_at),
+                  time: formatTime(open.clock_in_at),
+                })
             : t('workforce.notClockedIn')}
         </p>
         {open?.unscheduled && (
@@ -318,7 +327,9 @@ function ClockTab({ businessId, ctx, peopleById, onEvent }) {
                     </span>
                     <span>
                       {formatDay(entry.clock_in_at)} {formatTime(entry.clock_in_at)} –{' '}
-                      {entry.clock_out_at ? formatTime(entry.clock_out_at) : '…'}
+                      {entry.clock_out_at
+                        ? formatTimeFromDay(entry.clock_in_at, entry.clock_out_at)
+                        : '…'}
                       {entry.clock_out_at && (
                         <span className="text-muted-foreground">
                           {' '}· {formatDuration(entry.clock_in_at, entry.clock_out_at)}
@@ -359,7 +370,8 @@ function ClockTab({ businessId, ctx, peopleById, onEvent }) {
                   )}
                   {(entry.breaks || []).map((b) => (
                     <p key={b.id} className="text-xs text-muted-foreground">
-                      {breakTypeLabel(b.break_type)}: {formatTime(b.out_at)} – {b.in_at ? formatTime(b.in_at) : '…'}
+                      {breakTypeLabel(b.break_type)}: {formatTimeFromDay(entry.clock_in_at, b.out_at)} –{' '}
+                      {b.in_at ? formatTimeFromDay(entry.clock_in_at, b.in_at) : '…'}
                     </p>
                   ))}
                 </li>
