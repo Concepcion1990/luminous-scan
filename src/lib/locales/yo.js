@@ -3330,7 +3330,7 @@ export const yo = {
   "workforce.breakOut": "Jáde fún ìsinmi",
   "workforce.breakStarted": "Ìsinmi ti bẹ̀rẹ̀.",
   "workforce.clockedInMsg": "O ti wọlé sí iṣẹ́.",
-  "workforce.clockedInSince": "O ti wọlé láti {time}",
+  "workforce.clockedInSince": "O ti wọlé láti {date}, {time}",
   "workforce.clockedOutMsg": "O ti jáde. Ṣe ìsinmi rere fún ìyókù ọjọ́ rẹ.",
   "workforce.clockIn": "Wọlé sí iṣẹ́",
   "workforce.clockOut": "Jáde kúrò ní iṣẹ́",

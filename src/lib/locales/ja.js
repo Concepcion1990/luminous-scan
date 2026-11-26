@@ -3330,7 +3330,7 @@ export const ja = {
   "workforce.breakOut": "休憩のために退勤する",
   "workforce.breakStarted": "休憩を開始しました。",
   "workforce.clockedInMsg": "出勤しています。",
-  "workforce.clockedInSince": "{time} から出勤中",
+  "workforce.clockedInSince": "{date} {time} から出勤中",
   "workforce.clockedOutMsg": "退勤しました。良い一日をお過ごしください。",
   "workforce.clockIn": "出勤する",
   "workforce.clockOut": "退勤する",
