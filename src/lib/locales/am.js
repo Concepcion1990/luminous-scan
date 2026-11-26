@@ -3330,7 +3330,7 @@ export const am = {
   "workforce.breakOut": "ለዕረፍት ወጥተው ይመዝገቡ",
   "workforce.breakStarted": "ዕረፍት ጀምሯል።",
   "workforce.clockedInMsg": "ገብተው ተመዝግበዋል።",
-  "workforce.clockedInSince": "ከ{time} ጀምሮ ገብተው ተመዝግበዋል",
+  "workforce.clockedInSince": "ከ{date} {time} ጀምሮ ገብተው ተመዝግበዋል",
   "workforce.clockedOutMsg": "ወጥተው ተመዝግበዋል። ቀሪው ቀንዎ መልካም ይሁን።",
   "workforce.clockIn": "ገብተው ይመዝገቡ",
   "workforce.clockOut": "ወጥተው ይመዝገቡ",
