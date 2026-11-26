@@ -111,6 +111,10 @@ const SPANISH_COGNATE_KEYS = new Set([
   // kitchen-Spanish word for the par level in the variants that
   // keep it bare (the others read "Nivel par") — verified.
   'guide.colPar',
+  // Age check build (Nov 25, 2026): "Alcohol" is the Spanish
+  // word (RAE), spelled identically to the English as a label —
+  // verified for all six variants.
+  'ageCheck.category.alcohol',
 ]);
 const FR_FR_COGNATE_KEYS = new Set([
   // Prints build (Nov 25, 2026): "Score" is the genuine French
@@ -574,6 +578,11 @@ const JV_COGNATE_KEYS = new Set([
   'ops.credits.colInvoice', 'ops.credits.invoiceLabel',
 ]);
 const PCM_COGNATE_KEYS = new Set([
+  // Age check build (Nov 25, 2026): Pidgin keeps these three
+  // short labels in English — the same register as the batches
+  // below (its prose and lesson steps are translated) —
+  // verified word-by-word.
+  'ageCheck.title', 'ageCheck.category.alcohol', 'settings.ageLines.title',
   // Prints build (Nov 25, 2026): Pidgin keeps these short paper
   // titles and column heads in English — the same register as
   // the batches below (its prose and lesson steps are

@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { base44, apiRequest } from '@/api/client';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ArrowRight, Check, MapPin, PackageSearch, Plus, Printer, RotateCcw, TriangleAlert } from 'lucide-react';
+import { ArrowRight, Check, IdCard, MapPin, PackageSearch, Plus, Printer, RotateCcw, TriangleAlert } from 'lucide-react';
 import BarcodeScanner from '@/components/scan/BarcodeScanner';
+import AgeCheckPanel from '@/components/scan/AgeCheckPanel';
 import ExternalCodePanel from '@/components/scan/ExternalCodePanel';
 import MatchPicker from '@/components/scan/MatchPicker';
 import CrossStoreAvailability from '@/components/scan/CrossStoreAvailability';
@@ -103,6 +104,11 @@ export default function Scan() {
   });
   const [locations, setLocations] = useState([]);
   const [locReload, setLocReload] = useState(0);
+  // Age check mode (Nov 25, 2026): the scanner's second job —
+  // the license-scan green/red check (see AgeCheckPanel). While
+  // it is open, the product surfaces stand down; nothing about
+  // a check is kept anywhere, by the owner's hard rule.
+  const [ageMode, setAgeMode] = useState(false);
   const [locationId, setLocationId] = useState(localStorage.getItem('stockroom.location') || '');
   const [session, setSession] = useState(0);
   const [manual, setManual] = useState('');
@@ -476,7 +482,7 @@ export default function Scan() {
   // A handheld reader types the code and presses Enter; catch it wherever the page has focus.
   const { armed, lastCode } = useScannerInput({
     onScan: lookup,
-    enabled: scanVisible && isDesktop && !createOpen && !details,
+    enabled: scanVisible && isDesktop && !createOpen && !details && !ageMode,
   });
 
   useEffect(() => {
@@ -523,6 +529,9 @@ export default function Scan() {
           <p className="mt-1 text-sm text-muted-foreground">{t('scan.subtitle')}</p>
         </div>
         <div className="flex items-center gap-2">
+          <Button variant={ageMode ? 'default' : 'outline'} size="sm" onClick={() => setAgeMode((v) => !v)}>
+            <IdCard className="mr-1.5 h-4 w-4" /> {t('ageCheck.title')}
+          </Button>
           <MapPin className="h-4 w-4 text-muted-foreground" />
           <ResponsiveSelect
             value={locationId}
@@ -551,6 +560,12 @@ export default function Scan() {
 
       <SyncIndicator sync={sync} />
 
+      {ageMode ? (
+        <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
+          <AgeCheckPanel business={profile} onClose={() => setAgeMode(false)} />
+        </div>
+      ) : (
+        <>
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="min-w-0 space-y-4 rounded-xl border border-border bg-card p-4 sm:p-5">
           <div data-pull-refresh-ignore data-tour="scan-start" ref={scannerCardRef}>
@@ -891,6 +906,8 @@ export default function Scan() {
           Open products <ArrowRight className="inline h-3 w-3" />
         </Link>
       </p>
+        </>
+      )}
 
       <ProductFormDialog
         open={scanVisible && createOpen}

@@ -110,13 +110,17 @@ test('plan-visible counts: Business whole, Essentials without the Business subje
   // lesson (staff-record-prints, no feature tag — the record
   // papers are general features): staff 44 on Business and 36
   // on Essentials; owner/manager unchanged.
+  // The age check build (Nov 25, 2026) adds ONE both-plans
+  // staff lesson (scanner-age-check, no feature tag — the age
+  // check is a general feature): staff 45 on Business and 37
+  // on Essentials; owner/manager unchanged.
   assert.equal(count('owner', true), 46);
   assert.equal(count('manager', true), 26);
-  assert.equal(count('staff', true), 44);
+  assert.equal(count('staff', true), 45);
   // Essentials: 19 owner subjects hidden, owner-import in their place.
   assert.equal(count('owner', false), 25); // +1 confidentiality lesson (Nov 19, 2026); +1 eBay storefront lesson (release 362, both plans)
   assert.equal(count('manager', false), 14);
-  assert.equal(count('staff', false), 36);
+  assert.equal(count('staff', false), 37);
   // Payroll / workforce / direct-deposit lessons stay on Essentials.
   const essentialsStaff = client.visibleLessonsForTrack('staff', false).map((l) => l.id);
   for (const id of ['stub-yours', 'dd-submit', 'clock-basics']) {

@@ -61,6 +61,7 @@ export const PLANS = {
         t('plansLib.includes.inbox'),
         t('plansLib.includes.logBook'),
         t('plansLib.includes.recordPrints'),
+        t('plansLib.includes.ageCheck'),
         t('plansLib.includes.recovery'),
         t('plansLib.includes.support'),
         t('plansLib.includes.offline'),
@@ -321,6 +322,7 @@ export const WELCOME_OPTIONS = [
         t('plansLib.includes.inbox'),
         t('plansLib.includes.logBook'),
         t('plansLib.includes.recordPrints'),
+        t('plansLib.includes.ageCheck'),
         t('plansLib.includes.recovery'),
         t('plansLib.includes.support'),
         t('plansLib.includes.offline'),
@@ -455,6 +457,11 @@ export const COMPARISON_ROWS = [
   // price list — both plans, like the records themselves.
   // Mobile stays "Set at launch" like the other team-era rows.
   { get label() { return t('plansLib.includes.recordPrints'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
+  // The age check (Nov 25, 2026): the license scan's green
+  // or red check against the owner's own age lines — a
+  // general feature on both plans, like the scanner itself.
+  // Mobile stays "Set at launch" like the other team-era rows.
+  { get label() { return t('plansLib.includes.ageCheck'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
   { get label() { return t('plansLib.includes.recovery'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
   { get label() { return t('plansLib.includes.support'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
   { get label() { return t('plansLib.includes.offline'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
