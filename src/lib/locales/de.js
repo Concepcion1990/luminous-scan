@@ -3330,7 +3330,7 @@ export const de = {
   "workforce.breakOut": "Zur Pause ausstempeln",
   "workforce.breakStarted": "Pause begonnen.",
   "workforce.clockedInMsg": "Sie sind eingestempelt.",
-  "workforce.clockedInSince": "Eingestempelt seit {time}",
+  "workforce.clockedInSince": "Eingestempelt seit {date}, {time}",
   "workforce.clockedOutMsg": "Ausgestempelt. Haben Sie einen schönen restlichen Tag.",
   "workforce.clockIn": "Einstempeln",
   "workforce.clockOut": "Ausstempeln",

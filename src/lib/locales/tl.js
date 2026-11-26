@@ -3330,7 +3330,7 @@ export const tl = {
   "workforce.breakOut": "Mag-check out para magpahinga",
   "workforce.breakStarted": "Nagsimula ang pahinga.",
   "workforce.clockedInMsg": "Naka-clock in ka.",
-  "workforce.clockedInSince": "Naka-clock in mula {time}",
+  "workforce.clockedInSince": "Naka-clock in mula {date}, {time}",
   "workforce.clockedOutMsg": "Naka-clock out na. Magpahinga ka nang mabuti sa nalalabi mong araw.",
   "workforce.clockIn": "Mag-clock in",
   "workforce.clockOut": "Mag-clock out",
