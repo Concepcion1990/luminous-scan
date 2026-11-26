@@ -3330,7 +3330,7 @@ export const bn = {
   "workforce.breakOut": "বিরতির জন্য চেক আউট করুন",
   "workforce.breakStarted": "বিরতি শুরু হয়েছে।",
   "workforce.clockedInMsg": "আপনি ক্লক ইন করেছেন।",
-  "workforce.clockedInSince": "{time} থেকে ক্লক ইন করা আছে",
+  "workforce.clockedInSince": "{date}, {time} থেকে ক্লক ইন করা আছে",
   "workforce.clockedOutMsg": "ক্লক আউট করেছেন। আপনার দিনের বাকি সময় ভালো কাটুক।",
   "workforce.clockIn": "ক্লক ইন",
   "workforce.clockOut": "ক্লক আউট",
