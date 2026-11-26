@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { apiRequest, base44 } from '@/api/client';
 import useDataFresh from '@/hooks/useDataFresh';
-import { ArrowDown, ArrowUp, ChevronDown, ChevronUp, Pencil, Plus, Search } from 'lucide-react';
+import { ArrowDown, ArrowUp, ChevronDown, ChevronUp, Pencil, Plus, Printer, Search } from 'lucide-react';
 import SortHeader from '@/components/products/SortHeader';
 import ProductThumb from '@/components/products/ProductThumb';
 import ResponsiveSelect from '@/components/ui/ResponsiveSelect';
@@ -32,6 +32,8 @@ import { displayLimit } from '@/lib/plans';
 import useIsDesktop from '@/hooks/useIsDesktop';
 import useModalHistory from '@/hooks/useModalHistory';
 import LimitBadge from '@/components/plan/LimitBadge';
+import { resolveDocStyle } from '@/lib/docStyle';
+import PriceListDoc from '@/components/print/PriceListDoc';
 import { createProducts } from '@/lib/entitlements';
 import { createStepQueue } from '@/lib/stepQueue';
 import { t } from '@/lib/i18n';
@@ -92,6 +94,17 @@ export default function Products() {
   // never sees them; the server refusal stays as the lock underneath.
   const canCreateProducts = can('products.edit') || can('products.create');
   const { profile, activeId, record } = useBusiness();
+  const docStyle = useMemo(() => resolveDocStyle(profile), [profile]);
+  // The product & price list paper (the prints build,
+  // Nov 25, 2026): the visible list on a Studio sheet.
+  const [printingList, setPrintingList] = useState(false);
+  const printList = () => {
+    setPrintingList(true);
+    setTimeout(() => {
+      window.print();
+      setPrintingList(false);
+    }, 50);
+  };
   const { limits, planKey, can: canPlan, isLoading: entitlementLoading } = useEntitlements();
   // Low stock is a Business surface (owner ruling, Nov 20, 2026):
   // the LOW badge, the Reorder column, the reorder sort and the
@@ -590,6 +603,11 @@ export default function Products() {
         </div>
         <div className="flex flex-wrap gap-2">
           <LimitBadge label={t('products.limitLabel')} used={activeCount} limit={productLimit} />
+          {sortedItems.length > 0 && (
+            <Button variant="outline" onClick={printList}>
+              <Printer className="mr-1.5 h-4 w-4" /> {t('print.printButton')}
+            </Button>
+          )}
           <ExportCsvButton businessName={profile.name} businessId={activeId} />
           {canCreateProducts && (
             <Button data-tour="product-add" onClick={openNew}>
@@ -1098,6 +1116,16 @@ export default function Products() {
         businessId={activeId}
         onDone={() => setReload((r) => r + 1)}
       />
+
+      {printingList && (
+        <div className="print-area hidden print:block">
+          <PriceListDoc
+            products={sortedItems.filter((product) => product.status !== 'archived')}
+            business={record}
+            docStyle={docStyle}
+          />
+        </div>
+      )}
     </div>
   );
 }

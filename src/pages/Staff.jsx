@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { base44 } from '@/api/client';
-import { Loader2, Plus, ShieldAlert, ShieldCheck, UserPlus } from 'lucide-react';
+import { Loader2, Plus, Printer, ShieldAlert, ShieldCheck, UserPlus } from 'lucide-react';
 import { useBusiness } from '@/hooks/useBusiness';
 import useStaffAccess from '@/hooks/useStaffAccess';
 import { isBoss } from '@/lib/bossAuthority';
@@ -23,9 +23,23 @@ import RoleDialog from '@/components/staff/RoleDialog';
 import useEntitlements from '@/hooks/useEntitlements';
 import { displayLimit } from '@/lib/plans';
 import LimitBadge from '@/components/plan/LimitBadge';
+import { resolveDocStyle } from '@/lib/docStyle';
+import RosterDoc from '@/components/print/RosterDoc';
 
 export default function Staff() {
   const { profile, activeId, record } = useBusiness();
+  const docStyle = useMemo(() => resolveDocStyle(profile), [profile]);
+  // The staff roster paper (the prints build, Nov 25, 2026):
+  // the team list on one Studio sheet, for everyone who can
+  // already see this page.
+  const [printingRoster, setPrintingRoster] = useState(false);
+  const printRoster = () => {
+    setPrintingRoster(true);
+    setTimeout(() => {
+      window.print();
+      setPrintingRoster(false);
+    }, 50);
+  };
   const { user } = useAuth();
   const { limits, isLoading: entitlementLoading, isEssentials } = useEntitlements();
   const { toast } = useToast();
@@ -220,6 +234,11 @@ export default function Staff() {
         </div>
         <div className="flex flex-wrap gap-2">
           <LimitBadge label={t('staff.limitBadgeLabel')} used={seatsUsed} limit={staffLimit} />
+          {members.length > 0 && (
+            <Button variant="outline" onClick={printRoster}>
+              <Printer className="mr-1.5 h-4 w-4" /> {t('print.printButton')}
+            </Button>
+          )}
           {canCreateRoles && canManageStaff && (
             <Button variant="outline" onClick={openNewRole}>
               <Plus className="mr-1.5 h-4 w-4" /> {t('staff.newRole')}
@@ -404,6 +423,12 @@ export default function Staff() {
         businessId={activeId}
         onSaved={load}
       />
+
+      {printingRoster && (
+        <div className="print-area hidden print:block">
+          <RosterDoc members={members} roles={roles} business={record} docStyle={docStyle} />
+        </div>
+      )}
     </div>
   );
 }

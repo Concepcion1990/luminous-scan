@@ -113,6 +113,9 @@ const SPANISH_COGNATE_KEYS = new Set([
   'guide.colPar',
 ]);
 const FR_FR_COGNATE_KEYS = new Set([
+  // Prints build (Nov 25, 2026): "Score" is the genuine French
+  // word for a quiz score, spelled the same — verified.
+  'print.colScore',
   // Restaurant operations batch (Nov 23, 2026): "Note", "Date" and "Total" are the genuine French words, "PO {number}" is the purchase-order code format, "g" is the gram symbol, and the scale names are spelled the same in French — verified.
   'ops.invoices.poPrefix', 'ops.invoices.noteLabel', 'ops.invoices.colDate', 'ops.invoices.colTotal',
   'ops.waste.noteLabel', 'ops.waste.colDate', 'batch.noteLabel', 'units.unitPlaceholder', 'ops.tempLogs.scaleF',
@@ -160,6 +163,9 @@ const FR_FR_COGNATE_KEYS = new Set([
   'importLib.updateField.format',
 ]);
 const FR_CA_COGNATE_KEYS = new Set([
+  // Prints build (Nov 25, 2026): "Score" — same French cognate
+  // as fr-FR — verified.
+  'print.colScore',
   // Restaurant operations batch (Nov 23, 2026): Same French cognates as fr-FR — verified.
   'ops.invoices.poPrefix', 'ops.invoices.noteLabel', 'ops.invoices.colDate', 'ops.invoices.colTotal',
   'ops.waste.noteLabel', 'ops.waste.colDate', 'batch.noteLabel', 'units.unitPlaceholder', 'ops.tempLogs.scaleF',
@@ -411,6 +417,10 @@ const VI_COGNATE_KEYS = new Set([
   'settings.identity.logoLabel', 'staff.memberDialog.emailLabel', 'suppliers.email',
 ]);
 const TL_COGNATE_KEYS = new Set([
+  // Prints build (Nov 25, 2026): Tagalog keeps "Timesheet" for
+  // the time sheet, the same loanword it uses throughout —
+  // verified.
+  'print.timesheetTitle',
   // eBay storefront batch (release 362, Nov 23, 2026): "Order" is
   // the everyday Tagalog word for a placed order — verified.
   'storefronts.orderLabel',
@@ -564,6 +574,12 @@ const JV_COGNATE_KEYS = new Set([
   'ops.credits.colInvoice', 'ops.credits.invoiceLabel',
 ]);
 const PCM_COGNATE_KEYS = new Set([
+  // Prints build (Nov 25, 2026): Pidgin keeps these short paper
+  // titles and column heads in English — the same register as
+  // the batches below (its prose and lesson steps are
+  // translated) — verified word-by-word.
+  'print.payrollRegisterTitle', 'print.timesheetTitle', 'print.supplierDirectoryTitle',
+  'print.fieldPeriod', 'print.colHours', 'print.colLesson', 'print.colScore',
   // eBay storefront batch (release 362, Nov 23, 2026): Pidgin keeps
   // these short door labels, buttons and headings in English — the
   // register this file keeps throughout (its prose and lesson steps

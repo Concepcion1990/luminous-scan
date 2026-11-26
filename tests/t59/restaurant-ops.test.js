@@ -959,9 +959,9 @@ test('nav: the restaurant group is one door — the Today page (Release 377 anti
   assert.ok(group.items.every((i) => i.feature === 'restaurant'));
 });
 
-test('training: catalog 116, the four ops lessons scoped and in agreement', () => {
-  assert.equal(CLIENT_LESSONS.length, 116);
-  assert.equal(SERVER_LESSONS.length, 116);
+test('training: catalog 117, the four ops lessons scoped and in agreement', () => {
+  assert.equal(CLIENT_LESSONS.length, 117);
+  assert.equal(SERVER_LESSONS.length, 117);
   const expected = {
     'owner-restaurant-ops': { track: 'owner', steps: 5 },
     'staff-restaurant-daily': { track: 'staff', steps: 4 },

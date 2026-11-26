@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { base44 } from '@/api/client';
-import { Check, Plus, Thermometer } from 'lucide-react';
+import { Check, Plus, Printer, Thermometer } from 'lucide-react';
 import TempLogDialog from '@/components/restaurant/TempLogDialog';
 import { Button } from '@/components/ui/button';
 import { useBusiness } from '@/hooks/useBusiness';
+import { resolveDocStyle } from '@/lib/docStyle';
+import TempLogDoc from '@/components/print/TempLogDoc';
 import { scoped } from '@/lib/scoped';
 import { formatDateTime } from '@/lib/dates';
 import { t } from '@/lib/i18n';
@@ -17,7 +19,19 @@ import RestaurantCrumbs from '@/components/restaurant/RestaurantCrumbs';
  * reading.
  */
 export default function RestaurantTempLogs() {
-  const { activeId } = useBusiness();
+  const { activeId, record, profile } = useBusiness();
+  const docStyle = useMemo(() => resolveDocStyle(profile), [profile]);
+  // The filled temperature log paper (the prints build,
+  // Nov 25, 2026): the readings on a Studio sheet for the
+  // food-safety file; its blank twin lives in the Print Center.
+  const [printingLogs, setPrintingLogs] = useState(false);
+  const printLogs = () => {
+    setPrintingLogs(true);
+    setTimeout(() => {
+      window.print();
+      setPrintingLogs(false);
+    }, 50);
+  };
   const [logs, setLogs] = useState([]);
   const [locations, setLocations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -48,9 +62,16 @@ export default function RestaurantTempLogs() {
           <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">{t('ops.tempLogs.title')}</h1>
           <p className="mt-1 max-w-xl text-sm text-muted-foreground">{t('ops.tempLogs.subtitle')}</p>
         </div>
-        <Button onClick={() => setDialogOpen(true)}>
-          <Plus className="mr-1.5 h-4 w-4" /> {t('ops.tempLogs.newButton')}
-        </Button>
+        <div className="flex gap-2">
+          {logs.length > 0 && (
+            <Button variant="outline" onClick={printLogs}>
+              <Printer className="mr-1.5 h-4 w-4" /> {t('print.printButton')}
+            </Button>
+          )}
+          <Button onClick={() => setDialogOpen(true)}>
+            <Plus className="mr-1.5 h-4 w-4" /> {t('ops.tempLogs.newButton')}
+          </Button>
+        </div>
       </div>
 
       {flash && (
@@ -119,6 +140,12 @@ export default function RestaurantTempLogs() {
           setReload((n) => n + 1);
         }}
       />
+
+      {printingLogs && (
+        <div className="print-area hidden print:block">
+          <TempLogDoc logs={logs} business={record} docStyle={docStyle} />
+        </div>
+      )}
     </div>
   );
 }

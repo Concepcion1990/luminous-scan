@@ -13,7 +13,7 @@
  * One lesson opens at a time; everything else waits quietly.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { AlarmClock, BellRing, Check, ChevronDown, Flag, GraduationCap, Sparkles } from 'lucide-react';
+import { AlarmClock, BellRing, Check, ChevronDown, Flag, GraduationCap, Printer, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
@@ -21,6 +21,8 @@ import { useBusiness } from '@/hooks/useBusiness';
 import { apiRequest } from '@/api/client';
 import { t } from '@/lib/i18n';
 import { formatShortDate } from '@/lib/dates';
+import { resolveDocStyle } from '@/lib/docStyle';
+import TrainingRecordDoc from '@/components/print/TrainingRecordDoc';
 import { TRAINING_LESSONS, lessonVisibleOnPlan, visibleLessonsForTrack } from '@/lib/trainingCatalog';
 import {
   addLessonComment,
@@ -863,7 +865,7 @@ function PersonRecord({ businessId, staffId, level }) {
   );
 }
 
-function TeamSection({ businessId, level, isBusiness }) {
+function TeamSection({ businessId, level, isBusiness, business, docStyle }) {
   const { toast } = useToast();
   const [team, setTeam] = useState(null);
   const [personId, setPersonId] = useState('');
@@ -871,6 +873,68 @@ function TeamSection({ businessId, level, isBusiness }) {
   const [days, setDays] = useState('');
   const [busy, setBusy] = useState(false);
   const [recordFor, setRecordFor] = useState('');
+  // The training record paper (the prints build, Nov 25, 2026):
+  // the whole team's filed record on one Studio sheet, fetched
+  // per person at print time from the same results the screen's
+  // own record view reads.
+  const [printPeople, setPrintPeople] = useState(null);
+  const printRecord = async () => {
+    setBusy(true);
+    try {
+      const people = await Promise.all(
+        team.map(async (person) => {
+          const results = await getTeamMemberResults(businessId, person.staff_id).catch(() => ({
+            quiz_results: [],
+            policy_attempts: [],
+          }));
+          return {
+            name: person.full_name,
+            role: person.role_name,
+            done: person.lessons_done,
+            total: person.lessons_total,
+            results: (results.quiz_results ?? []).map((row) => {
+              const lesson = lessonById(row.lesson_id);
+              return {
+                lesson: lesson ? lessonTitle(lesson) : row.lesson_id,
+                correct: row.correct,
+                total: row.total,
+                passed: row.passed,
+                date: row.created_at,
+              };
+            }),
+            policies: (results.policy_attempts ?? []).map((attempt) => {
+              const parts = [
+                attempt.status === 'passed'
+                  ? t('training.team.passed')
+                  : attempt.status === 'below_line'
+                    ? t('training.team.belowLineChip')
+                    : attempt.status === 'sent_back'
+                      ? t('training.team.sentBackChip')
+                      : attempt.status,
+              ];
+              if (attempt.needs_review) parts.push(t('training.team.needsReview'));
+              return {
+                docLabel: t(attempt.doc_kind === 'policies' ? 'settings.policies.storePolicies' : 'settings.policies.termsConditions'),
+                score: attempt.score_percent ?? null,
+                statusLabel: parts.join(' · '),
+                date: attempt.created_at,
+              };
+            }),
+            warnings: (person.assignments ?? []).filter((a) => a.warning_sent_at).map((a) => a.warning_sent_at),
+          };
+        }),
+      );
+      setPrintPeople(people);
+      setTimeout(() => {
+        window.print();
+        setPrintPeople(null);
+      }, 50);
+    } catch (error) {
+      toast({ title: error.message || t('training.loadFailed'), variant: 'destructive' });
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const load = useCallback(async () => {
     const data = await getTeamProgress(businessId);
@@ -924,6 +988,12 @@ function TeamSection({ businessId, level, isBusiness }) {
   if (!team) return null;
   return (
     <Section title={t('training.team.title')} help={t('training.team.help')} icon={Flag}>
+      <div className="mb-3 flex justify-end">
+        <Button variant="outline" size="sm" disabled={busy || !team.length} onClick={printRecord}>
+          <Printer className="mr-1.5 h-4 w-4" />
+          {t('print.printButton')}
+        </Button>
+      </div>
       <div className="rounded-lg border border-border bg-background p-4 sm:p-5">
         <h3 className="text-sm font-semibold">{t('training.team.assignTitle')}</h3>
         <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_1fr_auto_auto] sm:items-end">
@@ -1031,12 +1101,18 @@ function TeamSection({ businessId, level, isBusiness }) {
           </div>
         ))}
       </div>
+      {printPeople && (
+        <div className="print-area hidden print:block">
+          <TrainingRecordDoc people={printPeople} business={business} docStyle={docStyle} />
+        </div>
+      )}
     </Section>
   );
 }
 
 export default function Training() {
-  const { activeId } = useBusiness();
+  const { activeId, record, profile } = useBusiness();
+  const docStyle = useMemo(() => resolveDocStyle(profile), [profile]);
   const { toast } = useToast();
   const [state, setState] = useState(null);
   const [failed, setFailed] = useState(false);
@@ -1181,7 +1257,7 @@ export default function Training() {
       })}
 
       {(state.level === 'owner' || state.level === 'manager') && (
-        <TeamSection businessId={activeId} level={state.level} isBusiness={isBusiness} />
+        <TeamSection businessId={activeId} level={state.level} isBusiness={isBusiness} business={record} docStyle={docStyle} />
       )}
     </div>
   );

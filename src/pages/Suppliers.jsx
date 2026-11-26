@@ -1,16 +1,30 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { base44, apiDownload } from '@/api/client';
 import { Link } from 'react-router-dom';
-import { ClipboardList, FileDown, Mail, Pencil, Phone, Plus } from 'lucide-react';
+import { ClipboardList, FileDown, Mail, Pencil, Phone, Plus, Printer } from 'lucide-react';
 import SupplierFormDialog from '@/components/suppliers/SupplierFormDialog';
 import { useBusiness } from '@/hooks/useBusiness';
+import { resolveDocStyle } from '@/lib/docStyle';
+import SupplierDirectoryDoc from '@/components/print/SupplierDirectoryDoc';
 import { scoped } from '@/lib/scoped';
 import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 
 export default function Suppliers() {
-  const { activeId } = useBusiness();
+  const { activeId, record, profile } = useBusiness();
+  const docStyle = useMemo(() => resolveDocStyle(profile), [profile]);
+  // The supplier directory paper (the prints build, Nov 25, 2026):
+  // every supplier on one Studio sheet. This page is
+  // Business-gated, so the paper is too.
+  const [printingDirectory, setPrintingDirectory] = useState(false);
+  const printDirectory = () => {
+    setPrintingDirectory(true);
+    setTimeout(() => {
+      window.print();
+      setPrintingDirectory(false);
+    }, 50);
+  };
   const { toast } = useToast();
   const [suppliers, setSuppliers] = useState([]);
   const [openOrders, setOpenOrders] = useState([]);
@@ -72,6 +86,11 @@ export default function Suppliers() {
           </p>
         </div>
         <div className="flex gap-2">
+          {suppliers.length > 0 && (
+            <Button variant="outline" onClick={printDirectory}>
+              <Printer className="mr-1.5 h-4 w-4" /> {t('print.printButton')}
+            </Button>
+          )}
           <Button variant="outline" asChild>
             <Link to="/purchasing">
               <ClipboardList className="mr-1.5 h-4 w-4" /> {t('suppliers.purchaseOrdersLink')}
@@ -170,6 +189,12 @@ export default function Suppliers() {
         supplier={editing}
         onSaved={() => setReload((r) => r + 1)}
       />
+
+      {printingDirectory && (
+        <div className="print-area hidden print:block">
+          <SupplierDirectoryDoc suppliers={suppliers} business={record} docStyle={docStyle} />
+        </div>
+      )}
     </div>
   );
 }

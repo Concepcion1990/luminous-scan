@@ -60,6 +60,7 @@ export const PLANS = {
         t('plansLib.includes.inviteLink'),
         t('plansLib.includes.inbox'),
         t('plansLib.includes.logBook'),
+        t('plansLib.includes.recordPrints'),
         t('plansLib.includes.recovery'),
         t('plansLib.includes.support'),
         t('plansLib.includes.offline'),
@@ -319,6 +320,7 @@ export const WELCOME_OPTIONS = [
         t('plansLib.includes.inviteLink'),
         t('plansLib.includes.inbox'),
         t('plansLib.includes.logBook'),
+        t('plansLib.includes.recordPrints'),
         t('plansLib.includes.recovery'),
         t('plansLib.includes.support'),
         t('plansLib.includes.offline'),
@@ -447,6 +449,12 @@ export const COMPARISON_ROWS = [
   // gave it to every business, not just restaurants. Mobile
   // stays "Set at launch" like the other team-era rows.
   { get label() { return t('plansLib.includes.logBook'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
+  // The record prints (the prints build, Nov 25, 2026): the
+  // Studio papers for the schedule, payroll register,
+  // timesheet, training record, policies & terms, roster and
+  // price list — both plans, like the records themselves.
+  // Mobile stays "Set at launch" like the other team-era rows.
+  { get label() { return t('plansLib.includes.recordPrints'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
   { get label() { return t('plansLib.includes.recovery'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
   { get label() { return t('plansLib.includes.support'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
   { get label() { return t('plansLib.includes.offline'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },

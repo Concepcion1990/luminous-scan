@@ -13,7 +13,7 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft, BellRing, CalendarClock, Check, Clock3, Gift, ListTodo, MessageCircle, Mic, Palmtree, Send, Trash2, X } from 'lucide-react';
+import { ArrowLeft, BellRing, CalendarClock, Check, Clock3, Gift, ListTodo, MessageCircle, Mic, Palmtree, Printer, Send, Trash2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { useBusiness } from '@/hooks/useBusiness';
@@ -31,6 +31,8 @@ import {
 } from '@/lib/rewards';
 import { formatHhmm, formatShortDate, formatShortDay, formatTimeFromDay, formatTimeOnly, toLocalDate } from '@/lib/dates';
 import ProfileAvatar from '@/components/business/ProfileAvatar';
+import { resolveDocStyle } from '@/lib/docStyle';
+import { ScheduleDoc, TimesheetDoc } from '@/components/print/WorkforceDocs';
 import { buildVoiceWav, createPcmCapture } from '@/lib/voiceCapture';
 import {
   breakIn,
@@ -111,12 +113,23 @@ function Section({ title, children, help }) {
   );
 }
 
-function ClockTab({ businessId, ctx, peopleById, onEvent }) {
+function ClockTab({ businessId, ctx, peopleById, onEvent, business, docStyle }) {
   const { toast } = useToast();
   const [status, setStatus] = useState(null);
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState(false);
   const [entries, setEntries] = useState([]);
+  // The timesheet paper (the prints build, Nov 25, 2026): the
+  // loaded entries on a Studio sheet, names exactly as this
+  // screen shows them (staff see their own entries only).
+  const [printingSheet, setPrintingSheet] = useState(false);
+  const printSheet = () => {
+    setPrintingSheet(true);
+    setTimeout(() => {
+      window.print();
+      setPrintingSheet(false);
+    }, 50);
+  };
 
   const load = useCallback(async () => {
     const [s, e] = await Promise.all([getClockStatus(businessId), listEntries(businessId)]);
@@ -307,6 +320,14 @@ function ClockTab({ businessId, ctx, peopleById, onEvent }) {
       )}
 
       <Section title={t('workforce.entries.title')}>
+        {entries.length > 0 && (
+          <div className="mb-2 flex justify-end">
+            <Button variant="outline" size="sm" onClick={printSheet}>
+              <Printer className="mr-1.5 h-4 w-4" />
+              {t('print.printButton')}
+            </Button>
+          </div>
+        )}
         {entries.length === 0 ? (
           <p className="text-sm text-muted-foreground">{t('workforce.entries.empty')}</p>
         ) : (
@@ -380,11 +401,22 @@ function ClockTab({ businessId, ctx, peopleById, onEvent }) {
           </ul>
         )}
       </Section>
+      {printingSheet && (
+        <div className="print-area hidden print:block">
+          <TimesheetDoc
+            entries={entries.slice(0, 30)}
+            peopleById={peopleById}
+            showNames={ctx.level !== 'staff'}
+            business={business}
+            docStyle={docStyle}
+          />
+        </div>
+      )}
     </div>
   );
 }
 
-function ScheduleTab({ businessId, ctx, people }) {
+function ScheduleTab({ businessId, ctx, people, business, docStyle }) {
   const { toast } = useToast();
   const editable = ctx.level !== 'staff';
   const candidates = useMemo(() => {
@@ -395,6 +427,22 @@ function ScheduleTab({ businessId, ctx, people }) {
   const [personId, setPersonId] = useState('');
   const [draft, setDraft] = useState({});
   const [busy, setBusy] = useState(false);
+  // The weekly schedule paper (the prints build, Nov 25, 2026):
+  // every candidate's week on one Studio sheet — the same
+  // people this tab already shows this viewer, nobody wider.
+  const [printRows, setPrintRows] = useState(null);
+  const printSchedule = async () => {
+    try {
+      const data = await listSchedules(businessId);
+      setPrintRows(data.schedules ?? []);
+      setTimeout(() => {
+        window.print();
+        setPrintRows(null);
+      }, 50);
+    } catch (error) {
+      toast({ title: error.message || t('workforce.actionFailed'), variant: 'destructive' });
+    }
+  };
 
   const loadFor = useCallback(
     async (id) => {
@@ -431,7 +479,14 @@ function ScheduleTab({ businessId, ctx, people }) {
   };
 
   return (
+    <>
     <Section title={t('workforce.schedule.title')} help={t('workforce.schedule.help')}>
+      <div className="mb-3 flex justify-end">
+        <Button variant="outline" size="sm" onClick={printSchedule}>
+          <Printer className="mr-1.5 h-4 w-4" />
+          {t('print.printButton')}
+        </Button>
+      </div>
       {candidates.length > 1 && (
         <div className="mb-3 max-w-xs">
           <label className={labelCls}>{t('workforce.schedule.person')}</label>
@@ -506,6 +561,12 @@ function ScheduleTab({ businessId, ctx, people }) {
         </Button>
       )}
     </Section>
+    {printRows && (
+      <div className="print-area hidden print:block">
+        <ScheduleDoc people={candidates} schedules={printRows} business={business} docStyle={docStyle} />
+      </div>
+    )}
+    </>
   );
 }
 
@@ -1666,7 +1727,8 @@ const TABS = [
 ];
 
 export default function Workforce() {
-  const { activeId, record } = useBusiness();
+  const { activeId, record, profile } = useBusiness();
+  const docStyle = useMemo(() => resolveDocStyle(profile), [profile]);
   const { toast } = useToast();
   const { can, isLoading: entitlementLoading } = useEntitlements();
   // Rewards is Business-only and INVISIBLE off Business (the owner's
@@ -1735,8 +1797,8 @@ export default function Workforce() {
         ))}
       </div>
 
-      {tab === 'clock' && <ClockTab businessId={activeId} ctx={ctx} peopleById={peopleById} onEvent={loadMeta} />}
-      {tab === 'schedule' && <ScheduleTab businessId={activeId} ctx={ctx} people={people} />}
+      {tab === 'clock' && <ClockTab businessId={activeId} ctx={ctx} peopleById={peopleById} onEvent={loadMeta} business={record} docStyle={docStyle} />}
+      {tab === 'schedule' && <ScheduleTab businessId={activeId} ctx={ctx} people={people} business={record} docStyle={docStyle} />}
       {tab === 'timeoff' && <TimeOffTab businessId={activeId} ctx={ctx} peopleById={peopleById} />}
       {tab === 'tasks' && <TasksTab businessId={activeId} ctx={ctx} people={people} peopleById={peopleById} />}
       {tab === 'inbox' && <InboxTab businessId={activeId} ctx={ctx} people={people} onRead={loadMeta} onGoTab={setTab} />}

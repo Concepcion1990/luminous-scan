@@ -9,11 +9,13 @@
  * (cash-up), direct deposit (details visible to the owner only)
  * and the owner-only IRS forms box.
  */
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Landmark, PenLine, Printer, Send, Undo2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import MyDocumentsCard from '@/components/staff/MyDocumentsCard';
+import { resolveDocStyle } from '@/lib/docStyle';
+import PayrollRegisterDoc from '@/components/print/PayrollRegisterDoc';
 import { useToast } from '@/components/ui/use-toast';
 import { useBusiness } from '@/hooks/useBusiness';
 import { formatFullDate, formatShortDate, formatTimeOnly } from '@/lib/dates';
@@ -179,7 +181,7 @@ function ProfilesSection({ businessId, profiles, canSetPay, reload }) {
   );
 }
 
-function RunSection({ businessId, ctx, reloadRuns }) {
+function RunSection({ businessId, ctx, reloadRuns, business, docStyle }) {
   const { toast } = useToast();
   const today = new Date();
   const iso = (d) => d.toISOString().slice(0, 10);
@@ -187,6 +189,16 @@ function RunSection({ businessId, ctx, reloadRuns }) {
   const [preview, setPreview] = useState(null);
   const [adjustments, setAdjustments] = useState({});
   const [busy, setBusy] = useState(false);
+  // The payroll register paper (the prints build, Nov 25, 2026):
+  // the preview on a Studio sheet for the wage file.
+  const [printingRegister, setPrintingRegister] = useState(false);
+  const printRegister = () => {
+    setPrintingRegister(true);
+    setTimeout(() => {
+      window.print();
+      setPrintingRegister(false);
+    }, 50);
+  };
 
   const doPreview = async () => {
     setBusy(true);
@@ -253,6 +265,14 @@ function RunSection({ businessId, ctx, reloadRuns }) {
         )}
       </div>
       {preview && (
+        <div className="mt-4 flex justify-end">
+          <Button variant="outline" size="sm" onClick={printRegister}>
+            <Printer className="mr-1.5 h-4 w-4" />
+            {t('print.printButton')}
+          </Button>
+        </div>
+      )}
+      {preview && (
         <div className="mt-4 overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -318,6 +338,25 @@ function RunSection({ businessId, ctx, reloadRuns }) {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+      {printingRegister && preview && (
+        <div className="print-area hidden print:block">
+          <PayrollRegisterDoc
+            period={preview.period || period}
+            rows={preview.people.map((row) => ({
+              name: row.person.full_name,
+              regular_hours: row.regular_hours,
+              overtime_hours: row.overtime_hours,
+              break_minutes: row.break_minutes,
+              gross: row.gross,
+              deductions:
+                row.gross != null && row.net != null ? Math.round((row.gross - row.net) * 100) / 100 : null,
+              net: row.net,
+            }))}
+            business={business}
+            docStyle={docStyle}
+          />
         </div>
       )}
     </Section>
@@ -1042,7 +1081,8 @@ function IrsBox() {
 }
 
 export default function Payroll() {
-  const { activeId, record } = useBusiness();
+  const { activeId, record, profile } = useBusiness();
+  const docStyle = useMemo(() => resolveDocStyle(profile), [profile]);
   const [ctx, setCtx] = useState(null);
   const [people, setPeople] = useState([]);
   const [profiles, setProfiles] = useState([]);
@@ -1125,7 +1165,7 @@ export default function Payroll() {
 
       {management && (
         <>
-          <RunSection businessId={activeId} ctx={ctx} reloadRuns={() => setRunsKey((k) => k + 1)} />
+          <RunSection businessId={activeId} ctx={ctx} reloadRuns={() => setRunsKey((k) => k + 1)} business={record} docStyle={docStyle} />
           <RunsSection businessId={activeId} reloadKey={runsKey} />
           <ConfigSection businessId={activeId} ctx={ctx} />
           <CashUpSection businessId={activeId} />
