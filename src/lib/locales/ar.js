@@ -3330,7 +3330,7 @@ export const ar = {
   "workforce.breakOut": "تسجيل الخروج للاستراحة",
   "workforce.breakStarted": "بدأت الاستراحة.",
   "workforce.clockedInMsg": "أنت مسجّل الحضور.",
-  "workforce.clockedInSince": "مسجّل الحضور منذ {time}",
+  "workforce.clockedInSince": "مسجّل الحضور منذ {date}، {time}",
   "workforce.clockedOutMsg": "سجّلت الانصراف. أتمنى لك بقية يوم سعيدة.",
   "workforce.clockIn": "تسجيل الحضور",
   "workforce.clockOut": "تسجيل الانصراف",

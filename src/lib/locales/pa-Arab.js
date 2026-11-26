@@ -3330,7 +3330,7 @@ export const paArab = {
   "workforce.breakOut": "بریک لئی چیک آؤٹ کرو",
   "workforce.breakStarted": "بریک شروع ہو گیا۔",
   "workforce.clockedInMsg": "تسی کلاک ان ہو۔",
-  "workforce.clockedInSince": "{time} توں کلاک ان",
+  "workforce.clockedInSince": "{date}, {time} توں کلاک ان",
   "workforce.clockedOutMsg": "کلاک آؤٹ ہو گیا۔ تہاڈا باقی دن چنگا گزرے۔",
   "workforce.clockIn": "کلاک ان",
   "workforce.clockOut": "کلاک آؤٹ",
