@@ -5821,7 +5821,7 @@ export const zhHans = {
   "training.lessons.mgr-restaurant-invoices.step2": "关联采购订单后，发票会逐行三方核对：订购了什么、收货了什么、开票了什么。一行可能返回匹配、短缺、超量、以不同价格开票，或根本不在订单上。",
   "training.lessons.mgr-restaurant-invoices.step3": "当开票价格与产品记录成本不同时，会打开价格提醒。接受提醒会将产品成本设为新的开票价格；忽略它则什么都不改变。同一发票和产品同时只有一个打开的提醒。",
   "training.lessons.mgr-restaurant-invoices.step4": "将库存作为带保质期的批次收货，保质期页面会保持批次先到期先出。批次运行将一个配方制作指定份数：它用掉配方的配料，并将成品备餐产品放到货架上——配方必须先关联到该备餐产品。",
-  "training.lessons.mgr-restaurant-invoices.step5": "当供应商针对发票退回款项时——破损的箱子、短缺的交货、修正的价格——在发票页面上针对该发票将其记录为贷项通知单。供应商来自发票本身，通知单计入发票仍欠的金额：发票显示其已应用的贷项和应付余额。贷项永远不能超过其发票，作废通知单会将其留在记录中，同时停止计数。",
+  "training.lessons.mgr-restaurant-invoices.step5": "当供应商针对发票退回款项时——破损的箱子、短缺的交货、修正的价格——在发票页面上针对该发票将其记录为贷项通知单。供应商来自发票本身，通知单计入发票仍欠的金额：发票显示其已应用的贷项和应付余额。贷项永远不能超过其发票，作废通知单会将其留在记录中，同时停止计数。 需要纸质版时，可从该行打印此凭证——打印出的单据是您对供应商贷项的自有记录，并非供应商的单据。",
   "training.lessons.mgr-restaurant-reports.title": "菜单工程、差异和账目",
   "training.lessons.mgr-restaurant-reports.step1": "店主已将“菜品金额”勾选托付给您，它也开启了厨房的金额报表：菜单工程、差异和会计导出。这些数字留在企业内部，如同所有菜品金额。",
   "training.lessons.mgr-restaurant-reports.step2": "菜单工程按每道菜在该期间的销量和收益定位。明星销量好、收益好；耕马销量好但收益少；谜题收益好但销量少；瘦狗两者都不行。",
@@ -5920,4 +5920,9 @@ export const zhHans = {
   "training.lessons.owner-ebay-connect.step5": "销售通过刊登上的 SKU、UPC 或 ISBN 进行匹配 — 刊登所带的三者中任意一个均可。如果一笔销售无法匹配，它会在店面连接页面的“需要匹配的销售”下等待：将它关联到它的产品一次，那笔销售 — 以及今后类似的销售 — 就会自行记录。“立即检查销售”会获取任何最近的内容，而断开连接会停止连接；已记录的销售会保留。",
   "training.lessons.owner-ebay-connect.title": "连接您的 eBay 店",
   "training.module.storefronts": "店面连接",
+  "plans.inheritedNote": "此商家受 {name} 的套餐覆盖。如需更改套餐，请切换到该商家。",
+  "settings.details.dateFormatAutomatic": "自动 — 本地格式",
+  "settings.details.dateFormatHint": "“自动”会按照此商家的语言和地区的书写方式来写日期。改为选择一种格式后，此商家的打印文档和标签将遵循您的选择。",
+  "print.creditMemoTitle": "贷项凭证",
+  "print.creditMemoRecordNote": "此单据是本商家对供应商所给贷项的自有记录，并非供应商的单据。",
 };

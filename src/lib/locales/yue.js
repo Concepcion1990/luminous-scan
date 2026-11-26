@@ -5821,7 +5821,7 @@ export const yue = {
   "training.lessons.mgr-restaurant-invoices.step2": "連結咗採購單之後，張發票會逐行做三方對數：訂咗啲乜、收咗啲乜、同開咗單啲乜。一行可以返嚟係啱數、唔夠數、多咗、用另一個價開單，或者根本唔喺張單上面。",
   "training.lessons.mgr-restaurant-invoices.step3": "開單價同產品記錄成本唔同嗰陣，就會彈出價格提示。接受個提示會將產品成本set做新嘅開單價；唔理佢就乜都唔會變。同一張發票同同一件產品，同一時間只會有一個開住嘅提示。",
   "training.lessons.mgr-restaurant-invoices.step4": "將貨當成一個有到期日嘅到期批次嚟收貨，到期頁會keep住啲批次最快到期先出。Run一次批次會將一個食譜整指定次數：佢會用晒食譜嘅材料，同將整好嘅備餐產品放返上貨架——個食譜要先連結去嗰件備餐產品。",
-  "training.lessons.mgr-restaurant-invoices.step5": "當供應商針對發票退返錢嗰陣——爛咗嘅箱、唔夠數嘅交貨、改返啱嘅價錢——喺發票頁面針對嗰張發票記錄做貸項通知單。供應商嚟自發票本身，通知單計入發票仲欠嘅金額：發票會顯示佢已應用嘅貸項同應付餘額。貸項永遠唔可以多過佢張發票，作廢通知單會留佢喺記錄入面，同時停止計數。",
+  "training.lessons.mgr-restaurant-invoices.step5": "當供應商針對發票退返錢嗰陣——爛咗嘅箱、唔夠數嘅交貨、改返啱嘅價錢——喺發票頁面針對嗰張發票記錄做貸項通知單。供應商嚟自發票本身，通知單計入發票仲欠嘅金額：發票會顯示佢已應用嘅貸項同應付餘額。貸項永遠唔可以多過佢張發票，作廢通知單會留佢喺記錄入面，同時停止計數。 需要紙質版嗰陣，可以由嗰行打印呢張憑證——打印出嚟嘅單據係你對供應商貸項嘅自有記錄，並非供應商嘅單據。",
   "training.lessons.mgr-restaurant-reports.title": "菜單工程、差異同啲簿",
   "training.lessons.mgr-restaurant-reports.step1": "店主信得過你，畀咗你「菜式錢銀」個剔，佢仲會開埋廚房嘅錢銀報告：菜單工程、差異同會計匯出。呢啲數字會留喺間生意入面，同所有菜式錢銀一樣。",
   "training.lessons.mgr-restaurant-reports.step2": "菜單工程會按每碟菜喺嗰段期間賣出幾多同賺到幾多嚟擺位。明星賣得好又賺得多；耕馬賣得好但賺得少；謎團賺得多但賣得少；狗仔兩樣都唔得。",
@@ -5920,4 +5920,9 @@ export const yue = {
   "training.lessons.owner-ebay-connect.step5": "銷售透過刊登上面嘅 SKU、UPC 或者 ISBN 嚟配對 — 刊登所帶嘅三樣當中，是但一樣都得。如果一筆銷售配對唔到，佢會喺店面連接頁面嘅「需要配對嘅銷售」下面等：將佢連結去佢嘅產品一次，嗰筆銷售 — 同埋以後類似嘅銷售 — 就會自己記錄。「即刻檢查銷售」會攞到任何最近嘅內容，而中斷連接會停止連接；已經記錄咗嘅銷售會保留。",
   "training.lessons.owner-ebay-connect.title": "連接你嘅 eBay 店",
   "training.module.storefronts": "店面連接",
+  "plans.inheritedNote": "呢間商戶受 {name} 嘅計劃覆蓋。想改計劃，請切換去嗰間商戶。",
+  "settings.details.dateFormatAutomatic": "自動 — 本地格式",
+  "settings.details.dateFormatHint": "「自動」會按照呢間商戶嘅語言同地區嘅寫法嚟寫日期。改為揀一種格式之後，呢間商戶嘅打印文件同標籤就會跟你嘅選擇。",
+  "print.creditMemoTitle": "貸項憑證",
+  "print.creditMemoRecordNote": "呢張單據係本商戶對供應商所俾貸項嘅自有記錄，並非供應商嘅單據。",
 };
