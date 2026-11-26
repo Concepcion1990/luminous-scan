@@ -3330,7 +3330,7 @@ export const jv = {
   "workforce.breakOut": "Medal kangge ngaso",
   "workforce.breakStarted": "Ngaso kawiwitan.",
   "workforce.clockedInMsg": "Panjenengan sampun absen mlebet.",
-  "workforce.clockedInSince": "Absen mlebet wiwit {time}",
+  "workforce.clockedInSince": "Absen mlebet wiwit {date}, {time}",
   "workforce.clockedOutMsg": "Absen medal. Sugeng ngaso ing sisa dinten punika.",
   "workforce.clockIn": "Absen mlebet",
   "workforce.clockOut": "Absen medal",
