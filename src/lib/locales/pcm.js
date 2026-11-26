@@ -3330,7 +3330,7 @@ export const pcm = {
   "workforce.breakOut": "Check out go break",
   "workforce.breakStarted": "Break don start.",
   "workforce.clockedInMsg": "You don clock in.",
-  "workforce.clockedInSince": "Don clock in since {time}",
+  "workforce.clockedInSince": "Don clock in since {date}, {time}",
   "workforce.clockedOutMsg": "Don clock out. Make you rest well for di rest of di day.",
   "workforce.clockIn": "Make you clock in",
   "workforce.clockOut": "Make you clock out",

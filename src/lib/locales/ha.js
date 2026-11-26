@@ -3330,7 +3330,7 @@ export const ha = {
   "workforce.breakOut": "Fita don hutu",
   "workforce.breakStarted": "Hutu ya fara.",
   "workforce.clockedInMsg": "Ka shiga aiki.",
-  "workforce.clockedInSince": "Ka shiga aiki tun {time}",
+  "workforce.clockedInSince": "Ka shiga aiki tun {date}, {time}",
   "workforce.clockedOutMsg": "Ka fita daga aiki. Ka huta lafiya a sauran yinin ka.",
   "workforce.clockIn": "Shiga aiki",
   "workforce.clockOut": "Fita daga aiki",
