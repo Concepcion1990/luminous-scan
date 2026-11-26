@@ -3333,7 +3333,7 @@ export const enIN = {
   "workforce.breakOut": "Check out for a break",
   "workforce.breakStarted": "Break started.",
   "workforce.clockedInMsg": "You are clocked in.",
-  "workforce.clockedInSince": "Clocked in since {time}",
+  "workforce.clockedInSince": "Clocked in since {date}, {time}",
   "workforce.clockedOutMsg": "Clocked out. Have a good rest of your day.",
   "workforce.clockIn": "Clock in",
   "workforce.clockOut": "Clock out",
