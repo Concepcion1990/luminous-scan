@@ -1,13 +1,16 @@
-import { useEffect, useRef, useState } from 'react';
-import { Check, Loader2, Save, Trash2, Upload } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Check, Loader2, Printer, Save, Trash2, Upload } from 'lucide-react';
 import { apiRequest } from '@/api/client';
 import SettingsCard from './SettingsCard';
 import PolicyDocumentView from './PolicyDocumentView';
 import PolicyQuestionsEditor from './PolicyQuestionsEditor';
+import PoliciesDoc from '@/components/print/PoliciesDoc';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
+import { useBusiness } from '@/hooks/useBusiness';
+import { resolveDocStyle } from '@/lib/docStyle';
 import { t } from '@/lib/i18n';
 
 /**
@@ -99,6 +102,19 @@ function readAsDataUrl(file, mime) {
 export default function BusinessPoliciesCard({ businessId, editable, onVisibilityChange }) {
   const [docs, setDocs] = useState(null);
   const [loadError, setLoadError] = useState('');
+  // The policies & terms paper (the prints build, Nov 25, 2026):
+  // the owner's own documents on a Studio sheet, exactly as
+  // written, for everyone who can already read this card.
+  const { record, profile } = useBusiness();
+  const docStyle = useMemo(() => resolveDocStyle(profile), [profile]);
+  const [printingDocs, setPrintingDocs] = useState(false);
+  const printDocs = () => {
+    setPrintingDocs(true);
+    setTimeout(() => {
+      window.print();
+      setPrintingDocs(false);
+    }, 50);
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -151,6 +167,14 @@ export default function BusinessPoliciesCard({ businessId, editable, onVisibilit
         </p>
       ) : (
         <div className="space-y-6">
+          {(docs.policies.kind !== 'empty' || docs.terms.kind !== 'empty') && (
+            <div className="flex justify-end">
+              <Button type="button" variant="outline" size="sm" onClick={printDocs}>
+                <Printer className="mr-1.5 h-4 w-4" aria-hidden="true" />
+                {t('print.printButton')}
+              </Button>
+            </div>
+          )}
           {DOCS.map((doc) =>
             editable ? (
               <PolicyDocEditor
@@ -170,6 +194,11 @@ export default function BusinessPoliciesCard({ businessId, editable, onVisibilit
               />
             ) : null,
           )}
+        </div>
+      )}
+      {printingDocs && docs && (
+        <div className="print-area hidden print:block">
+          <PoliciesDoc docs={docs} business={record} docStyle={docStyle} />
         </div>
       )}
     </SettingsCard>
