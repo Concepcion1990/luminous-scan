@@ -3330,7 +3330,7 @@ export const th = {
   "workforce.breakOut": "เช็กเอาต์เพื่อพัก",
   "workforce.breakStarted": "เริ่มพักแล้ว",
   "workforce.clockedInMsg": "คุณลงเวลาเข้างานแล้ว",
-  "workforce.clockedInSince": "ลงเวลาเข้างานตั้งแต่ {time}",
+  "workforce.clockedInSince": "ลงเวลาเข้างานตั้งแต่ {date} {time}",
   "workforce.clockedOutMsg": "ลงเวลาออกงานแล้ว ขอให้วันนี้ที่เหลือเป็นวันที่ดี",
   "workforce.clockIn": "ลงเวลาเข้างาน",
   "workforce.clockOut": "ลงเวลาออกงาน",
