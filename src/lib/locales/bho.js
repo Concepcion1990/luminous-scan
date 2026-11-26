@@ -3330,7 +3330,7 @@ export const bho = {
   "workforce.breakOut": "ब्रेक खातिर चेक आउट करीं",
   "workforce.breakStarted": "ब्रेक शुरू भइल।",
   "workforce.clockedInMsg": "रउआ क्लॉक इन बानी।",
-  "workforce.clockedInSince": "{time} से क्लॉक इन बा",
+  "workforce.clockedInSince": "{date}, {time} से क्लॉक इन बा",
   "workforce.clockedOutMsg": "क्लॉक आउट भइल। राउर बाकी दिन शुभ होखे।",
   "workforce.clockIn": "क्लॉक इन करीं",
   "workforce.clockOut": "क्लॉक आउट करीं",
