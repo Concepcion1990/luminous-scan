@@ -3330,7 +3330,7 @@ export const fa = {
   "workforce.breakOut": "خروج برای استراحت",
   "workforce.breakStarted": "استراحت شروع شد.",
   "workforce.clockedInMsg": "شما وارد شده‌اید.",
-  "workforce.clockedInSince": "از {time} وارد شده‌اید",
+  "workforce.clockedInSince": "از {date}، {time} وارد شده‌اید",
   "workforce.clockedOutMsg": "خارج شدید. بقیه روز خوبی داشته باشید.",
   "workforce.clockIn": "ورود",
   "workforce.clockOut": "خروج",
