@@ -188,7 +188,11 @@ test('the Log-a-return "Returned to" picker offers the same door', () => {
   const read = (rel) => readFileSync(new URL(rel, import.meta.url), 'utf8');
   const form = read('../../src/components/returns/ReturnFormDialog.jsx');
   assert.match(form, /AddLocationInline/, 'the return form offers the inline door when no location exists');
-  assert.match(form, /localLocations\.length === 0/);
+  // Amended by the smalls bundle (Nov 25, 2026): "Returned to" names a
+  // STORE, never a shelf (the owner's ruling closing the 352 flag), so
+  // the door now shows when no operating site exists — a shelf alone
+  // no longer fills the picker.
+  assert.match(form, /shipFromLocations\(localLocations, form\.location_id\)\.length === 0/);
   assert.match(form, /localLocations\.find/, 'the return form saves against its local location list');
   const returnsPage = read('../../src/pages/Returns.jsx');
   assert.match(returnsPage, /useDataFresh\('inventory', '\/returns'/, 'location renames reach Returns on next view');

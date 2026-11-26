@@ -48,8 +48,8 @@ function formatDate(value) {
 }
 
 export default function Upgrade() {
-  const { plan, status, record, isLoading, activeId, refetch } = useEntitlements();
-  const { user, record: businessRecord } = useBusiness();
+  const { plan, status, record, isLoading, activeId, refetch, inheritedFrom } = useEntitlements();
+  const { user, record: businessRecord, businesses } = useBusiness();
   const [cancellationOpen, setCancellationOpen] = useState(false);
   const [planChangeOpen, setPlanChangeOpen] = useState(false);
   const [planChangeTarget, setPlanChangeTarget] = useState(null);
@@ -160,6 +160,28 @@ export default function Upgrade() {
     return (
       <div className="flex items-center gap-2 py-10 text-sm text-muted-foreground">
         <Loader2 className="h-4 w-4 animate-spin" /> {t('plans.loadingPlan')}
+      </div>
+    );
+  }
+
+  // A business riding on another business's plan (release 356
+  // inheritance) has no subscription of its own to change
+  // (the owner's Road B ruling, Nov 25, 2026): the Upgrade
+  // door is NOT offered here at all — no upgrade, downgrade,
+  // cancel or checkout buttons — and a note names the business
+  // that holds the plan, where the change is made. No door,
+  // no mistaken second subscription.
+  if (inheritedFrom) {
+    const holder = businesses.find((business) => business.id === inheritedFrom);
+    return (
+      <div className="space-y-6">
+        <div>
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">{t('upgrade.eyebrow')}</p>
+          <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">{t('upgrade.title')}</h1>
+        </div>
+        <div role="status" className="rounded-xl border border-border bg-muted/40 px-4 py-3 text-sm leading-relaxed">
+          {t('plans.inheritedNote', { name: holder?.name || '' })}
+        </div>
       </div>
     );
   }

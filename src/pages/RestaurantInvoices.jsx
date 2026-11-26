@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { base44 } from '@/api/client';
-import { Check, FileText, Plus } from 'lucide-react';
+import { Check, FileText, Plus, Printer } from 'lucide-react';
 import InvoiceDialog from '@/components/restaurant/InvoiceDialog';
 import CreditMemoDialog from '@/components/restaurant/CreditMemoDialog';
+import CreditMemoDoc from '@/components/print/CreditMemoDoc';
+import { resolveDocStyle } from '@/lib/docStyle';
 import { Button } from '@/components/ui/button';
 import { useBusiness } from '@/hooks/useBusiness';
 import useStaffAccess from '@/hooks/useStaffAccess';
@@ -28,7 +30,7 @@ import RestaurantCrumbs from '@/components/restaurant/RestaurantCrumbs';
  * credit applied and its balance due, both server-shaped.
  */
 export default function RestaurantInvoices() {
-  const { activeId, record } = useBusiness();
+  const { activeId, record, profile } = useBusiness();
   const { can: canStaff } = useStaffAccess();
   const [invoices, setInvoices] = useState([]);
   const [memos, setMemos] = useState([]);
@@ -43,8 +45,23 @@ export default function RestaurantInvoices() {
   const [editingMemo, setEditingMemo] = useState(null);
   const [memoDialogOpen, setMemoDialogOpen] = useState(false);
   const [flash, setFlash] = useState(null);
+  // Credit memos print (the smalls bundle, Nov 25, 2026):
+  // the memo's own Studio sheet, printed the transfers way —
+  // the doc mounts in the print area, window.print() runs,
+  // the doc unmounts. Printing is a read: every viewer of
+  // this page gets the button, not only the build tick.
+  const [printingMemo, setPrintingMemo] = useState(null);
+  const docStyle = useMemo(() => resolveDocStyle(profile), [profile]);
 
   const canBuild = canStaff('restaurant.build');
+
+  const printMemo = (memo) => {
+    setPrintingMemo(memo);
+    setTimeout(() => {
+      window.print();
+      setPrintingMemo(null);
+    }, 50);
+  };
 
   useEffect(() => {
     (async () => {
@@ -267,7 +284,7 @@ export default function RestaurantInvoices() {
                     <th className="px-3 py-2 font-medium">{t('ops.invoices.colDate')}</th>
                     <th className="px-3 py-2 text-right font-medium">{t('ops.credits.colAmount')}</th>
                     <th className="px-3 py-2 font-medium">{t('ops.invoices.colStatus')}</th>
-                    {canBuild ? <th className="px-3 py-2" /> : null}
+                    <th className="px-3 py-2" />
                   </tr>
                 </thead>
                 <tbody>
@@ -285,27 +302,32 @@ export default function RestaurantInvoices() {
                       <td className="px-3 py-2">
                         {memo.status === 'void' ? t('ops.credits.statusVoid') : t('ops.credits.statusApplied')}
                       </td>
-                      {canBuild ? (
-                        <td className="px-3 py-2 text-right">
-                          <div className="flex justify-end gap-1">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                setEditingMemo(memo);
-                                setMemoDialogOpen(true);
-                              }}
-                            >
-                              {t('recipes.editButton')}
-                            </Button>
-                            {memo.status !== 'void' ? (
-                              <Button variant="ghost" size="sm" onClick={() => voidMemo(memo)}>
-                                {t('ops.credits.voidButton')}
+                      <td className="px-3 py-2 text-right">
+                        <div className="flex justify-end gap-1">
+                          <Button variant="ghost" size="sm" onClick={() => printMemo(memo)}>
+                            <Printer className="mr-1.5 h-4 w-4" /> {t('print.printButton')}
+                          </Button>
+                          {canBuild ? (
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setEditingMemo(memo);
+                                  setMemoDialogOpen(true);
+                                }}
+                              >
+                                {t('recipes.editButton')}
                               </Button>
-                            ) : null}
-                          </div>
-                        </td>
-                      ) : null}
+                              {memo.status !== 'void' ? (
+                                <Button variant="ghost" size="sm" onClick={() => voidMemo(memo)}>
+                                  {t('ops.credits.voidButton')}
+                                </Button>
+                              ) : null}
+                            </>
+                          ) : null}
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -339,6 +361,17 @@ export default function RestaurantInvoices() {
           setReload((n) => n + 1);
         }}
       />
+
+      {printingMemo ? (
+        <div className="print-area hidden print:block">
+          <CreditMemoDoc
+            memo={printingMemo}
+            invoice={invoices.find((row) => row.id === printingMemo.invoice_id) || null}
+            business={record}
+            docStyle={docStyle}
+          />
+        </div>
+      ) : null}
     </div>
   );
 }

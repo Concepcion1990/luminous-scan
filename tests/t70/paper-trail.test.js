@@ -568,10 +568,10 @@ const NEW_KEYS = [
   'training.lessons.mgr-restaurant-invoices.step5',
 ];
 
-test('i18n gate: 63 new keys in all 52 locales, keyset 5908, plan lines carry the new features', () => {
+test('i18n gate: 63 new keys in all 52 locales, keyset 5913, plan lines carry the new features', () => {
   assert.equal(NEW_KEYS.length, 63);
   for (const [code, locale] of Object.entries(LOCALES)) {
-    assert.equal(Object.keys(locale).length, 5908, `${code} keyset`);
+    assert.equal(Object.keys(locale).length, 5913, `${code} keyset`);
     for (const key of NEW_KEYS) {
       assert.ok(typeof locale[key] === 'string' && locale[key].length > 0, `${code} carries ${key}`);
     }

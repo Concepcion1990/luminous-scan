@@ -16,8 +16,8 @@ import { Button } from '@/components/ui/button';
 import MyDocumentsCard from '@/components/staff/MyDocumentsCard';
 import { useToast } from '@/components/ui/use-toast';
 import { useBusiness } from '@/hooks/useBusiness';
-import { formatFullDate, formatShortDate } from '@/lib/dates';
-import { getLocale, t } from '@/lib/i18n';
+import { formatFullDate, formatShortDate, formatTimeOnly } from '@/lib/dates';
+import { t } from '@/lib/i18n';
 import {
   createCashUp,
   formatMoneyPlain,
@@ -279,14 +279,8 @@ function RunSection({ businessId, ctx, reloadRuns }) {
                       >
                         {t('workforce.entries.missedClockOut')} ·{' '}
                         {t('workforce.entries.missedDetail', {
-                          start: new Intl.DateTimeFormat(getLocale(), {
-                            hour: 'numeric',
-                            minute: '2-digit',
-                          }).format(new Date(missed.shift_start)),
-                          end: new Intl.DateTimeFormat(getLocale(), {
-                            hour: 'numeric',
-                            minute: '2-digit',
-                          }).format(new Date(missed.shift_end)),
+                          start: formatTimeOnly(missed.shift_start),
+                          end: formatTimeOnly(missed.shift_end),
                         })}
                       </span>
                     ))}

@@ -5821,7 +5821,7 @@ export const zhHant = {
   "training.lessons.mgr-restaurant-invoices.step2": "連結採購單後，發票會逐項三方核對：訂購了什麼、收貨了什麼、開票了什麼。一項可能返回相符、短缺、超量、以不同價格開票，或根本不在訂單上。",
   "training.lessons.mgr-restaurant-invoices.step3": "當開票價格與產品記錄成本不同時，會開啟價格提醒。接受提醒會將產品成本設為新的開票價格；忽略它則什麼都不改變。同一發票和產品同時只有一個開啟的提醒。",
   "training.lessons.mgr-restaurant-invoices.step4": "將庫存作為帶保存期限的批次收貨，保存期限頁面會保持批次先到期先出。批次執行將一個配方製作指定份數：它用掉配方的配料，並將成品備餐產品放到貨架上——配方必須先連結到該備餐產品。",
-  "training.lessons.mgr-restaurant-invoices.step5": "當供應商針對發票退回款項時——破損的箱子、短缺的交貨、修正的價格——在發票頁面上針對該發票將其記錄為貸項通知單。供應商來自發票本身，通知單計入發票仍欠的金額：發票顯示其已應用的貸項和應付餘額。貸項永遠不能超過其發票，作廢通知單會將其留在記錄中，同時停止計數。",
+  "training.lessons.mgr-restaurant-invoices.step5": "當供應商針對發票退回款項時——破損的箱子、短缺的交貨、修正的價格——在發票頁面上針對該發票將其記錄為貸項通知單。供應商來自發票本身，通知單計入發票仍欠的金額：發票顯示其已應用的貸項和應付餘額。貸項永遠不能超過其發票，作廢通知單會將其留在記錄中，同時停止計數。 需要紙質版時，可從該行列印此憑證——列印出的單據是您對供應商貸項的自有記錄，並非供應商的單據。",
   "training.lessons.mgr-restaurant-reports.title": "菜單工程、差異和帳目",
   "training.lessons.mgr-restaurant-reports.step1": "老闆已將「菜餚金額」勾選託付給您，它也開啟了廚房的金額報表：菜單工程、差異和會計匯出。這些數字留在企業內部，如同所有菜餚金額。",
   "training.lessons.mgr-restaurant-reports.step2": "菜單工程按每道菜在該期間的銷量和收益定位。明星銷量好、收益好；耕馬銷量好但收益少；謎題收益好但銷量少；瘦狗兩者都不行。",
@@ -5920,4 +5920,9 @@ export const zhHant = {
   "training.lessons.owner-ebay-connect.step5": "銷售透過刊登上的 SKU、UPC 或 ISBN 進行配對 — 刊登所帶的三者中任意一個均可。如果一筆銷售無法配對，它會在店面連接頁面的「需要配對的銷售」下等待：將它連結到它的產品一次，那筆銷售 — 以及今後類似的銷售 — 就會自行記錄。「立即檢查銷售」會取得任何最近的內容，而中斷連接會停止連接；已記錄的銷售會保留。",
   "training.lessons.owner-ebay-connect.title": "連接您的 eBay 店",
   "training.module.storefronts": "店面連接",
+  "plans.inheritedNote": "此商家受 {name} 的方案覆蓋。如需更改方案，請切換到該商家。",
+  "settings.details.dateFormatAutomatic": "自動 — 本地格式",
+  "settings.details.dateFormatHint": "「自動」會按照此商家的語言和地區的書寫方式來寫日期。改為選擇一種格式後，此商家的列印文件和標籤將遵循您的選擇。",
+  "print.creditMemoTitle": "貸項憑證",
+  "print.creditMemoRecordNote": "此單據是本商家對供應商所給貸項的自有記錄，並非供應商的單據。",
 };

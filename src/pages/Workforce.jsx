@@ -171,7 +171,7 @@ function ClockTab({ businessId, ctx, peopleById, onEvent }) {
   // the reader's language — the staff_outside_window shape.
   const gateMessage = (data) => {
     if (data?.next_shift_start) {
-      const when = new Date(data.next_shift_start);
+      const when = toLocalDate(data.next_shift_start);
       if (!Number.isNaN(when.getTime())) {
         const formatted = new Intl.DateTimeFormat(getLocale(), {
           weekday: 'long',

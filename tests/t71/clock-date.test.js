@@ -56,11 +56,11 @@ const SAME_DAY = new Date(2026, 10, 25, 9, 0); // Wed Nov 25, 9:00 AM
 const composeLine = (value) =>
   t('workforce.clockedInSince', { date: formatShortDay(value), time: formatTimeOnly(value) });
 
-test('the keyset stands at 5908 in all 52 locales — zero new keys', () => {
+test('the keyset stands at 5913 in all 52 locales — zero new keys', () => {
   const codes = Object.keys(LOCALES);
   assert.equal(codes.length, 52);
   for (const code of codes) {
-    assert.equal(Object.keys(LOCALES[code]).length, 5908, `${code} keyset`);
+    assert.equal(Object.keys(LOCALES[code]).length, 5913, `${code} keyset`);
   }
 });
 
@@ -156,8 +156,20 @@ test('wiring: the card line takes {date} + {time}; the far ends route through th
 
 test('the sweep’s sound surfaces stay untouched', () => {
   const card = read('src/components/staff/ClockAttentionCard.jsx');
-  // The board's "Clocked in {when}" already carried month + day.
-  assert.ok(card.includes("month: 'short'") && card.includes("t('staff.callIn.clockedInAt'"));
+  // Amended by the smalls bundle (Nov 25, 2026): 379 judged this card's
+  // own formatting sound on its face, but the card parsed stored
+  // timestamps with the raw `new Date(...)`, which can read the hour in
+  // the wrong zone and push a near-midnight moment across a day. The
+  // owner's ruling ("Let's fix it please") swapped the card onto the
+  // house machinery — the board's "Clocked in {when}" still carries
+  // month + day, now through formatDayTime/formatTimeOnly.
+  assert.ok(
+    card.includes("from '@/lib/dates'") &&
+      card.includes('formatDayTime(iso)') &&
+      card.includes('formatTimeOnly(iso)') &&
+      card.includes("t('staff.callIn.clockedInAt'"),
+    'the attention card reads stored times through the house machinery',
+  );
   // The on-break line renders no time at all — nothing to date.
   assert.equal(LOCALES.en['workforce.onBreak'], 'You are checked out on a break.');
 });

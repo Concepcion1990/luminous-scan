@@ -94,6 +94,11 @@ export default function PrintCenter() {
   const [customerOrderId, setCustomerOrderId] = useState('');
   const [returnRecords, setReturnRecords] = useState([]);
   const [returnId, setReturnId] = useState('');
+  // The return document names the store it came back to, with
+  // the store's address (the owner's ruling, Nov 25, 2026):
+  // the locations ride along with the returns load so the
+  // picked return's store address can print beside its name.
+  const [docLocations, setDocLocations] = useState([]);
   // Shelf order for the printed count sheet (release 378):
   // the count template also reads the business's locations
   // and stock levels, so the picked products can be grouped
@@ -255,17 +260,21 @@ export default function PrintCenter() {
     if ((!needsCustomerOrder && !needsReturn) || !activeId) return;
     let cancelled = false;
     (async () => {
-      const [orderPage, returnPage] = await Promise.all([
+      const [orderPage, returnPage, locationPage] = await Promise.all([
         needsCustomerOrder
           ? base44.entities.Order.filter(scoped({}, activeId), { sort: '-created_date', limit: 50 })
           : Promise.resolve({ items: [] }),
         needsReturn
           ? base44.entities.Return.filter(scoped({}, activeId), { sort: '-created_date', limit: 50 })
           : Promise.resolve({ items: [] }),
+        needsReturn
+          ? base44.entities.Location.filter(scoped({}, activeId), { sort: 'name', limit: 500 })
+          : Promise.resolve({ items: [] }),
       ]);
       if (cancelled) return;
       setCustomerOrders(orderPage.items ?? []);
       setReturnRecords(returnPage.items ?? []);
+      setDocLocations(locationPage.items ?? []);
     })();
     return () => {
       cancelled = true;
@@ -347,6 +356,8 @@ export default function PrintCenter() {
     }
   }, [template, customerOrder]);
   const returnRecord = returnRecords.find((entry) => entry.id === returnId) || null;
+  const returnLocationAddress =
+    docLocations.find((location) => location.id === returnRecord?.location_id)?.address || '';
 
   const labels = useMemo(() => {
     const count = Math.min(Math.max(Number(copies) || 1, 1), 20);
@@ -859,7 +870,7 @@ export default function PrintCenter() {
                 <CustomerDoc order={customerOrder} business={profile} mode={activeTemplate.mode} docStyle={docStyle} photoById={photoById} />
               )
             ) : isReturnDoc ? (
-              <ReturnDoc ret={returnRecord} business={profile} docStyle={docStyle} photoById={photoById} />
+              <ReturnDoc ret={returnRecord} business={profile} docStyle={docStyle} photoById={photoById} locationAddress={returnLocationAddress} />
             ) : isDocument ? (
               <Sheet
                 products={selected}

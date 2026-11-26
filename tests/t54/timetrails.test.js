@@ -355,7 +355,7 @@ test('re-import: the XLSX reader drops the Exported-at footer row', async () => 
 
 // ---- strings + source pins ------------------------------------------------------
 
-test('i18n: the six trail keys exist in English and are truly translated in es-MX; keyset 5908', () => {
+test('i18n: the six trail keys exist in English and are truly translated in es-MX; keyset 5913', () => {
   const keys = ['trail.title', 'trail.created', 'trail.saved', 'trail.logged', 'trail.sentForReview', 'trail.actorGone'];
   for (const key of keys) {
     assert.equal(typeof en[key], 'string', `en missing ${key}`);
@@ -363,9 +363,9 @@ test('i18n: the six trail keys exist in English and are truly translated in es-M
     assert.equal(typeof esMX[key], 'string', `es-MX missing ${key}`);
     assert.notEqual(esMX[key], en[key], `es-MX carries the English line for ${key} (translation debt)`);
   }
-  assert.equal(Object.keys(en).length, 5908);
+  assert.equal(Object.keys(en).length, 5913);
   for (const [code, strings] of Object.entries(LOCALES)) {
-    assert.equal(Object.keys(strings).length, 5908, code);
+    assert.equal(Object.keys(strings).length, 5913, code);
   }
 });
 
