@@ -3330,7 +3330,7 @@ export const ur = {
   "workforce.breakOut": "وقفے کے لیے چیک آؤٹ کریں",
   "workforce.breakStarted": "وقفہ شروع ہو گیا۔",
   "workforce.clockedInMsg": "آپ کلاک ان ہیں۔",
-  "workforce.clockedInSince": "{time} سے کلاک ان",
+  "workforce.clockedInSince": "{date}, {time} سے کلاک ان",
   "workforce.clockedOutMsg": "کلاک آؤٹ ہو گیا۔ آپ کے دن کا باقی حصہ اچھا گزرے۔",
   "workforce.clockIn": "کلاک ان",
   "workforce.clockOut": "کلاک آؤٹ",
