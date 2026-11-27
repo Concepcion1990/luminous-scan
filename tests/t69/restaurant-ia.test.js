@@ -93,6 +93,7 @@ const FEATURE_HOME = {
   '/restaurant/allergens': 'safety',
   '/restaurant/86': 'floor',
   '/restaurant/guest-menu': 'floor',
+  '/restaurant/tip-pooling': 'team',
   '/restaurant/kitchen-display': 'kitchen',
   '/restaurant/waste': 'floor',
   '/restaurant/staff-meals': 'team',

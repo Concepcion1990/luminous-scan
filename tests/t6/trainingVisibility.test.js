@@ -37,6 +37,7 @@ const BUSINESS_ONLY = {
   'mgr-restaurant-build': 'restaurant', 'mgr-restaurant-pars': 'restaurant',
   'mgr-restaurant-money': 'restaurant',
   'owner-restaurant-ops': 'restaurant', 'staff-restaurant-daily': 'restaurant',
+  'owner-tip-pooling': 'restaurant',
   'mgr-restaurant-invoices': 'restaurant', 'mgr-restaurant-reports': 'restaurant',
   'staff-food-safety': 'restaurant',
   'staff-kitchen-menu': 'restaurant',
@@ -142,7 +143,12 @@ test('plan-visible counts: Business whole, Essentials without the Business subje
   // ONE both-plans staff lesson (staff-equipment, no feature
   // tag — equipment records are a general feature): staff 49
   // on Business and 39 on Essentials; owner/manager unchanged.
-  assert.equal(count('owner', true), 48);
+  // The tip-pooling build (plan release 373, Nov 26, 2026)
+  // adds ONE Business-only owner lesson (owner-tip-pooling,
+  // feature restaurant — tip pooling is Business-only):
+  // owner 49 on Business and 27 on Essentials; manager/staff
+  // unchanged.
+  assert.equal(count('owner', true), 49);
   assert.equal(count('manager', true), 26);
   assert.equal(count('staff', true), 49);
   // Essentials: 19 owner subjects hidden, owner-import in their place.

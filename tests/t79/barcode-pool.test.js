@@ -32,10 +32,10 @@
  *  refusal; the claimed code behaving as a normal product
  *  code thereafter.
  *
- *  Keyset: 6006 + 21 = 6027 ×52, uniform (6332 since the
+ *  Keyset: 6006 + 21 = 6027 ×52, uniform (6399 since the
  *  checklists build, Nov 26, 2026). Training catalog:
  *  119 + 1 = 120 (owner track, printing module, GENERAL
- *  heading, 5 steps; 124 since the equipment build (plan release 372, Nov 26, 2026) added 1 (staff-equipment, both plans, general heading); 123 since the kitchen-menu build (plan release 371, Nov 26, 2026) added 1 (staff-kitchen-menu, Business-only, restaurant heading); 122 since the food-safety build).
+ *  heading, 5 steps; 125 since the tip-pooling build (plan release 373, Nov 26, 2026) added 1 (owner-tip-pooling, Business-only, restaurant heading); 124 since the equipment build (plan release 372, Nov 26, 2026) added 1 (staff-equipment, both plans, general heading); 123 since the kitchen-menu build (plan release 371, Nov 26, 2026) added 1 (staff-kitchen-menu, Business-only, restaurant heading); 122 since the food-safety build).
  *  Migration 057 (barcode_pool_codes).
  */
 import { test } from 'node:test';
@@ -86,13 +86,13 @@ const NEW_KEYS = [
 
 /* ------------------------------------------------ i18n gate */
 
-test('keyset stands at 6332 in all 52 locales, uniform', () => {
+test('keyset stands at 6399 in all 52 locales, uniform', () => {
   const codes = Object.keys(LOCALES);
   assert.equal(codes.length, 52);
   const enKeys = Object.keys(LOCALES.en).sort();
-  assert.equal(enKeys.length, 6332);
+  assert.equal(enKeys.length, 6399);
   for (const code of codes) {
-    assert.equal(Object.keys(LOCALES[code]).length, 6332, `${code} keyset`);
+    assert.equal(Object.keys(LOCALES[code]).length, 6399, `${code} keyset`);
     assert.deepEqual(Object.keys(LOCALES[code]).sort(), enKeys, `${code} keyset differs from en`);
   }
 });
@@ -143,9 +143,9 @@ test('plan presentation: the barcode-pool line rides Essentials on Plans + Welco
 
 /* ------------------------------------------------- the lesson */
 
-test('catalogs stood at 120 at this build (124 since the equipment build (plan release 372, Nov 26, 2026) added 1 (staff-equipment, both plans, general heading); 124 since the equipment build (plan release 372, Nov 26, 2026) added 1 (staff-equipment, both plans, general heading); 123 since the kitchen-menu build (plan release 371, Nov 26, 2026) added 1 (staff-kitchen-menu, Business-only, restaurant heading); 122 since the food-safety build), client and server JSON-identical', () => {
-  assert.equal(CLIENT_LESSONS.length, 124);
-  assert.equal(SERVER_LESSONS.length, 124);
+test('catalogs stood at 120 at this build (125 since the tip-pooling build (plan release 373, Nov 26, 2026) added 1 (owner-tip-pooling, Business-only, restaurant heading); 124 since the equipment build (plan release 372, Nov 26, 2026) added 1 (staff-equipment, both plans, general heading); 125 since the tip-pooling build (plan release 373, Nov 26, 2026) added 1 (owner-tip-pooling, Business-only, restaurant heading); 124 since the equipment build (plan release 372, Nov 26, 2026) added 1 (staff-equipment, both plans, general heading); 123 since the kitchen-menu build (plan release 371, Nov 26, 2026) added 1 (staff-kitchen-menu, Business-only, restaurant heading); 122 since the food-safety build), client and server JSON-identical', () => {
+  assert.equal(CLIENT_LESSONS.length, 125);
+  assert.equal(SERVER_LESSONS.length, 125);
   assert.equal(JSON.stringify(CLIENT_LESSONS), JSON.stringify(SERVER_LESSONS), 'the two catalogs agree exactly');
 });
 
