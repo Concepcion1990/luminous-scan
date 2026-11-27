@@ -363,9 +363,9 @@ test('i18n: the six trail keys exist in English and are truly translated in es-M
     assert.equal(typeof esMX[key], 'string', `es-MX missing ${key}`);
     assert.notEqual(esMX[key], en[key], `es-MX carries the English line for ${key} (translation debt)`);
   }
-  assert.equal(Object.keys(en).length, 6506);
+  assert.equal(Object.keys(en).length, 6583);
   for (const [code, strings] of Object.entries(LOCALES)) {
-    assert.equal(Object.keys(strings).length, 6506, code);
+    assert.equal(Object.keys(strings).length, 6583, code);
   }
 });
 

@@ -19,7 +19,7 @@ test('item 2: email strings exist for all 52 locales, placeholders intact', () =
   // invitation email — for 42. The failed-payment road (release
   // 341, Nov 21, 2026) added payfail.subject + payfail.body —
   // the owner's warning email — for 44.
-  assert.equal(EMAIL_STRING_KEYS.length, 44);
+  assert.equal(EMAIL_STRING_KEYS.length, 54); // 54 with the reservations build (plan release 376, Nov 26, 2026): the guest reminder + waitlist-ready mail and texts, and the staff digest lines (10 keys)
   assert.equal(Object.keys(EMAIL_STRINGS).length, 52);
   for (const [locale, row] of Object.entries(EMAIL_STRINGS)) {
     assert.deepEqual(Object.keys(row).sort(), [...EMAIL_STRING_KEYS].sort(), locale);
