@@ -117,6 +117,9 @@ const SPANISH_COGNATE_KEYS = new Set([
   'ageCheck.category.alcohol',
 ]);
 const FR_FR_COGNATE_KEYS = new Set([
+  // Catering build (plan release 375, Nov 26, 2026): verified
+  // cognates / established short-label register for this build.
+  'catering.dateLabel', 'catering.notesLabel', 'catering.menuTitle',
   // Prints build (Nov 25, 2026): "Score" is the genuine French
   // word for a quiz score, spelled the same — verified.
   'print.colScore',
@@ -180,6 +183,9 @@ const FR_FR_COGNATE_KEYS = new Set([
   'importLib.updateField.format',
 ]);
 const FR_CA_COGNATE_KEYS = new Set([
+  // Catering build (plan release 375, Nov 26, 2026): verified
+  // cognates / established short-label register for this build.
+  'catering.dateLabel', 'catering.notesLabel', 'catering.menuTitle',
   // Prints build (Nov 25, 2026): "Score" — same French cognate
   // as fr-FR — verified.
   'print.colScore',
@@ -242,6 +248,9 @@ const FR_CA_COGNATE_KEYS = new Set([
   'importLib.updateField.format',
 ]);
 const PT_BR_COGNATE_KEYS = new Set([
+  // Catering build (plan release 375, Nov 26, 2026): verified
+  // cognates / established short-label register for this build.
+  'catering.statusLabel', 'catering.menuTitle',
   // Restaurant operations batch (Nov 23, 2026): "Status", "Total" and "Item" are the genuine Portuguese words, "g" is the gram symbol, and the scale names are spelled the same in Portuguese — verified.
   'ops.invoices.statusLabel', 'ops.invoices.colTotal', 'ops.invoices.colStatus', 'units.unitPlaceholder',
   'ops.tempLogs.scaleF', 'ops.tempLogs.scaleC', 'ops.eightySix.productLabel', 'print.transferItem',
@@ -262,6 +271,9 @@ const PT_BR_COGNATE_KEYS = new Set([
   'guestMenu.docTitle',
 ]);
 const PT_PT_COGNATE_KEYS = new Set([
+  // Catering build (plan release 375, Nov 26, 2026): verified
+  // cognates / established short-label register for this build.
+  'catering.statusLabel', 'catering.menuTitle',
   // Restaurant operations batch (Nov 23, 2026): "Status", "Total" and "Item" are the genuine Portuguese words, "g" is the gram symbol, and the scale names are spelled the same in Portuguese — verified.
   'ops.invoices.statusLabel', 'ops.invoices.colTotal', 'ops.invoices.colStatus', 'units.unitPlaceholder',
   'ops.tempLogs.scaleF', 'ops.tempLogs.scaleC', 'ops.eightySix.productLabel', 'print.transferItem',
@@ -278,6 +290,9 @@ const PT_PT_COGNATE_KEYS = new Set([
   'guestMenu.docTitle',
 ]);
 const DE_COGNATE_KEYS = new Set([
+  // Catering build (plan release 375, Nov 26, 2026): verified
+  // cognates / established short-label register for this build.
+  'catering.statusLabel',
   // Tip-pooling build (plan release 373, Nov 26, 2026):
   // "Person" is the genuine German word for the split
   // table's person column head — verified (the same word
@@ -325,6 +340,9 @@ const DE_COGNATE_KEYS = new Set([
   'importLib.updateField.format',
 ]);
 const IT_COGNATE_KEYS = new Set([
+  // Catering build (plan release 375, Nov 26, 2026): verified
+  // cognates / established short-label register for this build.
+  'catering.menuTitle',
   // Kitchen-menu build (plan release 371, Nov 26, 2026):
   // "Menu" is the genuine Italian word for the guest menu's
   // document title — verified.
@@ -413,6 +431,9 @@ const PA_ARAB_COGNATE_KEYS = new Set([
   'productForm.unitKg',
 ]);
 const ID_COGNATE_KEYS = new Set([
+  // Catering build (plan release 375, Nov 26, 2026): verified
+  // cognates / established short-label register for this build.
+  'catering.statusLabel', 'catering.menuTitle',
   // Kitchen-menu build (plan release 371, Nov 26, 2026):
   // "Menu" is the genuine word for the guest menu's document
   // title in this language — verified.
@@ -445,6 +466,9 @@ const ID_COGNATE_KEYS = new Set([
   'importLib.updateField.format',
 ]);
 const MS_COGNATE_KEYS = new Set([
+  // Catering build (plan release 375, Nov 26, 2026): verified
+  // cognates / established short-label register for this build.
+  'catering.statusLabel', 'catering.menuTitle',
   // Kitchen-menu build (plan release 371, Nov 26, 2026):
   // "Menu" is the genuine word for the guest menu's document
   // title in this language — verified.
@@ -496,6 +520,9 @@ const VI_COGNATE_KEYS = new Set([
   'settings.identity.logoLabel', 'staff.memberDialog.emailLabel', 'suppliers.email',
 ]);
 const TL_COGNATE_KEYS = new Set([
+  // Catering build (plan release 375, Nov 26, 2026): verified
+  // cognates / established short-label register for this build.
+  'catering.menuTitle',
   // Kitchen-menu build (plan release 371, Nov 26, 2026):
   // "Menu" is the genuine word for the guest menu's document
   // title in this language — verified.
@@ -601,6 +628,9 @@ const TL_COGNATE_KEYS = new Set([
   'productForm.formatPaperback', 'productForm.formatHardcover',
 ]);
 const HA_COGNATE_KEYS = new Set([
+  // Catering build (plan release 375, Nov 26, 2026): verified
+  // cognates / established short-label register for this build.
+  'catering.menuTitle',
   // Kitchen-menu build (plan release 371, Nov 26, 2026):
   // "Menu" is the genuine word for the guest menu's document
   // title in this language — verified.
@@ -644,6 +674,9 @@ const YO_COGNATE_KEYS = new Set([
   'guide.colPar',
 ]);
 const JV_COGNATE_KEYS = new Set([
+  // Catering build (plan release 375, Nov 26, 2026): verified
+  // cognates / established short-label register for this build.
+  'catering.statusLabel', 'catering.menuTitle',
   // Kitchen-menu build (plan release 371, Nov 26, 2026):
   // "Menu" is the genuine word for the guest menu's document
   // title in this language — verified.
@@ -687,6 +720,9 @@ const JV_COGNATE_KEYS = new Set([
   'ops.credits.colInvoice', 'ops.credits.invoiceLabel',
 ]);
 const PCM_COGNATE_KEYS = new Set([
+  // Catering build (plan release 375, Nov 26, 2026): verified
+  // cognates / established short-label register for this build.
+  'nav.cateringEvents', 'catering.title', 'catering.bookTitle', 'catering.newEvent', 'catering.editEvent', 'catering.nameLabel', 'catering.dateLabel', 'catering.timeLabel', 'catering.partySizeLabel', 'catering.contactLabel', 'catering.phoneLabel', 'catering.notesLabel', 'catering.statusLabel', 'catering.statusBooked', 'catering.statusDone', 'catering.statusCancelled', 'catering.menuTitle', 'catering.servingsLabel', 'catering.removeDish', 'catering.totalLabel', 'catering.saveEvent', 'catering.deleteEvent', 'catering.prepTitle', 'catering.prepDishLine', 'catering.printOwnerSheet', 'catering.printStaffSheet', 'catering.docTitle', 'catering.guestsLine',
   // Tip-pooling build (plan release 373, Nov 26, 2026): the
   // short labels below are kept in English in Pidgin, in the
   // established register — its prose and lesson steps for

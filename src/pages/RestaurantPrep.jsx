@@ -10,6 +10,7 @@ import { scoped } from '@/lib/scoped';
 import { resolveDocStyle } from '@/lib/docStyle';
 import { formatDateTime } from '@/lib/dates';
 import { listPars, listRecipes } from '@/lib/recipes';
+import { fetchUpcomingEventPrep } from '@/lib/catering';
 import { prepRows } from '@/lib/restaurantOps';
 import { t } from '@/lib/i18n';
 import RestaurantCrumbs from '@/components/restaurant/RestaurantCrumbs';
@@ -33,6 +34,7 @@ export default function RestaurantPrep() {
   const [locations, setLocations] = useState([]);
   const [pars, setPars] = useState([]);
   const [levels, setLevels] = useState([]);
+  const [eventPrep, setEventPrep] = useState([]);
   const [loading, setLoading] = useState(true);
   const [reload, setReload] = useState(0);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -58,6 +60,18 @@ export default function RestaurantPrep() {
       setProducts(productPage.items ?? []);
       setLocations(locPage.items ?? []);
       setLevels(levelPage.items ?? []);
+      // Catering & private events (plan release 375): the
+      // food upcoming events pull shows up here, where prep
+      // is planned. Business-only server-side — on any other
+      // plan the read simply fails and no section appears.
+      try {
+        const today = new Date();
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        const feed = await fetchUpcomingEventPrep(activeId || '', todayStr);
+        setEventPrep(feed.upcoming ?? []);
+      } catch {
+        setEventPrep([]);
+      }
       setLoading(false);
     })();
   }, [activeId, reload]);
@@ -89,7 +103,7 @@ export default function RestaurantPrep() {
           <p className="mt-1 max-w-xl text-sm text-muted-foreground">{t('prep.subtitle')}</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" disabled={!rows.length} onClick={printSheet}>
+          <Button variant="outline" disabled={!rows.length && !eventPrep.length} onClick={printSheet}>
             <Printer className="mr-1.5 h-4 w-4" /> {t('prep.printButton')}
           </Button>
           {canBuild ? (
@@ -146,6 +160,41 @@ export default function RestaurantPrep() {
             </section>
 
             <section className="space-y-2">
+              <h2 className="text-base font-semibold">{t('catering.prepTitle')}</h2>
+              {eventPrep.length === 0 ? (
+                <p className="text-sm text-muted-foreground">{t('catering.prepEmpty')}</p>
+              ) : (
+                <div className="space-y-3">
+                  {eventPrep.map(({ event, prep }) => (
+                    <div key={event.id} className="rounded-xl border border-border p-4">
+                      <div className="flex flex-wrap items-baseline justify-between gap-2">
+                        <p className="font-medium">{event.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {t('catering.guestsLine', { count: event.party_size, date: event.event_date })}
+                        </p>
+                      </div>
+                      {(prep.dishes || []).map((dish) => (
+                        <div key={dish.recipe_id} className="mt-2">
+                          <p className="text-sm">
+                            {t('catering.prepDishLine', { name: dish.name, makes: dish.makes, servings: dish.servings })}
+                          </p>
+                          <ul className="mt-1 grid gap-x-6 gap-y-0.5 text-sm text-muted-foreground sm:grid-cols-2">
+                            {dish.ingredients.map((ingredient) => (
+                              <li key={ingredient.product_id} className="flex justify-between gap-3">
+                                <span>{ingredient.name}</span>
+                                <span>{ingredient.quantity} {ingredient.unit}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+
+            <section className="space-y-2">
               <h2 className="text-base font-semibold">{t('prep.sheetTitle')}</h2>
               {rows.length === 0 ? (
                 <div className="rounded-xl border border-dashed border-border px-4 py-10 text-center">
@@ -184,9 +233,9 @@ export default function RestaurantPrep() {
         )}
       </div>
 
-      {printing && rows.length ? (
+      {printing && (rows.length || eventPrep.length) ? (
         <div className="print-area hidden print:block">
-          <PrepSheetDoc rows={rows} business={record} docStyle={docStyle} />
+          <PrepSheetDoc rows={rows} eventPrep={eventPrep} business={record} docStyle={docStyle} />
         </div>
       ) : null}
 

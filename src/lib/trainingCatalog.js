@@ -211,6 +211,10 @@ export const TRAINING_LESSONS = [
   // restaurant face of the labor watch — the owner lesson,
   // under the RESTAURANT heading, Business-only.
   { id: 'owner-labor-target', track: 'owner', module: 'restaurant', heading: 'restaurant', steps: 5, feature: 'restaurant' },
+  // Catering & private events (plan release 375, Nov 26,
+  // 2026): the event book lesson — the owner lesson, under
+  // the RESTAURANT heading, Business-only.
+  { id: 'owner-catering-events', track: 'owner', module: 'restaurant', heading: 'restaurant', steps: 5, feature: 'restaurant' },
   // Cross-store messages (Nov 23, 2026) — mirrors the server
   // catalog (t10 proves the two agree).
   { id: 'owner-xstore-messages', track: 'owner', module: 'messaging', heading: 'general', steps: 5, feature: 'xstoreMessages' },

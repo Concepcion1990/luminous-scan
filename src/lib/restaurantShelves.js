@@ -5,6 +5,7 @@ import {
   BookOpen,
   Boxes,
   CalendarClock,
+  CalendarHeart,
   ChefHat,
   Coins,
   Gauge,
@@ -138,6 +139,10 @@ export const SHELVES = [
     icon: UtensilsCrossed,
     doors: [
       door('/restaurant/86', 'nav.eightySix', 'restaurant.doorEightySix', Ban),
+      // Plan release 375: catering & private events, the
+      // simple version — a Business-only corner feature
+      // whose home is its own page on this shelf.
+      door('/restaurant/catering', 'nav.cateringEvents', 'restaurant.doorCateringEvents', CalendarHeart),
       door('/restaurant/guest-menu', 'nav.guestMenu', 'restaurant.doorGuestMenu', BookOpen),
       door('/restaurant/waste', 'nav.waste', 'restaurant.doorWaste', Trash2),
     ],
