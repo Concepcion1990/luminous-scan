@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Ban, CalendarClock, NotebookPen, Thermometer } from 'lucide-react';
+import { Ban, CalendarClock, ClipboardCheck, NotebookPen, Thermometer } from 'lucide-react';
 import { t } from '@/lib/i18n';
 
 /**
@@ -107,6 +107,21 @@ export default function TodayCards({ summary }) {
         {latest.author_name ? (
           <span className="block text-xs text-muted-foreground">{latest.author_name}</span>
         ) : null}
+      </Card>,
+    );
+  }
+
+  // Today's checklists (plan release 369): the general
+  // feature's day progress — done of total, or the all-done
+  // line — a door straight to the lists.
+  if (summary.checklists?.total) {
+    cards.push(
+      <Card key="checklists" to="/checklists" icon={ClipboardCheck} title={t('nav.checklists')}>
+        <span className="block text-xs text-muted-foreground">
+          {summary.checklists.done === summary.checklists.total
+            ? t('restaurant.today.checklistsAllDone')
+            : t('restaurant.today.checklists', { done: summary.checklists.done, total: summary.checklists.total })}
+        </span>
       </Card>,
     );
   }

@@ -177,6 +177,13 @@ export const NAV_GROUPS = [
       // perm, like Workforce: any trusted member of the
       // business reads and writes it, the daily-log fork.
       { to: '/log-book', label: 'Manager log book', labelKey: 'nav.logBook', icon: NotebookPen },
+      // Checklists (plan release 369, Nov 26, 2026): a general
+      // feature on BOTH plans (the owner's Q1 ruling) — opening,
+      // closing, cleaning and any other list, ticked off on the
+      // phone. No perm, like the log book: ticking off is plain
+      // staff work; template management rides its own tick
+      // inside the page.
+      { to: '/checklists', label: 'Checklists', labelKey: 'nav.checklists', icon: ClipboardCheck },
       // Cross-store messages (the owner's ruling, Nov 23,
       // 2026): the second messaging door — everyone on the
       // account, across all their businesses. Business only

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/client';
 import { Loader2, TriangleAlert } from 'lucide-react';
-import { allRoles, BUSINESS_ONLY_PERMISSIONS, CLOCK_GRANTS, DOCUMENTS_GRANTS, isClockGrant, isDocumentsGrant, isLocationsGrant, isLowStockGrant, isMemberGrant, isProductsGrant, isRestaurantGrant, isReturnsGrant, isRosterGrant, isSettingsGrant, isTrainingGrant, LOCATIONS_GRANTS, LOW_STOCK_GRANTS, PRODUCTS_GRANTS, RESTAURANT_GRANTS, RETURNS_GRANTS, ROSTER_GRANTS, roleById, SETTINGS_GRANTS, STATUS_OPTIONS, TRAINING_GRANTS } from '@/lib/staff';
+import { allRoles, BUSINESS_ONLY_PERMISSIONS, CHECKLISTS_GRANTS, CLOCK_GRANTS, DOCUMENTS_GRANTS, isChecklistsGrant, isClockGrant, isDocumentsGrant, isLocationsGrant, isLowStockGrant, isMemberGrant, isProductsGrant, isRestaurantGrant, isReturnsGrant, isRosterGrant, isSettingsGrant, isTrainingGrant, LOCATIONS_GRANTS, LOW_STOCK_GRANTS, PRODUCTS_GRANTS, RESTAURANT_GRANTS, RETURNS_GRANTS, ROSTER_GRANTS, roleById, SETTINGS_GRANTS, STATUS_OPTIONS, TRAINING_GRANTS } from '@/lib/staff';
 import { Checkbox } from '@/components/ui/checkbox';
 import { createStaffMember, isOperatingSite } from '@/lib/entitlements';
 import { fixStaffEmail } from '@/lib/recovery';
@@ -110,6 +110,11 @@ const emptyForm = (customRoles, stripBusinessOnly = (permissions) => permissions
     // only for a manager; a staff member's tick stays inert
     // (the server enforces the same split).
     documents_grants: [],
+    // Owner-granted checklist templates (plan release 369,
+    // Nov 26, 2026): ONE per-member tick — creating and
+    // editing checklist templates and their assignments.
+    // Ticking items off needs no tick at all. Off by default.
+    checklists_grants: [],
     status: 'invited',
     location_id: '',
     location_name: '',
@@ -218,6 +223,9 @@ export default function StaffMemberDialog({
             ),
             documents_grants: (Array.isArray(member.permissions) ? member.permissions : []).filter(
               (key) => isDocumentsGrant(key)
+            ),
+            checklists_grants: (Array.isArray(member.permissions) ? member.permissions : []).filter(
+              (key) => isChecklistsGrant(key)
             ),
             status: member.status || 'invited',
             location_id: member.location_id || '',
@@ -334,6 +342,7 @@ export default function StaffMemberDialog({
           ...(form.training_grants || []),
           ...(form.clock_grants || []),
           ...(form.documents_grants || []),
+          ...(form.checklists_grants || []),
         ],
         status: form.status,
         location_id: form.location_id || '',
@@ -939,6 +948,39 @@ export default function StaffMemberDialog({
             </div>
             <p className="text-[11px] text-muted-foreground">
               {t('staff.memberDialog.documentsAccessHint')}
+            </p>
+          </div>
+
+          {/* Owner-granted checklist templates (plan release
+              369, Nov 26, 2026): ONE tick — creating and editing
+              checklist templates and their assignments. Doing a
+              checklist (ticking items off) needs no tick at all.
+              Offered for every role, off by default, both plans. */}
+          <div className="space-y-1.5">
+            <Label>{t('staffLib.area.checklistsAccess')}</Label>
+            <div className="rounded-lg border border-border p-2.5">
+              <div className="grid gap-1.5">
+                {CHECKLISTS_GRANTS.map((grant) => (
+                  <label key={grant.key} className="flex items-start gap-2 text-xs leading-snug">
+                    <Checkbox
+                      checked={(form.checklists_grants || []).includes(grant.key)}
+                      onCheckedChange={(on) =>
+                        setForm((c) => ({
+                          ...c,
+                          checklists_grants: on
+                            ? [...new Set([...(c.checklists_grants || []), grant.key])]
+                            : (c.checklists_grants || []).filter((key) => key !== grant.key),
+                        }))
+                      }
+                      className="mt-0.5"
+                    />
+                    <span>{grant.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            <p className="text-[11px] text-muted-foreground">
+              {t('staff.memberDialog.checklistsAccessHint')}
             </p>
           </div>
 

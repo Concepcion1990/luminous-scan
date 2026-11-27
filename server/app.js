@@ -51,6 +51,7 @@ import { createBusinessPolicyRouter } from './businessPolicyRoutes.js';
 import { createPolicyQuizRouter } from './policyQuizRoutes.js';
 import { createCustomTrainingRouter } from './customTrainingRoutes.js';
 import { createBarcodePoolRouter } from './barcodePoolRoutes.js';
+import { createChecklistsRouter } from './checklistsRoutes.js';
 import { createProfilePhotoRouter } from './profilePhotoRoutes.js';
 import { createXstoreMessageRouter } from './xstoreMessageRoutes.js';
 import { createCompRouter } from './compRoutes.js';
@@ -325,6 +326,10 @@ export function createApp() {
   // section's Generate barcodes door — owner-minted house codes
   // with no product attached, per-business, both plans.
   app.use('/api', createBarcodePoolRouter({ getPool }));
+  // Checklists (server/checklistsRoutes.js): the checklist
+  // engine — templates, scheduled instances, item completions
+  // with proof — a general feature on both plans, per-business.
+  app.use('/api', createChecklistsRouter({ getPool }));
   // Profile photos + the owner's display name
   // (server/profilePhotoRoutes.js): owner-approved team photos
   // and the name that replaces "Owner".
