@@ -205,6 +205,19 @@ function RunSection({ businessId, ctx, reloadRuns, business, docStyle }) {
     try {
       const data = await previewPayroll(businessId, period.start, period.end);
       setPreview(data);
+      // Tip pooling feeds the preview (plan release 373):
+      // seed each person's tips adjustment from their saved
+      // pool shares for this period, unless the owner has
+      // already typed a figure for them.
+      setAdjustments((current) => {
+        const next = { ...current };
+        for (const row of data.people || []) {
+          if (Number(row.pool_tips) > 0 && next[row.person.id]?.tips === undefined) {
+            next[row.person.id] = { ...next[row.person.id], tips: String(row.pool_tips) };
+          }
+        }
+        return next;
+      });
     } catch (error) {
       toast({ title: error.message || t('workforce.actionFailed'), variant: 'destructive' });
     } finally {

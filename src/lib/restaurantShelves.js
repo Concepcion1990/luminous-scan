@@ -6,6 +6,7 @@ import {
   Boxes,
   CalendarClock,
   ChefHat,
+  Coins,
   ClipboardCheck,
   ClipboardList,
   FileText,
@@ -161,6 +162,10 @@ export const SHELVES = [
       // the shelf cross-links to their general home the
       // same way.
       door('/equipment', 'nav.equipment', 'restaurant.doorEquipment', Wrench, { crossLink: true }),
+      // Plan release 373: tip pooling + tip reporting
+      // records — a Business-only corner feature whose home
+      // is its own page on this shelf.
+      door('/restaurant/tip-pooling', 'nav.tipPooling', 'restaurant.doorTipPooling', Coins),
     ],
   },
 ];

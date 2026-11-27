@@ -278,6 +278,11 @@ const PT_PT_COGNATE_KEYS = new Set([
   'guestMenu.docTitle',
 ]);
 const DE_COGNATE_KEYS = new Set([
+  // Tip-pooling build (plan release 373, Nov 26, 2026):
+  // "Person" is the genuine German word for the split
+  // table's person column head — verified (the same word
+  // as foodSafety.certs.colPerson below).
+  'tipPooling.colPerson',
   // Food-safety build (plan release 370, Nov 26, 2026): "Person"
   // and "Status" are the genuine German words for the certificate
   // table's column heads — verified.
@@ -677,6 +682,18 @@ const JV_COGNATE_KEYS = new Set([
   'ops.credits.colInvoice', 'ops.credits.invoiceLabel',
 ]);
 const PCM_COGNATE_KEYS = new Set([
+  // Tip-pooling build (plan release 373, Nov 26, 2026): the
+  // short labels below are kept in English in Pidgin, in the
+  // established register — its prose and lesson steps for
+  // this build are translated.
+  'tipPooling.methodHours', 'tipPooling.methodPoints', 'tipPooling.rolePctLabel',
+  'tipPooling.pointsLabel', 'tipPooling.poolAmountLabel', 'tipPooling.colPerson',
+  'tipPooling.colRole', 'tipPooling.colHours', 'tipPooling.colShare',
+  'tipPooling.publishButton', 'tipPooling.printButton', 'tipPooling.allocMethodLabel',
+  'tipPooling.allocGrossReceipts', 'tipPooling.allocGoodFaith', 'tipPooling.grossReceiptsLabel',
+  'tipPooling.hoursLabel', 'tipPooling.eightPercentLabel', 'tipPooling.shortfallLabel',
+  'tipPooling.mySharesTitle', 'tipPooling.recordsTitle', 'tipPooling.yearTitle',
+  'tipPooling.periodLine',
   // Equipment build (plan release 372, Nov 26, 2026): the
   // short labels below are kept in English in Pidgin, in the
   // established register — its prose and lesson steps for

@@ -202,6 +202,7 @@ export const TRAINING_LESSONS = [
   { id: 'mgr-restaurant-reports', track: 'manager', module: 'restaurant', heading: 'restaurant', steps: 4, feature: 'restaurant' },
   { id: 'staff-food-safety', track: 'staff', module: 'restaurant', heading: 'restaurant', steps: 5, feature: 'restaurant' },
   { id: 'staff-kitchen-menu', track: 'staff', module: 'restaurant', heading: 'restaurant', steps: 5, feature: 'restaurant' },
+  { id: 'owner-tip-pooling', track: 'owner', module: 'restaurant', heading: 'restaurant', steps: 5, feature: 'restaurant' },
   // Cross-store messages (Nov 23, 2026) — mirrors the server
   // catalog (t10 proves the two agree).
   { id: 'owner-xstore-messages', track: 'owner', module: 'messaging', heading: 'general', steps: 5, feature: 'xstoreMessages' },
