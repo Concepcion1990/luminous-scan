@@ -25,7 +25,7 @@
  *  publication's order); allergen flags roll up through a
  *  sub-recipe exactly as the matrix computes them.
  *
- *  Keyset: 6211 + 45 = 6455 ×52, uniform. Training catalog:
+ *  Keyset: 6211 + 45 = 6506 ×52, uniform. Training catalog:
  *  122 + 1 = 123 (staff track, restaurant module, RESTAURANT
  *  heading, 5 steps, restaurant feature). Migration 060
  *  (menu_publications). No new apiErrors wordings.
@@ -71,13 +71,13 @@ const NEW_KEYS = [
 
 /* ------------------------------------------------ i18n gate */
 
-test('keyset stands at 6455 in all 52 locales, uniform', () => {
+test('keyset stands at 6506 in all 52 locales, uniform', () => {
   const codes = Object.keys(LOCALES);
   assert.equal(codes.length, 52);
   const enKeys = Object.keys(LOCALES.en).sort();
-  assert.equal(enKeys.length, 6455);
+  assert.equal(enKeys.length, 6506);
   for (const code of codes) {
-    assert.equal(Object.keys(LOCALES[code]).length, 6455, `${code} keyset`);
+    assert.equal(Object.keys(LOCALES[code]).length, 6506, `${code} keyset`);
     assert.deepEqual(Object.keys(LOCALES[code]).sort(), enKeys, `${code} keyset differs from en`);
   }
 });
@@ -131,7 +131,7 @@ test('plan presentation: both new lines ride Business ONLY — Plans + Welcome +
 /* ------------------------------------------------ training */
 
 test('training catalogs agree at 125 and the lesson is a staff restaurant lesson under the RESTAURANT heading', () => {
-  assert.equal(CLIENT_LESSONS.length, 127);
+  assert.equal(CLIENT_LESSONS.length, 128);
   assert.deepEqual(CLIENT_LESSONS, SERVER_LESSONS);
   const lesson = CLIENT_LESSONS.find((l) => l.id === 'staff-kitchen-menu');
   assert.ok(lesson, 'lesson exists');

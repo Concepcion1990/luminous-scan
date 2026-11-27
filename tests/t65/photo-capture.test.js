@@ -165,7 +165,7 @@ test('strings: the four photo-capture keys exist in English and in every one of 
     'photoCapture.usePhoto',
     'photoCapture.unavailable',
   ];
-  assert.equal(Object.keys(en).length, 6455, 'the keyset stands at 6455');
+  assert.equal(Object.keys(en).length, 6506, 'the keyset stands at 6506');
   assert.equal(en['photoCapture.shutter'], 'Take the photo');
   assert.equal(en['photoCapture.retake'], 'Retake');
   assert.equal(en['photoCapture.usePhoto'], 'Use this photo');
@@ -174,7 +174,7 @@ test('strings: the four photo-capture keys exist in English and in every one of 
     'The camera could not be used here — choose a photo from your gallery instead.',
   );
   for (const [code, dict] of Object.entries(LOCALES)) {
-    assert.equal(Object.keys(dict).length, 6455, `${code} keyset`);
+    assert.equal(Object.keys(dict).length, 6506, `${code} keyset`);
     for (const key of keys) {
       assert.ok(dict[key], `${code} missing ${key}`);
       // Genuinely translated: outside the English variants, no

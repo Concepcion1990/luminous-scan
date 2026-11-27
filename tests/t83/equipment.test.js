@@ -25,7 +25,7 @@
  *  for a staff reader carry no money, then shaped for a
  *  manager carry it exactly.
  *
- *  Keyset: 6256 + 76 = 6455 ×52, uniform. Training
+ *  Keyset: 6256 + 76 = 6506 ×52, uniform. Training
  *  catalog: 123 + 1 = 125 (staff track, workforce module,
  *  GENERAL heading, 5 steps). Migration 061 (three
  *  tables). Registry: 539 + 6 = 545 wordings.
@@ -95,13 +95,13 @@ const NEW_KEYS = [
 
 /* ------------------------------------------------ i18n gate */
 
-test('keyset stands at 6455 in all 52 locales, uniform', () => {
+test('keyset stands at 6506 in all 52 locales, uniform', () => {
   const codes = Object.keys(LOCALES);
   assert.equal(codes.length, 52);
   const enKeys = Object.keys(LOCALES.en).sort();
-  assert.equal(enKeys.length, 6455);
+  assert.equal(enKeys.length, 6506);
   for (const code of codes) {
-    assert.equal(Object.keys(LOCALES[code]).length, 6455, `${code} keyset`);
+    assert.equal(Object.keys(LOCALES[code]).length, 6506, `${code} keyset`);
     assert.deepEqual(Object.keys(LOCALES[code]).sort(), enKeys, `${code} keyset differs from en`);
   }
 });
@@ -170,7 +170,7 @@ test('plan presentation: the line rides BOTH plans — Plans + Welcome Essential
 /* ------------------------------------------------ training */
 
 test('training catalogs agree at 125 and the lesson is a staff workforce lesson under the GENERAL heading', () => {
-  assert.equal(CLIENT_LESSONS.length, 127);
+  assert.equal(CLIENT_LESSONS.length, 128);
   assert.deepEqual(CLIENT_LESSONS, SERVER_LESSONS);
   const lesson = CLIENT_LESSONS.find((l) => l.id === 'staff-equipment');
   assert.ok(lesson, 'lesson exists');
