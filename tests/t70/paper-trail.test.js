@@ -517,7 +517,9 @@ test('shelf model: counts and the log book cross-link from their shelves; primar
   const log = team.doors.find((d) => d.to === '/log-book');
   assert.ok(log && log.crossLink === true, 'Team & Place cross-links to the manager log book');
   assert.equal(log.titleKey, 'nav.logBook');
-  assert.equal(featureDoors().length, 14, 'the corner still has exactly fourteen primary feature doors');
+  // Release 370 (the food-safety file, Nov 26, 2026) added five
+  // primary doors to the Food Safety shelf: nineteen in all.
+  assert.equal(featureDoors().length, 19, 'the corner has nineteen primary feature doors since the food-safety file');
   assert.deepEqual(SHELVES.map((s) => s.id), ['kitchen', 'stock', 'money', 'safety', 'floor', 'team']);
 });
 
@@ -568,10 +570,10 @@ const NEW_KEYS = [
   'training.lessons.mgr-restaurant-invoices.step5',
 ];
 
-test('i18n gate: 63 new keys in all 52 locales, keyset 6100, plan lines carry the new features', () => {
+test('i18n gate: 63 new keys in all 52 locales, keyset 6211, plan lines carry the new features', () => {
   assert.equal(NEW_KEYS.length, 63);
   for (const [code, locale] of Object.entries(LOCALES)) {
-    assert.equal(Object.keys(locale).length, 6100, `${code} keyset`);
+    assert.equal(Object.keys(locale).length, 6211, `${code} keyset`);
     for (const key of NEW_KEYS) {
       assert.ok(typeof locale[key] === 'string' && locale[key].length > 0, `${code} carries ${key}`);
     }
@@ -602,7 +604,7 @@ test('i18n gate: 63 new keys in all 52 locales, keyset 6100, plan lines carry th
 });
 
 test('training: 117 lessons, catalogs agree, the log book lesson and the invoices step 5 ride along', () => {
-  assert.equal(clientCatalog.length, 121);
+  assert.equal(clientCatalog.length, 122); // 122 since the food-safety build (plan release 370, Nov 26, 2026) added staff-food-safety; 121 since the checklists build added staff-checklists; 117 at this build
   assert.deepEqual(
     serverCatalog.map((l) => l.id),
     clientCatalog.map((l) => l.id),

@@ -750,7 +750,10 @@ test('plan presentation: the corner joins Business includes + comparison only', 
   // (Kitchen, Stock, Money, Safety, Floor, Team — each starting
   // "Restaurant,"), so the restaurant family on the comparison
   // table is now six rows, every one Business-only.
-  assert.equal(rows.length, 6);
+  // Release 370 (the food-safety file, Nov 26, 2026) added a
+  // seventh "Restaurant," line — the Food Safety File line —
+  // Business-only like the rest.
+  assert.equal(rows.length, 7);
   for (const row of rows) {
     assert.equal(row.business, true);
     assert.equal(row.essentials, false);
@@ -770,8 +773,8 @@ test('nav: the corner hangs under its own subheading, behind the feature', () =>
 });
 
 test('training: five restaurant lessons, Business-scoped, ticks bring theirs', () => {
-  assert.equal(CLIENT_LESSONS.length, 121);
-  assert.equal(SERVER_LESSONS.length, 121);
+  assert.equal(CLIENT_LESSONS.length, 122);
+  assert.equal(SERVER_LESSONS.length, 122);
   const ids = ['owner-restaurant', 'staff-restaurant-view', 'mgr-restaurant-build', 'mgr-restaurant-pars', 'mgr-restaurant-money'];
   for (const id of ids) {
     const lesson = SERVER_LESSONS.find((l) => l.id === id);

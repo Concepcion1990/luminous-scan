@@ -70,13 +70,13 @@ const NEW_KEYS = [
 
 /* ------------------------------------------------ i18n gate */
 
-test('keyset stands at 6100 in all 52 locales, uniform', () => {
+test('keyset stands at 6211 in all 52 locales, uniform', () => {
   const codes = Object.keys(LOCALES);
   assert.equal(codes.length, 52);
   const enKeys = Object.keys(LOCALES.en).sort();
-  assert.equal(enKeys.length, 6100);
+  assert.equal(enKeys.length, 6211);
   for (const code of codes) {
-    assert.equal(Object.keys(LOCALES[code]).length, 6100, `${code} keyset`);
+    assert.equal(Object.keys(LOCALES[code]).length, 6211, `${code} keyset`);
     assert.deepEqual(Object.keys(LOCALES[code]).sort(), enKeys, `${code} keyset differs from en`);
   }
 });
@@ -259,7 +259,7 @@ test('the staff-record-prints lesson rides: staff track, printing module, five s
     { track: server.track, module: server.module, steps: server.steps },
     { track: 'staff', module: 'printing', steps: 5 },
   );
-  assert.equal(CLIENT_LESSONS.length, 121, 'client catalog holds 121 lessons');
-  assert.equal(SERVER_LESSONS.length, 121, 'server catalog holds 121 lessons');
+  assert.equal(CLIENT_LESSONS.length, 122, 'client catalog holds 122 lessons');
+  assert.equal(SERVER_LESSONS.length, 122, 'server catalog holds 122 lessons');
   assert.equal(en['training.lessons.staff-record-prints.title'], 'Your records on paper');
 });

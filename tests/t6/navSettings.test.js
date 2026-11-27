@@ -82,6 +82,12 @@ test('every signed-in app screen appears in the nav (menu audit)', () => {
     '/restaurant/86', '/restaurant/transfers', '/restaurant/staff-meals',
     '/restaurant/menu', '/restaurant/variance', '/restaurant/prep',
     '/restaurant/ledger',
+    // Release 370 (Nov 26, 2026): the food-safety file's five
+    // screens are Food Safety shelf doors in the corner, reached
+    // from the shelf like every feature above — never menu doors.
+    '/restaurant/safety-logs', '/restaurant/inspection',
+    '/restaurant/certificates', '/restaurant/mock-inspection',
+    '/restaurant/sds',
   ]);
   const appScreens = routePaths.filter((p) => !publicRoutes.has(p));
   assert.ok(appScreens.length >= 30, `audit covers the full screen list (saw ${appScreens.length})`);

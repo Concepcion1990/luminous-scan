@@ -32,10 +32,10 @@
  *  refusal; the claimed code behaving as a normal product
  *  code thereafter.
  *
- *  Keyset: 6006 + 21 = 6027 ×52, uniform (6100 since the
+ *  Keyset: 6006 + 21 = 6027 ×52, uniform (6211 since the
  *  checklists build, Nov 26, 2026). Training catalog:
  *  119 + 1 = 120 (owner track, printing module, GENERAL
- *  heading, 5 steps; 121 since the checklists build).
+ *  heading, 5 steps; 122 since the food-safety build).
  *  Migration 057 (barcode_pool_codes).
  */
 import { test } from 'node:test';
@@ -86,13 +86,13 @@ const NEW_KEYS = [
 
 /* ------------------------------------------------ i18n gate */
 
-test('keyset stands at 6100 in all 52 locales, uniform', () => {
+test('keyset stands at 6211 in all 52 locales, uniform', () => {
   const codes = Object.keys(LOCALES);
   assert.equal(codes.length, 52);
   const enKeys = Object.keys(LOCALES.en).sort();
-  assert.equal(enKeys.length, 6100);
+  assert.equal(enKeys.length, 6211);
   for (const code of codes) {
-    assert.equal(Object.keys(LOCALES[code]).length, 6100, `${code} keyset`);
+    assert.equal(Object.keys(LOCALES[code]).length, 6211, `${code} keyset`);
     assert.deepEqual(Object.keys(LOCALES[code]).sort(), enKeys, `${code} keyset differs from en`);
   }
 });
@@ -143,9 +143,9 @@ test('plan presentation: the barcode-pool line rides Essentials on Plans + Welco
 
 /* ------------------------------------------------- the lesson */
 
-test('catalogs stood at 120 at this build (121 since the checklists build), client and server JSON-identical', () => {
-  assert.equal(CLIENT_LESSONS.length, 121);
-  assert.equal(SERVER_LESSONS.length, 121);
+test('catalogs stood at 120 at this build (122 since the food-safety build), client and server JSON-identical', () => {
+  assert.equal(CLIENT_LESSONS.length, 122);
+  assert.equal(SERVER_LESSONS.length, 122);
   assert.equal(JSON.stringify(CLIENT_LESSONS), JSON.stringify(SERVER_LESSONS), 'the two catalogs agree exactly');
 });
 
