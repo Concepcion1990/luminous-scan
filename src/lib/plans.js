@@ -66,6 +66,7 @@ export const PLANS = {
         t('plansLib.includes.barcodePool'),
         t('plansLib.includes.checklists'),
         t('plansLib.includes.equipment'),
+        t('plansLib.includes.laborWarnings'),
         t('plansLib.includes.recovery'),
         t('plansLib.includes.support'),
         t('plansLib.includes.offline'),
@@ -119,6 +120,7 @@ export const PLANS = {
         t('plansLib.businessIncludes.kitchenDisplay'),
         t('plansLib.businessIncludes.guestMenuPage'),
         t('plansLib.businessIncludes.tipPooling'),
+        t('plansLib.businessIncludes.laborTarget'),
         t('plansLib.businessIncludes.restaurantFloor'),
         t('plansLib.businessIncludes.restaurantTeam'),
         t('plansLib.businessIncludes.xstoreMessages'),
@@ -335,6 +337,7 @@ export const WELCOME_OPTIONS = [
         t('plansLib.includes.barcodePool'),
         t('plansLib.includes.checklists'),
         t('plansLib.includes.equipment'),
+        t('plansLib.includes.laborWarnings'),
         t('plansLib.includes.recovery'),
         t('plansLib.includes.support'),
         t('plansLib.includes.offline'),
@@ -385,6 +388,7 @@ export const WELCOME_OPTIONS = [
         t('plansLib.businessIncludes.kitchenDisplay'),
         t('plansLib.businessIncludes.guestMenuPage'),
         t('plansLib.businessIncludes.tipPooling'),
+        t('plansLib.businessIncludes.laborTarget'),
         t('plansLib.businessIncludes.restaurantFloor'),
         t('plansLib.businessIncludes.restaurantTeam'),
         t('plansLib.businessIncludes.xstoreMessages'),
@@ -501,6 +505,12 @@ export const COMPARISON_ROWS = [
   // both plans (the owner's Q3 ruling). Mobile stays "Set at
   // launch" like the other team-era rows.
   { get label() { return t('plansLib.includes.equipment'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
+  // Labor warnings (plan release 374, Nov 26, 2026): the
+  // overtime/break warnings engine is general workforce
+  // tools — a general feature on both plans (the owner's
+  // Q4 ruling). Mobile stays "Set at launch" like the
+  // other team-era rows.
+  { get label() { return t('plansLib.includes.laborWarnings'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
   { get label() { return t('plansLib.includes.recovery'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
   { get label() { return t('plansLib.includes.support'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
   { get label() { return t('plansLib.includes.offline'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
@@ -515,6 +525,7 @@ export const COMPARISON_ROWS = [
   { get label() { return t('plansLib.businessIncludes.kitchenDisplay'); }, get mobile() { return t('plansLib.unset'); }, essentials: false, business: true },
   { get label() { return t('plansLib.businessIncludes.guestMenuPage'); }, get mobile() { return t('plansLib.unset'); }, essentials: false, business: true },
   { get label() { return t('plansLib.businessIncludes.tipPooling'); }, get mobile() { return t('plansLib.unset'); }, essentials: false, business: true },
+  { get label() { return t('plansLib.businessIncludes.laborTarget'); }, get mobile() { return t('plansLib.unset'); }, essentials: false, business: true },
   { get label() { return t('plansLib.businessIncludes.restaurantFloor'); }, get mobile() { return t('plansLib.unset'); }, essentials: false, business: true },
   { get label() { return t('plansLib.businessIncludes.restaurantTeam'); }, get mobile() { return t('plansLib.unset'); }, essentials: false, business: true },
   { get label() { return t('plansLib.businessIncludes.xstoreMessages'); }, mobile: false, essentials: false, business: true },

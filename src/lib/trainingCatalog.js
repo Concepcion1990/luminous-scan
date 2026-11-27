@@ -153,6 +153,10 @@ export const TRAINING_LESSONS = [
   // a GENERAL-heading lesson — the feature is for every business.
   { id: 'owner-own-training', track: 'owner', module: 'training', heading: 'general', steps: 5 },
   { id: 'owner-workforce-settings', track: 'owner', module: 'workforce', heading: 'general', steps: 4 },
+  // Labor warnings (plan release 374, Nov 26, 2026): the
+  // warnings engine is general workforce tools (Q4) — the
+  // owner lesson, under the GENERAL heading, both plans.
+  { id: 'owner-labor-warnings', track: 'owner', module: 'workforce', heading: 'general', steps: 5 },
   { id: 'owner-payroll-config', track: 'owner', module: 'payroll', heading: 'general', steps: 4 },
   { id: 'owner-payroll-runs', track: 'owner', module: 'payroll', heading: 'general', steps: 4 },
   { id: 'owner-irs-box', track: 'owner', module: 'payroll', heading: 'general', steps: 4 },
@@ -203,6 +207,10 @@ export const TRAINING_LESSONS = [
   { id: 'staff-food-safety', track: 'staff', module: 'restaurant', heading: 'restaurant', steps: 5, feature: 'restaurant' },
   { id: 'staff-kitchen-menu', track: 'staff', module: 'restaurant', heading: 'restaurant', steps: 5, feature: 'restaurant' },
   { id: 'owner-tip-pooling', track: 'owner', module: 'restaurant', heading: 'restaurant', steps: 5, feature: 'restaurant' },
+  // Labor target (plan release 374, Nov 26, 2026): the
+  // restaurant face of the labor watch — the owner lesson,
+  // under the RESTAURANT heading, Business-only.
+  { id: 'owner-labor-target', track: 'owner', module: 'restaurant', heading: 'restaurant', steps: 5, feature: 'restaurant' },
   // Cross-store messages (Nov 23, 2026) — mirrors the server
   // catalog (t10 proves the two agree).
   { id: 'owner-xstore-messages', track: 'owner', module: 'messaging', heading: 'general', steps: 5, feature: 'xstoreMessages' },

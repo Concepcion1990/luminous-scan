@@ -7,6 +7,7 @@ import {
   CalendarClock,
   ChefHat,
   Coins,
+  Gauge,
   ClipboardCheck,
   ClipboardList,
   FileText,
@@ -166,6 +167,13 @@ export const SHELVES = [
       // records — a Business-only corner feature whose home
       // is its own page on this shelf.
       door('/restaurant/tip-pooling', 'nav.tipPooling', 'restaurant.doorTipPooling', Coins),
+      // Plan release 374: the labor target — a Business-only
+      // corner face whose home is its own page on this shelf.
+      // Its warnings engine is general (both plans) and lives
+      // in the workforce tools; the shelf cross-links to that
+      // general home below, the 369 pattern.
+      door('/restaurant/labor-target', 'nav.laborTarget', 'restaurant.doorLaborTarget', Gauge),
+      door('/workforce', 'nav.laborWarnings', 'restaurant.doorLaborWarnings', CalendarClock, { crossLink: true }),
     ],
   },
 ];

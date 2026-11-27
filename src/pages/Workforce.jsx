@@ -33,6 +33,7 @@ import { formatHhmm, formatShortDate, formatShortDay, formatTimeFromDay, formatT
 import ProfileAvatar from '@/components/business/ProfileAvatar';
 import { resolveDocStyle } from '@/lib/docStyle';
 import { ScheduleDoc, TimesheetDoc } from '@/components/print/WorkforceDocs';
+import LaborWatchPanel from '@/components/LaborWatchPanel';
 import { buildVoiceWav, createPcmCapture } from '@/lib/voiceCapture';
 import {
   breakIn,
@@ -561,6 +562,16 @@ function ScheduleTab({ businessId, ctx, people, business, docStyle }) {
         </Button>
       )}
     </Section>
+    {/* Labor warnings (plan release 374, Nov 26, 2026): the
+        general warnings engine — both plans, in the general
+        workforce tools (the owner's Q4 ruling). The panel
+        watches the saved week and the hours already worked
+        against the owner's own lines; warnings never block
+        the save above. The restaurant labor-target face
+        lives in the Restaurant Corner, not here. */}
+    <div className="mt-4">
+      <LaborWatchPanel businessId={businessId} business={business} docStyle={docStyle} />
+    </div>
     {printRows && (
       <div className="print-area hidden print:block">
         <ScheduleDoc people={candidates} schedules={printRows} business={business} docStyle={docStyle} />

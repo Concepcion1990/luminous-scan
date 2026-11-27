@@ -283,6 +283,11 @@ const DE_COGNATE_KEYS = new Set([
   // table's person column head — verified (the same word
   // as foodSafety.certs.colPerson below).
   'tipPooling.colPerson',
+  // Labor-warnings build (plan release 374, Nov 26, 2026):
+  // "Person" is the genuine German word for the week
+  // table's person column head — verified (the same word
+  // as tipPooling.colPerson above).
+  'laborWatch.colPerson',
   // Food-safety build (plan release 370, Nov 26, 2026): "Person"
   // and "Status" are the genuine German words for the certificate
   // table's column heads — verified.
@@ -686,6 +691,11 @@ const PCM_COGNATE_KEYS = new Set([
   // short labels below are kept in English in Pidgin, in the
   // established register — its prose and lesson steps for
   // this build are translated.
+  // Labor-warnings build (plan release 374, Nov 26, 2026):
+  // the short labels below are kept in English in Pidgin, in
+  // the established register — its prose and lesson steps
+  // for this build are translated.
+  'nav.laborTarget', 'laborWatch.colPerson', 'laborWatch.targetLabel',
   'tipPooling.methodHours', 'tipPooling.methodPoints', 'tipPooling.rolePctLabel',
   'tipPooling.pointsLabel', 'tipPooling.poolAmountLabel', 'tipPooling.colPerson',
   'tipPooling.colRole', 'tipPooling.colHours', 'tipPooling.colShare',
