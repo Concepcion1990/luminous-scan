@@ -48,6 +48,7 @@ import RestaurantGuestMenu from '@/pages/RestaurantGuestMenu';
 import RestaurantTipPooling from '@/pages/RestaurantTipPooling';
 import RestaurantLaborTarget from '@/pages/RestaurantLaborTarget';
 import RestaurantCatering from '@/pages/RestaurantCatering';
+import RestaurantReservations from '@/pages/RestaurantReservations';
 import GuestMenuPublic from '@/pages/GuestMenuPublic';
 import RestaurantEightySix from '@/pages/RestaurantEightySix';
 import RestaurantTransfers from '@/pages/RestaurantTransfers';
@@ -380,6 +381,14 @@ const AuthenticatedApp = () => {
             element={
               <PlanRedirect feature="restaurant">
                 <RestaurantCatering />
+              </PlanRedirect>
+            }
+          />
+          <Route
+            path="/restaurant/reservations"
+            element={
+              <PlanRedirect feature="restaurant">
+                <RestaurantReservations />
               </PlanRedirect>
             }
           />

@@ -58,6 +58,7 @@ import { createGuestMenuRouter } from './guestMenuRoutes.js';
 import { createTipPoolingRouter } from './tipPoolingRoutes.js';
 import { createLaborWarningsRouter } from './laborWarningsRoutes.js';
 import { createCateringRouter } from './cateringRoutes.js';
+import { createReservationsRouter } from './reservationsRoutes.js';
 import { createProfilePhotoRouter } from './profilePhotoRoutes.js';
 import { createXstoreMessageRouter } from './xstoreMessageRoutes.js';
 import { createCompRouter } from './compRoutes.js';
@@ -365,6 +366,12 @@ export function createApp() {
   // event sheet and the pull into prep — Business-only,
   // deposits/balances owner-only money, per-business.
   app.use('/api', createCateringRouter({ getPool }));
+  // Reservations book + walk-in waitlist + deposit line
+  // (server/reservationsRoutes.js): the book, tonight's
+  // queue, the team digest, and guest reminders with the
+  // guest's own acceptance — Business-only, host door
+  // under the owner's tick, per-business.
+  app.use('/api', createReservationsRouter({ getPool }));
   // Profile photos + the owner's display name
   // (server/profilePhotoRoutes.js): owner-approved team photos
   // and the name that replaces "Owner".

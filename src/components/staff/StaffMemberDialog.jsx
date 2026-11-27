@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/client';
 import { Loader2, TriangleAlert } from 'lucide-react';
-import { allRoles, BUSINESS_ONLY_PERMISSIONS, CHECKLISTS_GRANTS, CLOCK_GRANTS, DOCUMENTS_GRANTS, EQUIPMENT_GRANTS, isChecklistsGrant, isEquipmentGrant, isClockGrant, isDocumentsGrant, isLocationsGrant, isLowStockGrant, isMemberGrant, isProductsGrant, isRestaurantGrant, isReturnsGrant, isRosterGrant, isSettingsGrant, isTrainingGrant, LOCATIONS_GRANTS, LOW_STOCK_GRANTS, PRODUCTS_GRANTS, RESTAURANT_GRANTS, RETURNS_GRANTS, ROSTER_GRANTS, roleById, SETTINGS_GRANTS, STATUS_OPTIONS, TRAINING_GRANTS } from '@/lib/staff';
+import { allRoles, BUSINESS_ONLY_PERMISSIONS, CHECKLISTS_GRANTS, CLOCK_GRANTS, DOCUMENTS_GRANTS, EQUIPMENT_GRANTS, isChecklistsGrant, isEquipmentGrant, isClockGrant, isDocumentsGrant, isLocationsGrant, isLowStockGrant, isMemberGrant, isProductsGrant, isReservationsGrant, isRestaurantGrant, isReturnsGrant, isRosterGrant, isSettingsGrant, isTrainingGrant, LOCATIONS_GRANTS, LOW_STOCK_GRANTS, PRODUCTS_GRANTS, RESERVATIONS_GRANTS, RESTAURANT_GRANTS, RETURNS_GRANTS, ROSTER_GRANTS, roleById, SETTINGS_GRANTS, STATUS_OPTIONS, TRAINING_GRANTS } from '@/lib/staff';
 import { Checkbox } from '@/components/ui/checkbox';
 import { createStaffMember, isOperatingSite } from '@/lib/entitlements';
 import { fixStaffEmail } from '@/lib/recovery';
@@ -121,6 +121,12 @@ const emptyForm = (customRoles, stripBusinessOnly = (permissions) => permissions
     // photo. Repairs and costs stay owner/manager territory.
     // Off by default.
     equipment_grants: [],
+    // Owner-granted host door (plan release 376, Nov 26,
+    // 2026): ONE per-member tick — taking reservations and
+    // running tonight's waitlist. Reading the book needs
+    // no tick; the owner and managers always keep it.
+    // Business only. Off by default.
+    reservations_grants: [],
     status: 'invited',
     location_id: '',
     location_name: '',
@@ -235,6 +241,9 @@ export default function StaffMemberDialog({
             ),
             equipment_grants: (Array.isArray(member.permissions) ? member.permissions : []).filter(
               (key) => isEquipmentGrant(key)
+            ),
+            reservations_grants: (Array.isArray(member.permissions) ? member.permissions : []).filter(
+              (key) => isReservationsGrant(key)
             ),
             status: member.status || 'invited',
             location_id: member.location_id || '',
@@ -353,6 +362,7 @@ export default function StaffMemberDialog({
           ...(form.documents_grants || []),
           ...(form.checklists_grants || []),
           ...(form.equipment_grants || []),
+          ...(form.reservations_grants || []),
         ],
         status: form.status,
         location_id: form.location_id || '',
@@ -1026,6 +1036,45 @@ export default function StaffMemberDialog({
               {t('staff.memberDialog.equipmentAccessHint')}
             </p>
           </div>
+
+          {/* Owner-granted host door (plan release 376, Nov
+              26, 2026): ONE tick — taking reservations and
+              running tonight's waitlist, the host work.
+              Business only — the Restaurant Corner does not
+              exist on Essentials, so on Essentials this
+              block does not render at all. Reading the book
+              needs no tick; the owner and managers always
+              keep the book. Offered for every role, off by
+              default. */}
+          {!entitlementLoading && !isEssentials && (
+            <div className="space-y-1.5">
+              <Label>{t('staffLib.area.reservationsAccess')}</Label>
+              <div className="rounded-lg border border-border p-2.5">
+                <div className="grid gap-1.5">
+                  {RESERVATIONS_GRANTS.map((grant) => (
+                    <label key={grant.key} className="flex items-start gap-2 text-xs leading-snug">
+                      <Checkbox
+                        checked={(form.reservations_grants || []).includes(grant.key)}
+                        onCheckedChange={(on) =>
+                          setForm((c) => ({
+                            ...c,
+                            reservations_grants: on
+                              ? [...new Set([...(c.reservations_grants || []), grant.key])]
+                              : (c.reservations_grants || []).filter((key) => key !== grant.key),
+                          }))
+                        }
+                        className="mt-0.5"
+                      />
+                      <span>{grant.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                {t('staff.memberDialog.reservationsAccessHint')}
+              </p>
+            </div>
+          )}
 
           {canHire && (
             <>

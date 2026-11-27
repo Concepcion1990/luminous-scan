@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Ban, CalendarClock, ClipboardCheck, NotebookPen, Thermometer } from 'lucide-react';
+import { Ban, CalendarCheck, CalendarClock, ClipboardCheck, NotebookPen, Thermometer } from 'lucide-react';
 import { t } from '@/lib/i18n';
 
 /**
@@ -121,6 +121,22 @@ export default function TodayCards({ summary }) {
           {summary.checklists.done === summary.checklists.total
             ? t('restaurant.today.checklistsAllDone')
             : t('restaurant.today.checklists', { done: summary.checklists.done, total: summary.checklists.total })}
+        </span>
+      </Card>,
+    );
+  }
+
+  // Today's reservations (plan release 376): the book's
+  // list for today — how many parties, how many guests —
+  // a door straight to the book.
+  if (summary.reservations?.count) {
+    cards.push(
+      <Card key="reservations" to="/restaurant/reservations" icon={CalendarCheck} title={t('nav.reservations')}>
+        <span className="block text-xs text-muted-foreground">
+          {t('reservations.todayLine', { count: summary.reservations.count, guests: summary.reservations.guests })}
+        </span>
+        <span className="block text-xs text-muted-foreground">
+          {summary.reservations.parties.map((r) => r.party_name).filter(Boolean).join(' · ')}
         </span>
       </Card>,
     );

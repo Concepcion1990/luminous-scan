@@ -51,11 +51,12 @@ import { runCustomerAddressSweep } from './customerAddresses.js';
 import { runTrialReminderSweep } from './trialReminders.js';
 import { runFailedPaymentSweep } from './failedPayment.js';
 import { runEbaySweep } from './posEbay.js';
+import { runReservationReminderSweep } from './reservationsCore.js';
 
 export const SWEEP_INTERVAL_MS = 6 * 60 * 60 * 1000;
 export const SWEEP_BOOT_DELAY_MS = 30 * 1000;
 
-const defaultSweeps = { runWipeSweep, runCustomerAddressSweep, runTrialReminderSweep, runFailedPaymentSweep, runEbaySweep };
+const defaultSweeps = { runWipeSweep, runCustomerAddressSweep, runTrialReminderSweep, runFailedPaymentSweep, runEbaySweep, runReservationReminderSweep };
 
 /** The kill switch: only an exact 'false' turns the scheduler off. */
 export function sweepSchedulerDisabled(env = process.env) {
@@ -68,7 +69,7 @@ export function sweepSchedulerDisabled(env = process.env) {
  * summary in the job endpoints' shape. Never throws.
  */
 export async function runScheduledSweeps(pool, { now = new Date(), logger = console, sweeps = defaultSweeps } = {}) {
-  const summary = { ranAt: now.toISOString(), wipe: null, customerAddresses: null, trialReminders: null, failedPayments: null, ebay: null, failures: [] };
+  const summary = { ranAt: now.toISOString(), wipe: null, customerAddresses: null, trialReminders: null, failedPayments: null, ebay: null, guestReminders: null, failures: [] };
   try {
     summary.wipe = await sweeps.runWipeSweep(pool, { now, logger });
   } catch (error) {
@@ -110,6 +111,18 @@ export async function runScheduledSweeps(pool, { now = new Date(), logger = cons
     } catch (error) {
       summary.failures.push({ job: 'ebay', reason: error.message });
       logger.error(`[twin] scheduled eBay sweep failed: ${error.message}`);
+    }
+  }
+  // Guest reservation reminders (plan release 376, Q6):
+  // only guests who said yes, claimed per channel before
+  // sending. Guarded on the seam's presence, like eBay's,
+  // so older injected sweep sets keep their exact shape.
+  if (typeof sweeps.runReservationReminderSweep === 'function') {
+    try {
+      summary.guestReminders = await sweeps.runReservationReminderSweep(pool, { now, logger });
+    } catch (error) {
+      summary.failures.push({ job: 'guestReminders', reason: error.message });
+      logger.error(`[twin] scheduled guest reminder sweep failed: ${error.message}`);
     }
   }
   return summary;

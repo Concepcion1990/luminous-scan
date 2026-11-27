@@ -420,6 +420,12 @@ export async function runWipeSweep(pool, { now = new Date(), logger = console } 
         // Catering events (migration 064) carry no FK
         // cascade — the business's event book dies with it.
         await client.query('DELETE FROM catering_events WHERE business_id = $1', [businessId]);
+        // Reservations + waitlist (migration 065) carry no
+        // FK cascade — the business's book and tonight's
+        // queue (and the guest contact details that live
+        // only there) die with it.
+        await client.query('DELETE FROM reservations WHERE business_id = $1', [businessId]);
+        await client.query('DELETE FROM waitlist_entries WHERE business_id = $1', [businessId]);
         await client.query('DELETE FROM import_events WHERE business_id = $1', [businessId]);
         // Profile photos (migration 034) carry no FK cascade —
         // a person's face dies with the business, never after it.
