@@ -1,5 +1,6 @@
 import {
   ArrowRightLeft,
+  BadgeCheck,
   Ban,
   BookOpen,
   Boxes,
@@ -8,9 +9,12 @@ import {
   ClipboardCheck,
   ClipboardList,
   FileText,
+  FlaskConical,
   MapPin,
   NotebookPen,
+  PackageOpen,
   Scale,
+  SearchCheck,
   Thermometer,
   Trash2,
   TrendingUp,
@@ -110,6 +114,16 @@ export const SHELVES = [
       door('/restaurant/temp-logs', 'nav.tempLogs', 'restaurant.doorTempLogs', Thermometer),
       door('/restaurant/expiry', 'nav.expiry', 'restaurant.doorExpiry', CalendarClock),
       door('/restaurant/allergens', 'nav.allergens', 'restaurant.doorAllergens', Wheat),
+      // The food-safety file, completed (plan release 370):
+      // the temperature log's sibling logs, the packet that
+      // gathers the family's papers, certificate tracking on
+      // the staff-documents machinery, the mock inspection on
+      // the checklist engine, and the SDS shelf.
+      door('/restaurant/safety-logs', 'nav.safetyLogs', 'restaurant.doorSafetyLogs', ClipboardCheck),
+      door('/restaurant/inspection', 'nav.inspectionPacket', 'restaurant.doorInspectionPacket', PackageOpen),
+      door('/restaurant/certificates', 'nav.foodCerts', 'restaurant.doorFoodCerts', BadgeCheck),
+      door('/restaurant/mock-inspection', 'nav.mockInspection', 'restaurant.doorMockInspection', SearchCheck),
+      door('/restaurant/sds', 'nav.sds', 'restaurant.doorSds', FlaskConical),
     ],
   },
   {

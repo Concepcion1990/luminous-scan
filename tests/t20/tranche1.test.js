@@ -253,6 +253,10 @@ const PT_PT_COGNATE_KEYS = new Set([
   'guide.colPar',
 ]);
 const DE_COGNATE_KEYS = new Set([
+  // Food-safety build (plan release 370, Nov 26, 2026): "Person"
+  // and "Status" are the genuine German words for the certificate
+  // table's column heads — verified.
+  'foodSafety.certs.colPerson', 'foodSafety.certs.colStatus',
   // Checklists build (Nov 26, 2026): "Scan" is the genuine
   // German word (der Scan) for the proof kind — verified.
   'checklists.proofScan',
@@ -370,6 +374,13 @@ const PA_ARAB_COGNATE_KEYS = new Set([
   'productForm.unitKg',
 ]);
 const ID_COGNATE_KEYS = new Set([
+  // Food-safety build (plan release 370, Nov 26, 2026):
+  // "Sanitizer" is the genuine Indonesian word for the check kind
+  // — verified.
+  'foodSafety.logs.kind.sanitizer',
+  // Food-safety build (plan release 370, Nov 26, 2026): "Status"
+  // is the genuine Indonesian word — verified.
+  'foodSafety.certs.colStatus',
   // Restaurant operations batch (Nov 23, 2026): Indonesian keeps "Status", "Total", "Unit", "Item", "Per", "Transfer" and "Total margin" in these forms, "PO {number}" is the code format, "g" is the gram symbol, and the scale names are spelled the same — verified word-by-word.
   'ops.invoices.poPrefix', 'ops.invoices.statusLabel', 'ops.invoices.colTotal', 'ops.invoices.colStatus',
   'units.unitPlaceholder', 'units.perLabel', 'ops.tempLogs.unitLabel', 'ops.tempLogs.scaleF', 'ops.tempLogs.scaleC',
@@ -391,6 +402,13 @@ const ID_COGNATE_KEYS = new Set([
   'importLib.updateField.format',
 ]);
 const MS_COGNATE_KEYS = new Set([
+  // Food-safety build (plan release 370, Nov 26, 2026):
+  // "Sanitizer" is the genuine Malay word for the check kind
+  // — verified.
+  'foodSafety.logs.kind.sanitizer',
+  // Food-safety build (plan release 370, Nov 26, 2026): "Status"
+  // is the genuine Malay word — verified.
+  'foodSafety.certs.colStatus',
   // Restaurant operations batch (Nov 23, 2026): Malay keeps "Status", "Total", "Unit", "Item", "Per", "Transfer" and "Total margin" in these forms, "PO {number}" is the code format, "g" is the gram symbol, and the scale names are spelled the same — verified word-by-word.
   'recipes.lineUnit', 'ops.invoices.poPrefix', 'ops.invoices.statusLabel', 'ops.invoices.colTotal',
   'ops.invoices.colStatus', 'units.unitLabel', 'units.unitPlaceholder', 'units.perLabel', 'ops.tempLogs.unitLabel',
@@ -431,6 +449,10 @@ const VI_COGNATE_KEYS = new Set([
   'settings.identity.logoLabel', 'staff.memberDialog.emailLabel', 'suppliers.email',
 ]);
 const TL_COGNATE_KEYS = new Set([
+  // Food-safety build (plan release 370, Nov 26, 2026):
+  // "Sanitizer" is the genuine Tagalog word for the check kind
+  // — verified.
+  'foodSafety.logs.kind.sanitizer',
   // Checklists build (Nov 26, 2026): Tagalog keeps "Scan" for
   // the proof kind, the everyday loanword — verified.
   'checklists.proofScan',
@@ -541,6 +563,10 @@ const HA_COGNATE_KEYS = new Set([
   'guide.colPar',
 ]);
 const SW_COGNATE_KEYS = new Set([
+  // Food-safety build (plan release 370, Nov 26, 2026):
+  // "Sanitizer" is the genuine Swahili word for the check kind
+  // — verified.
+  'foodSafety.logs.kind.sanitizer',
   // Restaurant operations batch (Nov 23, 2026): "PO {number}" is the purchase-order code format, "g" is the gram symbol, and the scale names are kept in Swahili — verified.
   'ops.invoices.poPrefix', 'units.unitPlaceholder', 'ops.tempLogs.scaleF', 'ops.tempLogs.scaleC',
   'exports.eyebrow', 'import.eyebrow', 'productForm.unitKg',
@@ -549,6 +575,10 @@ const SW_COGNATE_KEYS = new Set([
   'guide.colPar',
 ]);
 const YO_COGNATE_KEYS = new Set([
+  // Food-safety build (plan release 370, Nov 26, 2026):
+  // "Sanitizer" is the genuine Yoruba word for the check kind
+  // — verified.
+  'foodSafety.logs.kind.sanitizer',
   // Restaurant operations batch (Nov 23, 2026): "PO {number}" is the purchase-order code format, "g" is the gram symbol, and the scale names are kept in Yoruba — verified.
   'ops.invoices.poPrefix', 'units.unitPlaceholder', 'ops.tempLogs.scaleF', 'ops.tempLogs.scaleC',
   'importLib.field.barcode', 'layout.scanCodes', 'payroll.dd.checking',
@@ -559,6 +589,13 @@ const YO_COGNATE_KEYS = new Set([
   'guide.colPar',
 ]);
 const JV_COGNATE_KEYS = new Set([
+  // Food-safety build (plan release 370, Nov 26, 2026):
+  // "Sanitizer" is the genuine Javanese word for the check kind
+  // — verified.
+  'foodSafety.logs.kind.sanitizer',
+  // Food-safety build (plan release 370, Nov 26, 2026): "Status"
+  // is the word Javanese uses for the column head — verified.
+  'foodSafety.certs.colStatus',
   // Restaurant operations batch (Nov 23, 2026): Javanese keeps "Unit", "Status" and "Transfer" in these forms, "PO {number}" is the code format, "g" is the gram symbol, and the scale names are spelled the same — verified.
   'recipes.lineUnit', 'ops.invoices.poPrefix', 'ops.invoices.statusLabel', 'ops.invoices.colStatus',
   'units.unitLabel', 'units.unitPlaceholder', 'ops.tempLogs.unitLabel', 'ops.tempLogs.scaleF', 'ops.tempLogs.scaleC',
@@ -591,6 +628,25 @@ const JV_COGNATE_KEYS = new Set([
   'ops.credits.colInvoice', 'ops.credits.invoiceLabel',
 ]);
 const PCM_COGNATE_KEYS = new Set([
+  // Food-safety build (plan release 370, Nov 26, 2026): Pidgin
+  // keeps these short door labels, titles, column heads and
+  // button texts in English — the same register as the batches
+  // below (its prose and lesson steps are translated) —
+  // verified word-by-word. "Person" and "Status" are the
+  // genuine Pidgin words.
+  'nav.safetyLogs', 'nav.inspectionPacket', 'nav.foodCerts', 'nav.mockInspection', 'nav.sds',
+  'foodSafety.logs.title', 'foodSafety.logs.newButton', 'foodSafety.logs.dialogTitle',
+  'foodSafety.logs.kindLabel', 'foodSafety.logs.kind.cooling', 'foodSafety.logs.kind.reheating',
+  'foodSafety.logs.kind.sanitizer', 'foodSafety.logs.itemLabel', 'foodSafety.logs.itemPlaceholder',
+  'foodSafety.logs.readingLabel', 'foodSafety.logs.unitPpm', 'foodSafety.logs.colItem',
+  'foodSafety.logs.save', 'foodSafety.logs.allKinds',
+  'foodSafety.packet.title', 'foodSafety.packet.fromLabel', 'foodSafety.packet.toLabel',
+  'foodSafety.packet.docTitle', 'foodSafety.packet.colKind',
+  'foodSafety.certs.title', 'foodSafety.certs.emptyTitle', 'foodSafety.certs.memberLabel',
+  'foodSafety.certs.classLabel', 'foodSafety.certs.class.servsafe_manager',
+  'foodSafety.certs.colPerson', 'foodSafety.certs.colStatus', 'foodSafety.certs.save',
+  'foodSafety.sds.title', 'foodSafety.sds.uploadButton', 'foodSafety.sds.titlePlaceholder',
+  'foodSafety.mock.title', 'foodSafety.mock.openChecklists',
   // Age check build (Nov 25, 2026): Pidgin keeps these three
   // short labels in English — the same register as the batches
   // below (its prose and lesson steps are translated) —
