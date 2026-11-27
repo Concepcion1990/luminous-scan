@@ -57,6 +57,7 @@ import { createFoodSafetyRouter } from './foodSafetyRoutes.js';
 import { createGuestMenuRouter } from './guestMenuRoutes.js';
 import { createTipPoolingRouter } from './tipPoolingRoutes.js';
 import { createLaborWarningsRouter } from './laborWarningsRoutes.js';
+import { createCateringRouter } from './cateringRoutes.js';
 import { createProfilePhotoRouter } from './profilePhotoRoutes.js';
 import { createXstoreMessageRouter } from './xstoreMessageRoutes.js';
 import { createCompRouter } from './compRoutes.js';
@@ -359,6 +360,11 @@ export function createApp() {
   // target face is stripped server-side for plans without
   // the restaurant feature — Business-only.
   app.use('/api', createLaborWarningsRouter({ getPool }));
+  // Catering & private events, the simple version
+  // (server/cateringRoutes.js): the event book, the Studio
+  // event sheet and the pull into prep — Business-only,
+  // deposits/balances owner-only money, per-business.
+  app.use('/api', createCateringRouter({ getPool }));
   // Profile photos + the owner's display name
   // (server/profilePhotoRoutes.js): owner-approved team photos
   // and the name that replaces "Owner".
