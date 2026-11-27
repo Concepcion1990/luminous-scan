@@ -134,6 +134,10 @@ export const SHELVES = [
       // home is its own page — the shelf cross-links to it,
       // the 377 pattern for the Q1–Q4 general features.
       door('/log-book', 'nav.logBook', 'restaurant.doorLogBook', NotebookPen, { crossLink: true }),
+      // Plan release 369: checklists are a general feature
+      // too (both plans, the owner's Q1 ruling) — the shelf
+      // cross-links to their general home the same way.
+      door('/checklists', 'nav.checklists', 'restaurant.doorChecklists', ClipboardCheck, { crossLink: true }),
     ],
   },
 ];
@@ -199,7 +203,7 @@ const sameLocalDay = (a, b) =>
  * page shows no card for it — no placeholder ever claims a
  * feature or a fact that is not there.
  */
-export function summarizeToday({ eightySixItems = [], tempLogs = [], batches = [], batchRuns = [], logEntries = [], now = new Date() } = {}) {
+export function summarizeToday({ eightySixItems = [], tempLogs = [], batches = [], batchRuns = [], logEntries = [], checklistToday = null, now = new Date() } = {}) {
   const outNow = (eightySixItems || []).filter((item) => item.active !== false);
 
   const units = new Map();
@@ -239,7 +243,16 @@ export function summarizeToday({ eightySixItems = [], tempLogs = [], batches = [
     .sort((a, b) => String(b.created_date || '').localeCompare(String(a.created_date || '')))
     .slice(0, 3);
 
-  return { outNow, temps, expiring, runsToday, logBook };
+  // Today's checklists (plan release 369): the general
+  // feature's own day view, read from its engine — how many
+  // of today's items are ticked, and how many lists are
+  // running. Null when the read has not landed (or failed):
+  // the Today page then simply shows no checklist card.
+  const checklists = checklistToday?.summary
+    ? { done: checklistToday.summary.done || 0, total: checklistToday.summary.total || 0, lists: checklistToday.summary.lists || 0 }
+    : null;
+
+  return { outNow, temps, expiring, runsToday, logBook, checklists };
 }
 
 /** True when at least one Today card has something to say. */
@@ -249,6 +262,7 @@ export function todayHasContent(summary) {
     summary.temps.known ||
     summary.expiring.length ||
     summary.runsToday.length ||
-    (summary.logBook || []).length,
+    (summary.logBook || []).length ||
+    Boolean(summary.checklists?.total),
   );
 }

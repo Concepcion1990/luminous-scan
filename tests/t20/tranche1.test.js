@@ -142,6 +142,10 @@ const FR_FR_COGNATE_KEYS = new Set([
   // Translation sweep (Nov 15, 2026): 'Photo' and 'Fiction' are
   // the genuine French words — true cognates, not untranslated.
   'products.colPhoto', 'productForm.categoryPlaceholder',
+  // Checklists build (Nov 26, 2026): 'Photo' and 'Scan' are
+  // the genuine French words for the proof kinds — true
+  // cognates, not untranslated.
+  'checklists.proofPhoto', 'checklists.proofScan',
   // Training builds (Nov 20, 2026): 'Question' is the genuine
   // French word for the owner's-quiz question label.
   'settings.policyQuiz.question',
@@ -170,6 +174,9 @@ const FR_CA_COGNATE_KEYS = new Set([
   // Prints build (Nov 25, 2026): "Score" — same French cognate
   // as fr-FR — verified.
   'print.colScore',
+  // Checklists build (Nov 26, 2026): 'Photo' and 'Scan' — same
+  // French cognates as fr-FR — verified.
+  'checklists.proofPhoto', 'checklists.proofScan',
   // Restaurant operations batch (Nov 23, 2026): Same French cognates as fr-FR — verified.
   'ops.invoices.poPrefix', 'ops.invoices.noteLabel', 'ops.invoices.colDate', 'ops.invoices.colTotal',
   'ops.waste.noteLabel', 'ops.waste.colDate', 'batch.noteLabel', 'units.unitPlaceholder', 'ops.tempLogs.scaleF',
@@ -246,6 +253,9 @@ const PT_PT_COGNATE_KEYS = new Set([
   'guide.colPar',
 ]);
 const DE_COGNATE_KEYS = new Set([
+  // Checklists build (Nov 26, 2026): "Scan" is the genuine
+  // German word (der Scan) for the proof kind — verified.
+  'checklists.proofScan',
   // Restaurant operations batch (Nov 23, 2026): "Status" is the genuine German word, "PO {number}" is the purchase-order code format, "g" is the gram symbol, and the scale names are spelled the same in German — verified.
   'ops.invoices.poPrefix', 'ops.invoices.statusLabel', 'ops.invoices.colStatus', 'units.unitPlaceholder',
   'ops.tempLogs.scaleF', 'ops.tempLogs.scaleC',
@@ -421,6 +431,9 @@ const VI_COGNATE_KEYS = new Set([
   'settings.identity.logoLabel', 'staff.memberDialog.emailLabel', 'suppliers.email',
 ]);
 const TL_COGNATE_KEYS = new Set([
+  // Checklists build (Nov 26, 2026): Tagalog keeps "Scan" for
+  // the proof kind, the everyday loanword — verified.
+  'checklists.proofScan',
   // Prints build (Nov 25, 2026): Tagalog keeps "Timesheet" for
   // the time sheet, the same loanword it uses throughout —
   // verified.

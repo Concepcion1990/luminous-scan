@@ -469,9 +469,32 @@ export function isDocumentsGrant(key) {
   return DOCUMENTS_GRANT_KEYS.includes(key);
 }
 
-/** Any per-member grant key (Settings sections + returns + products + locations + roster + low stock + policy trainings + clock + documents + restaurant). */
+/**
+ * Owner-granted checklist templates (plan release 369, Nov
+ * 26, 2026). Same pattern as the grants above: the key lives
+ * in the member's own permissions array, deliberately NOT
+ * part of PERMISSION_GROUPS / ALL_PERMISSIONS / the preset
+ * roles, edited in the member dialog as its own tick, so the
+ * permission picker can never wipe it and no role carries it
+ * by default — a manager included. Holding it lets a member
+ * create and edit checklist TEMPLATES and their assignments.
+ * Doing a checklist — ticking items off — is plain staff
+ * work and rides NO tick at all. Either plan: checklists are
+ * a general feature (the owner's Q1 ruling).
+ */
+export const CHECKLISTS_GRANTS = [
+  { key: 'checklists.manage', get label() { return t('staffLib.perm.checklistsManage'); } },
+];
+
+export const CHECKLISTS_GRANT_KEYS = CHECKLISTS_GRANTS.map((grant) => grant.key);
+
+export function isChecklistsGrant(key) {
+  return CHECKLISTS_GRANT_KEYS.includes(key);
+}
+
+/** Any per-member grant key (Settings sections + returns + products + locations + roster + low stock + policy trainings + clock + documents + restaurant + checklists). */
 export function isMemberGrant(key) {
-  return isSettingsGrant(key) || isReturnsGrant(key) || isProductsGrant(key) || isLocationsGrant(key) || isRosterGrant(key) || isLowStockGrant(key) || isTrainingGrant(key) || isClockGrant(key) || isDocumentsGrant(key) || isRestaurantGrant(key);
+  return isSettingsGrant(key) || isReturnsGrant(key) || isProductsGrant(key) || isLocationsGrant(key) || isRosterGrant(key) || isLowStockGrant(key) || isTrainingGrant(key) || isClockGrant(key) || isDocumentsGrant(key) || isRestaurantGrant(key) || isChecklistsGrant(key);
 }
 
 /** A member row's level, mirroring the server's personLevel. */

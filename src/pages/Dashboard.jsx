@@ -9,6 +9,7 @@ import ReorderPanel from '@/components/dashboard/ReorderPanel';
 import LocationStockPanel from '@/components/dashboard/LocationStockPanel';
 import AttentionPanel from '@/components/dashboard/AttentionPanel';
 import ActivityFeed from '@/components/dashboard/ActivityFeed';
+import ChecklistsTodayCard from '@/components/dashboard/ChecklistsTodayCard';
 import OrdersToFulfil from '@/components/dashboard/OrdersToFulfil';
 import IncomingStock from '@/components/dashboard/IncomingStock';
 import { formatMoney, loadInventory, summarize } from '@/lib/inventory';
@@ -293,6 +294,10 @@ export default function Dashboard() {
             </div>
             <div className="space-y-4">
               <OrdersToFulfil orders={ops.orders} currency={profile.currency} />
+              {/* Today's checklists (plan release 369): the day's
+                  checklist progress on the business home — the
+                  card renders only when lists are running today. */}
+              <ChecklistsTodayCard businessId={activeId} />
               {showPurchasing && <IncomingStock purchaseOrders={ops.purchaseOrders} />}
             </div>
           </div>

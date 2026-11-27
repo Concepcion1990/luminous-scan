@@ -4,6 +4,7 @@ import { base44 } from '@/api/client';
 import TodayCards from '@/components/restaurant/TodayCards';
 import { useBusiness } from '@/hooks/useBusiness';
 import { scoped } from '@/lib/scoped';
+import { fetchChecklistToday } from '@/lib/checklists';
 import { shelvesFor, summarizeToday } from '@/lib/restaurantShelves';
 import { t } from '@/lib/i18n';
 
@@ -30,7 +31,7 @@ export default function Restaurant() {
 
   useEffect(() => {
     (async () => {
-      const [eightySixPage, tempLogPage, batchPage, runPage, logPage] = await Promise.all([
+      const [eightySixPage, tempLogPage, batchPage, runPage, logPage, checklistToday] = await Promise.all([
         base44.entities.EightySixItem.filter(scoped({}, activeId), { sort: '-created_date', limit: 300 }),
         base44.entities.TempLog.filter(scoped({}, activeId), { sort: '-created_date', limit: 300 }),
         base44.entities.StockBatch.filter(scoped({}, activeId), { limit: 500 }),
@@ -39,6 +40,10 @@ export default function Restaurant() {
         // feature; its latest entries ride the Today summary
         // like every other source here.
         base44.entities.LogBookEntry.filter(scoped({}, activeId), { sort: '-created_date', limit: 50 }),
+        // Checklists (plan release 369) are a general feature
+        // too; their day progress rides the Today summary the
+        // same way — a failed read simply shows no card.
+        fetchChecklistToday(activeId).catch(() => null),
       ]);
       setRows({
         eightySixItems: eightySixPage.items ?? [],
@@ -46,6 +51,7 @@ export default function Restaurant() {
         batches: batchPage.items ?? [],
         batchRuns: runPage.items ?? [],
         logEntries: logPage.items ?? [],
+        checklistToday,
       });
       setLoading(false);
     })();

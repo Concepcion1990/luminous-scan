@@ -64,6 +64,7 @@ export const PLANS = {
         t('plansLib.includes.ageCheck'),
         t('plansLib.includes.ownTraining'),
         t('plansLib.includes.barcodePool'),
+        t('plansLib.includes.checklists'),
         t('plansLib.includes.recovery'),
         t('plansLib.includes.support'),
         t('plansLib.includes.offline'),
@@ -327,6 +328,7 @@ export const WELCOME_OPTIONS = [
         t('plansLib.includes.ageCheck'),
         t('plansLib.includes.ownTraining'),
         t('plansLib.includes.barcodePool'),
+        t('plansLib.includes.checklists'),
         t('plansLib.includes.recovery'),
         t('plansLib.includes.support'),
         t('plansLib.includes.offline'),
@@ -476,6 +478,12 @@ export const COMPARISON_ROWS = [
   // a general feature on both plans. Mobile stays "Set at
   // launch" like the other team-era rows.
   { get label() { return t('plansLib.includes.barcodePool'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
+  // Checklists (plan release 369, Nov 26, 2026): opening,
+  // closing, cleaning and any other list, ticked off on the
+  // phone with proof where it matters — a general feature on
+  // both plans (the owner's Q1 ruling). Mobile stays "Set at
+  // launch" like the other team-era rows.
+  { get label() { return t('plansLib.includes.checklists'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
   { get label() { return t('plansLib.includes.recovery'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
   { get label() { return t('plansLib.includes.support'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
   { get label() { return t('plansLib.includes.offline'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },

@@ -86,6 +86,10 @@ export const TRAINING_LESSONS = [
   { id: 'movements-what', track: 'staff', module: 'movements', heading: 'general', steps: 4 },
   { id: 'counts-run', track: 'staff', module: 'counts', heading: 'general', steps: 4 },
   { id: 'staff-log-book', track: 'staff', module: 'workforce', heading: 'general', steps: 4 },
+  // Checklists (plan release 369, Nov 26, 2026): doing a
+  // checklist is plain staff work — the staff lesson, under
+  // the GENERAL heading like the feature itself.
+  { id: 'staff-checklists', track: 'staff', module: 'workforce', heading: 'general', steps: 5 },
   { id: 'orders-basics', track: 'staff', module: 'orders', heading: 'general', steps: 6 },
   { id: 'owner-tax-rate', track: 'owner', module: 'orders', heading: 'general', steps: 4 },
   { id: 'mgr-tax-rate', track: 'manager', module: 'orders', heading: 'general', steps: 5 },
