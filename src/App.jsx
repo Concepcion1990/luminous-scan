@@ -43,6 +43,9 @@ import RestaurantInspectionPacket from '@/pages/RestaurantInspectionPacket';
 import RestaurantCertificates from '@/pages/RestaurantCertificates';
 import RestaurantMockInspection from '@/pages/RestaurantMockInspection';
 import RestaurantSds from '@/pages/RestaurantSds';
+import RestaurantKitchenDisplay from '@/pages/RestaurantKitchenDisplay';
+import RestaurantGuestMenu from '@/pages/RestaurantGuestMenu';
+import GuestMenuPublic from '@/pages/GuestMenuPublic';
 import RestaurantEightySix from '@/pages/RestaurantEightySix';
 import RestaurantTransfers from '@/pages/RestaurantTransfers';
 import RestaurantStaffMeals from '@/pages/RestaurantStaffMeals';
@@ -97,7 +100,7 @@ const AuthenticatedApp = () => {
   // Public legal pages are readable too, including the /policies/* aliases
   // the app previously linked to, and both spellings of the Thank You page.
   // The About page is readable too.
-  const openToEveryone = pathname === '/welcome' || pathname === '/plans' || pathname === '/subscribe' || pathname === '/about' || pathname === '/subscription-policy' || pathname === '/policies/subscription' || pathname === '/terms-of-service' || pathname === '/policies/terms' || pathname === '/privacy-policy' || pathname === '/ThankYou' || pathname === '/thankyou';
+  const openToEveryone = pathname.startsWith('/menu/') || pathname === '/welcome' || pathname === '/plans' || pathname === '/subscribe' || pathname === '/about' || pathname === '/subscription-policy' || pathname === '/policies/subscription' || pathname === '/terms-of-service' || pathname === '/policies/terms' || pathname === '/privacy-policy' || pathname === '/ThankYou' || pathname === '/thankyou';
   // The auth pages are never bounced either: they must render for
   // signed-out visitors exactly as they are, returnTo and all.
   const authPage = isAuthPagePath(pathname);
@@ -121,6 +124,7 @@ const AuthenticatedApp = () => {
   const routes = (
     <Routes>
       <Route path="/welcome" element={<Welcome />} />
+      <Route path="/menu/:slug" element={<GuestMenuPublic />} />
       <Route path="/plans" element={<Plans />} />
       <Route path="/subscribe" element={<Subscribe />} />
       <Route path="/about" element={<About />} />
@@ -332,6 +336,22 @@ const AuthenticatedApp = () => {
             element={
               <PlanRedirect feature="restaurant">
                 <RestaurantSds />
+              </PlanRedirect>
+            }
+          />
+          <Route
+            path="/restaurant/kitchen-display"
+            element={
+              <PlanRedirect feature="restaurant">
+                <RestaurantKitchenDisplay />
+              </PlanRedirect>
+            }
+          />
+          <Route
+            path="/restaurant/guest-menu"
+            element={
+              <PlanRedirect feature="restaurant">
+                <RestaurantGuestMenu />
               </PlanRedirect>
             }
           />

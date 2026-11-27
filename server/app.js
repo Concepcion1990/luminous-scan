@@ -53,6 +53,7 @@ import { createCustomTrainingRouter } from './customTrainingRoutes.js';
 import { createBarcodePoolRouter } from './barcodePoolRoutes.js';
 import { createChecklistsRouter } from './checklistsRoutes.js';
 import { createFoodSafetyRouter } from './foodSafetyRoutes.js';
+import { createGuestMenuRouter } from './guestMenuRoutes.js';
 import { createProfilePhotoRouter } from './profilePhotoRoutes.js';
 import { createXstoreMessageRouter } from './xstoreMessageRoutes.js';
 import { createCompRouter } from './compRoutes.js';
@@ -337,6 +338,7 @@ export function createApp() {
   // staff-readable SDS shelf, and the mock inspection on the
   // checklist engine — Business-only, per-business.
   app.use('/api', createFoodSafetyRouter({ getPool }));
+  app.use('/api', createGuestMenuRouter({ getPool }));
   // Profile photos + the owner's display name
   // (server/profilePhotoRoutes.js): owner-approved team photos
   // and the name that replaces "Owner".

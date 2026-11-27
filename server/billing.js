@@ -396,6 +396,10 @@ export async function runWipeSweep(pool, { now = new Date(), logger = console } 
         await client.query('DELETE FROM safety_logs WHERE business_id = $1', [businessId]);
         await client.query('DELETE FROM food_certs WHERE business_id = $1', [businessId]);
         await client.query('DELETE FROM sds_sheets WHERE business_id = $1', [businessId]);
+        // The guest menu publication (migration 060) carries
+        // no FK cascade — the owner's published choice dies
+        // with the business.
+        await client.query('DELETE FROM menu_publications WHERE business_id = $1', [businessId]);
         await client.query('DELETE FROM import_events WHERE business_id = $1', [businessId]);
         // Profile photos (migration 034) carry no FK cascade —
         // a person's face dies with the business, never after it.
