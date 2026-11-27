@@ -573,10 +573,10 @@ const NEW_KEYS = [
   'training.lessons.mgr-restaurant-invoices.step5',
 ];
 
-test('i18n gate: 63 new keys in all 52 locales, keyset 6256, plan lines carry the new features', () => {
+test('i18n gate: 63 new keys in all 52 locales, keyset 6332, plan lines carry the new features', () => {
   assert.equal(NEW_KEYS.length, 63);
   for (const [code, locale] of Object.entries(LOCALES)) {
-    assert.equal(Object.keys(locale).length, 6256, `${code} keyset`);
+    assert.equal(Object.keys(locale).length, 6332, `${code} keyset`);
     for (const key of NEW_KEYS) {
       assert.ok(typeof locale[key] === 'string' && locale[key].length > 0, `${code} carries ${key}`);
     }
@@ -607,7 +607,7 @@ test('i18n gate: 63 new keys in all 52 locales, keyset 6256, plan lines carry th
 });
 
 test('training: 117 lessons, catalogs agree, the log book lesson and the invoices step 5 ride along', () => {
-  assert.equal(clientCatalog.length, 123); // 123 since the kitchen-menu build (plan release 371, Nov 26, 2026) added 1 (staff-kitchen-menu, Business-only, restaurant heading); 122 since the food-safety build (plan release 370, Nov 26, 2026) added staff-food-safety; 121 since the checklists build added staff-checklists; 117 at this build
+  assert.equal(clientCatalog.length, 124); // 124 since the equipment build (plan release 372, Nov 26, 2026) added 1 (staff-equipment, both plans, general heading); 123 since the kitchen-menu build (plan release 371, Nov 26, 2026) added 1 (staff-kitchen-menu, Business-only, restaurant heading); 122 since the food-safety build (plan release 370, Nov 26, 2026) added staff-food-safety; 121 since the checklists build added staff-checklists; 117 at this build
   assert.deepEqual(
     serverCatalog.map((l) => l.id),
     clientCatalog.map((l) => l.id),

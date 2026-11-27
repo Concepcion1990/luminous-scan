@@ -56,11 +56,11 @@ const SAME_DAY = new Date(2026, 10, 25, 9, 0); // Wed Nov 25, 9:00 AM
 const composeLine = (value) =>
   t('workforce.clockedInSince', { date: formatShortDay(value), time: formatTimeOnly(value) });
 
-test('the keyset stands at 6256 in all 52 locales — zero new keys', () => {
+test('the keyset stands at 6332 in all 52 locales — zero new keys', () => {
   const codes = Object.keys(LOCALES);
   assert.equal(codes.length, 52);
   for (const code of codes) {
-    assert.equal(Object.keys(LOCALES[code]).length, 6256, `${code} keyset`);
+    assert.equal(Object.keys(LOCALES[code]).length, 6332, `${code} keyset`);
   }
 });
 

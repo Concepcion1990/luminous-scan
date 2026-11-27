@@ -220,10 +220,10 @@ test('wiring: the Workforce shift lines route through formatHhmm; the stored for
   assert.match(workforce, /value=\{value\?\.end_time \|\| ''\}/);
 });
 
-test('zero new strings from 358: the keyset stands at 6256 in every locale (5136 through 358; the restaurant batch added 172, cross-store messages 25, restaurant operations 390, eBay storefront 46, the photo door fix 8, the print family 5, the product form batch 7, the photo capture batch 4, the restaurant IA batch 27, the paper-trail batch 63)', () => {
+test('zero new strings from 358: the keyset stands at 6332 in every locale (5136 through 358; the restaurant batch added 172, cross-store messages 25, restaurant operations 390, eBay storefront 46, the photo door fix 8, the print family 5, the product form batch 7, the photo capture batch 4, the restaurant IA batch 27, the paper-trail batch 63)', () => {
   const counts = Object.entries(LOCALES).map(([code, dict]) => [code, Object.keys(dict).length]);
   for (const [code, count] of counts) {
-    assert.equal(count, 6256, `${code} keyset`);
+    assert.equal(count, 6332, `${code} keyset`);
   }
   assert.equal(counts.length, 52);
 });

@@ -102,13 +102,13 @@ const NEW_KEYS = [
 
 /* ------------------------------------------------ i18n gate */
 
-test('keyset stands at 6256 in all 52 locales, uniform', () => {
+test('keyset stands at 6332 in all 52 locales, uniform', () => {
   const codes = Object.keys(LOCALES);
   assert.equal(codes.length, 52);
   const enKeys = Object.keys(LOCALES.en).sort();
-  assert.equal(enKeys.length, 6256);
+  assert.equal(enKeys.length, 6332);
   for (const code of codes) {
-    assert.equal(Object.keys(LOCALES[code]).length, 6256, `${code} keyset`);
+    assert.equal(Object.keys(LOCALES[code]).length, 6332, `${code} keyset`);
     assert.deepEqual(Object.keys(LOCALES[code]).sort(), enKeys, `${code} keyset differs from en`);
   }
 });
@@ -161,9 +161,9 @@ test('plan presentation: the checklists line rides Essentials on Plans + Welcome
 
 /* ------------------------------------------------- the lesson */
 
-test('catalogs stand at 123, client and server JSON-identical', () => {
-  assert.equal(CLIENT_LESSONS.length, 123);
-  assert.equal(SERVER_LESSONS.length, 123);
+test('catalogs stand at 124, client and server JSON-identical', () => {
+  assert.equal(CLIENT_LESSONS.length, 124);
+  assert.equal(SERVER_LESSONS.length, 124);
   assert.equal(JSON.stringify(CLIENT_LESSONS), JSON.stringify(SERVER_LESSONS), 'the two catalogs agree exactly');
 });
 
