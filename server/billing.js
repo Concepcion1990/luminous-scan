@@ -400,6 +400,12 @@ export async function runWipeSweep(pool, { now = new Date(), logger = console } 
         // no FK cascade — the owner's published choice dies
         // with the business.
         await client.query('DELETE FROM menu_publications WHERE business_id = $1', [businessId]);
+        // Equipment records (migration 061) carry no FK
+        // cascade — the business's machines, upkeep tasks
+        // and history die with it.
+        await client.query('DELETE FROM equipment_events WHERE business_id = $1', [businessId]);
+        await client.query('DELETE FROM equipment_upkeep WHERE business_id = $1', [businessId]);
+        await client.query('DELETE FROM equipment_machines WHERE business_id = $1', [businessId]);
         await client.query('DELETE FROM import_events WHERE business_id = $1', [businessId]);
         // Profile photos (migration 034) carry no FK cascade —
         // a person's face dies with the business, never after it.

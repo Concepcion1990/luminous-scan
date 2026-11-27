@@ -104,6 +104,11 @@ export const TRAINING_LESSONS = [
   // checklist is plain staff work — the staff lesson, under
   // the GENERAL heading like the feature itself.
   { id: 'staff-checklists', track: 'staff', module: 'workforce', heading: 'general', steps: 5 },
+  // Equipment records (plan release 372, Nov 26, 2026):
+  // reporting a breakdown is staff work behind the owner's
+  // tick — the staff lesson, under the GENERAL heading like
+  // the feature itself.
+  { id: 'staff-equipment', track: 'staff', module: 'workforce', heading: 'general', steps: 5 },
   { id: 'orders-basics', track: 'staff', module: 'orders', heading: 'general', steps: 6 },
   { id: 'owner-tax-rate', track: 'owner', module: 'orders', heading: 'general', steps: 4 },
   { id: 'mgr-tax-rate', track: 'manager', module: 'orders', heading: 'general', steps: 5 },

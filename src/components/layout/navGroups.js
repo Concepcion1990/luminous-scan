@@ -26,6 +26,7 @@ import {
   CalendarClock,
   MessagesSquare,
   NotebookPen,
+  Wrench,
   GraduationCap,
   Wallet,
   CreditCard,
@@ -184,6 +185,13 @@ export const NAV_GROUPS = [
       // staff work; template management rides its own tick
       // inside the page.
       { to: '/checklists', label: 'Checklists', labelKey: 'nav.checklists', icon: ClipboardCheck },
+      // Equipment records (plan release 372, Nov 26, 2026):
+      // a general feature on BOTH plans (the owner's Q3
+      // ruling) — a page per machine, upkeep due reminders,
+      // and the breakdown/repair history. No perm: every
+      // member reads the machines; writes ride the
+      // owner/manager line and the breakdown tick inside.
+      { to: '/equipment', label: 'Equipment', labelKey: 'nav.equipment', icon: Wrench },
       // Cross-store messages (the owner's ruling, Nov 23,
       // 2026): the second messaging door — everyone on the
       // account, across all their businesses. Business only

@@ -70,6 +70,7 @@ import Returns from '@/pages/Returns';
 import Counts from '@/pages/Counts';
 import LogBook from '@/pages/LogBook';
 import Checklists from '@/pages/Checklists';
+import Equipment from '@/pages/Equipment';
 import CrossStoreInbox from '@/pages/CrossStoreInbox';
 import PosConnections from '@/pages/PosConnections';
 import StorefrontConnections from '@/pages/StorefrontConnections';
@@ -480,6 +481,9 @@ const AuthenticatedApp = () => {
               plans — no plan redirect, like /counts. */}
           <Route path="/log-book" element={<LogBook />} />
           <Route path="/checklists" element={<Checklists />} />
+          {/* Equipment records (plan release 372): general,
+              both plans — no plan redirect, like /checklists. */}
+          <Route path="/equipment" element={<Equipment />} />
           <Route
             path="/purchasing"
             element={

@@ -52,6 +52,7 @@ import { createPolicyQuizRouter } from './policyQuizRoutes.js';
 import { createCustomTrainingRouter } from './customTrainingRoutes.js';
 import { createBarcodePoolRouter } from './barcodePoolRoutes.js';
 import { createChecklistsRouter } from './checklistsRoutes.js';
+import { createEquipmentRouter } from './equipmentRoutes.js';
 import { createFoodSafetyRouter } from './foodSafetyRoutes.js';
 import { createGuestMenuRouter } from './guestMenuRoutes.js';
 import { createProfilePhotoRouter } from './profilePhotoRoutes.js';
@@ -333,6 +334,11 @@ export function createApp() {
   // engine — templates, scheduled instances, item completions
   // with proof — a general feature on both plans, per-business.
   app.use('/api', createChecklistsRouter({ getPool }));
+  // Equipment records (server/equipmentRoutes.js): a page
+  // per machine, upkeep schedules with due reminders, and
+  // the breakdown/repair history — a general feature on
+  // both plans, per-business.
+  app.use('/api', createEquipmentRouter({ getPool }));
   // The food-safety file (server/foodSafetyRoutes.js):
   // certificates on the staff-documents machinery, the
   // staff-readable SDS shelf, and the mock inspection on the
