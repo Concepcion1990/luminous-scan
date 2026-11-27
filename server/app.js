@@ -52,6 +52,7 @@ import { createPolicyQuizRouter } from './policyQuizRoutes.js';
 import { createCustomTrainingRouter } from './customTrainingRoutes.js';
 import { createBarcodePoolRouter } from './barcodePoolRoutes.js';
 import { createChecklistsRouter } from './checklistsRoutes.js';
+import { createFoodSafetyRouter } from './foodSafetyRoutes.js';
 import { createProfilePhotoRouter } from './profilePhotoRoutes.js';
 import { createXstoreMessageRouter } from './xstoreMessageRoutes.js';
 import { createCompRouter } from './compRoutes.js';
@@ -146,6 +147,7 @@ export function createApp() {
       '/api/businesses/:bid/product-photos',
       '/api/businesses/:bid/orders/:oid/shipping-label',
       '/api/businesses/:bid/staff-documents/:memberId',
+      '/api/businesses/:bid/food-safety/sds',
       '/api/businesses/:bid/policies/:kind/file',
       '/api/businesses/:bid/own-training/:id/file',
       '/api/businesses/:bid/profile-photos/me',
@@ -330,6 +332,11 @@ export function createApp() {
   // engine — templates, scheduled instances, item completions
   // with proof — a general feature on both plans, per-business.
   app.use('/api', createChecklistsRouter({ getPool }));
+  // The food-safety file (server/foodSafetyRoutes.js):
+  // certificates on the staff-documents machinery, the
+  // staff-readable SDS shelf, and the mock inspection on the
+  // checklist engine — Business-only, per-business.
+  app.use('/api', createFoodSafetyRouter({ getPool }));
   // Profile photos + the owner's display name
   // (server/profilePhotoRoutes.js): owner-approved team photos
   // and the name that replaces "Owner".

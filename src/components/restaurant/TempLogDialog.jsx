@@ -28,8 +28,12 @@ import { t } from '@/lib/i18n';
  * One temperature reading (release 361, Nov 23, 2026). The
  * unit name picks the expected range — fridge, freezer or
  * hot holding — and the reading is marked in or out of range
- * as it is saved; an out-of-range reading asks what was done
- * about it. Open to any trusted member: it is a daily habit.
+ * as it is saved. The food-safety file, completed (plan
+ * release 370): an out-of-range reading REQUIRES the note
+ * saying what was done about it before the entry can stand —
+ * the dialog holds the rule here and the server holds it
+ * again at save. Open to any trusted member: it is a daily
+ * habit.
  */
 export default function TempLogDialog({ open, onOpenChange, locations, onSaved }) {
   const { activeId } = useBusiness();
@@ -63,6 +67,10 @@ export default function TempLogDialog({ open, onOpenChange, locations, onSaved }
     }
     if (!hasReading) {
       setError(t('ops.tempLogs.needTemperature'));
+      return;
+    }
+    if (inRange === false && !correctiveAction.trim()) {
+      setError(t('foodSafety.correctiveRequired'));
       return;
     }
     const zone = locations.find((l) => l.id === locationId);

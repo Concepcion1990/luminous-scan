@@ -63,6 +63,7 @@ import {
 } from './recipes.js';
 import { recordMovementTx } from './movements.js';
 import { computeInvoiceMatch, priceAlertCandidates, creditStanding } from './restaurantOps.js';
+import { correctiveActionError, cleanSafetyLog } from './foodSafetyCore.js';
 import { memberLevel } from './staffWindow.js';
 import { ensureDefaultLocation } from './defaultLocation.js';
 import { rememberOrderAddress } from './customerAddresses.js';
@@ -245,6 +246,23 @@ const DEFS = {
     numeric: ['temperature'],
     bool: ['in_range'],
     required: ['unit_name'],
+    planGate: 'restaurant',
+    // No writePerm — daily log (see the fork note above).
+  },
+  // Cooling, reheating and sanitizer logs (plan release 370,
+  // Nov 26, 2026; migration 059): the SAME log shape as
+  // TempLog, in their own table so each kind's expected range
+  // is judged by its own rule (server/foodSafetyCore.js). The
+  // in_range flag and the corrective-action requirement are
+  // the SERVER's, computed in validateSafetyLog — a client
+  // cannot stand an out-of-range entry without its note, nor
+  // claim a missed reading was in range.
+  SafetyLog: {
+    table: 'safety_logs',
+    json: [],
+    numeric: ['reading'],
+    bool: ['in_range'],
+    required: ['subject_name'],
     planGate: 'restaurant',
     // No writePerm — daily log (see the fork note above).
   },
@@ -994,6 +1012,25 @@ async function validateWasteEntry(pool, business, candidate) {
 
 async function validateTempLog(pool, business, candidate) {
   await assertLocationInBusiness(pool, business.id, candidate.location_id);
+  // The food-safety file, completed (plan release 370): an
+  // out-of-range reading REQUIRES its corrective-action note
+  // beside it before the entry stands complete.
+  const owed = correctiveActionError(candidate);
+  if (owed) throw err(400, 'corrective_action_required', owed);
+}
+
+async function validateSafetyLog(pool, business, candidate) {
+  await assertLocationInBusiness(pool, business.id, candidate.location_id);
+  // cleanSafetyLog judges the reading against its kind's
+  // range, fixes the unit, and holds the corrective rule;
+  // its cleaned shape lands back on the candidate so what is
+  // stored is the server's judgement, never the client's.
+  const clean = cleanSafetyLog(candidate);
+  candidate.kind = clean.kind;
+  candidate.reading = clean.reading;
+  candidate.unit = clean.unit;
+  candidate.in_range = clean.in_range;
+  candidate.corrective_action = clean.corrective_action;
 }
 
 async function validateEightySixItem(pool, business, candidate) {
@@ -1912,6 +1949,9 @@ async function guardCreate(pool, def, name, access, values) {
   if (name === 'TempLog') {
     await validateTempLog(pool, business, values);
   }
+  if (name === 'SafetyLog') {
+    await validateSafetyLog(pool, business, values);
+  }
   if (name === 'EightySixItem') {
     await validateEightySixItem(pool, business, values);
   }
@@ -2155,6 +2195,15 @@ async function guardUpdate(pool, def, name, access, row, patch) {
   }
   if (name === 'TempLog') {
     await validateTempLog(pool, access.business, { ...row, ...patch });
+  }
+  if (name === 'SafetyLog') {
+    const merged = { ...row, ...patch };
+    await validateSafetyLog(pool, access.business, merged);
+    patch.kind = merged.kind;
+    patch.reading = merged.reading;
+    patch.unit = merged.unit;
+    patch.in_range = merged.in_range;
+    patch.corrective_action = merged.corrective_action;
   }
   if (name === 'EightySixItem') {
     await validateEightySixItem(pool, access.business, { ...row, ...patch });

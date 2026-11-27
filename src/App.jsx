@@ -38,6 +38,11 @@ import RestaurantWaste from '@/pages/RestaurantWaste';
 import RestaurantExpiry from '@/pages/RestaurantExpiry';
 import RestaurantAllergens from '@/pages/RestaurantAllergens';
 import RestaurantTempLogs from '@/pages/RestaurantTempLogs';
+import RestaurantSafetyLogs from '@/pages/RestaurantSafetyLogs';
+import RestaurantInspectionPacket from '@/pages/RestaurantInspectionPacket';
+import RestaurantCertificates from '@/pages/RestaurantCertificates';
+import RestaurantMockInspection from '@/pages/RestaurantMockInspection';
+import RestaurantSds from '@/pages/RestaurantSds';
 import RestaurantEightySix from '@/pages/RestaurantEightySix';
 import RestaurantTransfers from '@/pages/RestaurantTransfers';
 import RestaurantStaffMeals from '@/pages/RestaurantStaffMeals';
@@ -287,6 +292,46 @@ const AuthenticatedApp = () => {
             element={
               <PlanRedirect feature="restaurant">
                 <RestaurantTempLogs />
+              </PlanRedirect>
+            }
+          />
+          <Route
+            path="/restaurant/safety-logs"
+            element={
+              <PlanRedirect feature="restaurant">
+                <RestaurantSafetyLogs />
+              </PlanRedirect>
+            }
+          />
+          <Route
+            path="/restaurant/inspection"
+            element={
+              <PlanRedirect feature="restaurant">
+                <RestaurantInspectionPacket />
+              </PlanRedirect>
+            }
+          />
+          <Route
+            path="/restaurant/certificates"
+            element={
+              <PlanRedirect feature="restaurant">
+                <RestaurantCertificates />
+              </PlanRedirect>
+            }
+          />
+          <Route
+            path="/restaurant/mock-inspection"
+            element={
+              <PlanRedirect feature="restaurant">
+                <RestaurantMockInspection />
+              </PlanRedirect>
+            }
+          />
+          <Route
+            path="/restaurant/sds"
+            element={
+              <PlanRedirect feature="restaurant">
+                <RestaurantSds />
               </PlanRedirect>
             }
           />

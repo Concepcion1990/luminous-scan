@@ -188,6 +188,7 @@ const ENTITY_NAMES = [
   'Supplier',
   'SupplierInvoice',
   'TempLog',
+  'SafetyLog',
   'VendorPriceAlert',
   'WasteEntry',
 ];

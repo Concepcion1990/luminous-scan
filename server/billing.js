@@ -390,6 +390,12 @@ export async function runWipeSweep(pool, { now = new Date(), logger = console } 
         await client.query('DELETE FROM checklist_completions WHERE business_id = $1', [businessId]);
         await client.query('DELETE FROM checklist_instances WHERE business_id = $1', [businessId]);
         await client.query('DELETE FROM checklist_templates WHERE business_id = $1', [businessId]);
+        // The food-safety file (migration 059) carries no FK
+        // cascade — its logs, certificates and SDS sheets die
+        // with the business.
+        await client.query('DELETE FROM safety_logs WHERE business_id = $1', [businessId]);
+        await client.query('DELETE FROM food_certs WHERE business_id = $1', [businessId]);
+        await client.query('DELETE FROM sds_sheets WHERE business_id = $1', [businessId]);
         await client.query('DELETE FROM import_events WHERE business_id = $1', [businessId]);
         // Profile photos (migration 034) carry no FK cascade —
         // a person's face dies with the business, never after it.
