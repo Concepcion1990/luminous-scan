@@ -56,6 +56,7 @@ import { createEquipmentRouter } from './equipmentRoutes.js';
 import { createFoodSafetyRouter } from './foodSafetyRoutes.js';
 import { createGuestMenuRouter } from './guestMenuRoutes.js';
 import { createTipPoolingRouter } from './tipPoolingRoutes.js';
+import { createLaborWarningsRouter } from './laborWarningsRoutes.js';
 import { createProfilePhotoRouter } from './profilePhotoRoutes.js';
 import { createXstoreMessageRouter } from './xstoreMessageRoutes.js';
 import { createCompRouter } from './compRoutes.js';
@@ -352,6 +353,12 @@ export function createApp() {
   // preview, and the year tip record with form-ready
   // totals — Business-only, owner-only money, per-business.
   app.use('/api', createTipPoolingRouter({ getPool }));
+  // Labor target + overtime/break warnings
+  // (server/laborWarningsRoutes.js): the warnings engine is
+  // general workforce tools on both plans (Q4); the labor-%
+  // target face is stripped server-side for plans without
+  // the restaurant feature — Business-only.
+  app.use('/api', createLaborWarningsRouter({ getPool }));
   // Profile photos + the owner's display name
   // (server/profilePhotoRoutes.js): owner-approved team photos
   // and the name that replaces "Owner".

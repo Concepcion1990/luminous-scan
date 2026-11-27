@@ -151,6 +151,8 @@ export const API_ERROR_MESSAGE_KEYS = {
   "Give the upkeep task a name.": "apiErrors.equipmentUpkeepName",
   "Say what broke.": "apiErrors.equipmentBreakdownWhat",
   "Only the owner can set up tip pooling and tip records.": "apiErrors.tipOwner",
+  "Only the owner can set the labor watch numbers.": "apiErrors.laborOwner",
+  "Check the labor watch numbers and try again.": "apiErrors.laborSettings",
   "Choose a period (start and end dates).": "apiErrors.tipPeriod",
   "Enter the tip pool amount.": "apiErrors.tipPoolAmount",
   "Enter the tips reported for each person.": "apiErrors.tipReport",

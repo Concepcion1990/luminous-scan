@@ -46,6 +46,7 @@ import RestaurantSds from '@/pages/RestaurantSds';
 import RestaurantKitchenDisplay from '@/pages/RestaurantKitchenDisplay';
 import RestaurantGuestMenu from '@/pages/RestaurantGuestMenu';
 import RestaurantTipPooling from '@/pages/RestaurantTipPooling';
+import RestaurantLaborTarget from '@/pages/RestaurantLaborTarget';
 import GuestMenuPublic from '@/pages/GuestMenuPublic';
 import RestaurantEightySix from '@/pages/RestaurantEightySix';
 import RestaurantTransfers from '@/pages/RestaurantTransfers';
@@ -362,6 +363,14 @@ const AuthenticatedApp = () => {
             element={
               <PlanRedirect feature="restaurant">
                 <RestaurantTipPooling />
+              </PlanRedirect>
+            }
+          />
+          <Route
+            path="/restaurant/labor-target"
+            element={
+              <PlanRedirect feature="restaurant">
+                <RestaurantLaborTarget />
               </PlanRedirect>
             }
           />
