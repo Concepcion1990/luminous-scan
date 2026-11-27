@@ -145,6 +145,10 @@ const FR_FR_COGNATE_KEYS = new Set([
   // Checklists build (Nov 26, 2026): 'Photo' and 'Scan' are
   // the genuine French words for the proof kinds — true
   // cognates, not untranslated.
+  // Kitchen-menu build (plan release 371, Nov 26, 2026):
+  // "Menu" is the genuine French word for the guest menu's
+  // document title — a true cognate, not untranslated.
+  'guestMenu.docTitle',
   'checklists.proofPhoto', 'checklists.proofScan',
   // Training builds (Nov 20, 2026): 'Question' is the genuine
   // French word for the owner's-quiz question label.
@@ -176,6 +180,10 @@ const FR_CA_COGNATE_KEYS = new Set([
   'print.colScore',
   // Checklists build (Nov 26, 2026): 'Photo' and 'Scan' — same
   // French cognates as fr-FR — verified.
+  // Kitchen-menu build (plan release 371, Nov 26, 2026):
+  // "Menu" is the genuine French word for the guest menu's
+  // document title — a true cognate, not untranslated.
+  'guestMenu.docTitle',
   'checklists.proofPhoto', 'checklists.proofScan',
   // Restaurant operations batch (Nov 23, 2026): Same French cognates as fr-FR — verified.
   'ops.invoices.poPrefix', 'ops.invoices.noteLabel', 'ops.invoices.colDate', 'ops.invoices.colTotal',
@@ -238,6 +246,10 @@ const PT_BR_COGNATE_KEYS = new Set([
   // Restaurant corner batch (Nov 23, 2026): "Status" and the
   // domain term "Par" are the genuine Portuguese words — verified.
   'recipes.statusLabel', 'guide.colPar',
+  // Kitchen-menu build (plan release 371, Nov 26, 2026):
+  // "Menu" is the genuine Portuguese word for the guest
+  // menu's document title — verified.
+  'guestMenu.docTitle',
 ]);
 const PT_PT_COGNATE_KEYS = new Set([
   // Restaurant operations batch (Nov 23, 2026): "Status", "Total" and "Item" are the genuine Portuguese words, "g" is the gram symbol, and the scale names are spelled the same in Portuguese — verified.
@@ -251,6 +263,9 @@ const PT_PT_COGNATE_KEYS = new Set([
   // Restaurant corner batch (Nov 23, 2026): "Par" is the kept
   // domain term — verified.
   'guide.colPar',
+  // Kitchen-menu build (plan release 371, Nov 26, 2026):
+  // "Menu" is the genuine Portuguese word — verified.
+  'guestMenu.docTitle',
 ]);
 const DE_COGNATE_KEYS = new Set([
   // Food-safety build (plan release 370, Nov 26, 2026): "Person"
@@ -290,6 +305,10 @@ const DE_COGNATE_KEYS = new Set([
   'importLib.updateField.format',
 ]);
 const IT_COGNATE_KEYS = new Set([
+  // Kitchen-menu build (plan release 371, Nov 26, 2026):
+  // "Menu" is the genuine Italian word for the guest menu's
+  // document title — verified.
+  'guestMenu.docTitle',
   // Restaurant operations batch (Nov 23, 2026): "Per" is the genuine Italian preposition ("Per 1 {unit}"), "PO {number}" is the purchase-order code format, "g" is the gram symbol, and the scale names are spelled the same in Italian — verified.
   'ops.invoices.poPrefix', 'units.unitPlaceholder', 'units.perLabel', 'ops.tempLogs.scaleF', 'ops.tempLogs.scaleC',
   'auth.emailLabel', 'auth.passwordLabel', 'bomLib.kindBundleShort',
@@ -374,6 +393,10 @@ const PA_ARAB_COGNATE_KEYS = new Set([
   'productForm.unitKg',
 ]);
 const ID_COGNATE_KEYS = new Set([
+  // Kitchen-menu build (plan release 371, Nov 26, 2026):
+  // "Menu" is the genuine word for the guest menu's document
+  // title in this language — verified.
+  'guestMenu.docTitle',
   // Food-safety build (plan release 370, Nov 26, 2026):
   // "Sanitizer" is the genuine Indonesian word for the check kind
   // — verified.
@@ -402,6 +425,10 @@ const ID_COGNATE_KEYS = new Set([
   'importLib.updateField.format',
 ]);
 const MS_COGNATE_KEYS = new Set([
+  // Kitchen-menu build (plan release 371, Nov 26, 2026):
+  // "Menu" is the genuine word for the guest menu's document
+  // title in this language — verified.
+  'guestMenu.docTitle',
   // Food-safety build (plan release 370, Nov 26, 2026):
   // "Sanitizer" is the genuine Malay word for the check kind
   // — verified.
@@ -449,6 +476,10 @@ const VI_COGNATE_KEYS = new Set([
   'settings.identity.logoLabel', 'staff.memberDialog.emailLabel', 'suppliers.email',
 ]);
 const TL_COGNATE_KEYS = new Set([
+  // Kitchen-menu build (plan release 371, Nov 26, 2026):
+  // "Menu" is the genuine word for the guest menu's document
+  // title in this language — verified.
+  'guestMenu.docTitle',
   // Food-safety build (plan release 370, Nov 26, 2026):
   // "Sanitizer" is the genuine Tagalog word for the check kind
   // — verified.
@@ -550,6 +581,10 @@ const TL_COGNATE_KEYS = new Set([
   'productForm.formatPaperback', 'productForm.formatHardcover',
 ]);
 const HA_COGNATE_KEYS = new Set([
+  // Kitchen-menu build (plan release 371, Nov 26, 2026):
+  // "Menu" is the genuine word for the guest menu's document
+  // title in this language — verified.
+  'guestMenu.docTitle',
   // Restaurant operations batch (Nov 23, 2026): "PO {number}" is the purchase-order code format, "g" is the gram symbol, and the scale names are kept in Hausa — verified.
   'ops.invoices.poPrefix', 'units.unitPlaceholder', 'ops.tempLogs.scaleF', 'ops.tempLogs.scaleC',
   'bomLib.kindBundle', 'bomLib.kindBundleShort', 'businessLib.brandColor.plum',
@@ -589,6 +624,10 @@ const YO_COGNATE_KEYS = new Set([
   'guide.colPar',
 ]);
 const JV_COGNATE_KEYS = new Set([
+  // Kitchen-menu build (plan release 371, Nov 26, 2026):
+  // "Menu" is the genuine word for the guest menu's document
+  // title in this language — verified.
+  'guestMenu.docTitle',
   // Food-safety build (plan release 370, Nov 26, 2026):
   // "Sanitizer" is the genuine Javanese word for the check kind
   // — verified.
@@ -628,6 +667,16 @@ const JV_COGNATE_KEYS = new Set([
   'ops.credits.colInvoice', 'ops.credits.invoiceLabel',
 ]);
 const PCM_COGNATE_KEYS = new Set([
+  // Kitchen-menu build (plan release 371, Nov 26, 2026): the
+  // short labels below are kept in English in Pidgin, in the
+  // established register — its prose and lesson steps for
+  // this build are translated.
+  'nav.kitchenDisplay', 'nav.guestMenu', 'kitchen.title',
+  'kitchen.batchesLabel', 'kitchen.amountsFor',
+  'kitchen.ingredientsTitle', 'kitchen.stepsTitle',
+  'kitchen.emptyTitle', 'kitchen.backButton', 'guestMenu.title',
+  'guestMenu.linkTitle', 'guestMenu.notPublished',
+  'guestMenu.previewTitle', 'guestMenu.docTitle',
   // Food-safety build (plan release 370, Nov 26, 2026): Pidgin
   // keeps these short door labels, titles, column heads and
   // button texts in English — the same register as the batches

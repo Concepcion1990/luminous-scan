@@ -11,6 +11,7 @@ import {
   FileText,
   FlaskConical,
   MapPin,
+  Monitor,
   NotebookPen,
   PackageOpen,
   Scale,
@@ -76,6 +77,7 @@ export const SHELVES = [
       door('/restaurant/recipes', 'nav.recipes', 'restaurant.doorRecipes', ChefHat),
       door('/restaurant/prep', 'nav.prep', 'restaurant.doorPrep', NotebookPen),
       door('/restaurant/menu', 'nav.menu', 'restaurant.doorMenu', TrendingUp),
+      door('/restaurant/kitchen-display', 'nav.kitchenDisplay', 'restaurant.doorKitchenDisplay', Monitor),
     ],
   },
   {
@@ -133,6 +135,7 @@ export const SHELVES = [
     icon: UtensilsCrossed,
     doors: [
       door('/restaurant/86', 'nav.eightySix', 'restaurant.doorEightySix', Ban),
+      door('/restaurant/guest-menu', 'nav.guestMenu', 'restaurant.doorGuestMenu', BookOpen),
       door('/restaurant/waste', 'nav.waste', 'restaurant.doorWaste', Trash2),
     ],
   },
