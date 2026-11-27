@@ -5,6 +5,7 @@ import TodayCards from '@/components/restaurant/TodayCards';
 import { useBusiness } from '@/hooks/useBusiness';
 import { scoped } from '@/lib/scoped';
 import { fetchChecklistToday } from '@/lib/checklists';
+import { fetchReservationsToday } from '@/lib/reservations';
 import { shelvesFor, summarizeToday } from '@/lib/restaurantShelves';
 import { t } from '@/lib/i18n';
 
@@ -31,7 +32,7 @@ export default function Restaurant() {
 
   useEffect(() => {
     (async () => {
-      const [eightySixPage, tempLogPage, batchPage, runPage, logPage, checklistToday] = await Promise.all([
+      const [eightySixPage, tempLogPage, batchPage, runPage, logPage, checklistToday, reservationsToday] = await Promise.all([
         base44.entities.EightySixItem.filter(scoped({}, activeId), { sort: '-created_date', limit: 300 }),
         base44.entities.TempLog.filter(scoped({}, activeId), { sort: '-created_date', limit: 300 }),
         base44.entities.StockBatch.filter(scoped({}, activeId), { limit: 500 }),
@@ -44,6 +45,10 @@ export default function Restaurant() {
         // too; their day progress rides the Today summary the
         // same way — a failed read simply shows no card.
         fetchChecklistToday(activeId).catch(() => null),
+        // Today's reservations (plan release 376) ride the
+        // summary the same way — the book's own feed for the
+        // reader's local day; a failed read shows no card.
+        fetchReservationsToday(activeId, new Date().toLocaleDateString('en-CA')).catch(() => null),
       ]);
       setRows({
         eightySixItems: eightySixPage.items ?? [],
@@ -52,6 +57,7 @@ export default function Restaurant() {
         batchRuns: runPage.items ?? [],
         logEntries: logPage.items ?? [],
         checklistToday,
+        reservationsToday: reservationsToday?.reservations ?? [],
       });
       setLoading(false);
     })();

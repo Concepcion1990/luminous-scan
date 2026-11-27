@@ -4,6 +4,7 @@ import {
   Ban,
   BookOpen,
   Boxes,
+  CalendarCheck,
   CalendarClock,
   CalendarHeart,
   ChefHat,
@@ -143,6 +144,10 @@ export const SHELVES = [
       // simple version — a Business-only corner feature
       // whose home is its own page on this shelf.
       door('/restaurant/catering', 'nav.cateringEvents', 'restaurant.doorCateringEvents', CalendarHeart),
+      // Plan release 376: the reservations book + tonight's
+      // waitlist — a Business-only corner feature whose home
+      // is its own page on this shelf, beside catering.
+      door('/restaurant/reservations', 'nav.reservations', 'restaurant.doorReservations', CalendarCheck),
       door('/restaurant/guest-menu', 'nav.guestMenu', 'restaurant.doorGuestMenu', BookOpen),
       door('/restaurant/waste', 'nav.waste', 'restaurant.doorWaste', Trash2),
     ],
@@ -244,7 +249,7 @@ const sameLocalDay = (a, b) =>
  * page shows no card for it — no placeholder ever claims a
  * feature or a fact that is not there.
  */
-export function summarizeToday({ eightySixItems = [], tempLogs = [], batches = [], batchRuns = [], logEntries = [], checklistToday = null, now = new Date() } = {}) {
+export function summarizeToday({ eightySixItems = [], tempLogs = [], batches = [], batchRuns = [], logEntries = [], checklistToday = null, reservationsToday = [], now = new Date() } = {}) {
   const outNow = (eightySixItems || []).filter((item) => item.active !== false);
 
   const units = new Map();
@@ -293,7 +298,21 @@ export function summarizeToday({ eightySixItems = [], tempLogs = [], batches = [
     ? { done: checklistToday.summary.done || 0, total: checklistToday.summary.total || 0, lists: checklistToday.summary.lists || 0 }
     : null;
 
-  return { outNow, temps, expiring, runsToday, logBook, checklists };
+  // Today's reservations (plan release 376): the book's
+  // own rows for today, read from the reservations feed —
+  // the parties still coming (booked) or already seated,
+  // with the guest count they bring. Cancelled and
+  // no-showed parties are not "today's list" and stay out.
+  const todaysParties = (reservationsToday || []).filter(
+    (r) => r.status === 'booked' || r.status === 'seated',
+  );
+  const reservations = {
+    count: todaysParties.length,
+    guests: todaysParties.reduce((sum, r) => sum + (Number(r.party_size) || 0), 0),
+    parties: todaysParties,
+  };
+
+  return { outNow, temps, expiring, runsToday, logBook, checklists, reservations };
 }
 
 /** True when at least one Today card has something to say. */
@@ -304,6 +323,7 @@ export function todayHasContent(summary) {
     summary.expiring.length ||
     summary.runsToday.length ||
     (summary.logBook || []).length ||
-    Boolean(summary.checklists?.total),
+    Boolean(summary.checklists?.total) ||
+    Boolean(summary.reservations?.count),
   );
 }

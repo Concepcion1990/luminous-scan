@@ -512,13 +512,37 @@ export function isEquipmentGrant(key) {
   return EQUIPMENT_GRANT_KEYS.includes(key);
 }
 
+/**
+ * Owner-granted host door (plan release 376, Nov 26,
+ * 2026). Same pattern as the grants above: the key lives
+ * in the member's own permissions array, deliberately NOT
+ * part of PERMISSION_GROUPS / ALL_PERMISSIONS / the preset
+ * roles, edited in the member dialog as its own tick, so
+ * the permission picker can never wipe it and no role
+ * carries it by default. Holding it lets a member TAKE
+ * reservations and run tonight's waitlist — the host work.
+ * Reading the book is open to the whole team; the owner
+ * and managers always keep the book without the tick.
+ * Business only: the Restaurant Corner does not exist on
+ * Essentials, so the tick block renders only there.
+ */
+export const RESERVATIONS_GRANTS = [
+  { key: 'reservations.host', get label() { return t('staffLib.perm.reservationsHost'); } },
+];
+
+export const RESERVATIONS_GRANT_KEYS = RESERVATIONS_GRANTS.map((grant) => grant.key);
+
+export function isReservationsGrant(key) {
+  return RESERVATIONS_GRANT_KEYS.includes(key);
+}
+
 export function isChecklistsGrant(key) {
   return CHECKLISTS_GRANT_KEYS.includes(key);
 }
 
 /** Any per-member grant key (Settings sections + returns + products + locations + roster + low stock + policy trainings + clock + documents + restaurant + checklists + equipment). */
 export function isMemberGrant(key) {
-  return isSettingsGrant(key) || isReturnsGrant(key) || isProductsGrant(key) || isLocationsGrant(key) || isRosterGrant(key) || isLowStockGrant(key) || isTrainingGrant(key) || isClockGrant(key) || isDocumentsGrant(key) || isRestaurantGrant(key) || isChecklistsGrant(key) || isEquipmentGrant(key);
+  return isSettingsGrant(key) || isReturnsGrant(key) || isProductsGrant(key) || isLocationsGrant(key) || isRosterGrant(key) || isLowStockGrant(key) || isTrainingGrant(key) || isClockGrant(key) || isDocumentsGrant(key) || isRestaurantGrant(key) || isChecklistsGrant(key) || isEquipmentGrant(key) || isReservationsGrant(key);
 }
 
 /** A member row's level, mirroring the server's personLevel. */

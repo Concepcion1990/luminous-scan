@@ -117,6 +117,9 @@ const SPANISH_COGNATE_KEYS = new Set([
   'ageCheck.category.alcohol',
 ]);
 const FR_FR_COGNATE_KEYS = new Set([
+  // Reservations build (plan release 376, Nov 26, 2026): "Date" and "Notes" are the genuine French words for the
+  // booking form's date and notes labels — true cognates, not untranslated.
+  'reservations.dateLabel', 'reservations.notesLabel',
   // Catering build (plan release 375, Nov 26, 2026): verified
   // cognates / established short-label register for this build.
   'catering.dateLabel', 'catering.notesLabel', 'catering.menuTitle',
@@ -183,6 +186,9 @@ const FR_FR_COGNATE_KEYS = new Set([
   'importLib.updateField.format',
 ]);
 const FR_CA_COGNATE_KEYS = new Set([
+  // Reservations build (plan release 376, Nov 26, 2026): "Date" and "Notes" — same French cognates
+  // as fr-FR — verified.
+  'reservations.dateLabel', 'reservations.notesLabel',
   // Catering build (plan release 375, Nov 26, 2026): verified
   // cognates / established short-label register for this build.
   'catering.dateLabel', 'catering.notesLabel', 'catering.menuTitle',
@@ -290,6 +296,10 @@ const PT_PT_COGNATE_KEYS = new Set([
   'guestMenu.docTitle',
 ]);
 const DE_COGNATE_KEYS = new Set([
+  // Reservations build (plan release 376, Nov 26, 2026): "Status" is the genuine German word for the
+  // booking status label — verified (the same word as
+  // foodSafety.certs.colStatus below).
+  'reservations.statusLabel',
   // Catering build (plan release 375, Nov 26, 2026): verified
   // cognates / established short-label register for this build.
   'catering.statusLabel',
@@ -431,6 +441,9 @@ const PA_ARAB_COGNATE_KEYS = new Set([
   'productForm.unitKg',
 ]);
 const ID_COGNATE_KEYS = new Set([
+  // Reservations build (plan release 376, Nov 26, 2026): "Status" is the genuine Indonesian word for the
+  // booking status label — verified.
+  'reservations.statusLabel',
   // Catering build (plan release 375, Nov 26, 2026): verified
   // cognates / established short-label register for this build.
   'catering.statusLabel', 'catering.menuTitle',
@@ -466,6 +479,9 @@ const ID_COGNATE_KEYS = new Set([
   'importLib.updateField.format',
 ]);
 const MS_COGNATE_KEYS = new Set([
+  // Reservations build (plan release 376, Nov 26, 2026): "Status" is the genuine Malay word for the booking
+  // status label — verified.
+  'reservations.statusLabel',
   // Catering build (plan release 375, Nov 26, 2026): verified
   // cognates / established short-label register for this build.
   'catering.statusLabel', 'catering.menuTitle',
@@ -520,6 +536,9 @@ const VI_COGNATE_KEYS = new Set([
   'settings.identity.logoLabel', 'staff.memberDialog.emailLabel', 'suppliers.email',
 ]);
 const TL_COGNATE_KEYS = new Set([
+  // Reservations build (plan release 376, Nov 26, 2026): Tagalog keeps "Email" for the guest email label,
+  // the everyday loanword — verified.
+  'reservations.emailLabel',
   // Catering build (plan release 375, Nov 26, 2026): verified
   // cognates / established short-label register for this build.
   'catering.menuTitle',
@@ -674,6 +693,9 @@ const YO_COGNATE_KEYS = new Set([
   'guide.colPar',
 ]);
 const JV_COGNATE_KEYS = new Set([
+  // Reservations build (plan release 376, Nov 26, 2026): "Status" is the word Javanese uses for the booking
+  // status label — verified.
+  'reservations.statusLabel',
   // Catering build (plan release 375, Nov 26, 2026): verified
   // cognates / established short-label register for this build.
   'catering.statusLabel', 'catering.menuTitle',
@@ -720,6 +742,10 @@ const JV_COGNATE_KEYS = new Set([
   'ops.credits.colInvoice', 'ops.credits.invoiceLabel',
 ]);
 const PCM_COGNATE_KEYS = new Set([
+  // Reservations build (plan release 376, Nov 26, 2026): the short labels below are kept in English in Pidgin, in the
+  // established register — its prose and lesson steps for
+  // this build are translated.
+  'nav.reservations', 'staffLib.area.reservationsAccess', 'reservations.title', 'reservations.dayView', 'reservations.weekView', 'reservations.dateLabel', 'reservations.timeLabel', 'reservations.nameLabel', 'reservations.partySizeLabel', 'reservations.phoneLabel', 'reservations.emailLabel', 'reservations.tableLabel', 'reservations.sourcePhone', 'reservations.sourceWalkin', 'reservations.statusLabel', 'reservations.statusBooked', 'reservations.statusSeated', 'reservations.statusNoShow', 'reservations.statusCancelled', 'reservations.notesLabel', 'reservations.newBooking', 'reservations.editBooking', 'reservations.saveBooking', 'reservations.deleteBooking', 'reservations.remindersOff', 'reservations.depositHowLabel', 'reservations.todayLine', 'reservations.guestsLine', 'reservations.docTitle', 'waitlist.statusWaiting', 'waitlist.statusDropped', 'waitlist.readyButton', 'apiErrors.smsInvalid', 'apiErrors.smsFailed',
   // Catering build (plan release 375, Nov 26, 2026): verified
   // cognates / established short-label register for this build.
   'nav.cateringEvents', 'catering.title', 'catering.bookTitle', 'catering.newEvent', 'catering.editEvent', 'catering.nameLabel', 'catering.dateLabel', 'catering.timeLabel', 'catering.partySizeLabel', 'catering.contactLabel', 'catering.phoneLabel', 'catering.notesLabel', 'catering.statusLabel', 'catering.statusBooked', 'catering.statusDone', 'catering.statusCancelled', 'catering.menuTitle', 'catering.servingsLabel', 'catering.removeDish', 'catering.totalLabel', 'catering.saveEvent', 'catering.deleteEvent', 'catering.prepTitle', 'catering.prepDishLine', 'catering.printOwnerSheet', 'catering.printStaffSheet', 'catering.docTitle', 'catering.guestsLine',
