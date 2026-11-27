@@ -39,7 +39,7 @@
  *  certificates are invisible; the shaped SDS row carries no
  *  bytes.
  *
- *  Keyset: 6100 + 111 = 6399 ×52, uniform. Training catalog:
+ *  Keyset: 6100 + 111 = 6455 ×52, uniform. Training catalog:
  *  121 + 1 = 122 (staff track, restaurant module, RESTAURANT
  *  heading, 5 steps, restaurant feature). Registry: 535 + 4 =
  *  539. Migration 059 (safety_logs / food_certs / sds_sheets).
@@ -137,13 +137,13 @@ const NEW_KEYS = [
 
 /* ------------------------------------------------ i18n gate */
 
-test('keyset stands at 6399 in all 52 locales, uniform', () => {
+test('keyset stands at 6455 in all 52 locales, uniform', () => {
   const codes = Object.keys(LOCALES);
   assert.equal(codes.length, 52);
   const enKeys = Object.keys(LOCALES.en).sort();
-  assert.equal(enKeys.length, 6399);
+  assert.equal(enKeys.length, 6455);
   for (const code of codes) {
-    assert.equal(Object.keys(LOCALES[code]).length, 6399, `${code} keyset`);
+    assert.equal(Object.keys(LOCALES[code]).length, 6455, `${code} keyset`);
     assert.deepEqual(Object.keys(LOCALES[code]).sort(), enKeys, `${code} keyset differs from en`);
   }
 });
@@ -205,8 +205,8 @@ test('plan presentation: the food-safety line rides Business ONLY — Plans + We
 /* ------------------------------------------------- the lesson */
 
 test('catalogs stand at 125, client and server in direct agreement', () => {
-  assert.equal(CLIENT_LESSONS.length, 125);
-  assert.equal(SERVER_LESSONS.length, 125);
+  assert.equal(CLIENT_LESSONS.length, 127);
+  assert.equal(SERVER_LESSONS.length, 127);
   assert.deepEqual(
     CLIENT_LESSONS.map((l) => [l.id, l.track, l.module, l.heading, l.steps, l.feature || null]),
     SERVER_LESSONS.map((l) => [l.id, l.track, l.module, l.heading, l.steps, l.feature || null]),

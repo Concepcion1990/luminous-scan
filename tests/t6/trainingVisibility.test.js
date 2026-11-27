@@ -38,6 +38,7 @@ const BUSINESS_ONLY = {
   'mgr-restaurant-money': 'restaurant',
   'owner-restaurant-ops': 'restaurant', 'staff-restaurant-daily': 'restaurant',
   'owner-tip-pooling': 'restaurant',
+  'owner-labor-target': 'restaurant',
   'mgr-restaurant-invoices': 'restaurant', 'mgr-restaurant-reports': 'restaurant',
   'staff-food-safety': 'restaurant',
   'staff-kitchen-menu': 'restaurant',
@@ -148,11 +149,17 @@ test('plan-visible counts: Business whole, Essentials without the Business subje
   // feature restaurant — tip pooling is Business-only):
   // owner 49 on Business and 27 on Essentials; manager/staff
   // unchanged.
-  assert.equal(count('owner', true), 49);
+  // The labor-warnings build (plan release 374, Nov 26,
+  // 2026) adds TWO owner lessons: owner-labor-warnings (no
+  // feature tag — the warnings engine is general, both
+  // plans) and owner-labor-target (feature restaurant —
+  // the labor target is Business-only): owner 51 on
+  // Business and 28 on Essentials; manager/staff unchanged.
+  assert.equal(count('owner', true), 51);
   assert.equal(count('manager', true), 26);
   assert.equal(count('staff', true), 49);
-  // Essentials: 19 owner subjects hidden, owner-import in their place.
-  assert.equal(count('owner', false), 27); // +1 confidentiality lesson (Nov 19, 2026); +1 eBay storefront lesson (release 362, both plans); +1 own-training lesson (the training build, both plans); +1 barcode-pool lesson (the barcode-pool build, both plans)
+  // Essentials: 20 owner subjects hidden, owner-import in their place.
+  assert.equal(count('owner', false), 28); // +1 confidentiality lesson (Nov 19, 2026); +1 eBay storefront lesson (release 362, both plans); +1 own-training lesson (the training build, both plans); +1 barcode-pool lesson (the barcode-pool build, both plans)
   assert.equal(count('manager', false), 14);
   assert.equal(count('staff', false), 39);
   // Payroll / workforce / direct-deposit lessons stay on Essentials.

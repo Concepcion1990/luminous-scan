@@ -29,7 +29,7 @@
  *  allocates the whole shortfall, then re-runs clean when
  *  the reported tips reach the 8%.
  *
- *  Keyset: 6332 + 67 = 6399 ×52, uniform. Training
+ *  Keyset: 6332 + 67 = 6455 ×52, uniform. Training
  *  catalog: 124 + 1 = 125 (owner track, restaurant module,
  *  RESTAURANT heading). Migration 062 (five tables).
  *  Registry: 545 + 4 = 549 wordings.
@@ -86,13 +86,13 @@ const NEW_KEYS = [
 
 /* ------------------------------------------------ i18n gate */
 
-test('keyset stands at 6399 in all 52 locales, uniform', () => {
+test('keyset stands at 6455 in all 52 locales, uniform', () => {
   const codes = Object.keys(LOCALES);
   assert.equal(codes.length, 52);
   const enKeys = Object.keys(LOCALES.en).sort();
-  assert.equal(enKeys.length, 6399);
+  assert.equal(enKeys.length, 6455);
   for (const code of codes) {
-    assert.equal(Object.keys(LOCALES[code]).length, 6399, `${code} keyset`);
+    assert.equal(Object.keys(LOCALES[code]).length, 6455, `${code} keyset`);
     assert.deepEqual(Object.keys(LOCALES[code]).sort(), enKeys, `${code} keyset differs from en`);
   }
 });
@@ -167,7 +167,7 @@ test('plan presentation: Business-only — Plans + Welcome Business lists and th
 /* ------------------------------------------------ training */
 
 test('training catalogs agree at 125 and the lesson is an owner restaurant lesson under the RESTAURANT heading', () => {
-  assert.equal(CLIENT_LESSONS.length, 125);
+  assert.equal(CLIENT_LESSONS.length, 127);
   assert.deepEqual(CLIENT_LESSONS, SERVER_LESSONS);
   const lesson = CLIENT_LESSONS.find((l) => l.id === 'owner-tip-pooling');
   assert.ok(lesson, 'lesson exists');

@@ -101,6 +101,10 @@ test('every signed-in app screen appears in the nav (menu audit)', () => {
     // is a Team & Place shelf door in the corner, like every
     // feature above — never a menu door.
     '/restaurant/tip-pooling',
+    // Plan release 374 (Nov 26, 2026): the labor-target page
+    // is a Team & Place shelf door in the corner, like every
+    // feature above — never a menu door.
+    '/restaurant/labor-target',
   ]);
   const appScreens = routePaths.filter((p) => !publicRoutes.has(p));
   assert.ok(appScreens.length >= 30, `audit covers the full screen list (saw ${appScreens.length})`);

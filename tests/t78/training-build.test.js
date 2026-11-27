@@ -32,7 +32,7 @@
  *  Keyset: 5958 + 48 = 6006 ×52 at this build, uniform (the box's 41 plus
  *  the seven own-training API wordings in the apiErrors
  *  registry); the barcode-pool build (Nov 25, 2026) takes the
- *  keyset to 5931 and the catalog to 120 (6399 and 125 since the tip-pooling build (plan release 373, Nov 26, 2026) added 1 (owner-tip-pooling, Business-only, restaurant heading); 124 since the equipment build (plan release 372, Nov 26, 2026) added 1 (staff-equipment, both plans, general heading); 123 since the kitchen-menu build (plan release 371, Nov 26, 2026) added 1 (staff-kitchen-menu, Business-only, restaurant heading); 122 since the food-safety build, Nov 26, 2026), and the pins below
+ *  keyset to 5931 and the catalog to 120 (6455 and 125 since the tip-pooling build (plan release 373, Nov 26, 2026) added 1 (owner-tip-pooling, Business-only, restaurant heading); 124 since the equipment build (plan release 372, Nov 26, 2026) added 1 (staff-equipment, both plans, general heading); 123 since the kitchen-menu build (plan release 371, Nov 26, 2026) added 1 (staff-kitchen-menu, Business-only, restaurant heading); 122 since the food-safety build, Nov 26, 2026), and the pins below
  *  carry the current totals. Training catalog: 118 + 1 = 119
  *  at this build (owner track, training module, GENERAL
  *  heading, 5 steps). Migration 056 (the five
@@ -88,13 +88,13 @@ const NEW_KEYS = [
 
 /* ------------------------------------------------ i18n gate */
 
-test('keyset stands at 6399 in all 52 locales, uniform', () => {
+test('keyset stands at 6455 in all 52 locales, uniform', () => {
   const codes = Object.keys(LOCALES);
   assert.equal(codes.length, 52);
   const enKeys = Object.keys(LOCALES.en).sort();
-  assert.equal(enKeys.length, 6399);
+  assert.equal(enKeys.length, 6455);
   for (const code of codes) {
-    assert.equal(Object.keys(LOCALES[code]).length, 6399, `${code} keyset`);
+    assert.equal(Object.keys(LOCALES[code]).length, 6455, `${code} keyset`);
     assert.deepEqual(Object.keys(LOCALES[code]).sort(), enKeys, `${code} keyset differs from en`);
   }
 });
@@ -135,9 +135,9 @@ test('plan presentation: the own-training line rides Essentials on Plans + Welco
 
 /* -------------------------------------- (A) sectioned headings */
 
-test('catalogs stood at 120 at this build (125 since the tip-pooling build (plan release 373, Nov 26, 2026) added 1 (owner-tip-pooling, Business-only, restaurant heading); 124 since the equipment build (plan release 372, Nov 26, 2026) added 1 (staff-equipment, both plans, general heading); 123 since the kitchen-menu build (plan release 371, Nov 26, 2026) added 1 (staff-kitchen-menu, Business-only, restaurant heading); 122 since the food-safety build), client and server JSON-identical, every lesson carrying its heading', () => {
-  assert.equal(CLIENT_LESSONS.length, 125);
-  assert.equal(SERVER_LESSONS.length, 125);
+test('catalogs stood at 120 at this build (127 since the labor-warnings build (plan release 374, Nov 26, 2026) added 2 (owner-labor-warnings, both plans, general heading; owner-labor-target, Business-only, restaurant heading); 125 since the tip-pooling build (plan release 373, Nov 26, 2026) added 1 (owner-tip-pooling, Business-only, restaurant heading); 124 since the equipment build (plan release 372, Nov 26, 2026) added 1 (staff-equipment, both plans, general heading); 123 since the kitchen-menu build (plan release 371, Nov 26, 2026) added 1 (staff-kitchen-menu, Business-only, restaurant heading); 122 since the food-safety build), client and server JSON-identical, every lesson carrying its heading', () => {
+  assert.equal(CLIENT_LESSONS.length, 127);
+  assert.equal(SERVER_LESSONS.length, 127);
   assert.equal(JSON.stringify(CLIENT_LESSONS), JSON.stringify(SERVER_LESSONS), 'the two catalogs agree exactly');
   for (const lesson of CLIENT_LESSONS) {
     assert.ok(TRAINING_HEADINGS.includes(lesson.heading), `${lesson.id} heading is one of the two`);
@@ -147,8 +147,8 @@ test('catalogs stood at 120 at this build (125 since the tip-pooling build (plan
       `${lesson.id}: the restaurant module rides the Restaurant heading, everything else General`,
     );
   }
-  assert.equal(CLIENT_LESSONS.filter((l) => l.heading === 'restaurant').length, 12, 'the twelve restaurant lessons (359 + 361 + 370 + 371 + 373) sit under the Restaurant heading');
-  assert.equal(CLIENT_LESSONS.filter((l) => l.heading === 'general').length, 113, '112 through the kitchen-menu build; +1 staff-equipment (the equipment build, plan release 372, Nov 26, 2026) under the General heading');
+  assert.equal(CLIENT_LESSONS.filter((l) => l.heading === 'restaurant').length, 13, 'the thirteen restaurant lessons (359 + 361 + 370 + 371 + 373 + 374) sit under the Restaurant heading');
+  assert.equal(CLIENT_LESSONS.filter((l) => l.heading === 'general').length, 114, '113 through the tip-pooling build; +1 owner-labor-warnings (the labor-warnings build, plan release 374, Nov 26, 2026) under the General heading');
 });
 
 test('the new lesson: owner-own-training, owner track, training module, GENERAL heading, 5 steps', () => {
