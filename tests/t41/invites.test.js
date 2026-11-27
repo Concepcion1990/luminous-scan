@@ -339,8 +339,8 @@ test('Part B: legacy invites (no token) still connect by email, exactly as befor
 test('Part C: the invite lessons carry the single-use step, and the quiz machinery picks it up', async () => {
   const { TRAINING_LESSONS: clientLessons } = await import('../../src/lib/trainingCatalog.js');
   const { TRAINING_LESSONS: serverLessons } = await import('../../server/trainingCatalog.js');
-  assert.equal(clientLessons.length, 122); // 122 since the food-safety build (plan release 370, Nov 26, 2026) added 1 (staff-food-safety, Business-only, restaurant heading); 121 since the checklists build (Nov 26, 2026) added 1 (staff-checklists, both plans, general heading); 120 since the barcode-pool build (Nov 25, 2026) added 1 (owner-barcode-pool, both plans, general heading); 119 since the training build (Nov 25, 2026) added 1 (owner-own-training, both plans, general heading); 118 since the age check build (Nov 25, 2026) added 1 (scanner-age-check, both plans); 117 since the prints build (Nov 25, 2026) added 1 (staff-record-prints, both plans); 116 since the paper-trail batch (release 378, Nov 25, 2026) added 1 (staff-log-book); 115 since the eBay storefront batch (release 362, Nov 23, 2026) added 1 (owner-ebay-connect); 114 since restaurant operations (Nov 23, 2026) added 4; 110 through cross-store messages
-  assert.equal(serverLessons.length, 122);
+  assert.equal(clientLessons.length, 123); // 123 since the kitchen-menu build (plan release 371, Nov 26, 2026) added 1 (staff-kitchen-menu, Business-only, restaurant heading); 122 since the food-safety build (plan release 370, Nov 26, 2026) added 1 (staff-food-safety, Business-only, restaurant heading); 121 since the checklists build (Nov 26, 2026) added 1 (staff-checklists, both plans, general heading); 120 since the barcode-pool build (Nov 25, 2026) added 1 (owner-barcode-pool, both plans, general heading); 119 since the training build (Nov 25, 2026) added 1 (owner-own-training, both plans, general heading); 118 since the age check build (Nov 25, 2026) added 1 (scanner-age-check, both plans); 117 since the prints build (Nov 25, 2026) added 1 (staff-record-prints, both plans); 116 since the paper-trail batch (release 378, Nov 25, 2026) added 1 (staff-log-book); 115 since the eBay storefront batch (release 362, Nov 23, 2026) added 1 (owner-ebay-connect); 114 since restaurant operations (Nov 23, 2026) added 4; 110 through cross-store messages
+  assert.equal(serverLessons.length, 123);
   for (const lessons of [clientLessons, serverLessons]) {
     assert.equal(lessons.find((l) => l.id === 'owner-staff-roles').steps, 5);
     assert.equal(lessons.find((l) => l.id === 'mgr-staff-permissions').steps, 5);
@@ -375,8 +375,8 @@ test('Part C: the invite lessons carry the single-use step, and the quiz machine
 test('pins: keyset, registry, and the kind message', async () => {
   const { en } = await import('../../src/lib/locales/en.js');
   const { esMX } = await import('../../src/lib/locales/es-MX.js');
-  assert.equal(Object.keys(en).length, 6211);
-  assert.equal(Object.keys(esMX).length, 6211);
+  assert.equal(Object.keys(en).length, 6256);
+  assert.equal(Object.keys(esMX).length, 6256);
   assert.equal(en['apiErrors.inviteLinkUsed'], KIND);
   assert.notEqual(esMX['apiErrors.inviteLinkUsed'], KIND);
   assert.equal(en['register.inviteConnected'], "You're connected — your account is now linked to the business that invited you.");

@@ -518,8 +518,11 @@ test('shelf model: counts and the log book cross-link from their shelves; primar
   assert.ok(log && log.crossLink === true, 'Team & Place cross-links to the manager log book');
   assert.equal(log.titleKey, 'nav.logBook');
   // Release 370 (the food-safety file, Nov 26, 2026) added five
-  // primary doors to the Food Safety shelf: nineteen in all.
-  assert.equal(featureDoors().length, 19, 'the corner has nineteen primary feature doors since the food-safety file');
+  // primary doors: nineteen since the food-safety file;
+  // plan release 371 (Nov 26, 2026) added two more — the
+  // kitchen display (Kitchen) and the guest menu (Floor) —
+  // twenty-one in all.
+  assert.equal(featureDoors().length, 21, 'the corner has twenty-one primary feature doors since the kitchen-menu build');
   assert.deepEqual(SHELVES.map((s) => s.id), ['kitchen', 'stock', 'money', 'safety', 'floor', 'team']);
 });
 
@@ -570,10 +573,10 @@ const NEW_KEYS = [
   'training.lessons.mgr-restaurant-invoices.step5',
 ];
 
-test('i18n gate: 63 new keys in all 52 locales, keyset 6211, plan lines carry the new features', () => {
+test('i18n gate: 63 new keys in all 52 locales, keyset 6256, plan lines carry the new features', () => {
   assert.equal(NEW_KEYS.length, 63);
   for (const [code, locale] of Object.entries(LOCALES)) {
-    assert.equal(Object.keys(locale).length, 6211, `${code} keyset`);
+    assert.equal(Object.keys(locale).length, 6256, `${code} keyset`);
     for (const key of NEW_KEYS) {
       assert.ok(typeof locale[key] === 'string' && locale[key].length > 0, `${code} carries ${key}`);
     }
@@ -604,7 +607,7 @@ test('i18n gate: 63 new keys in all 52 locales, keyset 6211, plan lines carry th
 });
 
 test('training: 117 lessons, catalogs agree, the log book lesson and the invoices step 5 ride along', () => {
-  assert.equal(clientCatalog.length, 122); // 122 since the food-safety build (plan release 370, Nov 26, 2026) added staff-food-safety; 121 since the checklists build added staff-checklists; 117 at this build
+  assert.equal(clientCatalog.length, 123); // 123 since the kitchen-menu build (plan release 371, Nov 26, 2026) added 1 (staff-kitchen-menu, Business-only, restaurant heading); 122 since the food-safety build (plan release 370, Nov 26, 2026) added staff-food-safety; 121 since the checklists build added staff-checklists; 117 at this build
   assert.deepEqual(
     serverCatalog.map((l) => l.id),
     clientCatalog.map((l) => l.id),

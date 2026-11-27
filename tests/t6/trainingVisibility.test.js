@@ -39,6 +39,7 @@ const BUSINESS_ONLY = {
   'owner-restaurant-ops': 'restaurant', 'staff-restaurant-daily': 'restaurant',
   'mgr-restaurant-invoices': 'restaurant', 'mgr-restaurant-reports': 'restaurant',
   'staff-food-safety': 'restaurant',
+  'staff-kitchen-menu': 'restaurant',
   'owner-xstore-messages': 'xstoreMessages', 'mgr-xstore-messages': 'xstoreMessages',
   'staff-xstore-messages': 'xstoreMessages',
 };
@@ -132,9 +133,14 @@ test('plan-visible counts: Business whole, Essentials without the Business subje
   // restaurant — the food-safety file is Business-only): staff
   // 47 on Business and 38 on Essentials; owner/manager
   // unchanged.
+  // The kitchen-menu build (plan release 371, Nov 26, 2026)
+  // adds ONE Business-only staff lesson (staff-kitchen-menu,
+  // feature restaurant — the kitchen display and guest menu
+  // are Business-only): staff 48 on Business and 38 on
+  // Essentials; owner/manager unchanged.
   assert.equal(count('owner', true), 48);
   assert.equal(count('manager', true), 26);
-  assert.equal(count('staff', true), 47);
+  assert.equal(count('staff', true), 48);
   // Essentials: 19 owner subjects hidden, owner-import in their place.
   assert.equal(count('owner', false), 27); // +1 confidentiality lesson (Nov 19, 2026); +1 eBay storefront lesson (release 362, both plans); +1 own-training lesson (the training build, both plans); +1 barcode-pool lesson (the barcode-pool build, both plans)
   assert.equal(count('manager', false), 14);

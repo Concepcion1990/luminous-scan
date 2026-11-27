@@ -92,6 +92,8 @@ const FEATURE_HOME = {
   '/restaurant/expiry': 'safety',
   '/restaurant/allergens': 'safety',
   '/restaurant/86': 'floor',
+  '/restaurant/guest-menu': 'floor',
+  '/restaurant/kitchen-display': 'kitchen',
   '/restaurant/waste': 'floor',
   '/restaurant/staff-meals': 'team',
 };

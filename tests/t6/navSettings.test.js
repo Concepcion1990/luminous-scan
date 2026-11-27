@@ -55,6 +55,10 @@ test('every signed-in app screen appears in the nav (menu audit)', () => {
     // The one-time first-login welcome (Nov 19, 2026) is a flow
     // screen like /grace: shown before the shell, never a menu door.
     '/staff-welcome',
+    // The public guest menu (plan release 371, Nov 26, 2026):
+    // a guest page behind a share slug — no account, never a
+    // menu door.
+    '/menu/:slug',
     '/privacy-policy', '/terms-of-service', '/subscription-policy',
     '/policies/terms', '/policies/subscription',
     '/payroll/direct-deposit-form',
@@ -88,6 +92,11 @@ test('every signed-in app screen appears in the nav (menu audit)', () => {
     '/restaurant/safety-logs', '/restaurant/inspection',
     '/restaurant/certificates', '/restaurant/mock-inspection',
     '/restaurant/sds',
+    // Plan release 371 (Nov 26, 2026): the kitchen display
+    // and the guest-menu page are Kitchen & Recipes / Floor
+    // & Guests shelf doors in the corner, like every feature
+    // above — never menu doors.
+    '/restaurant/kitchen-display', '/restaurant/guest-menu',
   ]);
   const appScreens = routePaths.filter((p) => !publicRoutes.has(p));
   assert.ok(appScreens.length >= 30, `audit covers the full screen list (saw ${appScreens.length})`);
