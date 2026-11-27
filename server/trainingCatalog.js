@@ -223,6 +223,7 @@ export const TRAINING_LESSONS = [
   { id: 'mgr-restaurant-reports', track: 'manager', module: 'restaurant', heading: 'restaurant', steps: 4, feature: 'restaurant' },
   { id: 'staff-food-safety', track: 'staff', module: 'restaurant', heading: 'restaurant', steps: 5, feature: 'restaurant' },
   { id: 'staff-kitchen-menu', track: 'staff', module: 'restaurant', heading: 'restaurant', steps: 5, feature: 'restaurant' },
+  { id: 'owner-tip-pooling', track: 'owner', module: 'restaurant', heading: 'restaurant', steps: 5, feature: 'restaurant' },
   // Cross-store messages (Nov 23, 2026): three lessons in the
   // messaging module under the Business-only xstoreMessages
   // feature, so Essentials never sees one of them. The door

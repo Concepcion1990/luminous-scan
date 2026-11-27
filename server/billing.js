@@ -406,6 +406,14 @@ export async function runWipeSweep(pool, { now = new Date(), logger = console } 
         await client.query('DELETE FROM equipment_events WHERE business_id = $1', [businessId]);
         await client.query('DELETE FROM equipment_upkeep WHERE business_id = $1', [businessId]);
         await client.query('DELETE FROM equipment_machines WHERE business_id = $1', [businessId]);
+        // Tip pooling + tip reporting records (migration
+        // 062) carry no FK cascade — the business's pool
+        // runs, shares and tip records die with it.
+        await client.query('DELETE FROM tip_reports WHERE business_id = $1', [businessId]);
+        await client.query('DELETE FROM tip_report_periods WHERE business_id = $1', [businessId]);
+        await client.query('DELETE FROM tip_pool_shares WHERE business_id = $1', [businessId]);
+        await client.query('DELETE FROM tip_pool_runs WHERE business_id = $1', [businessId]);
+        await client.query('DELETE FROM tip_pool_settings WHERE business_id = $1', [businessId]);
         await client.query('DELETE FROM import_events WHERE business_id = $1', [businessId]);
         // Profile photos (migration 034) carry no FK cascade —
         // a person's face dies with the business, never after it.

@@ -45,6 +45,7 @@ import RestaurantMockInspection from '@/pages/RestaurantMockInspection';
 import RestaurantSds from '@/pages/RestaurantSds';
 import RestaurantKitchenDisplay from '@/pages/RestaurantKitchenDisplay';
 import RestaurantGuestMenu from '@/pages/RestaurantGuestMenu';
+import RestaurantTipPooling from '@/pages/RestaurantTipPooling';
 import GuestMenuPublic from '@/pages/GuestMenuPublic';
 import RestaurantEightySix from '@/pages/RestaurantEightySix';
 import RestaurantTransfers from '@/pages/RestaurantTransfers';
@@ -353,6 +354,14 @@ const AuthenticatedApp = () => {
             element={
               <PlanRedirect feature="restaurant">
                 <RestaurantGuestMenu />
+              </PlanRedirect>
+            }
+          />
+          <Route
+            path="/restaurant/tip-pooling"
+            element={
+              <PlanRedirect feature="restaurant">
+                <RestaurantTipPooling />
               </PlanRedirect>
             }
           />

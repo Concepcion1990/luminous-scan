@@ -55,6 +55,7 @@ import { createChecklistsRouter } from './checklistsRoutes.js';
 import { createEquipmentRouter } from './equipmentRoutes.js';
 import { createFoodSafetyRouter } from './foodSafetyRoutes.js';
 import { createGuestMenuRouter } from './guestMenuRoutes.js';
+import { createTipPoolingRouter } from './tipPoolingRoutes.js';
 import { createProfilePhotoRouter } from './profilePhotoRoutes.js';
 import { createXstoreMessageRouter } from './xstoreMessageRoutes.js';
 import { createCompRouter } from './compRoutes.js';
@@ -345,6 +346,12 @@ export function createApp() {
   // checklist engine — Business-only, per-business.
   app.use('/api', createFoodSafetyRouter({ getPool }));
   app.use('/api', createGuestMenuRouter({ getPool }));
+  // Tip pooling + tip reporting records
+  // (server/tipPoolingRoutes.js): the owner's pool shape
+  // split from schedule + clock hours, feeding the payroll
+  // preview, and the year tip record with form-ready
+  // totals — Business-only, owner-only money, per-business.
+  app.use('/api', createTipPoolingRouter({ getPool }));
   // Profile photos + the owner's display name
   // (server/profilePhotoRoutes.js): owner-approved team photos
   // and the name that replaces "Owner".

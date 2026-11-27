@@ -84,6 +84,7 @@ import { assertNotInGrace, withTx } from './billing.js';
 import { parseVoiceDataUrl, convertVoiceToMp3, VOICE_MAX_DURATION_MS } from './voiceNote.js';
 import { approvedPhotoKeys, ownerDisplayName, ownerPublicName } from './profilePhotos.js';
 import { trainingCompleteForPerson } from './trainingCore.js';
+import { poolTipsForPeriod } from './tipPoolingCore.js';
 
 function err(status, code, message) {
   return Object.assign(new Error(message), { status, code });
@@ -1644,6 +1645,11 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
     }
     const config = await payrollConfig(pool(), req.params.bid);
     const team = await people(pool(), req.params.bid);
+    // Tip pooling feeds this preview (plan release 373, Nov
+    // 26, 2026): each person's saved pool shares for runs
+    // fully inside this period ride the row as pool_tips,
+    // and the page seeds its tips adjustment from them.
+    const poolTips = await poolTipsForPeriod(pool(), req.params.bid, start, end).catch(() => new Map());
     const rows = [];
     for (const person of team) {
       const profile = await profileFor(pool(), req.params.bid, person.id);
@@ -1680,6 +1686,7 @@ export function createWorkforceRouter({ getPool: getPoolFn }) {
         break_minutes: hours.breakMinutes,
         gross: math?.gross ?? null,
         net: math?.net ?? null,
+        pool_tips: poolTips.get(person.id) || 0,
         missed_clock_outs: missedClockOuts,
       });
     }
