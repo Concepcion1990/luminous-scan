@@ -488,13 +488,37 @@ export const CHECKLISTS_GRANTS = [
 
 export const CHECKLISTS_GRANT_KEYS = CHECKLISTS_GRANTS.map((grant) => grant.key);
 
+/**
+ * Owner-granted equipment breakdown reporting (plan release
+ * 372, Nov 26, 2026). Same pattern as the grants above: the
+ * key lives in the member's own permissions array,
+ * deliberately NOT part of PERMISSION_GROUPS /
+ * ALL_PERMISSIONS / the preset roles, edited in the member
+ * dialog as its own tick, so the permission picker can never
+ * wipe it and no role carries it by default. Holding it lets
+ * a member REPORT a breakdown against a machine, with a
+ * photo. Repairs, costs and the machine pages themselves
+ * stay owner/manager territory — the tick opens only the
+ * reporting door. Either plan: equipment records are a
+ * general feature (the owner's Q3 ruling).
+ */
+export const EQUIPMENT_GRANTS = [
+  { key: 'equipment.report', get label() { return t('staffLib.perm.equipmentReport'); } },
+];
+
+export const EQUIPMENT_GRANT_KEYS = EQUIPMENT_GRANTS.map((grant) => grant.key);
+
+export function isEquipmentGrant(key) {
+  return EQUIPMENT_GRANT_KEYS.includes(key);
+}
+
 export function isChecklistsGrant(key) {
   return CHECKLISTS_GRANT_KEYS.includes(key);
 }
 
-/** Any per-member grant key (Settings sections + returns + products + locations + roster + low stock + policy trainings + clock + documents + restaurant + checklists). */
+/** Any per-member grant key (Settings sections + returns + products + locations + roster + low stock + policy trainings + clock + documents + restaurant + checklists + equipment). */
 export function isMemberGrant(key) {
-  return isSettingsGrant(key) || isReturnsGrant(key) || isProductsGrant(key) || isLocationsGrant(key) || isRosterGrant(key) || isLowStockGrant(key) || isTrainingGrant(key) || isClockGrant(key) || isDocumentsGrant(key) || isRestaurantGrant(key) || isChecklistsGrant(key);
+  return isSettingsGrant(key) || isReturnsGrant(key) || isProductsGrant(key) || isLocationsGrant(key) || isRosterGrant(key) || isLowStockGrant(key) || isTrainingGrant(key) || isClockGrant(key) || isDocumentsGrant(key) || isRestaurantGrant(key) || isChecklistsGrant(key) || isEquipmentGrant(key);
 }
 
 /** A member row's level, mirroring the server's personLevel. */

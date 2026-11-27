@@ -65,6 +65,7 @@ export const PLANS = {
         t('plansLib.includes.ownTraining'),
         t('plansLib.includes.barcodePool'),
         t('plansLib.includes.checklists'),
+        t('plansLib.includes.equipment'),
         t('plansLib.includes.recovery'),
         t('plansLib.includes.support'),
         t('plansLib.includes.offline'),
@@ -332,6 +333,7 @@ export const WELCOME_OPTIONS = [
         t('plansLib.includes.ownTraining'),
         t('plansLib.includes.barcodePool'),
         t('plansLib.includes.checklists'),
+        t('plansLib.includes.equipment'),
         t('plansLib.includes.recovery'),
         t('plansLib.includes.support'),
         t('plansLib.includes.offline'),
@@ -490,6 +492,13 @@ export const COMPARISON_ROWS = [
   // both plans (the owner's Q1 ruling). Mobile stays "Set at
   // launch" like the other team-era rows.
   { get label() { return t('plansLib.includes.checklists'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
+  // Equipment records (plan release 372, Nov 26, 2026): a
+  // page per machine — bought when, warranty end, who
+  // services it — upkeep schedules with due reminders, and
+  // a breakdown and repair history — a general feature on
+  // both plans (the owner's Q3 ruling). Mobile stays "Set at
+  // launch" like the other team-era rows.
+  { get label() { return t('plansLib.includes.equipment'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
   { get label() { return t('plansLib.includes.recovery'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
   { get label() { return t('plansLib.includes.support'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
   { get label() { return t('plansLib.includes.offline'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },

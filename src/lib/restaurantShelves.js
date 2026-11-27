@@ -21,6 +21,7 @@ import {
   TrendingUp,
   Users,
   UtensilsCrossed,
+  Wrench,
   Wheat,
 } from 'lucide-react';
 import { expiringSoon } from './restaurantOps.js';
@@ -155,6 +156,11 @@ export const SHELVES = [
       // too (both plans, the owner's Q1 ruling) — the shelf
       // cross-links to their general home the same way.
       door('/checklists', 'nav.checklists', 'restaurant.doorChecklists', ClipboardCheck, { crossLink: true }),
+      // Plan release 372: equipment records are a general
+      // feature too (both plans, the owner's Q3 ruling) —
+      // the shelf cross-links to their general home the
+      // same way.
+      door('/equipment', 'nav.equipment', 'restaurant.doorEquipment', Wrench, { crossLink: true }),
     ],
   },
 ];

@@ -149,6 +149,11 @@ const FR_FR_COGNATE_KEYS = new Set([
   // "Menu" is the genuine French word for the guest menu's
   // document title — a true cognate, not untranslated.
   'guestMenu.docTitle',
+  // Equipment build (plan release 372, Nov 26, 2026):
+  // "Machines" and "Notes" are the genuine French words for
+  // the machines heading and the notes label — true
+  // cognates, not untranslated.
+  'equipment.machinesTitle', 'equipment.notesLabel',
   'checklists.proofPhoto', 'checklists.proofScan',
   // Training builds (Nov 20, 2026): 'Question' is the genuine
   // French word for the owner's-quiz question label.
@@ -184,6 +189,11 @@ const FR_CA_COGNATE_KEYS = new Set([
   // "Menu" is the genuine French word for the guest menu's
   // document title — a true cognate, not untranslated.
   'guestMenu.docTitle',
+  // Equipment build (plan release 372, Nov 26, 2026):
+  // "Machines" and "Notes" are the genuine French words for
+  // the machines heading and the notes label — true
+  // cognates, not untranslated.
+  'equipment.machinesTitle', 'equipment.notesLabel',
   'checklists.proofPhoto', 'checklists.proofScan',
   // Restaurant operations batch (Nov 23, 2026): Same French cognates as fr-FR — verified.
   'ops.invoices.poPrefix', 'ops.invoices.noteLabel', 'ops.invoices.colDate', 'ops.invoices.colTotal',
@@ -667,6 +677,17 @@ const JV_COGNATE_KEYS = new Set([
   'ops.credits.colInvoice', 'ops.credits.invoiceLabel',
 ]);
 const PCM_COGNATE_KEYS = new Set([
+  // Equipment build (plan release 372, Nov 26, 2026): the
+  // short labels below are kept in English in Pidgin, in the
+  // established register — its prose and lesson steps for
+  // this build are translated.
+  'nav.equipment', 'staffLib.area.equipmentAccess', 'equipment.title',
+  'equipment.machinesTitle', 'equipment.newMachine', 'equipment.editMachine',
+  'equipment.nameLabel', 'equipment.kindLabel', 'equipment.makeModelLabel',
+  'equipment.serialLabel', 'equipment.servicePhoneLabel', 'equipment.notesLabel',
+  'equipment.saveMachine', 'equipment.cycleLabel', 'equipment.historyTitle',
+  'equipment.costLabel', 'equipment.saveRepair', 'equipment.docTitle',
+  'equipment.deleteMachine',
   // Kitchen-menu build (plan release 371, Nov 26, 2026): the
   // short labels below are kept in English in Pidgin, in the
   // established register — its prose and lesson steps for
