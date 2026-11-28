@@ -94,6 +94,7 @@ export const SHELVES = [
     doors: [
       door('/restaurant/order-guide', 'nav.orderGuide', 'restaurant.doorOrderGuide', ClipboardList),
       door('/restaurant/standing-orders', 'nav.standingOrders', 'restaurant.doorStandingOrders', Repeat),
+      door('/restaurant/production-order', 'nav.productionOrder', 'restaurant.doorProductionOrder', ClipboardList),
       door('/restaurant/transfers', 'nav.transfers', 'restaurant.doorTransfers', ArrowRightLeft),
       // Release 378: stock counts are a general feature (both
       // plans) whose home is the shared Counts page — the

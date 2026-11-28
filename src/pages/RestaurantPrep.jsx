@@ -11,7 +11,8 @@ import { resolveDocStyle } from '@/lib/docStyle';
 import { formatDateTime } from '@/lib/dates';
 import { listPars, listRecipes } from '@/lib/recipes';
 import { fetchUpcomingEventPrep } from '@/lib/catering';
-import { prepRows } from '@/lib/restaurantOps';
+import { fetchReservationsToday } from '@/lib/reservations';
+import { prepRows, prepSuggestions } from '@/lib/restaurantOps';
 import { t } from '@/lib/i18n';
 import RestaurantCrumbs from '@/components/restaurant/RestaurantCrumbs';
 
@@ -35,6 +36,7 @@ export default function RestaurantPrep() {
   const [pars, setPars] = useState([]);
   const [levels, setLevels] = useState([]);
   const [eventPrep, setEventPrep] = useState([]);
+  const [bookedGuests, setBookedGuests] = useState(0);
   const [loading, setLoading] = useState(true);
   const [reload, setReload] = useState(0);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -72,6 +74,24 @@ export default function RestaurantPrep() {
       } catch {
         setEventPrep([]);
       }
+      // Prep sheets that fill themselves (plan release
+      // 378's rider): today's reservations ride along as
+      // the day's booked-guest context. Reservations carry
+      // no menu, so they add no dish quantities — the dish
+      // arithmetic comes from pars, booked events, and
+      // what's already prepped. A failed read shows no
+      // booked line, never an invented one.
+      try {
+        const today = new Date();
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        const book = await fetchReservationsToday(activeId || '', todayStr);
+        const parties = (book.reservations ?? []).filter(
+          (entry) => entry.status === 'booked' || entry.status === 'seated',
+        );
+        setBookedGuests(parties.reduce((sum, entry) => sum + (Number(entry.party_size) || 0), 0));
+      } catch {
+        setBookedGuests(0);
+      }
       setLoading(false);
     })();
   }, [activeId, reload]);
@@ -79,6 +99,15 @@ export default function RestaurantPrep() {
   const rows = useMemo(
     () => prepRows(pars, recipes, products, levels),
     [pars, recipes, products, levels]
+  );
+
+  const suggestions = useMemo(
+    () => prepSuggestions(pars, recipes, products, levels, eventPrep),
+    [pars, recipes, products, levels, eventPrep]
+  );
+  const suggestedRows = useMemo(
+    () => suggestions.filter((row) => row.suggestedMakes > 0),
+    [suggestions]
   );
 
   const printSheet = () => {
@@ -103,7 +132,7 @@ export default function RestaurantPrep() {
           <p className="mt-1 max-w-xl text-sm text-muted-foreground">{t('prep.subtitle')}</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" disabled={!rows.length && !eventPrep.length} onClick={printSheet}>
+          <Button variant="outline" disabled={!rows.length && !eventPrep.length && !suggestedRows.length} onClick={printSheet}>
             <Printer className="mr-1.5 h-4 w-4" /> {t('prep.printButton')}
           </Button>
           {canBuild ? (
@@ -195,6 +224,39 @@ export default function RestaurantPrep() {
             </section>
 
             <section className="space-y-2">
+              <h2 className="text-base font-semibold">{t('prepSuggest.title')}</h2>
+              <p className="max-w-xl text-sm text-muted-foreground">{t('prepSuggest.subtitle')}</p>
+              <p className="text-sm text-muted-foreground">
+                {t('prepSuggest.bookedLine', { guests: bookedGuests, events: eventPrep.length })}
+              </p>
+              {suggestedRows.length === 0 ? (
+                <p className="text-sm text-muted-foreground">{t('prepSuggest.none')}</p>
+              ) : (
+                <div className="space-y-3">
+                  {suggestedRows.map((row) => (
+                    <div key={row.recipe.id} className="rounded-xl border border-border p-4">
+                      <div className="flex flex-wrap items-baseline justify-between gap-2">
+                        <p className="font-medium">{row.recipe.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {t('prepSuggest.suggested', { makes: row.suggestedMakes })}
+                          {` · ${t('prepSuggest.whyLine', { par: row.parMakes, events: row.eventMakes, prepped: row.onHand })}`}
+                        </p>
+                      </div>
+                      <ul className="mt-2 grid gap-x-6 gap-y-0.5 text-sm text-muted-foreground sm:grid-cols-2">
+                        {row.ingredients.map((ingredient) => (
+                          <li key={ingredient.product_id} className="flex justify-between gap-3">
+                            <span>{ingredient.name}</span>
+                            <span>{ingredient.quantity} {ingredient.unit}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+
+            <section className="space-y-2">
               <h2 className="text-base font-semibold">{t('prep.sheetTitle')}</h2>
               {rows.length === 0 ? (
                 <div className="rounded-xl border border-dashed border-border px-4 py-10 text-center">
@@ -233,9 +295,9 @@ export default function RestaurantPrep() {
         )}
       </div>
 
-      {printing && (rows.length || eventPrep.length) ? (
+      {printing && (rows.length || eventPrep.length || suggestedRows.length) ? (
         <div className="print-area hidden print:block">
-          <PrepSheetDoc rows={rows} eventPrep={eventPrep} business={record} docStyle={docStyle} />
+          <PrepSheetDoc rows={rows} eventPrep={eventPrep} suggestions={suggestedRows} bookedGuests={bookedGuests} business={record} docStyle={docStyle} />
         </div>
       ) : null}
 

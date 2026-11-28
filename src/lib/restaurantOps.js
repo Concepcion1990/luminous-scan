@@ -338,6 +338,77 @@ export function prepRows(pars, recipes, products, levels) {
   return rows.sort((a, b) => a.recipe.name.localeCompare(b.recipe.name));
 }
 
+/**
+ * Prep sheets that fill themselves (plan release 378's
+ * Part 7 rider, Nov 26, 2026) — the reverse arithmetic of
+ * order-by-production. For each dish the kitchen preps,
+ * the suggested makes come from three honest sources:
+ *
+ *   - the PAR: servings still short of par, in whole makes;
+ *   - what's BOOKED: the servings upcoming catering events
+ *     pull for the dish (their makes ride the 375 event
+ *     prep rows) — reservations carry no menu, so they add
+ *     no dish quantities; their guest count rides along on
+ *     the section as the day's booked context instead;
+ *   - what's ALREADY PREPPED: the dish's own stock on hand,
+ *     which comes off before anything is suggested.
+ *
+ * The want is the bigger of the par and (on hand + the
+ * booked servings) — a big party lifts the day's target
+ * past par, and a quiet day never preps below par. The
+ * suggestion is arithmetic shown to the cook: this helper
+ * writes nothing, and the sheet changes only when someone
+ * runs a batch.
+ */
+export function prepSuggestions(pars, recipes, products, levels, eventPrepList = []) {
+  const productsById = new Map((products || []).map((p) => [p.id, p]));
+  const recipesById = new Map((recipes || []).map((r) => [r.id, r]));
+  const parByProduct = new Map();
+  for (const par of pars || []) {
+    if (par?.product_id) parByProduct.set(par.product_id, par);
+  }
+  const bookedByRecipe = new Map();
+  for (const entry of eventPrepList || []) {
+    for (const dish of entry?.prep?.dishes || []) {
+      if (!dish?.recipe_id) continue;
+      const running = bookedByRecipe.get(dish.recipe_id) || { servings: 0, makes: 0 };
+      running.servings += Number(dish.servings) || 0;
+      running.makes += Number(dish.makes) || 0;
+      bookedByRecipe.set(dish.recipe_id, running);
+    }
+  }
+  const rows = [];
+  for (const recipe of recipes || []) {
+    if (!recipe?.product_id) continue;
+    const par = parByProduct.get(recipe.product_id);
+    const booked = bookedByRecipe.get(recipe.id) || { servings: 0, makes: 0 };
+    if (!par && !(booked.servings > 0)) continue;
+    const buildTo = par ? Number(par.par_qty) || 0 : 0;
+    const onHand = onHandFor(levels, recipe.product_id, par?.location_id || null);
+    const yieldQty = yieldQtyOf(recipe);
+    const parMakes = buildTo > onHand ? Math.ceil((buildTo - onHand) / yieldQty) : 0;
+    const want = Math.max(buildTo, onHand + booked.servings);
+    const suggestedMakes = want > onHand ? Math.ceil((want - onHand) / yieldQty) : 0;
+    const expanded = expandRecipeToProducts(recipesById, recipe, new Set(), productsById);
+    const ingredients = [...expanded.entries()].map(([productId, qty]) => {
+      const product = productsById.get(productId);
+      return {
+        product_id: productId,
+        name: product?.name || '',
+        photo_url: product?.photo_urls?.[0] || '',
+        quantity: qty * suggestedMakes,
+        unit: product?.unit || 'each',
+      };
+    });
+    rows.push({
+      recipe, buildTo, onHand, parMakes,
+      eventMakes: booked.makes, bookedServings: booked.servings,
+      suggestedMakes, ingredients,
+    });
+  }
+  return rows.sort((a, b) => a.recipe.name.localeCompare(b.recipe.name));
+}
+
 /** Waste log reason codes (fixed by the record). Labels
  *  live in the locales under ops.waste.reason.<code>. */
 export const WASTE_REASONS = [

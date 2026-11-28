@@ -546,6 +546,10 @@ const VI_COGNATE_KEYS = new Set([
   'settings.identity.logoLabel', 'staff.memberDialog.emailLabel', 'suppliers.email',
 ]);
 const TL_COGNATE_KEYS = new Set([
+  // Production-order build (plan release 378, Nov 26, 2026): Tagalog keeps "Batch run",
+  // "Catering event" and "Event" — the everyday loanwords
+  // it uses throughout — verified.
+  'productionOrder.sourceBatch', 'productionOrder.sourceEvent', 'productionOrder.eventLabel',
   // Standing-orders build (plan release 377, Nov 26, 2026): Tagalog keeps "Supplier", "Invoice" and
   // "Order" for the price book's labels, the same loanwords
   // it uses throughout — verified.
@@ -756,6 +760,10 @@ const JV_COGNATE_KEYS = new Set([
   'ops.credits.colInvoice', 'ops.credits.invoiceLabel',
 ]);
 const PCM_COGNATE_KEYS = new Set([
+  // Production-order build (plan release 378, Nov 26, 2026): the short labels below are kept in English in Pidgin, in the
+  // established register — its prose and lesson steps for
+  // this build are translated.
+  'nav.productionOrder', 'productionOrder.title', 'productionOrder.sourceLabel', 'productionOrder.sourceBatch', 'productionOrder.sourceEvent', 'productionOrder.recipeLabel', 'productionOrder.makesLabel', 'productionOrder.eventLabel', 'productionOrder.colIngredient', 'productionOrder.colOrder', 'productionOrder.colSupplier', 'productionOrder.docTitle', 'productionOrder.batchSummary', 'productionOrder.eventSummary', 'prepSuggest.suggested', 'prepSuggest.title',
   // Standing-orders build (plan release 377, Nov 26, 2026): the short labels below are kept in English in Pidgin, in the
   // established register — its prose and lesson steps for
   // this build are translated.
