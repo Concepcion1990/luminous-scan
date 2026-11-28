@@ -99,6 +99,7 @@ const FEATURE_HOME = {
   '/restaurant/standing-orders': 'stock',
   '/restaurant/production-order': 'stock',
   '/restaurant/bar-counting': 'stock',
+  '/restaurant/lot-trace': 'stock',
   '/restaurant/locations-rollup': 'locations',
   '/restaurant/labor-target': 'team',
   '/restaurant/kitchen-display': 'kitchen',

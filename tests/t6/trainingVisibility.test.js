@@ -46,6 +46,7 @@ const BUSINESS_ONLY = {
   'owner-bar-counting': 'restaurant',
   'owner-locations-rollup': 'restaurant',
   'owner-recipe-cost-link': 'restaurant',
+  'owner-lot-traceability': 'restaurant',
   'mgr-restaurant-invoices': 'restaurant', 'mgr-restaurant-reports': 'restaurant',
   'staff-food-safety': 'restaurant',
   'staff-kitchen-menu': 'restaurant',
@@ -186,7 +187,12 @@ test('plan-visible counts: Business whole, Essentials without the Business subje
   // 2026) adds ONE owner lesson: owner-shift-swaps (no
   // feature tag — swaps and availability are general, both
   // plans): owner 59 on Business and 29 on Essentials.
-  assert.equal(count('owner', true), 59);
+  // The lot-traceability build (plan Part 7, item 392, Nov
+  // 26, 2026) adds ONE owner lesson: owner-lot-traceability
+  // (feature restaurant — lots and traceability are
+  // Business-only): owner 60 on Business; Essentials
+  // unchanged.
+  assert.equal(count('owner', true), 60);
   assert.equal(count('manager', true), 26);
   assert.equal(count('staff', true), 49);
   // Essentials: 21 owner subjects hidden, owner-import in their place.

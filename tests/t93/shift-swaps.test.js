@@ -6,8 +6,8 @@
 //
 // Pinned here:
 //   - 68 new keys exist in all 52 locales, never fall back
-//     to the raw key, and the keyset is uniform at 6838
-//     (6838 + 68 swaps); placeholders survive translation.
+//     to the raw key, and the keyset is uniform at 6903
+//     (6903 + 68 swaps); placeholders survive translation.
 //   - The plan presentation carries the swaps line in
 //     BOTH plans (Plans Essentials, Welcome Essentials,
 //     and the comparison matrix ✓/✓) — a general feature.
@@ -120,10 +120,10 @@ const NEW_KEYS = [
   'apiErrors.availability.dayShape',
 ];
 
-test('the keyset is uniform at 6838 keys in all 52 locales', () => {
+test('the keyset is uniform at 6903 keys in all 52 locales', () => {
   const codes = Object.keys(LOCALES);
   assert.equal(codes.length, 52);
-  for (const code of codes) assert.equal(Object.keys(LOCALES[code]).length, 6838, code);
+  for (const code of codes) assert.equal(Object.keys(LOCALES[code]).length, 6903, code);
 });
 
 test('all 68 swaps keys exist and never fall back to the key in any locale', () => {
@@ -175,7 +175,7 @@ test('plan presentation: the swaps line is on BOTH plans (general feature)', () 
 });
 
 test('the catalogs agree at 135 lessons and the swaps lesson rides the GENERAL heading', () => {
-  assert.equal(CLIENT_LESSONS.length, 135);
+  assert.equal(CLIENT_LESSONS.length, 136);
   assert.deepEqual(CLIENT_LESSONS, SERVER_LESSONS);
   const lesson = CLIENT_LESSONS.find((l) => l.id === 'owner-shift-swaps');
   assert.ok(lesson, 'swaps lesson exists');
@@ -186,7 +186,7 @@ test('the catalogs agree at 135 lessons and the swaps lesson rides the GENERAL h
   assert.equal(lesson.steps, 5);
   assert.equal(LOCALES.en['training.lessons.owner-shift-swaps.title'], 'Shift swaps and availability');
   assert.equal(CLIENT_LESSONS.filter((l) => l.heading === 'general').length, 115);
-  assert.equal(CLIENT_LESSONS.filter((l) => l.heading === 'restaurant').length, 20);
+  assert.equal(CLIENT_LESSONS.filter((l) => l.heading === 'restaurant').length, 21);
 });
 
 const WEEK = [

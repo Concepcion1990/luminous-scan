@@ -246,9 +246,9 @@ test('blank forms: the five new wordings exist in all 52 languages, genuinely tr
     'print.colProductName',
     'print.colTime',
   ];
-  assert.equal(Object.keys(en).length, 6838);
+  assert.equal(Object.keys(en).length, 6903);
   for (const [code, strings] of Object.entries(LOCALES)) {
-    assert.equal(Object.keys(strings).length, 6838, code);
+    assert.equal(Object.keys(strings).length, 6903, code);
     for (const key of keys) assert.ok(strings[key], `${code} carries ${key}`);
   }
   // The Spanish wordings are Spanish, not English copies.

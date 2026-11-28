@@ -776,8 +776,8 @@ test('nav: the corner hangs under its own subheading, behind the feature', () =>
 });
 
 test('training: five restaurant lessons, Business-scoped, ticks bring theirs', () => {
-  assert.equal(CLIENT_LESSONS.length, 135);
-  assert.equal(SERVER_LESSONS.length, 135);
+  assert.equal(CLIENT_LESSONS.length, 136);
+  assert.equal(SERVER_LESSONS.length, 136);
   const ids = ['owner-restaurant', 'staff-restaurant-view', 'mgr-restaurant-build', 'mgr-restaurant-pars', 'mgr-restaurant-money'];
   for (const id of ids) {
     const lesson = SERVER_LESSONS.find((l) => l.id === id);

@@ -435,11 +435,11 @@ test('pins: road state helper, keyset, training step, client + bracket wiring', 
   // for 5106 — the count itself is pinned in tests/t40.)
   const { en } = await import('../../src/lib/locales/en.js');
   const { esMX } = await import('../../src/lib/locales/es-MX.js');
-  assert.equal(Object.keys(en).length, 6838);
+  assert.equal(Object.keys(en).length, 6903);
   assert.ok(en['settings.pastDue.fixBy']);
   assert.ok(en['training.lessons.owner-billing.step5']);
   assert.ok(!en['settings.pastDue.body'].includes('will not be canceled early'));
-  assert.equal(Object.keys(esMX).length, 6838);
+  assert.equal(Object.keys(esMX).length, 6903);
   // Training: owner-billing now carries 5 steps in BOTH catalogs.
   const { TRAINING_LESSONS } = await import('../../server/trainingCatalog.js');
   const { TRAINING_LESSONS: CLIENT_LESSONS } = await import('../../src/lib/trainingCatalog.js');
