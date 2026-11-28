@@ -117,8 +117,8 @@ test('stylesheet: the band is print-only, fixed across the printable top; the fl
 });
 
 test('keyset: no new strings in 355 (5130 ×52)', () => {
-  assert.equal(Object.keys(LOCALES.en).length, 6636);
+  assert.equal(Object.keys(LOCALES.en).length, 6678);
   for (const [code, strings] of Object.entries(LOCALES)) {
-    assert.equal(Object.keys(strings).length, 6636, code);
+    assert.equal(Object.keys(strings).length, 6678, code);
   }
 });

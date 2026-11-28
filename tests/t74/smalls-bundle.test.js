@@ -81,7 +81,7 @@ test('the keyset stands at 6506 in all 52 locales, the five new keys in each', (
   const codes = Object.keys(LOCALES);
   assert.equal(codes.length, 52);
   const enKeys = Object.keys(LOCALES.en).sort();
-  assert.equal(enKeys.length, 6636);
+  assert.equal(enKeys.length, 6678);
   for (const code of codes) {
     assert.deepEqual(Object.keys(LOCALES[code]).sort(), enKeys, `${code} keyset`);
     for (const key of NEW_KEYS) assert.ok(LOCALES[code][key], `${code} missing ${key}`);

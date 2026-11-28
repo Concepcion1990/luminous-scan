@@ -4,7 +4,7 @@
 //
 // Pinned here:
 //   - 77 new keys exist in all 52 locales, never fall back to the raw key,
-//     and the keyset is uniform at 6636 (6506 + 77); the guest-mail table
+//     and the keyset is uniform at 6678 (6506 + 77); the guest-mail table
 //     carries 10 more keys in all 52 blocks (44 -> 54) with placeholders
 //     surviving translation.
 //   - The registry gains exactly the host-door, booking, waitlist and
@@ -74,10 +74,10 @@ const EMAIL_NEW_KEYS = [
   'guestText.reminder', 'guestText.ready', 'digest.header', 'digest.partyLine', 'digest.more', 'digest.empty',
 ];
 
-test('the keyset is uniform at 6636 keys in all 52 locales', () => {
+test('the keyset is uniform at 6678 keys in all 52 locales', () => {
   const codes = Object.keys(LOCALES);
   assert.equal(codes.length, 52);
-  for (const code of codes) assert.equal(Object.keys(LOCALES[code]).length, 6636, code);
+  for (const code of codes) assert.equal(Object.keys(LOCALES[code]).length, 6678, code);
 });
 
 test('all 77 reservations keys exist and never fall back to the key in any locale', () => {
@@ -154,7 +154,7 @@ test('plan presentation: the reservations line is Business-only in Plans, Welcom
 });
 
 test('the catalogs agree at 130 lessons and the reservations lesson rides the RESTAURANT heading', () => {
-  assert.equal(CLIENT_LESSONS.length, 130);
+  assert.equal(CLIENT_LESSONS.length, 131);
   assert.deepEqual(CLIENT_LESSONS, SERVER_LESSONS);
   const lesson = CLIENT_LESSONS.find((l) => l.id === 'owner-reservations');
   assert.ok(lesson, 'reservations lesson exists');
@@ -165,7 +165,7 @@ test('the catalogs agree at 130 lessons and the reservations lesson rides the RE
   assert.equal(lesson.steps, 5);
   assert.equal(LOCALES.en['training.lessons.owner-reservations.title'], 'Taking reservations and running the waitlist');
   assert.equal(CLIENT_LESSONS.filter((l) => l.heading === 'general').length, 114);
-  assert.equal(CLIENT_LESSONS.filter((l) => l.heading === 'restaurant').length, 16);
+  assert.equal(CLIENT_LESSONS.filter((l) => l.heading === 'restaurant').length, 17);
 });
 
 test('the host tick exists, off by default, and reads as a member grant', () => {

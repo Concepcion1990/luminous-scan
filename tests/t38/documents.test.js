@@ -361,10 +361,10 @@ test('the tick brings its training: catalog, module map, requirements, and live 
   const ownerLesson = TRAINING_LESSONS.find((l) => l.id === 'owner-staff-documents');
   assert.ok(ownerLesson, 'the owner lesson ships in the server catalog');
   assert.equal(ownerLesson.track, 'owner');
-  assert.equal(TRAINING_LESSONS.length, 130, '125 since the tip-pooling build (plan release 373, Nov 26, 2026) added 1 (owner-tip-pooling, Business-only, restaurant heading); 124 since the equipment build (plan release 372, Nov 26, 2026) added 1 (staff-equipment, both plans, general heading); 120 since the barcode-pool build (Nov 25, 2026) added 1 (owner-barcode-pool, both plans, general heading); 119 since the training build (Nov 25, 2026) added 1 (owner-own-training, both plans, general heading); 118 since the age check build (Nov 25, 2026) added 1 (scanner-age-check, both plans); 117 since the prints build (Nov 25, 2026) added 1 (staff-record-prints, both plans); 116 since the paper-trail batch (release 378) added 1 (staff-log-book); 115 since the eBay storefront batch (release 362) added 1; 114 since restaurant operations added 4; the catalog grew by exactly the two lessons');
+  assert.equal(TRAINING_LESSONS.length, 131, '125 since the tip-pooling build (plan release 373, Nov 26, 2026) added 1 (owner-tip-pooling, Business-only, restaurant heading); 124 since the equipment build (plan release 372, Nov 26, 2026) added 1 (staff-equipment, both plans, general heading); 120 since the barcode-pool build (Nov 25, 2026) added 1 (owner-barcode-pool, both plans, general heading); 119 since the training build (Nov 25, 2026) added 1 (owner-own-training, both plans, general heading); 118 since the age check build (Nov 25, 2026) added 1 (scanner-age-check, both plans); 117 since the prints build (Nov 25, 2026) added 1 (staff-record-prints, both plans); 116 since the paper-trail batch (release 378) added 1 (staff-log-book); 115 since the eBay storefront batch (release 362) added 1; 114 since restaurant operations added 4; the catalog grew by exactly the two lessons');
   assert.deepEqual(MODULE_BY_PERMISSION['staff.documents'], ['staff']);
   assert.deepEqual(LESSON_REQUIREMENTS['mgr-staff-documents'], ['staff.documents']);
-  assert.equal(CLIENT_LESSONS.length, 130, 'the client catalog matches');
+  assert.equal(CLIENT_LESSONS.length, 131, 'the client catalog matches');
   assert.ok(CLIENT_LESSONS.some((l) => l.id === 'mgr-staff-documents'));
 
   // The grant family shape: its own grant list, a member grant,
