@@ -106,7 +106,8 @@
     "test:t89": "node --test tests/t89/*.test.js",
     "test:t90": "node --test tests/t90/*.test.js",
     "test:t91": "node --test tests/t91/*.test.js",
-    "test:t92": "node --test tests/t92/*.test.js"
+    "test:t92": "node --test tests/t92/*.test.js",
+    "test:t93": "node --test tests/t93/*.test.js"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^17.0.0",

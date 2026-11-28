@@ -81,6 +81,70 @@ export function ScheduleDoc({ people = [], schedules = [], business, docStyle })
   );
 }
 
+/** Team availability + the open swap board (plan Part 7,
+ *  item 391, Nov 26, 2026): the paper half of the Shift swaps
+ *  tab — who can work when, and which offered shifts are
+ *  still waiting. A Studio document like its siblings
+ *  (preview = print), showing exactly the people and offers
+ *  the tab itself showed this viewer. */
+export function AvailabilityDoc({ people = [], availability = [], swapLines = [], business, docStyle }) {
+  const byPerson = new Map();
+  for (const row of availability) {
+    if (!byPerson.has(row.staff_member_id)) byPerson.set(row.staff_member_id, new Map());
+    byPerson.get(row.staff_member_id).set(Number(row.weekday), row);
+  }
+  const days = [0, 1, 2, 3, 4, 5, 6];
+  const cell = (row) => {
+    if (!row) return t('workforce.availability.notSet');
+    if (row.available === false) return t('workforce.availability.unavailable');
+    if (row.start_time && row.end_time) return `${formatHhmm(row.start_time)} – ${formatHhmm(row.end_time)}`;
+    return '✓';
+  };
+  return (
+    <Sheet business={business} docStyle={docStyle} title={t('workforce.swaps.title')}>
+      <h3 className="mb-1 font-heading text-[11pt] font-semibold">{t('workforce.availability.teamTitle')}</h3>
+      <table className="w-full border-collapse">
+        <thead>
+          <tr>
+            <th className={`${TH} w-[22%]`}>{t('workforce.schedule.person')}</th>
+            {days.map((day) => (
+              <th key={day} className={TH}>{weekdayLabel(day)}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {people.map((person) => {
+            const week = byPerson.get(person.id);
+            return (
+              <tr key={person.id} className="border-b border-black/15">
+                <td className={TD}>
+                  <span className="font-semibold">{person.full_name}</span>
+                  {person.role_name ? <span className="block text-[8pt]">{person.role_name}</span> : null}
+                </td>
+                {days.map((day) => (
+                  <td key={day} className={TD}>{cell(week?.get(day))}</td>
+                ))}
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+      {swapLines.length > 0 && (
+        <>
+          <h3 className="mb-1 mt-4 font-heading text-[11pt] font-semibold">{t('workforce.swaps.requestsTitle')}</h3>
+          <ul>
+            {swapLines.map((line) => (
+              <li key={line.id} className={`${TD} border-b border-black/15`}>
+                {line.text} — {line.status}
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+    </Sheet>
+  );
+}
+
 /** The timesheet: the loaded clock entries, breaks and flags included. */
 export function TimesheetDoc({ entries = [], peopleById = {}, showNames = true, business, docStyle }) {
   const duration = (entry) => {

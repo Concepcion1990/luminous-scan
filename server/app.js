@@ -63,6 +63,7 @@ import { createStandingOrdersRouter } from './standingOrdersRoutes.js';
 import { createProductionOrderRouter } from './productionOrderRoutes.js';
 import { createBarCountingRouter } from './barCountingRoutes.js';
 import { createLocationsRollupRouter } from './locationsRollupRoutes.js';
+import { createShiftSwapsRouter } from './shiftSwapsRoutes.js';
 import { createProfilePhotoRouter } from './profilePhotoRoutes.js';
 import { createXstoreMessageRouter } from './xstoreMessageRoutes.js';
 import { createCompRouter } from './compRoutes.js';
@@ -365,6 +366,12 @@ export function createApp() {
   // target face is stripped server-side for plans without
   // the restaurant feature — Business-only.
   app.use('/api', createLaborWarningsRouter({ getPool }));
+  // Shift swaps, covers and the open-shift pool, plus staff
+  // availability (server/shiftSwapsRoutes.js): GENERAL
+  // workforce tools on both plans (plan Part 7, item 391) —
+  // staff initiate, a manager approves, and only the
+  // approval rewrites the schedule.
+  app.use('/api', createShiftSwapsRouter({ getPool }));
   // Catering & private events, the simple version
   // (server/cateringRoutes.js): the event book, the Studio
   // event sheet and the pull into prep — Business-only,

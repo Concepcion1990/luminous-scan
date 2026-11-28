@@ -168,6 +168,7 @@ export const TRAINING_LESSONS = [
   { id: 'owner-own-training', track: 'owner', module: 'training', heading: 'general', steps: 5 },
   { id: 'owner-workforce-settings', track: 'owner', module: 'workforce', heading: 'general', steps: 4 },
   { id: 'owner-labor-warnings', track: 'owner', module: 'workforce', heading: 'general', steps: 5 },
+  { id: 'owner-shift-swaps', track: 'owner', module: 'workforce', heading: 'general', steps: 5 },
   { id: 'owner-payroll-config', track: 'owner', module: 'payroll', heading: 'general', steps: 4 },
   { id: 'owner-payroll-runs', track: 'owner', module: 'payroll', heading: 'general', steps: 4 },
   { id: 'owner-irs-box', track: 'owner', module: 'payroll', heading: 'general', steps: 4 },
