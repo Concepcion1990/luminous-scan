@@ -48,6 +48,7 @@ const BUSINESS_ONLY = {
   'owner-recipe-cost-link': 'restaurant',
   'owner-lot-traceability': 'restaurant',
   'owner-spill-log': 'restaurant',
+  'owner-void-comp': 'restaurant',
   'staff-pest-calibration': 'restaurant',
   'mgr-restaurant-invoices': 'restaurant', 'mgr-restaurant-reports': 'restaurant',
   'staff-food-safety': 'restaurant',
@@ -201,7 +202,11 @@ test('plan-visible counts: Business whole, Essentials without the Business subje
   // The petty-cash build (plan Part 7, addition G-A, Nov 26,
   // 2026) adds ONE owner lesson: owner-petty-cash (general,
   // both plans): owner 62 on Business and 30 on Essentials.
-  assert.equal(count('owner', true), 62);
+  // The void-comp build (plan Part 7, addition G-C, Nov 26,
+  // 2026) adds ONE owner lesson: owner-void-comp (feature
+  // restaurant — the void & comp log is Business-only):
+  // owner 63 on Business; Essentials unchanged.
+  assert.equal(count('owner', true), 63);
   assert.equal(count('manager', true), 26);
   assert.equal(count('staff', true), 50);
   // Essentials: 21 owner subjects hidden, owner-import in their place.

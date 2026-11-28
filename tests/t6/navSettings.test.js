@@ -144,6 +144,10 @@ test('every signed-in app screen appears in the nav (menu audit)', () => {
     // page is a Food Safety shelf door in the corner, like
     // every feature above — never a menu door.
     '/restaurant/pest-calibration',
+    // Plan Part 7, G-C (Nov 26, 2026): the void-comp page
+    // is an Invoices & Money shelf door in the corner, like
+    // every feature above — never a menu door.
+    '/restaurant/void-comp',
   ]);
   const appScreens = routePaths.filter((p) => !publicRoutes.has(p));
   assert.ok(appScreens.length >= 30, `audit covers the full screen list (saw ${appScreens.length})`);

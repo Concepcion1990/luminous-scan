@@ -3,14 +3,14 @@
 // plans, beside the manager cash-up / cash count on the
 // Payroll page; OWNER-ONLY money server-side. Pinned here:
 //   - 36 new keys exist in all 52 locales, never fall back
-//     to the raw key, and the keyset is uniform at 7012
+//     to the raw key, and the keyset is uniform at 7048
 //     (6976 + 36 G-A keys); zero translation debt.
 //   - THE DEDUPE GUARDRAIL: the plan line appears ONCE in
 //     the Essentials lists (Plans + Welcome), ONCE in the
 //     comparison matrix (both plans ✓), and NEVER in a
 //     Business includes list — Business reads "Everything
 //     in Essentials, plus…" only.
-//   - The training catalogs agree at 139 lessons; the
+//   - The training catalogs agree at 140 lessons; the
 //     lesson owner-petty-cash rides the owner track under
 //     the GENERAL heading with 5 steps and NO feature gate
 //     (general feature, both plans).
@@ -87,10 +87,10 @@ const NEW_KEYS = [
   'apiErrors.pettyCash.dateNeeded',
 ];
 
-test('the keyset is uniform at 7012 keys in all 52 locales', () => {
+test('the keyset is uniform at 7048 keys in all 52 locales', () => {
   const codes = Object.keys(LOCALES);
   assert.equal(codes.length, 52);
-  for (const code of codes) assert.equal(Object.keys(LOCALES[code]).length, 7012, code);
+  for (const code of codes) assert.equal(Object.keys(LOCALES[code]).length, 7048, code);
 });
 
 test('all 36 G-A keys exist and never fall back to the key in any locale', () => {
@@ -143,8 +143,8 @@ test('DEDUPE: the plan line appears exactly once per plan per surface', () => {
   }
 });
 
-test('the catalogs agree at 139 lessons and the G-A lesson rides the GENERAL heading', () => {
-  assert.equal(CLIENT_LESSONS.length, 139);
+test('the catalogs agree at 140 lessons and the G-A lesson rides the GENERAL heading', () => {
+  assert.equal(CLIENT_LESSONS.length, 140);
   assert.deepEqual(CLIENT_LESSONS, SERVER_LESSONS);
   const lesson = CLIENT_LESSONS.find((l) => l.id === 'owner-petty-cash');
   assert.ok(lesson, 'G-A lesson exists');
@@ -155,7 +155,7 @@ test('the catalogs agree at 139 lessons and the G-A lesson rides the GENERAL hea
   assert.equal(lesson.steps, 5);
   assert.equal(LOCALES.en['training.lessons.owner-petty-cash.title'], 'Petty cash & the bank deposit log');
   assert.equal(CLIENT_LESSONS.filter((l) => l.heading === 'general').length, 116);
-  assert.equal(CLIENT_LESSONS.filter((l) => l.heading === 'restaurant').length, 23);
+  assert.equal(CLIENT_LESSONS.filter((l) => l.heading === 'restaurant').length, 24);
 });
 
 test('cleanDate: only real calendar dates survive', () => {

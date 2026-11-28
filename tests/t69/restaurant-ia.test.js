@@ -102,6 +102,7 @@ const FEATURE_HOME = {
   '/restaurant/bar-counting': 'stock',
   '/restaurant/lot-trace': 'stock',
   '/restaurant/spill-log': 'stock',
+  '/restaurant/void-comp': 'money',
   '/restaurant/locations-rollup': 'locations',
   '/restaurant/labor-target': 'team',
   '/restaurant/kitchen-display': 'kitchen',

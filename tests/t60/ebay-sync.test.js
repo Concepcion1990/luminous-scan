@@ -811,8 +811,8 @@ test('nav: the storefronts door sits in Sales with no plan gate', () => {
 });
 
 test('training: catalog 117, the eBay lesson agrees across catalogs and shows on both plans', () => {
-  assert.equal(CLIENT_LESSONS.length, 139);
-  assert.equal(SERVER_LESSONS.length, 139);
+  assert.equal(CLIENT_LESSONS.length, 140);
+  assert.equal(SERVER_LESSONS.length, 140);
   const server = SERVER_LESSONS.find((l) => l.id === 'owner-ebay-connect');
   const client = CLIENT_LESSONS.find((l) => l.id === 'owner-ebay-connect');
   assert.ok(server && client, 'the lesson exists in both catalogs');
