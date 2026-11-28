@@ -64,6 +64,7 @@ import { createProductionOrderRouter } from './productionOrderRoutes.js';
 import { createBarCountingRouter } from './barCountingRoutes.js';
 import { createLocationsRollupRouter } from './locationsRollupRoutes.js';
 import { createShiftSwapsRouter } from './shiftSwapsRoutes.js';
+import { createLotTraceRouter } from './lotTraceRoutes.js';
 import { createProfilePhotoRouter } from './profilePhotoRoutes.js';
 import { createXstoreMessageRouter } from './xstoreMessageRoutes.js';
 import { createCompRouter } from './compRoutes.js';
@@ -372,6 +373,12 @@ export function createApp() {
   // staff initiate, a manager approves, and only the
   // approval rewrites the schedule.
   app.use('/api', createShiftSwapsRouter({ getPool }));
+  // Lot codes, the recall finder and supplier traceability
+  // (server/lotTraceRoutes.js): supplier + lot per item at
+  // receiving, catch weights, the receiving check log, a
+  // pull that locks the batch and flows to the waste log,
+  // and the traceability log — Business-only, per-business.
+  app.use('/api', createLotTraceRouter({ getPool }));
   // Catering & private events, the simple version
   // (server/cateringRoutes.js): the event book, the Studio
   // event sheet and the pull into prep — Business-only,
