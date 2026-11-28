@@ -66,6 +66,7 @@ import { createLocationsRollupRouter } from './locationsRollupRoutes.js';
 import { createShiftSwapsRouter } from './shiftSwapsRoutes.js';
 import { createLotTraceRouter } from './lotTraceRoutes.js';
 import { createSpillLogRouter } from './spillLogRoutes.js';
+import { createPettyCashRouter } from './pettyCashRoutes.js';
 import { createProfilePhotoRouter } from './profilePhotoRoutes.js';
 import { createXstoreMessageRouter } from './xstoreMessageRoutes.js';
 import { createCompRouter } from './compRoutes.js';
@@ -386,6 +387,11 @@ export function createApp() {
   // under the bar counting owner switch — Business-only,
   // per-business (plan Part 7, item 392A).
   app.use('/api', createSpillLogRouter({ getPool }));
+  // Petty cash + bank deposit log (server/pettyCashRoutes.js):
+  // the cash-up family's two small money records — cash out
+  // of the tin and what left for the bank — GENERAL, both
+  // plans, OWNER-ONLY money (plan Part 7, addition G-A).
+  app.use('/api', createPettyCashRouter({ getPool }));
   // Catering & private events, the simple version
   // (server/cateringRoutes.js): the event book, the Studio
   // event sheet and the pull into prep — Business-only,

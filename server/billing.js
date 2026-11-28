@@ -401,6 +401,11 @@ export async function runWipeSweep(pool, { now = new Date(), logger = console } 
         // calibration checks die with the business.
         await client.query('DELETE FROM pest_visits WHERE business_id = $1', [businessId]);
         await client.query('DELETE FROM calibration_logs WHERE business_id = $1', [businessId]);
+        // The G-A money logs (migration 073) carry no FK
+        // cascade either — the petty-cash takings and the
+        // bank deposits die with the business.
+        await client.query('DELETE FROM petty_cash_entries WHERE business_id = $1', [businessId]);
+        await client.query('DELETE FROM bank_deposits WHERE business_id = $1', [businessId]);
         // The guest menu publication (migration 060) carries
         // no FK cascade — the owner's published choice dies
         // with the business.
