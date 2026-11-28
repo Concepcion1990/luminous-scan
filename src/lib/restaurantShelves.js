@@ -103,6 +103,12 @@ export const SHELVES = [
       // (businesses.bar_counting_enabled, migration 067).
       door('/restaurant/bar-counting', 'nav.barCounting', 'restaurant.doorBarCounting', Wine, { barOnly: true }),
       door('/restaurant/transfers', 'nav.transfers', 'restaurant.doorTransfers', ArrowRightLeft),
+      // Plan Part 7, item 392: lot codes, the recall finder
+      // and supplier traceability — Stock & Ordering is its
+      // home (receiving lives here), and the Food Safety
+      // shelf cross-links it below, because recalls live
+      // between the two.
+      door('/restaurant/lot-trace', 'nav.lotTrace', 'restaurant.doorLotTrace', SearchCheck),
       // Release 378: stock counts are a general feature (both
       // plans) whose home is the shared Counts page — the
       // shelf cross-links to it, the 377 pattern for general
@@ -141,6 +147,9 @@ export const SHELVES = [
       door('/restaurant/certificates', 'nav.foodCerts', 'restaurant.doorFoodCerts', BadgeCheck),
       door('/restaurant/mock-inspection', 'nav.mockInspection', 'restaurant.doorMockInspection', SearchCheck),
       door('/restaurant/sds', 'nav.sds', 'restaurant.doorSds', FlaskConical),
+      // Item 392 cross-link: recalls live between Stock &
+      // Ordering (its home) and Food Safety (here).
+      door('/restaurant/lot-trace', 'nav.lotTrace', 'restaurant.doorLotTrace', SearchCheck, { crossLink: true }),
     ],
   },
   {
