@@ -102,6 +102,11 @@ export const SHELVES = [
       // owner turns bar counting on for the business
       // (businesses.bar_counting_enabled, migration 067).
       door('/restaurant/bar-counting', 'nav.barCounting', 'restaurant.doorBarCounting', Wine, { barOnly: true }),
+      // Plan Part 7, item 392A: the spill & breakage log —
+      // the bar family's loss log, beside bar counting.
+      // Same family discipline: barOnly, hidden until the
+      // owner turns bar counting on for the business.
+      door('/restaurant/spill-log', 'nav.spillLog', 'restaurant.doorSpillLog', Wine, { barOnly: true }),
       door('/restaurant/transfers', 'nav.transfers', 'restaurant.doorTransfers', ArrowRightLeft),
       // Plan Part 7, item 392: lot codes, the recall finder
       // and supplier traceability — Stock & Ordering is its
