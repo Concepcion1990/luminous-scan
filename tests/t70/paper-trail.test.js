@@ -526,7 +526,7 @@ test('shelf model: counts and the log book cross-link from their shelves; primar
   // (Team & Place) — twenty-three in all. (The labor
   // warnings cross-link to /workforce is a cross-link, not
   // a primary door, and does not count here.)
-  assert.equal(featureDoors().length, 30, 'the corner has thirty primary feature doors since the lot-traceability build (plan Part 7, item 392 — the lot-trace door on the Stock & Ordering shelf; its Food Safety listing is a cross-link and does not count); twenty-nine since the locations-rollup build (plan release 380 — the rollup door on the Locations shelf, which featureDoors now counts with the shelves); twenty-eight since the bar-counting build (plan release 379); twenty-seven since the production-order build (plan release 378); twenty-six since the standing-orders build (plan release 377); twenty-five since the reservations build (plan release 376); twenty-four since the catering build (plan release 375)');
+  assert.equal(featureDoors().length, 31, 'the corner has thirty primary feature doors since the lot-traceability build (plan Part 7, item 392 — the lot-trace door on the Stock & Ordering shelf; its Food Safety listing is a cross-link and does not count); twenty-nine since the locations-rollup build (plan release 380 — the rollup door on the Locations shelf, which featureDoors now counts with the shelves); twenty-eight since the bar-counting build (plan release 379); twenty-seven since the production-order build (plan release 378); twenty-six since the standing-orders build (plan release 377); twenty-five since the reservations build (plan release 376); twenty-four since the catering build (plan release 375)');
   assert.deepEqual(SHELVES.map((s) => s.id), ['kitchen', 'stock', 'money', 'safety', 'floor', 'team']);
 });
 
@@ -580,7 +580,7 @@ const NEW_KEYS = [
 test('i18n gate: 63 new keys in all 52 locales, keyset 6506, plan lines carry the new features', () => {
   assert.equal(NEW_KEYS.length, 63);
   for (const [code, locale] of Object.entries(LOCALES)) {
-    assert.equal(Object.keys(locale).length, 6903, `${code} keyset`);
+    assert.equal(Object.keys(locale).length, 6940, `${code} keyset`);
     for (const key of NEW_KEYS) {
       assert.ok(typeof locale[key] === 'string' && locale[key].length > 0, `${code} carries ${key}`);
     }
@@ -611,7 +611,7 @@ test('i18n gate: 63 new keys in all 52 locales, keyset 6506, plan lines carry th
 });
 
 test('training: 117 lessons, catalogs agree, the log book lesson and the invoices step 5 ride along', () => {
-  assert.equal(clientCatalog.length, 136); // 125 since the tip-pooling build (plan release 373, Nov 26, 2026) added 1 (owner-tip-pooling, Business-only, restaurant heading); 124 since the equipment build (plan release 372, Nov 26, 2026) added 1 (staff-equipment, both plans, general heading); 123 since the kitchen-menu build (plan release 371, Nov 26, 2026) added 1 (staff-kitchen-menu, Business-only, restaurant heading); 122 since the food-safety build (plan release 370, Nov 26, 2026) added staff-food-safety; 121 since the checklists build added staff-checklists; 117 at this build The reservations build (plan release 376, Nov 26, 2026) added 1 more (owner-reservations, riding the restaurant feature), for 130. The standing-orders build (plan release 377, Nov 26, 2026) added 1 more (owner-standing-orders, riding the restaurant feature), for 130.
+  assert.equal(clientCatalog.length, 137); // 125 since the tip-pooling build (plan release 373, Nov 26, 2026) added 1 (owner-tip-pooling, Business-only, restaurant heading); 124 since the equipment build (plan release 372, Nov 26, 2026) added 1 (staff-equipment, both plans, general heading); 123 since the kitchen-menu build (plan release 371, Nov 26, 2026) added 1 (staff-kitchen-menu, Business-only, restaurant heading); 122 since the food-safety build (plan release 370, Nov 26, 2026) added staff-food-safety; 121 since the checklists build added staff-checklists; 117 at this build The reservations build (plan release 376, Nov 26, 2026) added 1 more (owner-reservations, riding the restaurant feature), for 130. The standing-orders build (plan release 377, Nov 26, 2026) added 1 more (owner-standing-orders, riding the restaurant feature), for 130.
   assert.deepEqual(
     serverCatalog.map((l) => l.id),
     clientCatalog.map((l) => l.id),

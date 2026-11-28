@@ -79,9 +79,9 @@ test('keyset stands at 6506 in all 52 locales, uniform', () => {
   const codes = Object.keys(LOCALES);
   assert.equal(codes.length, 52);
   const enKeys = Object.keys(LOCALES.en).sort();
-  assert.equal(enKeys.length, 6903);
+  assert.equal(enKeys.length, 6940);
   for (const code of codes) {
-    assert.equal(Object.keys(LOCALES[code]).length, 6903, `${code} keyset`);
+    assert.equal(Object.keys(LOCALES[code]).length, 6940, `${code} keyset`);
     assert.deepEqual(Object.keys(LOCALES[code]).sort(), enKeys, `${code} keyset differs from en`);
   }
 });
@@ -151,7 +151,7 @@ test('plan presentation: the catering line is Business-only, in Plans, Welcome a
 /* ------------------------------------------------ training */
 
 test('training catalogs agree at 128: the catering lesson sits under the RESTAURANT heading, Business-only', () => {
-  assert.equal(CLIENT_LESSONS.length, 136);
+  assert.equal(CLIENT_LESSONS.length, 137);
   assert.deepEqual(CLIENT_LESSONS, SERVER_LESSONS);
   const lesson = CLIENT_LESSONS.find((l) => l.id === 'owner-catering-events');
   assert.ok(lesson, 'catering lesson exists');
@@ -161,7 +161,7 @@ test('training catalogs agree at 128: the catering lesson sits under the RESTAUR
   assert.equal(lesson.steps, 5);
   assert.equal(lesson.feature, 'restaurant');
   assert.equal(CLIENT_LESSONS.filter((l) => l.heading === 'general').length, 115);
-  assert.equal(CLIENT_LESSONS.filter((l) => l.heading === 'restaurant').length, 21);
+  assert.equal(CLIENT_LESSONS.filter((l) => l.heading === 'restaurant').length, 22);
 });
 
 /* ------------------------------------------- the event book */

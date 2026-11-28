@@ -4,8 +4,8 @@
 //
 // Pinned here:
 //   - 42 new keys exist in all 52 locales, never fall back
-//     to the raw key, and the keyset is uniform at 6903
-//     (6903 + 42); placeholders survive translation.
+//     to the raw key, and the keyset is uniform at 6940
+//     (6940 + 42); placeholders survive translation.
 //   - The registry gains exactly the two production-order
 //     messages (the write-door refusal + the cleaner
 //     refusal), word for word, and the client maps them.
@@ -66,10 +66,10 @@ const NEW_KEYS = [
   'training.lessons.owner-production-order.step4', 'training.lessons.owner-production-order.step5',
 ];
 
-test('the keyset is uniform at 6903 keys in all 52 locales', () => {
+test('the keyset is uniform at 6940 keys in all 52 locales', () => {
   const codes = Object.keys(LOCALES);
   assert.equal(codes.length, 52);
-  for (const code of codes) assert.equal(Object.keys(LOCALES[code]).length, 6903, code);
+  for (const code of codes) assert.equal(Object.keys(LOCALES[code]).length, 6940, code);
 });
 
 test('all 42 production-order keys exist and never fall back to the key in any locale', () => {
@@ -128,7 +128,7 @@ test('plan presentation: the production-order line is Business-only in Plans, We
 });
 
 test('the catalogs agree at 131 lessons and the production-order lesson rides the RESTAURANT heading', () => {
-  assert.equal(CLIENT_LESSONS.length, 136);
+  assert.equal(CLIENT_LESSONS.length, 137);
   assert.deepEqual(CLIENT_LESSONS, SERVER_LESSONS);
   const lesson = CLIENT_LESSONS.find((l) => l.id === 'owner-production-order');
   assert.ok(lesson, 'production-order lesson exists');
@@ -139,7 +139,7 @@ test('the catalogs agree at 131 lessons and the production-order lesson rides th
   assert.equal(lesson.steps, 5);
   assert.equal(LOCALES.en['training.lessons.owner-production-order.title'], 'Ordering by production and prep sheets that fill themselves');
   assert.equal(CLIENT_LESSONS.filter((l) => l.heading === 'general').length, 115);
-  assert.equal(CLIENT_LESSONS.filter((l) => l.heading === 'restaurant').length, 21);
+  assert.equal(CLIENT_LESSONS.filter((l) => l.heading === 'restaurant').length, 22);
 });
 
 test('cleanProductionSource keeps the plan honest', () => {

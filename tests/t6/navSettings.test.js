@@ -135,6 +135,11 @@ test('every signed-in app screen appears in the nav (menu audit)', () => {
     // (cross-linked from Food Safety), like every feature
     // above — never a menu door.
     '/restaurant/lot-trace',
+    // Plan Part 7, item 392A (Nov 26, 2026): the spill-log
+    // page is a Stock & Ordering shelf door in the corner —
+    // a hidden barOnly one, with the bar family — never a
+    // menu door.
+    '/restaurant/spill-log',
   ]);
   const appScreens = routePaths.filter((p) => !publicRoutes.has(p));
   assert.ok(appScreens.length >= 30, `audit covers the full screen list (saw ${appScreens.length})`);

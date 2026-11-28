@@ -47,6 +47,7 @@ const BUSINESS_ONLY = {
   'owner-locations-rollup': 'restaurant',
   'owner-recipe-cost-link': 'restaurant',
   'owner-lot-traceability': 'restaurant',
+  'owner-spill-log': 'restaurant',
   'mgr-restaurant-invoices': 'restaurant', 'mgr-restaurant-reports': 'restaurant',
   'staff-food-safety': 'restaurant',
   'staff-kitchen-menu': 'restaurant',
@@ -192,7 +193,11 @@ test('plan-visible counts: Business whole, Essentials without the Business subje
   // (feature restaurant — lots and traceability are
   // Business-only): owner 60 on Business; Essentials
   // unchanged.
-  assert.equal(count('owner', true), 60);
+  // The spill-log build (plan Part 7, item 392A, Nov 26,
+  // 2026) adds ONE owner lesson: owner-spill-log (feature
+  // restaurant — the spill log is Business-only): owner 61
+  // on Business; Essentials unchanged.
+  assert.equal(count('owner', true), 61);
   assert.equal(count('manager', true), 26);
   assert.equal(count('staff', true), 49);
   // Essentials: 21 owner subjects hidden, owner-import in their place.
