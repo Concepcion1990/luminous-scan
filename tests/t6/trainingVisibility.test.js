@@ -43,6 +43,7 @@ const BUSINESS_ONLY = {
   'owner-reservations': 'restaurant',
   'owner-standing-orders': 'restaurant',
   'owner-production-order': 'restaurant',
+  'owner-bar-counting': 'restaurant',
   'mgr-restaurant-invoices': 'restaurant', 'mgr-restaurant-reports': 'restaurant',
   'staff-food-safety': 'restaurant',
   'staff-kitchen-menu': 'restaurant',
@@ -167,7 +168,11 @@ test('plan-visible counts: Business whole, Essentials without the Business subje
   // adds ONE owner lesson: owner-reservations (feature
   // restaurant — the book is Business-only): owner 53 on
   // Business; Essentials unchanged.
-  assert.equal(count('owner', true), 55);
+  // The bar-counting build (plan release 379, Nov 26, 2026)
+  // adds ONE owner lesson: owner-bar-counting (feature
+  // restaurant — bar counting is Business-only): owner 56 on
+  // Business; Essentials unchanged.
+  assert.equal(count('owner', true), 56);
   assert.equal(count('manager', true), 26);
   assert.equal(count('staff', true), 49);
   // Essentials: 21 owner subjects hidden, owner-import in their place.

@@ -141,9 +141,9 @@ test('keyset stands at 6506 in all 52 locales, uniform', () => {
   const codes = Object.keys(LOCALES);
   assert.equal(codes.length, 52);
   const enKeys = Object.keys(LOCALES.en).sort();
-  assert.equal(enKeys.length, 6678);
+  assert.equal(enKeys.length, 6716);
   for (const code of codes) {
-    assert.equal(Object.keys(LOCALES[code]).length, 6678, `${code} keyset`);
+    assert.equal(Object.keys(LOCALES[code]).length, 6716, `${code} keyset`);
     assert.deepEqual(Object.keys(LOCALES[code]).sort(), enKeys, `${code} keyset differs from en`);
   }
 });
@@ -205,8 +205,8 @@ test('plan presentation: the food-safety line rides Business ONLY — Plans + We
 /* ------------------------------------------------- the lesson */
 
 test('catalogs stand at 125, client and server in direct agreement', () => {
-  assert.equal(CLIENT_LESSONS.length, 131);
-  assert.equal(SERVER_LESSONS.length, 131);
+  assert.equal(CLIENT_LESSONS.length, 132);
+  assert.equal(SERVER_LESSONS.length, 132);
   assert.deepEqual(
     CLIENT_LESSONS.map((l) => [l.id, l.track, l.module, l.heading, l.steps, l.feature || null]),
     SERVER_LESSONS.map((l) => [l.id, l.track, l.module, l.heading, l.steps, l.feature || null]),
@@ -391,8 +391,14 @@ test('TEST + RETEST: certificates — create, warn, read across businesses, remo
     { cert_class: 'food_handler', issued_on: '2026-01-10', expires_on: '2026-12-20' },
     { userId: 'u-owner', actorName: 'Owner' });
   assert.equal(cert.member_name, 'Ana Cook', "the member's name rides as a snapshot");
-  assert.equal(cert.status, 'expiring', 'Dec 20 is inside the 30-day window from Nov 26');
-  assert.equal(cert.days_left, 24);
+  // Owner-approved clock fix (Release 398 rider, test file only):
+  // createCert's returned status reads the real clock (its API
+  // takes no `today`), so the dated assertions read the row back
+  // at the fixed date through listCerts, which takes `today`
+  // explicitly — the pattern every other dated read here uses.
+  const created = await listCerts(pool, 'biz-a', '2026-11-26');
+  assert.equal(created[0].status, 'expiring', 'Dec 20 is inside the 30-day window from Nov 26');
+  assert.equal(created[0].days_left, 24);
   // Another business's shelf is another business's shelf.
   assert.deepEqual(await listCerts(pool, 'biz-b', '2026-11-26'), []);
   const mine = await listCerts(pool, 'biz-a', '2026-11-26');

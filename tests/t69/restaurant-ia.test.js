@@ -98,6 +98,7 @@ const FEATURE_HOME = {
   '/restaurant/reservations': 'floor',
   '/restaurant/standing-orders': 'stock',
   '/restaurant/production-order': 'stock',
+  '/restaurant/bar-counting': 'stock',
   '/restaurant/labor-target': 'team',
   '/restaurant/kitchen-display': 'kitchen',
   '/restaurant/waste': 'floor',
@@ -221,7 +222,7 @@ test('routes: every restaurant route stays behind the Business-only gate; doors 
   // Two taps: home -> shelf (tap 1) -> door (tap 2); and the
   // home also renders each shelf's doors as quick links.
   const home = fs.readFileSync(new URL('../../src/pages/Restaurant.jsx', import.meta.url), 'utf8');
-  assert.match(home, /shelf\.doors\.map/, 'the home renders each shelf’s doors as quick links');
+  assert.match(home, /visibleDoors\(shelf/, 'the home renders each shelf’s doors as quick links (through visibleDoors since the bar-counting build, plan release 379 — the bar door stays hidden until the owner turns it on)');
   assert.match(home, /TodayCards/, 'the home renders the Today cards');
   assert.match(home, /summarizeToday/, 'the home summarizes from real rows');
 });
