@@ -156,6 +156,8 @@ export const API_ERROR_MESSAGE_KEYS = {
   "Only the owner, a manager, or a person the owner gave the host tick, can take reservations.": "apiErrors.reservationsHost",
   "Check the reservation details and try again.": "apiErrors.reservationsInvalid",
   "Check the waitlist details and try again.": "apiErrors.waitlistInvalid",
+  "Only the owner, a manager, or a person with the purchasing permission can set up standing orders.": "apiErrors.standingOrdersForbidden",
+  "Check the standing order details and try again.": "apiErrors.standingOrdersInvalid",
   "A text needs a number and a message.": "apiErrors.smsInvalid",
   "The texting service did not accept the message.": "apiErrors.smsFailed",
   "Only the owner can set the labor watch numbers.": "apiErrors.laborOwner",

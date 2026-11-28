@@ -59,6 +59,7 @@ import { createTipPoolingRouter } from './tipPoolingRoutes.js';
 import { createLaborWarningsRouter } from './laborWarningsRoutes.js';
 import { createCateringRouter } from './cateringRoutes.js';
 import { createReservationsRouter } from './reservationsRoutes.js';
+import { createStandingOrdersRouter } from './standingOrdersRoutes.js';
 import { createProfilePhotoRouter } from './profilePhotoRoutes.js';
 import { createXstoreMessageRouter } from './xstoreMessageRoutes.js';
 import { createCompRouter } from './compRoutes.js';
@@ -372,6 +373,12 @@ export function createApp() {
   // guest's own acceptance — Business-only, host door
   // under the owner's tick, per-business.
   app.use('/api', createReservationsRouter({ getPool }));
+  // Standing orders + supplier price book
+  // (server/standingOrdersRoutes.js): recurring templates
+  // that land only as DRAFT purchase orders for owner
+  // confirmation, and the price compare computed from the
+  // business's own invoices and orders — Business-only.
+  app.use('/api', createStandingOrdersRouter({ getPool }));
   // Profile photos + the owner's display name
   // (server/profilePhotoRoutes.js): owner-approved team photos
   // and the name that replaces "Owner".

@@ -426,6 +426,10 @@ export async function runWipeSweep(pool, { now = new Date(), logger = console } 
         // only there) die with it.
         await client.query('DELETE FROM reservations WHERE business_id = $1', [businessId]);
         await client.query('DELETE FROM waitlist_entries WHERE business_id = $1', [businessId]);
+        // Standing orders (migration 066) carry no FK
+        // cascade — the business's recurring templates die
+        // with it. (The price book is computed, not stored.)
+        await client.query('DELETE FROM standing_orders WHERE business_id = $1', [businessId]);
         await client.query('DELETE FROM import_events WHERE business_id = $1', [businessId]);
         // Profile photos (migration 034) carry no FK cascade —
         // a person's face dies with the business, never after it.
