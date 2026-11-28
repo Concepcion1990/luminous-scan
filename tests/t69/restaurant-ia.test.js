@@ -96,6 +96,7 @@ const FEATURE_HOME = {
   '/restaurant/tip-pooling': 'team',
   '/restaurant/catering': 'floor',
   '/restaurant/reservations': 'floor',
+  '/restaurant/standing-orders': 'stock',
   '/restaurant/labor-target': 'team',
   '/restaurant/kitchen-display': 'kitchen',
   '/restaurant/waste': 'floor',

@@ -209,9 +209,9 @@ test('studio: the size controls are wired to the style fields', () => {
 });
 
 test('keyset: the four new keys exist in all 52 locales (5130)', () => {
-  assert.equal(Object.keys(LOCALES.en).length, 6583);
+  assert.equal(Object.keys(LOCALES.en).length, 6636);
   for (const [code, strings] of Object.entries(LOCALES)) {
-    assert.equal(Object.keys(strings).length, 6583, code);
+    assert.equal(Object.keys(strings).length, 6636, code);
     for (const key of ['print.printedAt', 'print.style.imageWidth', 'print.style.imageLength', 'print.style.imageSizeHint']) {
       assert.equal(typeof strings[key], 'string', `${code} ${key}`);
       assert.ok(strings[key].length > 0, `${code} ${key}`);

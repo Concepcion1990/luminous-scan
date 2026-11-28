@@ -113,6 +113,10 @@ test('every signed-in app screen appears in the nav (menu audit)', () => {
     // is a Floor & Guests shelf door in the corner, like every
     // feature above — never a menu door.
     '/restaurant/reservations',
+    // Plan release 377 (Nov 26, 2026): the standing-orders
+    // page is a Stock & Ordering shelf door in the corner,
+    // like every feature above — never a menu door.
+    '/restaurant/standing-orders',
   ]);
   const appScreens = routePaths.filter((p) => !publicRoutes.has(p));
   assert.ok(appScreens.length >= 30, `audit covers the full screen list (saw ${appScreens.length})`);

@@ -141,9 +141,9 @@ test('keyset stands at 6506 in all 52 locales, uniform', () => {
   const codes = Object.keys(LOCALES);
   assert.equal(codes.length, 52);
   const enKeys = Object.keys(LOCALES.en).sort();
-  assert.equal(enKeys.length, 6583);
+  assert.equal(enKeys.length, 6636);
   for (const code of codes) {
-    assert.equal(Object.keys(LOCALES[code]).length, 6583, `${code} keyset`);
+    assert.equal(Object.keys(LOCALES[code]).length, 6636, `${code} keyset`);
     assert.deepEqual(Object.keys(LOCALES[code]).sort(), enKeys, `${code} keyset differs from en`);
   }
 });
@@ -205,8 +205,8 @@ test('plan presentation: the food-safety line rides Business ONLY — Plans + We
 /* ------------------------------------------------- the lesson */
 
 test('catalogs stand at 125, client and server in direct agreement', () => {
-  assert.equal(CLIENT_LESSONS.length, 129);
-  assert.equal(SERVER_LESSONS.length, 129);
+  assert.equal(CLIENT_LESSONS.length, 130);
+  assert.equal(SERVER_LESSONS.length, 130);
   assert.deepEqual(
     CLIENT_LESSONS.map((l) => [l.id, l.track, l.module, l.heading, l.steps, l.feature || null]),
     SERVER_LESSONS.map((l) => [l.id, l.track, l.module, l.heading, l.steps, l.feature || null]),
