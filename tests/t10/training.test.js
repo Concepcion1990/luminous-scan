@@ -507,13 +507,14 @@ test('assign everything (Essentials): the full plan catalog lands for staff and 
   assert.equal(billing.status, 201);
   assert.deepEqual([...billing.json.assignment.lesson_ids].sort(), fullOnPlan('billing', false));
 
-  // 'payroll' spans all three tracks (3 owner + 3 manager + 1
-  // staff on Essentials): a staff assignee now receives all 7,
-  // not the single staff-track lesson.
+  // 'payroll' spans all three tracks (4 owner + 3 manager + 1
+  // staff on Essentials): a staff assignee now receives all 8,
+  // not the single staff-track lesson. (The fourth owner
+  // lesson is owner-petty-cash, addition G-A, Nov 26, 2026.)
   const payroll = await assign(staff.staffId, 'payroll');
   assert.equal(payroll.status, 201);
   assert.deepEqual([...payroll.json.assignment.lesson_ids].sort(), fullOnPlan('payroll', false));
-  assert.equal(payroll.json.assignment.lesson_ids.length, 7);
+  assert.equal(payroll.json.assignment.lesson_ids.length, 8);
 
   // A manager assignee gets the same full catalog (billing
   // refused for managers too, before the fix).

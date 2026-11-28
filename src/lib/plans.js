@@ -68,6 +68,7 @@ export const PLANS = {
         t('plansLib.includes.equipment'),
         t('plansLib.includes.laborWarnings'),
         t('plansLib.includes.shiftSwaps'),
+        t('plansLib.includes.pettyCash'),
         t('plansLib.includes.recovery'),
         t('plansLib.includes.support'),
         t('plansLib.includes.offline'),
@@ -350,6 +351,7 @@ export const WELCOME_OPTIONS = [
         t('plansLib.includes.equipment'),
         t('plansLib.includes.laborWarnings'),
         t('plansLib.includes.shiftSwaps'),
+        t('plansLib.includes.pettyCash'),
         t('plansLib.includes.recovery'),
         t('plansLib.includes.support'),
         t('plansLib.includes.offline'),
@@ -538,6 +540,12 @@ export const COMPARISON_ROWS = [
   // approval and each person's own availability — general
   // workforce tools on both plans (her Q1–Q4 pattern).
   { get label() { return t('plansLib.includes.shiftSwaps'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
+  // Petty cash + bank deposit log (plan Part 7, addition
+  // G-A, Nov 26, 2026): cash out of the tin and what left
+  // for the bank, beside the cash-up — a general feature
+  // on both plans, owner-only money. Mobile stays "Set at
+  // launch" like the other team-era rows.
+  { get label() { return t('plansLib.includes.pettyCash'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
   { get label() { return t('plansLib.includes.recovery'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
   { get label() { return t('plansLib.includes.support'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
   { get label() { return t('plansLib.includes.offline'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },

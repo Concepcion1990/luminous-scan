@@ -6,8 +6,9 @@
  * settings ONCE; every run applies them. Stubs are generated
  * unpushed: a manager can send stubs to staff, but only the OWNER
  * can send the manager's stub. The page also holds the cash drawer
- * (cash-up), direct deposit (details visible to the owner only)
- * and the owner-only IRS forms box.
+ * (cash-up), direct deposit (details visible to the owner only),
+ * the owner-only petty cash & bank deposit log beside the cash-up
+ * (addition G-A) and the owner-only IRS forms box.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -16,6 +17,8 @@ import { Button } from '@/components/ui/button';
 import MyDocumentsCard from '@/components/staff/MyDocumentsCard';
 import { resolveDocStyle } from '@/lib/docStyle';
 import PayrollRegisterDoc from '@/components/print/PayrollRegisterDoc';
+import PettyCashDoc from '@/components/print/PettyCashDoc';
+import { fetchPettyCash, pettyTotals, recordDeposit, recordPettyCash } from '@/lib/pettyCash';
 import { useToast } from '@/components/ui/use-toast';
 import { useBusiness } from '@/hooks/useBusiness';
 import { formatFullDate, formatShortDate, formatTimeOnly } from '@/lib/dates';
@@ -690,6 +693,166 @@ function CashUpSection({ businessId }) {
   );
 }
 
+/**
+ * Petty cash & bank deposits (plan Part 7, addition G-A):
+ * the cash-up family's two small money records, in ONE
+ * section right beside the cash-up — cash out of the tin
+ * (amount, what for, receipt back in, initials) and what
+ * left for the bank (amount, when, in what bag, whose
+ * initials carried it). OWNER-ONLY: the section renders
+ * only for the owner, and the server refuses every
+ * non-owner read and write besides. Both logs print as
+ * one Studio document (preview = print).
+ */
+function PettyCashSection({ businessId, business, docStyle }) {
+  const { toast } = useToast();
+  const [petty, setPetty] = useState([]);
+  const [deposits, setDeposits] = useState([]);
+  const [printing, setPrinting] = useState(false);
+  const today = new Date().toISOString().slice(0, 10);
+  const [cashForm, setCashForm] = useState({ entry_date: today, amount: '', purpose: '', receipt_back: false, initials: '' });
+  const [depForm, setDepForm] = useState({ deposit_date: today, amount: '', bag_ref: '', initials: '' });
+  const load = useCallback(async () => {
+    const data = await fetchPettyCash(businessId);
+    setPetty(data.petty_cash ?? []);
+    setDeposits(data.deposits ?? []);
+  }, [businessId]);
+  useEffect(() => {
+    load().catch(() => {});
+  }, [load]);
+  const saveCash = async () => {
+    try {
+      await recordPettyCash(businessId, cashForm);
+      toast({ title: t('petty.cashSaved') });
+      setCashForm({ entry_date: today, amount: '', purpose: '', receipt_back: false, initials: '' });
+      await load();
+    } catch (error) {
+      toast({ title: error.message || t('workforce.actionFailed'), variant: 'destructive' });
+    }
+  };
+  const saveDeposit = async () => {
+    try {
+      await recordDeposit(businessId, depForm);
+      toast({ title: t('petty.depositSaved') });
+      setDepForm({ deposit_date: today, amount: '', bag_ref: '', initials: '' });
+      await load();
+    } catch (error) {
+      toast({ title: error.message || t('workforce.actionFailed'), variant: 'destructive' });
+    }
+  };
+  const printLogs = () => {
+    setPrinting(true);
+    setTimeout(() => {
+      window.print();
+      setPrinting(false);
+    }, 50);
+  };
+  const totals = pettyTotals(petty, deposits);
+  const textField = (form, setForm, key, labelKey, type = 'text') => (
+    <div key={key}>
+      <label className={labelCls}>{t(labelKey)}</label>
+      <input
+        type={type}
+        className={inputCls}
+        value={form[key]}
+        onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
+      />
+    </div>
+  );
+  return (
+    <Section title={t('petty.title')} help={t('petty.help')}>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <h3 className="font-heading text-sm font-semibold">{t('petty.cashTitle')}</h3>
+        <Button variant="outline" size="sm" onClick={printLogs}>
+          <Printer className="mr-1.5 h-3.5 w-3.5" /> {t('petty.printButton')}
+        </Button>
+      </div>
+      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{t('petty.cashHelp')}</p>
+      <div className="mt-3 grid max-w-3xl gap-3 sm:grid-cols-3">
+        {textField(cashForm, setCashForm, 'entry_date', 'petty.date', 'date')}
+        {textField(cashForm, setCashForm, 'amount', 'petty.amount', 'number')}
+        {textField(cashForm, setCashForm, 'purpose', 'petty.purpose')}
+        {textField(cashForm, setCashForm, 'initials', 'petty.initials')}
+        <div>
+          <label className={labelCls}>{t('petty.receipt')}</label>
+          <label className="mt-2 flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={cashForm.receipt_back}
+              onChange={(e) => setCashForm((f) => ({ ...f, receipt_back: e.target.checked }))}
+            />
+            {t('petty.receiptYes')}
+          </label>
+        </div>
+      </div>
+      <Button className="mt-3" size="sm" onClick={saveCash}>
+        {t('petty.addCash')}
+      </Button>
+      {petty.length > 0 ? (
+        <>
+          <ul className="mt-4 divide-y divide-border">
+            {petty.slice(0, 20).map((row) => (
+              <li key={row.id} className="flex flex-wrap gap-x-4 gap-y-1 py-2 text-sm">
+                <span className="font-medium">{formatShortDate(String(row.entry_date).slice(0, 10))}</span>
+                <span>{formatMoneyPlain(row.amount)}</span>
+                <span>{row.purpose}</span>
+                <span className="text-muted-foreground">
+                  {t('petty.receipt')}: {row.receipt_back ? t('petty.receiptYes') : t('petty.receiptNo')}
+                </span>
+                <span className="text-xs text-muted-foreground">{row.initials}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-2 text-sm font-medium">
+            {t('petty.totalOut')}: {formatMoneyPlain(totals.totalOut)}
+          </p>
+        </>
+      ) : (
+        <p className="mt-4 text-sm text-muted-foreground">{t('petty.cashEmpty')}</p>
+      )}
+
+      <h3 className="mt-6 font-heading text-sm font-semibold">{t('petty.depositTitle')}</h3>
+      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{t('petty.depositHelp')}</p>
+      <div className="mt-3 grid max-w-3xl gap-3 sm:grid-cols-3">
+        {textField(depForm, setDepForm, 'deposit_date', 'petty.date', 'date')}
+        {textField(depForm, setDepForm, 'amount', 'petty.amount', 'number')}
+        {textField(depForm, setDepForm, 'bag_ref', 'petty.bag')}
+        {textField(depForm, setDepForm, 'initials', 'petty.initials')}
+      </div>
+      <Button className="mt-3" size="sm" onClick={saveDeposit}>
+        {t('petty.addDeposit')}
+      </Button>
+      {deposits.length > 0 ? (
+        <>
+          <ul className="mt-4 divide-y divide-border">
+            {deposits.slice(0, 20).map((row) => (
+              <li key={row.id} className="flex flex-wrap gap-x-4 gap-y-1 py-2 text-sm">
+                <span className="font-medium">{formatShortDate(String(row.deposit_date).slice(0, 10))}</span>
+                <span>{formatMoneyPlain(row.amount)}</span>
+                <span>
+                  {t('petty.bag')}: {row.bag_ref}
+                </span>
+                <span className="text-xs text-muted-foreground">{row.initials}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-2 text-sm font-medium">
+            {t('petty.totalDeposited')}: {formatMoneyPlain(totals.totalDeposited)}
+          </p>
+        </>
+      ) : (
+        <p className="mt-4 text-sm text-muted-foreground">{t('petty.depositEmpty')}</p>
+      )}
+
+      {printing && (
+        <div className="print-area hidden print:block">
+          <PettyCashDoc petty={petty} deposits={deposits} business={business} docStyle={docStyle} />
+        </div>
+      )}
+    </Section>
+  );
+}
+
 function MyProfileSection({ profile, businessId, reload }) {
   const { toast } = useToast();
   const isOwner = Boolean(profile.owner);
@@ -1182,6 +1345,7 @@ export default function Payroll() {
           <RunsSection businessId={activeId} reloadKey={runsKey} />
           <ConfigSection businessId={activeId} ctx={ctx} />
           <CashUpSection businessId={activeId} />
+          {ctx.is_owner && <PettyCashSection businessId={activeId} business={record} docStyle={docStyle} />}
         </>
       )}
 

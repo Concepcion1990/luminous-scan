@@ -166,6 +166,11 @@ export const TRAINING_LESSONS = [
   { id: 'owner-payroll-config', track: 'owner', module: 'payroll', heading: 'general', steps: 4 },
   { id: 'owner-payroll-runs', track: 'owner', module: 'payroll', heading: 'general', steps: 4 },
   { id: 'owner-irs-box', track: 'owner', module: 'payroll', heading: 'general', steps: 4 },
+  // Petty cash + bank deposit log (plan Part 7, addition
+  // G-A, Nov 26, 2026): the cash-up's two small money
+  // siblings — general money on both plans, owner-only,
+  // so the owner lesson sits under the GENERAL heading.
+  { id: 'owner-petty-cash', track: 'owner', module: 'payroll', heading: 'general', steps: 5 },
   { id: 'owner-dd-setup', track: 'owner', module: 'direct-deposit', heading: 'general', steps: 5 },
   { id: 'owner-billing', track: 'owner', module: 'billing', heading: 'general', steps: 5 },
   { id: 'owner-trial-reminders', track: 'owner', module: 'billing', heading: 'general', steps: 4 },
