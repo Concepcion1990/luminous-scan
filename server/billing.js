@@ -406,6 +406,10 @@ export async function runWipeSweep(pool, { now = new Date(), logger = console } 
         // bank deposits die with the business.
         await client.query('DELETE FROM petty_cash_entries WHERE business_id = $1', [businessId]);
         await client.query('DELETE FROM bank_deposits WHERE business_id = $1', [businessId]);
+        // The G-C register (migration 074) carries no FK
+        // cascade either — the void & comp entries die
+        // with the business.
+        await client.query('DELETE FROM void_comp_entries WHERE business_id = $1', [businessId]);
         // The guest menu publication (migration 060) carries
         // no FK cascade — the owner's published choice dies
         // with the business.

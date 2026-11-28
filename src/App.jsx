@@ -55,6 +55,7 @@ import RestaurantProductionOrder from '@/pages/RestaurantProductionOrder';
 import RestaurantBarCounting from '@/pages/RestaurantBarCounting';
 import RestaurantLotTrace from '@/pages/RestaurantLotTrace';
 import RestaurantSpillLog from '@/pages/RestaurantSpillLog';
+import RestaurantVoidComp from '@/pages/RestaurantVoidComp';
 import RestaurantLocationsRollup from '@/pages/RestaurantLocationsRollup';
 import GuestMenuPublic from '@/pages/GuestMenuPublic';
 import RestaurantEightySix from '@/pages/RestaurantEightySix';
@@ -428,6 +429,14 @@ const AuthenticatedApp = () => {
             element={
               <PlanRedirect feature="restaurant">
                 <RestaurantSpillLog />
+              </PlanRedirect>
+            }
+          />
+          <Route
+            path="/restaurant/void-comp"
+            element={
+              <PlanRedirect feature="restaurant">
+                <RestaurantVoidComp />
               </PlanRedirect>
             }
           />

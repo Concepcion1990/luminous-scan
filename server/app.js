@@ -67,6 +67,7 @@ import { createShiftSwapsRouter } from './shiftSwapsRoutes.js';
 import { createLotTraceRouter } from './lotTraceRoutes.js';
 import { createSpillLogRouter } from './spillLogRoutes.js';
 import { createPettyCashRouter } from './pettyCashRoutes.js';
+import { createVoidCompRouter } from './voidCompRoutes.js';
 import { createProfilePhotoRouter } from './profilePhotoRoutes.js';
 import { createXstoreMessageRouter } from './xstoreMessageRoutes.js';
 import { createCompRouter } from './compRoutes.js';
@@ -392,6 +393,12 @@ export function createApp() {
   // of the tin and what left for the bank — GENERAL, both
   // plans, OWNER-ONLY money (plan Part 7, addition G-A).
   app.use('/api', createPettyCashRouter({ getPool }));
+  // Void & comp log (server/voidCompRoutes.js): the
+  // register of voids and comps — value, reason, approver
+  // — hand-entered until a live till feed exists,
+  // Business-only Restaurant Corner (Invoices & Money
+  // shelf), OWNER/MANAGER money (plan Part 7, addition G-C).
+  app.use('/api', createVoidCompRouter({ getPool }));
   // Catering & private events, the simple version
   // (server/cateringRoutes.js): the event book, the Studio
   // event sheet and the pull into prep — Business-only,
