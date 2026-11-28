@@ -232,6 +232,10 @@ export const TRAINING_LESSONS = [
   { id: 'owner-recipe-cost-link', track: 'owner', module: 'restaurant', heading: 'restaurant', steps: 5, feature: 'restaurant' },
   { id: 'owner-lot-traceability', track: 'owner', module: 'restaurant', heading: 'restaurant', steps: 5, feature: 'restaurant' },
   { id: 'owner-spill-log', track: 'owner', module: 'restaurant', heading: 'restaurant', steps: 5, feature: 'restaurant' },
+  // Pest control + thermometer calibration (G-B, Nov 26,
+  // 2026): a sibling lesson in the food-safety family —
+  // the staff lesson, under the RESTAURANT heading.
+  { id: 'staff-pest-calibration', track: 'staff', module: 'restaurant', heading: 'restaurant', steps: 5, feature: 'restaurant' },
   // Cross-store messages (Nov 23, 2026) — mirrors the server
   // catalog (t10 proves the two agree).
   { id: 'owner-xstore-messages', track: 'owner', module: 'messaging', heading: 'general', steps: 5, feature: 'xstoreMessages' },

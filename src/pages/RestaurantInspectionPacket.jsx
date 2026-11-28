@@ -27,21 +27,25 @@ export default function RestaurantInspectionPacket() {
   const monthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
   const [from, setFrom] = useState(monthAgo);
   const [to, setTo] = useState(today);
-  const [rows, setRows] = useState({ tempLogs: [], safetyLogs: [], wasteEntries: [] });
+  const [rows, setRows] = useState({ tempLogs: [], safetyLogs: [], wasteEntries: [], pestVisits: [], calibrationLogs: [] });
   const [loading, setLoading] = useState(true);
   const [printing, setPrinting] = useState(false);
 
   useEffect(() => {
     (async () => {
-      const [tempPage, safetyPage, wastePage] = await Promise.all([
+      const [tempPage, safetyPage, wastePage, pestPage, calPage] = await Promise.all([
         base44.entities.TempLog.filter(scoped({}, activeId), { sort: '-created_date', limit: 1000 }),
         base44.entities.SafetyLog.filter(scoped({}, activeId), { sort: '-created_date', limit: 1000 }),
         base44.entities.WasteEntry.filter(scoped({}, activeId), { sort: '-created_date', limit: 1000 }),
+        base44.entities.PestVisit.filter(scoped({}, activeId), { sort: '-created_date', limit: 1000 }),
+        base44.entities.CalibrationLog.filter(scoped({}, activeId), { sort: '-created_date', limit: 1000 }),
       ]);
       setRows({
         tempLogs: tempPage.items ?? [],
         safetyLogs: safetyPage.items ?? [],
         wasteEntries: wastePage.items ?? [],
+        pestVisits: pestPage.items ?? [],
+        calibrationLogs: calPage.items ?? [],
       });
       setLoading(false);
     })();
@@ -55,12 +59,23 @@ export default function RestaurantInspectionPacket() {
     const toDay = new Date(`${to}T23:59:59.999`);
     return day >= fromDay && day <= toDay;
   };
+  const inVisitRange = (row) => {
+    // A pest visit is dated by its visit date when it has
+    // one (the day the company came), else by when it was
+    // logged — the G-B logs join the packet (Nov 26, 2026).
+    const day = String(row.visit_date || '').slice(0, 10);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(day)) return day >= from && day <= to;
+    return inRange(row);
+  };
   const packet = {
     tempLogs: rows.tempLogs.filter(inRange),
     safetyLogs: rows.safetyLogs.filter(inRange),
     wasteEntries: rows.wasteEntries.filter(inRange),
+    pestVisits: rows.pestVisits.filter(inVisitRange),
+    calibrationLogs: rows.calibrationLogs.filter(inRange),
   };
-  const total = packet.tempLogs.length + packet.safetyLogs.length + packet.wasteEntries.length;
+  const total = packet.tempLogs.length + packet.safetyLogs.length + packet.wasteEntries.length
+    + packet.pestVisits.length + packet.calibrationLogs.length;
 
   const printPacket = () => {
     setPrinting(true);
@@ -115,6 +130,8 @@ export default function RestaurantInspectionPacket() {
             tempLogs={packet.tempLogs}
             safetyLogs={packet.safetyLogs}
             wasteEntries={packet.wasteEntries}
+            pestVisits={packet.pestVisits}
+            calibrationLogs={packet.calibrationLogs}
             business={record}
             docStyle={docStyle}
             fromLabel={from}
@@ -129,6 +146,8 @@ export default function RestaurantInspectionPacket() {
             tempLogs={packet.tempLogs}
             safetyLogs={packet.safetyLogs}
             wasteEntries={packet.wasteEntries}
+            pestVisits={packet.pestVisits}
+            calibrationLogs={packet.calibrationLogs}
             business={record}
             docStyle={docStyle}
             fromLabel={from}

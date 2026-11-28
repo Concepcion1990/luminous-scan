@@ -2,6 +2,7 @@ import {
   ArrowRightLeft,
   BadgeCheck,
   Ban,
+  Bug,
   BookOpen,
   Boxes,
   CalendarCheck,
@@ -148,6 +149,10 @@ export const SHELVES = [
       // the staff-documents machinery, the mock inspection on
       // the checklist engine, and the SDS shelf.
       door('/restaurant/safety-logs', 'nav.safetyLogs', 'restaurant.doorSafetyLogs', ClipboardCheck),
+      // G-B (Nov 26, 2026): the pest-control log and the
+      // thermometer calibration log — the food-safety
+      // family's two new logs, on this shelf.
+      door('/restaurant/pest-calibration', 'nav.pestCalibration', 'restaurant.doorPestCalibration', Bug),
       door('/restaurant/inspection', 'nav.inspectionPacket', 'restaurant.doorInspectionPacket', PackageOpen),
       door('/restaurant/certificates', 'nav.foodCerts', 'restaurant.doorFoodCerts', BadgeCheck),
       door('/restaurant/mock-inspection', 'nav.mockInspection', 'restaurant.doorMockInspection', SearchCheck),
