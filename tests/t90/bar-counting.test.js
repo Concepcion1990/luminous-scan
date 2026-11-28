@@ -4,7 +4,7 @@
 //
 // Pinned here:
 //   - 38 new keys exist in all 52 locales, never fall back
-//     to the raw key, and the keyset is uniform at 6770
+//     to the raw key, and the keyset is uniform at 6838
 //     (6678 + 38 bar counting); placeholders survive
 //     translation.
 //   - The registry gains exactly the four bar-counting
@@ -74,10 +74,10 @@ const NEW_KEYS = [
   'training.lessons.owner-bar-counting.step4', 'training.lessons.owner-bar-counting.step5',
 ];
 
-test('the keyset is uniform at 6770 keys in all 52 locales', () => {
+test('the keyset is uniform at 6838 keys in all 52 locales', () => {
   const codes = Object.keys(LOCALES);
   assert.equal(codes.length, 52);
-  for (const code of codes) assert.equal(Object.keys(LOCALES[code]).length, 6770, code);
+  for (const code of codes) assert.equal(Object.keys(LOCALES[code]).length, 6838, code);
 });
 
 test('all 38 bar-counting keys exist and never fall back to the key in any locale', () => {
@@ -138,7 +138,7 @@ test('plan presentation: the bar-counting line is Business-only in Plans, Welcom
 });
 
 test('the catalogs agree at 132 lessons and the bar-counting lesson rides the RESTAURANT heading', () => {
-  assert.equal(CLIENT_LESSONS.length, 134);
+  assert.equal(CLIENT_LESSONS.length, 135);
   assert.deepEqual(CLIENT_LESSONS, SERVER_LESSONS);
   const lesson = CLIENT_LESSONS.find((l) => l.id === 'owner-bar-counting');
   assert.ok(lesson, 'bar-counting lesson exists');
@@ -148,7 +148,7 @@ test('the catalogs agree at 132 lessons and the bar-counting lesson rides the RE
   assert.equal(lesson.feature, 'restaurant');
   assert.equal(lesson.steps, 5);
   assert.equal(LOCALES.en['training.lessons.owner-bar-counting.title'], 'Counting the bar: partial bottles and kegs');
-  assert.equal(CLIENT_LESSONS.filter((l) => l.heading === 'general').length, 114);
+  assert.equal(CLIENT_LESSONS.filter((l) => l.heading === 'general').length, 115);
   assert.equal(CLIENT_LESSONS.filter((l) => l.heading === 'restaurant').length, 20);
 });
 

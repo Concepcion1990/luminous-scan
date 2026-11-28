@@ -182,11 +182,15 @@ test('plan-visible counts: Business whole, Essentials without the Business subje
   // 2026) adds ONE owner lesson: owner-recipe-cost-link
   // (feature restaurant — the link is Business-only):
   // owner 58 on Business; Essentials unchanged.
-  assert.equal(count('owner', true), 58);
+  // The shift-swaps build (plan Part 7, item 391, Nov 26,
+  // 2026) adds ONE owner lesson: owner-shift-swaps (no
+  // feature tag — swaps and availability are general, both
+  // plans): owner 59 on Business and 29 on Essentials.
+  assert.equal(count('owner', true), 59);
   assert.equal(count('manager', true), 26);
   assert.equal(count('staff', true), 49);
   // Essentials: 21 owner subjects hidden, owner-import in their place.
-  assert.equal(count('owner', false), 28); // +1 confidentiality lesson (Nov 19, 2026); +1 eBay storefront lesson (release 362, both plans); +1 own-training lesson (the training build, both plans); +1 barcode-pool lesson (the barcode-pool build, both plans)
+  assert.equal(count('owner', false), 29); // +1 confidentiality lesson (Nov 19, 2026); +1 eBay storefront lesson (release 362, both plans); +1 own-training lesson (the training build, both plans); +1 barcode-pool lesson (the barcode-pool build, both plans)
   assert.equal(count('manager', false), 14);
   assert.equal(count('staff', false), 39);
   // Payroll / workforce / direct-deposit lessons stay on Essentials.
