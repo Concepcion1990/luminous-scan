@@ -19,6 +19,7 @@ import {
   Monitor,
   NotebookPen,
   PackageOpen,
+  Receipt,
   Repeat,
   Scale,
   SearchCheck,
@@ -131,6 +132,11 @@ export const SHELVES = [
       door('/restaurant/invoices', 'nav.invoices', 'restaurant.doorInvoices', FileText),
       door('/restaurant/variance', 'nav.variance', 'restaurant.doorVariance', Scale),
       door('/restaurant/ledger', 'nav.ledger', 'restaurant.doorLedger', BookOpen),
+      // Plan Part 7, addition G-C: the void & comp log —
+      // the register of voids and comps (value, reason,
+      // approver), hand-entered until a live till feed
+      // exists. Its home is this shelf: one clean door.
+      door('/restaurant/void-comp', 'nav.voidComp', 'restaurant.doorVoidComp', Receipt),
       door('/restaurant/menu', 'nav.menu', 'restaurant.doorMenu', TrendingUp, { crossLink: true }),
     ],
   },

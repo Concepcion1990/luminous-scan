@@ -237,6 +237,9 @@ export const TRAINING_LESSONS = [
   { id: 'owner-recipe-cost-link', track: 'owner', module: 'restaurant', heading: 'restaurant', steps: 5, feature: 'restaurant' },
   { id: 'owner-lot-traceability', track: 'owner', module: 'restaurant', heading: 'restaurant', steps: 5, feature: 'restaurant' },
   { id: 'owner-spill-log', track: 'owner', module: 'restaurant', heading: 'restaurant', steps: 5, feature: 'restaurant' },
+  // Void & comp log (G-C, Nov 26, 2026): its own lesson,
+  // under the RESTAURANT heading, Business-only.
+  { id: 'owner-void-comp', track: 'owner', module: 'restaurant', heading: 'restaurant', steps: 5, feature: 'restaurant' },
   // Pest control + thermometer calibration (G-B, Nov 26,
   // 2026): a sibling lesson in the food-safety family —
   // the staff lesson, under the RESTAURANT heading.
