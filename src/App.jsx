@@ -39,6 +39,7 @@ import RestaurantExpiry from '@/pages/RestaurantExpiry';
 import RestaurantAllergens from '@/pages/RestaurantAllergens';
 import RestaurantTempLogs from '@/pages/RestaurantTempLogs';
 import RestaurantSafetyLogs from '@/pages/RestaurantSafetyLogs';
+import RestaurantPestCalibration from '@/pages/RestaurantPestCalibration';
 import RestaurantInspectionPacket from '@/pages/RestaurantInspectionPacket';
 import RestaurantCertificates from '@/pages/RestaurantCertificates';
 import RestaurantMockInspection from '@/pages/RestaurantMockInspection';
@@ -315,6 +316,14 @@ const AuthenticatedApp = () => {
             element={
               <PlanRedirect feature="restaurant">
                 <RestaurantSafetyLogs />
+              </PlanRedirect>
+            }
+          />
+          <Route
+            path="/restaurant/pest-calibration"
+            element={
+              <PlanRedirect feature="restaurant">
+                <RestaurantPestCalibration />
               </PlanRedirect>
             }
           />

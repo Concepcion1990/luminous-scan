@@ -65,7 +65,7 @@ import {
 import { invoiceCostUpdates, recipesStandingOn, costNoteValues } from './recipeCostLinkCore.js';
 import { recordMovementTx } from './movements.js';
 import { computeInvoiceMatch, priceAlertCandidates, creditStanding } from './restaurantOps.js';
-import { correctiveActionError, cleanSafetyLog } from './foodSafetyCore.js';
+import { correctiveActionError, cleanSafetyLog, cleanPestVisit, cleanCalibration } from './foodSafetyCore.js';
 import { memberLevel } from './staffWindow.js';
 import { ensureDefaultLocation } from './defaultLocation.js';
 import { rememberOrderAddress } from './customerAddresses.js';
@@ -268,6 +268,34 @@ const DEFS = {
     planGate: 'restaurant',
     // No writePerm — daily log (see the fork note above).
   },
+  // Pest-control visits + thermometer calibration checks
+  // (plan Part 7, owner-ruled addition G-B, Nov 26, 2026;
+  // migration 072): the food-safety family's two new logs.
+  // The cleaning and the calibration outcome are the
+  // SERVER's, computed in the validators below — a client
+  // cannot claim a missed ice-point reading passed. The
+  // pest report's file columns are stripped from client
+  // writes: they are set only by the food-safety report
+  // route (the documents machinery).
+  PestVisit: {
+    table: 'pest_visits',
+    json: [],
+    numeric: ['report_size_bytes'],
+    bool: [],
+    required: ['company'],
+    hide: ['report_data_base64'],
+    planGate: 'restaurant',
+    // No writePerm — daily log (see the fork note above).
+  },
+  CalibrationLog: {
+    table: 'calibration_logs',
+    json: [],
+    numeric: ['reading'],
+    bool: [],
+    required: ['thermometer_name'],
+    planGate: 'restaurant',
+    // No writePerm — daily log (see the fork note above).
+  },
   EightySixItem: {
     table: 'eighty_six_items',
     json: [],
@@ -419,6 +447,13 @@ export function publicRow(def, row) {
   out.updated_date = row.updated_at;
   delete out.created_at;
   delete out.updated_at;
+  // Hidden columns (a def's `hide` list) never ride a read:
+  // the pest report's bytes stay behind their file route,
+  // and the row carries only the fact that a report exists.
+  if (Array.isArray(def.hide)) {
+    if (row.report_data_base64 !== undefined) out.has_report = Boolean(row.report_data_base64);
+    for (const field of def.hide) delete out[field];
+  }
   return out;
 }
 
@@ -1033,6 +1068,37 @@ async function validateSafetyLog(pool, business, candidate) {
   candidate.unit = clean.unit;
   candidate.in_range = clean.in_range;
   candidate.corrective_action = clean.corrective_action;
+}
+
+async function validatePestVisit(pool, business, candidate) {
+  // cleanPestVisit holds the company's requirement and the
+  // real-date rule; its cleaned shape lands back on the
+  // candidate. The filed report's columns are the server's
+  // alone (the food-safety report route sets them) — a
+  // client write can never plant or clear a report.
+  const clean = cleanPestVisit(candidate);
+  candidate.company = clean.company;
+  candidate.visit_date = clean.visit_date;
+  candidate.technician = clean.technician;
+  candidate.areas_treated = clean.areas_treated;
+  candidate.findings = clean.findings;
+  candidate.next_visit_on = clean.next_visit_on;
+  delete candidate.report_filename;
+  delete candidate.report_content_type;
+  delete candidate.report_size_bytes;
+  delete candidate.report_data_base64;
+}
+
+async function validateCalibration(pool, business, candidate) {
+  // cleanCalibration holds the thermometer + initials
+  // requirements and judges the outcome from the reading —
+  // what is stored is the server's judgement.
+  const clean = cleanCalibration(candidate);
+  candidate.thermometer_name = clean.thermometer_name;
+  candidate.reading = clean.reading;
+  candidate.unit = clean.unit;
+  candidate.outcome = clean.outcome;
+  candidate.initials = clean.initials;
 }
 
 async function validateEightySixItem(pool, business, candidate) {
@@ -2052,6 +2118,12 @@ async function guardCreate(pool, def, name, access, values) {
   if (name === 'SafetyLog') {
     await validateSafetyLog(pool, business, values);
   }
+  if (name === 'PestVisit') {
+    await validatePestVisit(pool, business, values);
+  }
+  if (name === 'CalibrationLog') {
+    await validateCalibration(pool, business, values);
+  }
   if (name === 'EightySixItem') {
     await validateEightySixItem(pool, business, values);
   }
@@ -2325,6 +2397,29 @@ async function guardUpdate(pool, def, name, access, row, patch) {
     patch.unit = merged.unit;
     patch.in_range = merged.in_range;
     patch.corrective_action = merged.corrective_action;
+  }
+  if (name === 'PestVisit') {
+    const merged = { ...row, ...patch };
+    await validatePestVisit(pool, access.business, merged);
+    patch.company = merged.company;
+    patch.visit_date = merged.visit_date;
+    patch.technician = merged.technician;
+    patch.areas_treated = merged.areas_treated;
+    patch.findings = merged.findings;
+    patch.next_visit_on = merged.next_visit_on;
+    delete patch.report_filename;
+    delete patch.report_content_type;
+    delete patch.report_size_bytes;
+    delete patch.report_data_base64;
+  }
+  if (name === 'CalibrationLog') {
+    const merged = { ...row, ...patch };
+    await validateCalibration(pool, access.business, merged);
+    patch.thermometer_name = merged.thermometer_name;
+    patch.reading = merged.reading;
+    patch.unit = merged.unit;
+    patch.outcome = merged.outcome;
+    patch.initials = merged.initials;
   }
   if (name === 'EightySixItem') {
     await validateEightySixItem(pool, access.business, { ...row, ...patch });

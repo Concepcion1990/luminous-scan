@@ -63,6 +63,7 @@ import {
   deleteCert,
   listCerts,
   listSdsSheets,
+  shapePestVisit,
   shapeSdsSheet,
 } from './foodSafetyCore.js';
 
@@ -260,6 +261,43 @@ export function createFoodSafetyRouter({ getPool: getPoolFn }) {
     );
     if (!rowCount) throw err(404, 'not_found', 'Not found.');
     return res.json({ sheets: await listSdsSheets(pool(), req.params.bid) });
+  }));
+
+  /* ------------------------- pest-control reports (G-B) */
+
+  // The pest company's own report, filed with its visit —
+  // the documents machinery pattern the SDS shelf uses
+  // (same file types, same 25 MB cap, bytes behind the
+  // session). Filing and reading are log work: any member
+  // of the business may do either, like reading the SDS
+  // shelf; the visit itself rides the PestVisit entity.
+  router.get(`${base}/pest/:id/file`, asyncHandler(async (req, res) => {
+    await ctx(req);
+    const { rows } = await pool().query(
+      'SELECT report_content_type, report_filename, report_data_base64 FROM pest_visits WHERE id = $1 AND business_id = $2',
+      [req.params.id, req.params.bid],
+    );
+    const file = rows[0];
+    if (!file?.report_data_base64) throw err(404, 'not_found', 'Not found.');
+    res.setHeader('Content-Type', file.report_content_type);
+    res.setHeader('Cache-Control', 'private, no-store');
+    res.setHeader('Content-Disposition', `inline; filename="${cleanFilename(file.report_filename) || 'document'}"`);
+    return res.send(Buffer.from(file.report_data_base64, 'base64'));
+  }));
+
+  router.post(`${base}/pest/:id/report`, asyncHandler(async (req, res) => {
+    await ctx(req);
+    await assertNotInGrace(pool(), req.params.bid);
+    const parsed = parseSdsDataUrl(req.body?.dataUrl);
+    if (!parsed) throw err(400, 'staff_document_invalid', STAFF_DOCUMENT_FILE_INVALID_MESSAGE);
+    const filename = cleanFilename(req.body?.filename);
+    const { rows } = await pool().query(
+      `UPDATE pest_visits SET report_filename = $3, report_content_type = $4, report_size_bytes = $5, report_data_base64 = $6, updated_at = NOW()
+        WHERE id = $1 AND business_id = $2 RETURNING *`,
+      [req.params.id, req.params.bid, filename, parsed.mime, parsed.bytes.length, parsed.base64],
+    );
+    if (!rows[0]) throw err(404, 'not_found', 'Not found.');
+    return res.status(201).json({ visit: shapePestVisit(rows[0]) });
   }));
 
   /* ------------------------------------------- mock inspection */

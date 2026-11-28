@@ -234,6 +234,83 @@ export function shapeSdsSheet(row) {
   };
 }
 
+/* ----------------------- pest control + calibration (G-B) */
+
+export const PEST_COMPANY_MESSAGE = 'Name the pest-control company that visited.';
+export const CALIBRATION_THERMOMETER_MESSAGE = 'Name the thermometer you checked.';
+export const PEST_CALIBRATION_MESSAGE = 'Check the entry and try again.';
+
+/** The ice point, in Celsius: a thermometer standing in ice
+ *  water must read exactly 32 °F / 0 °C. Fahrenheit converts
+ *  the family's way (rounded to the whole degree a
+ *  thermometer reads), so 32 °F judges as 0 °C. */
+export function calibrationOutcome(reading, unit) {
+  const value = reading === null || reading === undefined || reading === '' ? NaN : Number(reading);
+  if (!Number.isFinite(value)) return 'adjusted';
+  const judged = unit === 'F' ? Math.round(((value - 32) * 5) / 9) : value;
+  return judged === 0 ? 'pass' : 'adjusted';
+}
+
+/**
+ * A pest-service visit, cleaned: the company is the record's
+ * name (required — a visit by nobody is no record), the rest
+ * rides in the logger's words, and the two dates must be real
+ * calendar dates or null. The filed report's columns are NOT
+ * cleaned here — they are the server's alone, set only by the
+ * report route (the documents machinery), never by the client.
+ */
+export function cleanPestVisit(input) {
+  const company = String(input?.company || '').trim().slice(0, 200);
+  if (!company) throw err(400, 'pest_company_needed', PEST_COMPANY_MESSAGE);
+  return {
+    company,
+    visit_date: cleanDate(input?.visit_date),
+    technician: String(input?.technician || '').trim().slice(0, 200),
+    areas_treated: String(input?.areas_treated || '').trim().slice(0, 1000),
+    findings: String(input?.findings || '').trim().slice(0, 1000),
+    next_visit_on: cleanDate(input?.next_visit_on),
+  };
+}
+
+/**
+ * An ice-point calibration check, cleaned: which thermometer
+ * (required), the reading it showed in ice water, and the
+ * checker's initials (required — the record is signed). The
+ * outcome is the SERVER's judgement of the reading, never
+ * the client's claim: pass at the ice point, adjusted for
+ * anything else.
+ */
+export function cleanCalibration(input) {
+  const thermometer = String(input?.thermometer_name || '').trim().slice(0, 200);
+  if (!thermometer) throw err(400, 'calibration_thermometer_needed', CALIBRATION_THERMOMETER_MESSAGE);
+  const rawReading = input?.reading;
+  const reading = rawReading === null || rawReading === undefined || rawReading === '' ? NaN : Number(rawReading);
+  const initials = String(input?.initials || '').trim().slice(0, 20);
+  if (!Number.isFinite(reading) || !initials) {
+    throw err(400, 'pest_calibration_invalid', PEST_CALIBRATION_MESSAGE);
+  }
+  const unit = input?.unit === 'C' ? 'C' : 'F';
+  return {
+    thermometer_name: thermometer,
+    reading,
+    unit,
+    outcome: calibrationOutcome(reading, unit),
+    initials,
+  };
+}
+
+/** One pest visit as the clients render it: the filed
+ *  report's METADATA only — its bytes ride the file route
+ *  (the documents discipline), never the list payload. */
+export function shapePestVisit(row) {
+  const { report_data_base64: _bytes, ...rest } = row || {};
+  return {
+    ...rest,
+    has_report: Boolean(row?.report_data_base64),
+    report_filename: row?.report_filename || '',
+  };
+}
+
 export async function listSdsSheets(pool, businessId) {
   const { rows } = await pool.query(
     `SELECT id, title, filename, content_type, size_bytes, uploaded_by_name, created_at

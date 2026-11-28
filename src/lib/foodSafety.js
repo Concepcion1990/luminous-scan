@@ -56,6 +56,28 @@ export function sdsSheetFileUrl(businessId, sheetId) {
   return `${base(businessId)}/sds/${encodeURIComponent(sheetId)}/file`;
 }
 
+export function attachPestReport(businessId, visitId, values) {
+  return apiRequest(`${base(businessId)}/pest/${encodeURIComponent(visitId)}/report`, {
+    method: 'POST',
+    body: values,
+  });
+}
+
+export function pestReportFileUrl(businessId, visitId) {
+  return `${base(businessId)}/pest/${encodeURIComponent(visitId)}/file`;
+}
+
+/** The ice-point judgement, the server's way
+ *  (server/foodSafetyCore.js calibrationOutcome): a
+ *  thermometer in ice water must read 32 °F / 0 °C — at the
+ *  ice point the check passes; anything else was adjusted. */
+export function calibrationOutcome(reading, unit) {
+  const value = reading === null || reading === undefined || reading === '' ? NaN : Number(reading);
+  if (!Number.isFinite(value)) return 'adjusted';
+  const judged = unit === 'F' ? Math.round(((value - 32) * 5) / 9) : value;
+  return judged === 0 ? 'pass' : 'adjusted';
+}
+
 export function startMockInspection(businessId, values) {
   return apiRequest(`${base(businessId)}/mock-inspection`, {
     method: 'POST',

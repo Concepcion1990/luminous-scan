@@ -30,7 +30,7 @@ function WhenCell({ row, business }) {
   );
 }
 
-export default function InspectionPacketDoc({ tempLogs = [], safetyLogs = [], wasteEntries = [], business, docStyle, fromLabel = '', toLabel = '' }) {
+export default function InspectionPacketDoc({ tempLogs = [], safetyLogs = [], wasteEntries = [], pestVisits = [], calibrationLogs = [], business, docStyle, fromLabel = '', toLabel = '' }) {
   const range = fromLabel && toLabel ? `${fromLabel} – ${toLabel}` : '';
   return (
     <div
@@ -126,6 +126,59 @@ export default function InspectionPacketDoc({ tempLogs = [], safetyLogs = [], wa
               <td className={TD}>{entry.quantity}</td>
               <td className={TD}>{entry.reason ? t(`ops.waste.reason.${entry.reason}`) : ''}</td>
               <td className={TD}>{entry.location_name || ''}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <h2 className={SECTION}>{t('pestCal.pestTitle')}</h2>
+      <table className="w-full border-collapse">
+        <thead>
+          <tr>
+            <th className={`${TH} w-[14%]`}>{t('pestCal.date')}</th>
+            <th className={TH}>{t('pestCal.company')}</th>
+            <th className={TH}>{t('pestCal.areas')}</th>
+            <th className={TH}>{t('pestCal.findings')}</th>
+            <th className={TH}>{t('pestCal.nextVisit')}</th>
+            <th className={TH}>{t('pestCal.report')}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {pestVisits.map((visit) => (
+            <tr key={visit.id} className="border-b border-black/15">
+              <td className={TD}>{visit.visit_date || (visit.created_date ? formatBusinessDate(visit.created_date, business) : '')}</td>
+              <td className={TD}>
+                <span className="font-semibold">{visit.company || ''}</span>
+                {visit.technician ? <span className="block text-[8pt]">{visit.technician}</span> : null}
+              </td>
+              <td className={TD}>{visit.areas_treated || ''}</td>
+              <td className={TD}>{visit.findings || ''}</td>
+              <td className={TD}>{visit.next_visit_on || ''}</td>
+              <td className={TD}>{visit.has_report ? (visit.report_filename || t('pestCal.report')) : ''}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <h2 className={SECTION}>{t('pestCal.calTitle')}</h2>
+      <table className="w-full border-collapse">
+        <thead>
+          <tr>
+            <th className={`${TH} w-[18%]`}>{t('ops.tempLogs.colWhen')}</th>
+            <th className={TH}>{t('pestCal.thermometer')}</th>
+            <th className={TH}>{t('ops.tempLogs.colReading')}</th>
+            <th className={TH}>{t('pestCal.outcome')}</th>
+            <th className={TH}>{t('pestCal.initials')}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {calibrationLogs.map((check) => (
+            <tr key={check.id} className="border-b border-black/15">
+              <WhenCell row={check} business={business} />
+              <td className={TD}>{check.thermometer_name || ''}</td>
+              <td className={TD}>{`${check.reading}°${check.unit || ''}`}</td>
+              <td className={TD}>{check.outcome === 'pass' ? t('pestCal.pass') : t('pestCal.adjusted')}</td>
+              <td className={TD}>{check.initials || ''}</td>
             </tr>
           ))}
         </tbody>
