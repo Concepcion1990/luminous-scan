@@ -60,6 +60,7 @@ import { createLaborWarningsRouter } from './laborWarningsRoutes.js';
 import { createCateringRouter } from './cateringRoutes.js';
 import { createReservationsRouter } from './reservationsRoutes.js';
 import { createStandingOrdersRouter } from './standingOrdersRoutes.js';
+import { createProductionOrderRouter } from './productionOrderRoutes.js';
 import { createProfilePhotoRouter } from './profilePhotoRoutes.js';
 import { createXstoreMessageRouter } from './xstoreMessageRoutes.js';
 import { createCompRouter } from './compRoutes.js';
@@ -379,6 +380,11 @@ export function createApp() {
   // confirmation, and the price compare computed from the
   // business's own invoices and orders — Business-only.
   app.use('/api', createStandingOrdersRouter({ getPool }));
+  // Order by production (server/productionOrderRoutes.js):
+  // a batch run or a catering event becomes ingredient
+  // DRAFT purchase orders, needed minus on-hand, in
+  // order-guide shape — Business-only, drafts only.
+  app.use('/api', createProductionOrderRouter({ getPool }));
   // Profile photos + the owner's display name
   // (server/profilePhotoRoutes.js): owner-approved team photos
   // and the name that replaces "Owner".

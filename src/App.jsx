@@ -50,6 +50,7 @@ import RestaurantLaborTarget from '@/pages/RestaurantLaborTarget';
 import RestaurantCatering from '@/pages/RestaurantCatering';
 import RestaurantReservations from '@/pages/RestaurantReservations';
 import RestaurantStandingOrders from '@/pages/RestaurantStandingOrders';
+import RestaurantProductionOrder from '@/pages/RestaurantProductionOrder';
 import GuestMenuPublic from '@/pages/GuestMenuPublic';
 import RestaurantEightySix from '@/pages/RestaurantEightySix';
 import RestaurantTransfers from '@/pages/RestaurantTransfers';
@@ -390,6 +391,14 @@ const AuthenticatedApp = () => {
             element={
               <PlanRedirect feature="restaurant">
                 <RestaurantStandingOrders />
+              </PlanRedirect>
+            }
+          />
+          <Route
+            path="/restaurant/production-order"
+            element={
+              <PlanRedirect feature="restaurant">
+                <RestaurantProductionOrder />
               </PlanRedirect>
             }
           />

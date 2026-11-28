@@ -10,7 +10,7 @@ import { t } from '@/lib/i18n';
  * and what those makes pull from the shelf. A member of the
  * Document Style Studio family; preview is print.
  */
-export default function PrepSheetDoc({ rows, eventPrep = [], business, docStyle }) {
+export default function PrepSheetDoc({ rows, eventPrep = [], suggestions = [], bookedGuests = 0, business, docStyle }) {
   return (
     <div
       className={`print-label print-page-break doc-root w-[180mm] bg-white p-2 text-black ${docRootClass(docStyle)}`}
@@ -75,6 +75,38 @@ export default function PrepSheetDoc({ rows, eventPrep = [], business, docStyle 
                     <tr key={row.product_id} className="border-b border-black/10">
                       <td className="py-1 pr-2">{row.name}</td>
                       <td className="py-1 text-right">{row.quantity} {row.unit}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ))}
+        </div>
+      ) : null}
+
+      {(suggestions || []).length ? (
+        <div className="mt-4">
+          <p className="text-[11pt] font-semibold">{t('prepSuggest.title')}</p>
+          <p className="mt-0.5 text-[9pt] text-black/70">
+            {t('prepSuggest.bookedLine', { guests: bookedGuests, events: (eventPrep || []).length })}
+          </p>
+          {suggestions.map((row) => (
+            <div key={row.recipe.id} className="mt-2">
+              <p className="text-[10pt] font-medium">
+                {row.recipe.name}
+                <span className="ml-2 text-[9pt] font-normal text-black/70">
+                  {t('prepSuggest.suggested', { makes: row.suggestedMakes })}
+                  {` · ${t('prepSuggest.whyLine', { par: row.parMakes, events: row.eventMakes, prepped: row.onHand })}`}
+                </span>
+              </p>
+              <table className="mt-1 w-full border-collapse text-[9pt]">
+                <tbody>
+                  {row.ingredients.map((ingredient) => (
+                    <tr key={ingredient.product_id} className="border-b border-black/10">
+                      <td className="py-1 pr-2">{ingredient.name}</td>
+                      <td className="py-1 text-right">
+                        {ingredient.quantity} {ingredient.unit}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

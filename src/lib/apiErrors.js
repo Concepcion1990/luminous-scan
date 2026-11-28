@@ -158,6 +158,8 @@ export const API_ERROR_MESSAGE_KEYS = {
   "Check the waitlist details and try again.": "apiErrors.waitlistInvalid",
   "Only the owner, a manager, or a person with the purchasing permission can set up standing orders.": "apiErrors.standingOrdersForbidden",
   "Check the standing order details and try again.": "apiErrors.standingOrdersInvalid",
+  "Only the owner, a manager, or a person with the purchasing permission can order by production.": "apiErrors.productionOrderForbidden",
+  "Check the production plan and try again.": "apiErrors.productionOrderInvalid",
   "A text needs a number and a message.": "apiErrors.smsInvalid",
   "The texting service did not accept the message.": "apiErrors.smsFailed",
   "Only the owner can set the labor watch numbers.": "apiErrors.laborOwner",
