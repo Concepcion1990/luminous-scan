@@ -18,6 +18,7 @@ import {
   Monitor,
   NotebookPen,
   PackageOpen,
+  Repeat,
   Scale,
   SearchCheck,
   Thermometer,
@@ -92,6 +93,7 @@ export const SHELVES = [
     icon: Boxes,
     doors: [
       door('/restaurant/order-guide', 'nav.orderGuide', 'restaurant.doorOrderGuide', ClipboardList),
+      door('/restaurant/standing-orders', 'nav.standingOrders', 'restaurant.doorStandingOrders', Repeat),
       door('/restaurant/transfers', 'nav.transfers', 'restaurant.doorTransfers', ArrowRightLeft),
       // Release 378: stock counts are a general feature (both
       // plans) whose home is the shared Counts page — the

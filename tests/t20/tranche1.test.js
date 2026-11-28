@@ -117,6 +117,9 @@ const SPANISH_COGNATE_KEYS = new Set([
   'ageCheck.category.alcohol',
 ]);
 const FR_FR_COGNATE_KEYS = new Set([
+  // Standing-orders build (plan release 377, Nov 26, 2026): "Active", "Date" and "Source" are the genuine
+  // French words for the standing-order active label and the price book's date and source columns — true cognates.
+  'standingOrders.activeLabel', 'priceBook.colDate', 'priceBook.colSource',
   // Reservations build (plan release 376, Nov 26, 2026): "Date" and "Notes" are the genuine French words for the
   // booking form's date and notes labels — true cognates, not untranslated.
   'reservations.dateLabel', 'reservations.notesLabel',
@@ -186,6 +189,9 @@ const FR_FR_COGNATE_KEYS = new Set([
   'importLib.updateField.format',
 ]);
 const FR_CA_COGNATE_KEYS = new Set([
+  // Standing-orders build (plan release 377, Nov 26, 2026): "Active", "Date" and "Source" — same
+  // French cognates as fr-FR — verified.
+  'standingOrders.activeLabel', 'priceBook.colDate', 'priceBook.colSource',
   // Reservations build (plan release 376, Nov 26, 2026): "Date" and "Notes" — same French cognates
   // as fr-FR — verified.
   'reservations.dateLabel', 'reservations.notesLabel',
@@ -296,6 +302,10 @@ const PT_PT_COGNATE_KEYS = new Set([
   'guestMenu.docTitle',
 ]);
 const DE_COGNATE_KEYS = new Set([
+  // Standing-orders build (plan release 377, Nov 26, 2026): "Name" is the genuine German word for the
+  // standing-order name label — verified (the same word as
+  // categories.nameLabel and locations.nameLabel below).
+  'standingOrders.nameLabel',
   // Reservations build (plan release 376, Nov 26, 2026): "Status" is the genuine German word for the
   // booking status label — verified (the same word as
   // foodSafety.certs.colStatus below).
@@ -536,6 +546,10 @@ const VI_COGNATE_KEYS = new Set([
   'settings.identity.logoLabel', 'staff.memberDialog.emailLabel', 'suppliers.email',
 ]);
 const TL_COGNATE_KEYS = new Set([
+  // Standing-orders build (plan release 377, Nov 26, 2026): Tagalog keeps "Supplier", "Invoice" and
+  // "Order" for the price book's labels, the same loanwords
+  // it uses throughout — verified.
+  'standingOrders.supplierLabel', 'priceBook.colSupplier', 'priceBook.sourceInvoice', 'priceBook.sourceOrder',
   // Reservations build (plan release 376, Nov 26, 2026): Tagalog keeps "Email" for the guest email label,
   // the everyday loanword — verified.
   'reservations.emailLabel',
@@ -742,6 +756,10 @@ const JV_COGNATE_KEYS = new Set([
   'ops.credits.colInvoice', 'ops.credits.invoiceLabel',
 ]);
 const PCM_COGNATE_KEYS = new Set([
+  // Standing-orders build (plan release 377, Nov 26, 2026): the short labels below are kept in English in Pidgin, in the
+  // established register — its prose and lesson steps for
+  // this build are translated.
+  'nav.standingOrders', 'standingOrders.title', 'standingOrders.newButton', 'standingOrders.nameLabel', 'standingOrders.supplierLabel', 'standingOrders.weekdayAny', 'standingOrders.weekdayMon', 'standingOrders.weekdayTue', 'standingOrders.weekdayWed', 'standingOrders.weekdayThu', 'standingOrders.weekdayFri', 'standingOrders.weekdaySat', 'standingOrders.weekdaySun', 'standingOrders.productLabel', 'standingOrders.qtyLabel', 'standingOrders.emptyTitle', 'standingOrders.activeLabel', 'standingOrders.lineSummary', 'standingOrders.linesLabel', 'standingOrders.saveButton', 'priceBook.title', 'priceBook.cheapest', 'priceBook.colSupplier', 'priceBook.colPrice', 'priceBook.colDate', 'priceBook.colSource', 'priceBook.sourceInvoice', 'priceBook.sourceOrder', 'priceBook.emptyTitle', 'priceBook.docTitle',
   // Reservations build (plan release 376, Nov 26, 2026): the short labels below are kept in English in Pidgin, in the
   // established register — its prose and lesson steps for
   // this build are translated.
