@@ -67,6 +67,7 @@ export const PLANS = {
         t('plansLib.includes.checklists'),
         t('plansLib.includes.equipment'),
         t('plansLib.includes.laborWarnings'),
+        t('plansLib.includes.shiftSwaps'),
         t('plansLib.includes.recovery'),
         t('plansLib.includes.support'),
         t('plansLib.includes.offline'),
@@ -345,6 +346,7 @@ export const WELCOME_OPTIONS = [
         t('plansLib.includes.checklists'),
         t('plansLib.includes.equipment'),
         t('plansLib.includes.laborWarnings'),
+        t('plansLib.includes.shiftSwaps'),
         t('plansLib.includes.recovery'),
         t('plansLib.includes.support'),
         t('plansLib.includes.offline'),
@@ -525,6 +527,11 @@ export const COMPARISON_ROWS = [
   // Q4 ruling). Mobile stays "Set at launch" like the
   // other team-era rows.
   { get label() { return t('plansLib.includes.laborWarnings'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
+  // Shift swaps + availability (plan Part 7, item 391,
+  // Nov 26, 2026): staff-initiated swaps with manager
+  // approval and each person's own availability — general
+  // workforce tools on both plans (her Q1–Q4 pattern).
+  { get label() { return t('plansLib.includes.shiftSwaps'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
   { get label() { return t('plansLib.includes.recovery'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
   { get label() { return t('plansLib.includes.support'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },
   { get label() { return t('plansLib.includes.offline'); }, get mobile() { return t('plansLib.unset'); }, essentials: true, business: true },

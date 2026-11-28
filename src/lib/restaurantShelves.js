@@ -194,6 +194,11 @@ export const SHELVES = [
       // general home below, the 369 pattern.
       door('/restaurant/labor-target', 'nav.laborTarget', 'restaurant.doorLaborTarget', Gauge),
       door('/workforce', 'nav.laborWarnings', 'restaurant.doorLaborWarnings', CalendarClock, { crossLink: true }),
+      // Plan Part 7, item 391: shift swaps + availability
+      // are a general feature too (both plans, her Q1–Q4
+      // pattern) — the shelf cross-links to their general
+      // home in the workforce tools, the 369 pattern.
+      door('/workforce', 'nav.shiftSwaps', 'restaurant.doorShiftSwaps', ArrowRightLeft, { crossLink: true }),
     ],
   },
 ];

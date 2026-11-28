@@ -165,6 +165,51 @@ export function decideTimeOff(businessId, id, status, decisionReason) {
   });
 }
 
+// ---- Shift swaps + availability (plan Part 7, item 391) ------------------
+// Staff initiate; a manager approves; only the approval rewrites
+// the schedule — the server decides all of it, these only carry
+// the calls. Availability is the caller's own record: the save
+// door writes the signed-in person's rows and nobody else's.
+const swapsBase = (businessId) => `/api/businesses/${encodeURIComponent(businessId)}/shift-swaps`;
+
+export function getShiftSwapBoard(businessId) {
+  return apiRequest(swapsBase(businessId));
+}
+
+export function offerShiftSwap(businessId, values) {
+  return apiRequest(swapsBase(businessId), { method: 'POST', body: values });
+}
+
+export function actOnShiftSwap(businessId, id, action, decisionReason) {
+  return apiRequest(`${swapsBase(businessId)}/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body: { action, decision_reason: decisionReason || '' },
+  });
+}
+
+export function getAvailability(businessId) {
+  return apiRequest(`${swapsBase(businessId)}/availability`);
+}
+
+export function saveMyAvailability(businessId, days) {
+  return apiRequest(`${swapsBase(businessId)}/availability`, { method: 'PUT', body: { days } });
+}
+
+export function swapStatusLabel(status) {
+  switch (status) {
+    case 'approved':
+      return t('workforce.status.approved');
+    case 'declined':
+      return t('workforce.status.declined');
+    case 'accepted':
+      return t('workforce.swaps.statusAccepted');
+    case 'cancelled':
+      return t('workforce.swaps.statusCancelled');
+    default:
+      return t('workforce.status.pending');
+  }
+}
+
 export function listTasks(businessId) {
   return apiRequest(`${base(businessId)}/tasks`);
 }

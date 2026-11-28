@@ -157,6 +157,12 @@ export const TRAINING_LESSONS = [
   // warnings engine is general workforce tools (Q4) — the
   // owner lesson, under the GENERAL heading, both plans.
   { id: 'owner-labor-warnings', track: 'owner', module: 'workforce', heading: 'general', steps: 5 },
+  // Shift swaps + availability (plan Part 7, item 391,
+  // Nov 26, 2026): staff-initiated swaps with manager
+  // approval and each person's own availability — general
+  // workforce tools, so the owner lesson sits under the
+  // GENERAL heading, both plans.
+  { id: 'owner-shift-swaps', track: 'owner', module: 'workforce', heading: 'general', steps: 5 },
   { id: 'owner-payroll-config', track: 'owner', module: 'payroll', heading: 'general', steps: 4 },
   { id: 'owner-payroll-runs', track: 'owner', module: 'payroll', heading: 'general', steps: 4 },
   { id: 'owner-irs-box', track: 'owner', module: 'payroll', heading: 'general', steps: 4 },

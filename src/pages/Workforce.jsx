@@ -13,7 +13,7 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft, BellRing, CalendarClock, Check, Clock3, Gift, ListTodo, MessageCircle, Mic, Palmtree, Printer, Send, Trash2, X } from 'lucide-react';
+import { ArrowLeft, ArrowRightLeft, BellRing, CalendarClock, Check, Clock3, Gift, ListTodo, MessageCircle, Mic, Palmtree, Printer, Send, Trash2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { useBusiness } from '@/hooks/useBusiness';
@@ -32,7 +32,7 @@ import {
 import { formatHhmm, formatShortDate, formatShortDay, formatTimeFromDay, formatTimeOnly, toLocalDate } from '@/lib/dates';
 import ProfileAvatar from '@/components/business/ProfileAvatar';
 import { resolveDocStyle } from '@/lib/docStyle';
-import { ScheduleDoc, TimesheetDoc } from '@/components/print/WorkforceDocs';
+import { AvailabilityDoc, ScheduleDoc, TimesheetDoc } from '@/components/print/WorkforceDocs';
 import LaborWatchPanel from '@/components/LaborWatchPanel';
 import { buildVoiceWav, createPcmCapture } from '@/lib/voiceCapture';
 import {
@@ -41,9 +41,12 @@ import {
   breakTypeLabel,
   clockIn,
   clockOut,
+  actOnShiftSwap,
   createTask,
   decideTimeOff,
+  getAvailability,
   getClockStatus,
+  getShiftSwapBoard,
   getMessageThread,
   getMessageUnread,
   getWorkforceContext,
@@ -57,12 +60,15 @@ import {
   listTimeOff,
   markNotificationRead,
   markThreadRead,
+  offerShiftSwap,
   postMessage,
   postVoiceMessage,
   requestTimeOff,
+  saveMyAvailability,
   saveSchedule,
   setTaskStatus,
   startMessageThread,
+  swapStatusLabel,
   timeOffStatusLabel,
   updateWorkforceSettings,
   voiceNoteFileUrl,
@@ -428,6 +434,21 @@ function ScheduleTab({ businessId, ctx, people, business, docStyle }) {
   const [personId, setPersonId] = useState('');
   const [draft, setDraft] = useState({});
   const [busy, setBusy] = useState(false);
+  // Availability (plan Part 7, item 391): the week is built
+  // AGAINST each person's own "when I can work" — the builder
+  // sees it right beside the day it belongs to. Leadership
+  // receives the team's rows; a team member receives their
+  // own, which is the only week they can be shown here.
+  const [availability, setAvailability] = useState([]);
+  useEffect(() => {
+    getAvailability(businessId)
+      .then((data) => setAvailability(data.availability ?? []))
+      .catch(() => {});
+  }, [businessId]);
+  const availabilityFor = useCallback(
+    (id, day) => availability.find((row) => row.staff_member_id === id && Number(row.weekday) === day) || null,
+    [availability],
+  );
   // The weekly schedule paper (the prints build, Nov 25, 2026):
   // every candidate's week on one Studio sheet — the same
   // people this tab already shows this viewer, nobody wider.
@@ -552,6 +573,21 @@ function ScheduleTab({ businessId, ctx, people, business, docStyle }) {
                   {value ? `${formatHhmm(value.start_time)} – ${formatHhmm(value.end_time)}` : t('workforce.schedule.off')}
                 </span>
               )}
+              {(() => {
+                const avail = personId ? availabilityFor(personId, day) : null;
+                if (!avail) return null;
+                if (avail.available === false) {
+                  return <span className="text-xs font-medium text-destructive">{t('workforce.availability.unavailable')}</span>;
+                }
+                if (avail.start_time && avail.end_time) {
+                  return (
+                    <span className="text-xs text-muted-foreground">
+                      {t('workforce.schedule.availability')}: {formatHhmm(avail.start_time)} – {formatHhmm(avail.end_time)}
+                    </span>
+                  );
+                }
+                return null;
+              })()}
             </div>
           );
         })}
@@ -578,6 +614,447 @@ function ScheduleTab({ businessId, ctx, people, business, docStyle }) {
       </div>
     )}
     </>
+  );
+}
+
+function SwapsTab({ businessId, ctx, people, peopleById, business, docStyle }) {
+  const { toast } = useToast();
+  const [swaps, setSwaps] = useState([]);
+  const [teamShifts, setTeamShifts] = useState([]);
+  const [availability, setAvailability] = useState([]);
+  const [availDraft, setAvailDraft] = useState(null);
+  const [offer, setOffer] = useState({ weekday: '', kind: 'pool', target_id: '', target_weekday: '', note: '' });
+  const [reasons, setReasons] = useState({});
+  const [busy, setBusy] = useState(false);
+  const [printData, setPrintData] = useState(null);
+  const myId = ctx.my_staff_id;
+  const leadership = ctx.level !== 'staff';
+
+  const load = useCallback(async () => {
+    const [board, avail] = await Promise.all([getShiftSwapBoard(businessId), getAvailability(businessId)]);
+    setSwaps(board.swaps ?? []);
+    setTeamShifts(board.team_shifts ?? []);
+    setAvailability(avail.availability ?? []);
+  }, [businessId]);
+  useEffect(() => {
+    load().catch(() => {});
+  }, [load]);
+
+  // My availability draft: seeded from my saved rows; a day
+  // with no row starts as "can work, no window" (not set).
+  useEffect(() => {
+    if (!myId || availDraft) return;
+    const draft = {};
+    for (let day = 0; day <= 6; day += 1) {
+      const row = availability.find((r) => r.staff_member_id === myId && Number(r.weekday) === day);
+      draft[day] = row
+        ? { available: row.available !== false, start_time: row.start_time || '', end_time: row.end_time || '', saved: true }
+        : { available: true, start_time: '', end_time: '', saved: false };
+    }
+    setAvailDraft(draft);
+  }, [availability, myId, availDraft]);
+
+  const myShifts = useMemo(
+    () => teamShifts.filter((s) => s.staff_member_id === myId).sort((a, b) => a.weekday - b.weekday),
+    [teamShifts, myId],
+  );
+  const myRole = peopleById[myId]?.role_name || '';
+  const coworkers = useMemo(
+    () => people.filter((p) => p.id !== myId && p.status === 'active' && myRole && p.role_name === myRole),
+    [people, myId, myRole],
+  );
+  const targetShifts = useMemo(
+    () => teamShifts.filter((s) => s.staff_member_id === offer.target_id).sort((a, b) => a.weekday - b.weekday),
+    [teamShifts, offer.target_id],
+  );
+  const poolOffers = useMemo(
+    () => swaps.filter((s) => s.kind === 'pool' && s.status === 'pending' && s.requester_id !== myId),
+    [swaps, myId],
+  );
+
+  const swapLine = (swap) => {
+    const day = weekdayLabel(Number(swap.weekday));
+    const start = formatHhmm(swap.start_time);
+    const end = formatHhmm(swap.end_time);
+    if (swap.kind === 'trade') {
+      return t('workforce.swaps.tradeLine', {
+        name: swap.requester_name, day, start, end,
+        day2: weekdayLabel(Number(swap.target_weekday)),
+        start2: formatHhmm(swap.target_start_time), end2: formatHhmm(swap.target_end_time),
+      });
+    }
+    return t('workforce.swaps.poolLine', { name: swap.requester_name, day, start, end });
+  };
+
+  const act = async (swap, action, okMessage) => {
+    setBusy(true);
+    try {
+      await actOnShiftSwap(businessId, swap.id, action, reasons[swap.id] || '');
+      toast({ title: okMessage });
+      await load();
+    } catch (error) {
+      toast({ title: error.message || t('workforce.actionFailed'), variant: 'destructive' });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const submitOffer = async () => {
+    setBusy(true);
+    try {
+      await offerShiftSwap(businessId, {
+        kind: offer.kind,
+        weekday: Number(offer.weekday),
+        target_id: offer.kind === 'trade' ? offer.target_id : undefined,
+        target_weekday: offer.kind === 'trade' ? Number(offer.target_weekday) : undefined,
+        note: offer.note,
+      });
+      toast({ title: t('workforce.swaps.offered') });
+      setOffer({ weekday: '', kind: 'pool', target_id: '', target_weekday: '', note: '' });
+      await load();
+    } catch (error) {
+      toast({ title: error.message || t('workforce.actionFailed'), variant: 'destructive' });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const saveAvailability = async () => {
+    setBusy(true);
+    try {
+      const days = [];
+      for (let day = 0; day <= 6; day += 1) {
+        const draft = availDraft[day];
+        if (!draft) continue;
+        if (!draft.saved && draft.available && !draft.start_time && !draft.end_time) continue;
+        days.push({
+          weekday: day,
+          available: draft.available,
+          start_time: draft.available ? draft.start_time || null : null,
+          end_time: draft.available ? draft.end_time || null : null,
+        });
+      }
+      const saved = await saveMyAvailability(businessId, days);
+      setAvailability((rows) => [...rows.filter((r) => r.staff_member_id !== myId), ...(saved.availability ?? [])]);
+      setAvailDraft(null);
+      toast({ title: t('workforce.availability.saved') });
+    } catch (error) {
+      toast({ title: error.message || t('workforce.actionFailed'), variant: 'destructive' });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const canDecide = (swap) => {
+    if (ctx.level === 'staff') return false;
+    if (swap.status !== 'pending' && swap.status !== 'accepted') return false;
+    if (ctx.level === 'manager') {
+      const levels = [peopleById[swap.requester_id]?.level, peopleById[swap.target_id]?.level, peopleById[swap.accepted_by_id]?.level];
+      if (levels.includes('manager') || levels.includes('owner')) return false;
+    }
+    return true;
+  };
+  const canAccept = (swap) =>
+    Boolean(myId) && swap.status === 'pending' && swap.requester_id !== myId
+    && (swap.kind === 'pool' || swap.target_id === myId);
+  const isMyTradeToRefuse = (swap) =>
+    Boolean(myId) && swap.kind === 'trade' && swap.status === 'pending' && swap.target_id === myId;
+
+  const flagLines = (swap) => (
+    <>
+      {(swap.overtime_flags || []).map((flag) => (
+        <p key={`${flag.staff_member_id}-${flag.code}`} className="mt-1 text-xs font-medium text-destructive">
+          {t('workforce.swaps.overtimeFlag', { name: flag.person_name, hours: flag.hours, limit: flag.limit })}
+        </p>
+      ))}
+      {swap.viewer_availability_conflict && canAccept(swap) && (
+        <p className="mt-1 text-xs font-medium text-destructive">{t('workforce.swaps.viewerConflict')}</p>
+      )}
+      {swap.taker_availability_conflict && swap.taker_id && swap.taker_id !== myId && (
+        <p className="mt-1 text-xs font-medium text-destructive">
+          {t('workforce.swaps.availabilityConflict', { name: swap.taker_name })}
+        </p>
+      )}
+    </>
+  );
+
+  const printBoard = () => {
+    const docPeople = (leadership ? people : people.filter((p) => p.id === myId)).filter((p) => p.status === 'active');
+    const swapLines = swaps
+      .filter((s) => s.status === 'pending' || s.status === 'accepted')
+      .map((s) => ({ id: s.id, text: swapLine(s), status: swapStatusLabel(s.status) }));
+    setPrintData({ people: docPeople, swapLines });
+    setTimeout(() => {
+      window.print();
+      setPrintData(null);
+    }, 50);
+  };
+
+  const teamAvailabilityLine = (person) => {
+    const parts = [];
+    for (let day = 0; day <= 6; day += 1) {
+      const row = availability.find((r) => r.staff_member_id === person.id && Number(r.weekday) === day);
+      if (!row) continue;
+      if (row.available === false) parts.push(`${weekdayLabel(day)}: ${t('workforce.availability.unavailable')}`);
+      else if (row.start_time && row.end_time) parts.push(`${weekdayLabel(day)}: ${formatHhmm(row.start_time)} – ${formatHhmm(row.end_time)}`);
+    }
+    return parts.length ? parts.join(' · ') : t('workforce.availability.notSet');
+  };
+
+  return (
+    <div className="space-y-4">
+      <Section title={t('workforce.swaps.title')} help={t('workforce.swaps.help')}>
+        <div className="flex justify-end">
+          <Button variant="outline" size="sm" onClick={printBoard}>
+            <Printer className="mr-1.5 h-4 w-4" />
+            {t('print.printButton')}
+          </Button>
+        </div>
+        {poolOffers.length > 0 && (
+          <>
+            <h3 className="mt-2 text-sm font-semibold">{t('workforce.swaps.poolTitle')}</h3>
+            <ul className="divide-y divide-border">
+              {poolOffers.map((swap) => (
+                <li key={swap.id} className="py-3 text-sm">
+                  <p>{swapLine(swap)}</p>
+                  {swap.note && <p className="mt-0.5 text-muted-foreground">{swap.note}</p>}
+                  {flagLines(swap)}
+                  {canAccept(swap) && (
+                    <Button size="sm" className="mt-2" disabled={busy} onClick={() => act(swap, 'accept', t('workforce.swaps.takenToast'))}>
+                      {t('workforce.swaps.takeButton')}
+                    </Button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+        {poolOffers.length === 0 && <p className="mt-2 text-sm text-muted-foreground">{t('workforce.swaps.poolEmpty')}</p>}
+      </Section>
+
+      {myId && (
+        <Section title={t('workforce.swaps.offerTitle')}>
+          <div className="grid max-w-xl gap-3">
+            <div>
+              <label className={labelCls}>{t('workforce.swaps.myShift')}</label>
+              <select
+                className={inputCls}
+                value={offer.weekday}
+                onChange={(e) => setOffer((o) => ({ ...o, weekday: e.target.value }))}
+              >
+                <option value="" />
+                {myShifts.map((shift) => (
+                  <option key={shift.weekday} value={shift.weekday}>
+                    {weekdayLabel(shift.weekday)}, {formatHhmm(shift.start_time)} – {formatHhmm(shift.end_time)}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex flex-wrap gap-4 text-sm">
+              <label className="flex cursor-pointer items-center gap-2">
+                <input
+                  type="radio"
+                  name="swap-kind"
+                  checked={offer.kind === 'pool'}
+                  onChange={() => setOffer((o) => ({ ...o, kind: 'pool' }))}
+                />
+                {t('workforce.swaps.kindPool')}
+              </label>
+              <label className="flex cursor-pointer items-center gap-2">
+                <input
+                  type="radio"
+                  name="swap-kind"
+                  checked={offer.kind === 'trade'}
+                  onChange={() => setOffer((o) => ({ ...o, kind: 'trade' }))}
+                />
+                {t('workforce.swaps.kindTrade')}
+              </label>
+            </div>
+            {offer.kind === 'trade' && (
+              <>
+                <div>
+                  <label className={labelCls}>{t('workforce.swaps.coworker')}</label>
+                  <select
+                    className={inputCls}
+                    value={offer.target_id}
+                    onChange={(e) => setOffer((o) => ({ ...o, target_id: e.target.value, target_weekday: '' }))}
+                  >
+                    <option value="" />
+                    {coworkers.map((p) => (
+                      <option key={p.id} value={p.id}>{p.full_name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className={labelCls}>{t('workforce.swaps.theirShift')}</label>
+                  <select
+                    className={inputCls}
+                    value={offer.target_weekday}
+                    onChange={(e) => setOffer((o) => ({ ...o, target_weekday: e.target.value }))}
+                  >
+                    <option value="" />
+                    {targetShifts.map((shift) => (
+                      <option key={shift.weekday} value={shift.weekday}>
+                        {weekdayLabel(shift.weekday)}, {formatHhmm(shift.start_time)} – {formatHhmm(shift.end_time)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </>
+            )}
+            <div>
+              <label className={labelCls}>{t('workforce.swaps.note')}</label>
+              <input
+                className={inputCls}
+                value={offer.note}
+                onChange={(e) => setOffer((o) => ({ ...o, note: e.target.value }))}
+              />
+            </div>
+          </div>
+          <Button
+            className="mt-3"
+            disabled={busy || offer.weekday === '' || (offer.kind === 'trade' && (!offer.target_id || offer.target_weekday === ''))}
+            onClick={submitOffer}
+          >
+            {t('workforce.swaps.offerButton')}
+          </Button>
+        </Section>
+      )}
+
+      <Section title={t('workforce.swaps.requestsTitle')}>
+        {swaps.length === 0 ? (
+          <p className="text-sm text-muted-foreground">{t('workforce.swaps.requestsEmpty')}</p>
+        ) : (
+          <ul className="divide-y divide-border">
+            {swaps.map((swap) => (
+              <li key={swap.id} className="py-3 text-sm">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <span>{swapLine(swap)}</span>
+                  <span className="rounded-full bg-muted px-2 py-0.5 text-xs">{swapStatusLabel(swap.status)}</span>
+                </div>
+                {swap.note && <p className="mt-0.5 text-muted-foreground">{swap.note}</p>}
+                {swap.status === 'accepted' && swap.taker_name && (
+                  <p className="mt-0.5 text-muted-foreground">{t('workforce.swaps.takerLine', { name: swap.taker_name })}</p>
+                )}
+                {swap.decision_reason && (
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {t('workforce.timeOff.decisionReason')}: {swap.decision_reason}
+                  </p>
+                )}
+                {flagLines(swap)}
+                <div className="mt-2 flex max-w-xl flex-wrap items-center gap-2">
+                  {canAccept(swap) && swap.kind === 'trade' && (
+                    <Button size="sm" disabled={busy} onClick={() => act(swap, 'accept', t('workforce.swaps.takenToast'))}>
+                      {t('workforce.swaps.acceptTradeButton')}
+                    </Button>
+                  )}
+                  {isMyTradeToRefuse(swap) && (
+                    <Button size="sm" variant="outline" disabled={busy} onClick={() => act(swap, 'decline', t('workforce.swaps.decidedToast'))}>
+                      {t('workforce.timeOff.decline')}
+                    </Button>
+                  )}
+                  {canDecide(swap) && (
+                    <>
+                      <input
+                        className={inputCls}
+                        placeholder={t('workforce.timeOff.decisionReason')}
+                        value={reasons[swap.id] || ''}
+                        onChange={(e) => setReasons((r) => ({ ...r, [swap.id]: e.target.value }))}
+                      />
+                      {swap.status === 'accepted' && (
+                        <Button size="sm" disabled={busy} onClick={() => act(swap, 'approve', t('workforce.swaps.decidedToast'))}>
+                          <Check className="mr-1 h-4 w-4" /> {t('workforce.timeOff.approve')}
+                        </Button>
+                      )}
+                      <Button size="sm" variant="outline" disabled={busy} onClick={() => act(swap, 'decline', t('workforce.swaps.decidedToast'))}>
+                        <X className="mr-1 h-4 w-4" /> {t('workforce.timeOff.decline')}
+                      </Button>
+                    </>
+                  )}
+                  {myId && swap.requester_id === myId && (swap.status === 'pending' || swap.status === 'accepted') && (
+                    <Button size="sm" variant="ghost" disabled={busy} onClick={() => act(swap, 'cancel', t('workforce.swaps.cancelledToast'))}>
+                      {t('workforce.swaps.cancelButton')}
+                    </Button>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Section>
+
+      {myId && availDraft && (
+        <Section title={t('workforce.availability.title')} help={t('workforce.availability.help')}>
+          <div className="space-y-2">
+            {[0, 1, 2, 3, 4, 5, 6].map((day) => {
+              const draft = availDraft[day];
+              if (!draft) return null;
+              return (
+                <div key={day} className="flex flex-wrap items-center gap-2">
+                  <span className="w-24 text-sm font-medium">{weekdayLabel(day)}</span>
+                  <label className="flex cursor-pointer items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      className="h-4 w-4"
+                      checked={draft.available}
+                      onChange={(e) => setAvailDraft((d) => ({ ...d, [day]: { ...d[day], available: e.target.checked } }))}
+                    />
+                    {t('workforce.availability.canWork')}
+                  </label>
+                  {draft.available && (
+                    <>
+                      <input
+                        type="time"
+                        aria-label={t('workforce.availability.earliest')}
+                        className="w-32 rounded-md border border-input bg-background px-2 py-1.5 text-sm"
+                        value={draft.start_time}
+                        onChange={(e) => setAvailDraft((d) => ({ ...d, [day]: { ...d[day], start_time: e.target.value } }))}
+                      />
+                      <span className="text-muted-foreground">–</span>
+                      <input
+                        type="time"
+                        aria-label={t('workforce.availability.latest')}
+                        className="w-32 rounded-md border border-input bg-background px-2 py-1.5 text-sm"
+                        value={draft.end_time}
+                        onChange={(e) => setAvailDraft((d) => ({ ...d, [day]: { ...d[day], end_time: e.target.value } }))}
+                      />
+                    </>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          <Button className="mt-4" disabled={busy} onClick={saveAvailability}>
+            {t('workforce.availability.save')}
+          </Button>
+        </Section>
+      )}
+
+      {leadership && (
+        <Section title={t('workforce.availability.teamTitle')}>
+          <ul className="divide-y divide-border">
+            {people.filter((p) => p.status === 'active').map((person) => (
+              <li key={person.id} className="py-2 text-sm">
+                <span className="font-medium">{person.full_name}</span>{' '}
+                <span className="text-muted-foreground">{teamAvailabilityLine(person)}</span>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      )}
+
+      {printData && (
+        <div className="print-area hidden print:block">
+          <AvailabilityDoc
+            people={printData.people}
+            availability={availability}
+            swapLines={printData.swapLines}
+            business={business}
+            docStyle={docStyle}
+          />
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -926,6 +1403,12 @@ function InboxTab({ businessId, ctx, people, onRead, onGoTab }) {
       case 'time_off_requested':
       case 'time_off_decided':
         onGoTab('timeoff');
+        break;
+      case 'swap_offered':
+      case 'swap_accepted':
+      case 'swap_decided':
+      case 'swap_cancelled':
+        onGoTab('swaps');
         break;
       case 'task_assigned':
       case 'task_done':
@@ -1732,6 +2215,7 @@ const TABS = [
   { id: 'clock', labelKey: 'workforce.tab.clock', icon: Clock3 },
   { id: 'rewards', labelKey: 'workforce.tab.rewards', icon: Gift },
   { id: 'schedule', labelKey: 'workforce.tab.schedule', icon: CalendarClock },
+  { id: 'swaps', labelKey: 'workforce.tab.swaps', icon: ArrowRightLeft },
   { id: 'timeoff', labelKey: 'workforce.tab.timeOff', icon: Palmtree },
   { id: 'tasks', labelKey: 'workforce.tab.tasks', icon: ListTodo },
   { id: 'inbox', labelKey: 'workforce.tab.inbox', icon: BellRing },
@@ -1810,6 +2294,7 @@ export default function Workforce() {
 
       {tab === 'clock' && <ClockTab businessId={activeId} ctx={ctx} peopleById={peopleById} onEvent={loadMeta} business={record} docStyle={docStyle} />}
       {tab === 'schedule' && <ScheduleTab businessId={activeId} ctx={ctx} people={people} business={record} docStyle={docStyle} />}
+      {tab === 'swaps' && <SwapsTab businessId={activeId} ctx={ctx} people={people} peopleById={peopleById} business={record} docStyle={docStyle} />}
       {tab === 'timeoff' && <TimeOffTab businessId={activeId} ctx={ctx} peopleById={peopleById} />}
       {tab === 'tasks' && <TasksTab businessId={activeId} ctx={ctx} people={people} peopleById={peopleById} />}
       {tab === 'inbox' && <InboxTab businessId={activeId} ctx={ctx} people={people} onRead={loadMeta} onGoTab={setTab} />}
