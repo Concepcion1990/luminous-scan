@@ -112,6 +112,7 @@ export default function RestaurantInvoices() {
           </p>
           <h1 className="mt-1.5 text-2xl font-semibold sm:text-[28px]">{t('ops.invoices.title')}</h1>
           <p className="mt-1 max-w-xl text-sm text-muted-foreground">{t('ops.invoices.subtitle')}</p>
+          <p className="mt-1 max-w-xl text-sm text-muted-foreground">{t('ops.invoices.acceptNote')}</p>
         </div>
         {canBuild ? (
           <Button

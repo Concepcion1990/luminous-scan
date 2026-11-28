@@ -9,6 +9,7 @@ import { useBusiness } from '@/hooks/useBusiness';
 import useStaffAccess from '@/hooks/useStaffAccess';
 import { scoped } from '@/lib/scoped';
 import { formatMoney } from '@/lib/inventory';
+import { formatShortDate } from '@/lib/dates';
 import { listRecipes, recipeCostPerMake, recipeCostPerUnit, yieldQtyOf } from '@/lib/recipes';
 import { resolveDocStyle } from '@/lib/docStyle';
 import { t } from '@/lib/i18n';
@@ -180,6 +181,28 @@ export default function RecipeDetail() {
         </div>
 
         {recipe.description ? <p className="whitespace-pre-line text-sm">{recipe.description}</p> : null}
+
+        {showMoney && recipe.cost_note_product_id ? (
+          <div className="rounded-xl border border-warn/30 bg-warn/5 p-4">
+            <p className="text-sm font-medium">{t('recipes.costUpdatedTitle')}</p>
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              {recipe.cost_note_invoice_number
+                ? t('recipes.costUpdatedNote', {
+                    ingredient: recipe.cost_note_product_name || '',
+                    supplier: recipe.cost_note_supplier_name || '',
+                    invoice: recipe.cost_note_invoice_number,
+                    price: formatMoney(recipe.cost_note_price || 0, record?.currency, 2),
+                    date: recipe.cost_note_at ? formatShortDate(recipe.cost_note_at) : '',
+                  })
+                : t('recipes.costUpdatedNotePlain', {
+                    ingredient: recipe.cost_note_product_name || '',
+                    supplier: recipe.cost_note_supplier_name || '',
+                    price: formatMoney(recipe.cost_note_price || 0, record?.currency, 2),
+                    date: recipe.cost_note_at ? formatShortDate(recipe.cost_note_at) : '',
+                  })}
+            </p>
+          </div>
+        ) : null}
 
         {showMoney ? (
           <div className="grid gap-3 sm:grid-cols-3">
