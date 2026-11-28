@@ -2,6 +2,7 @@ import DocHeader from './DocHeader';
 import DocPhoto from './DocPhoto';
 import { DecoFooter, DecoHeader, DocFrame, PrintedAt } from './DocChrome';
 import { formatMoney } from '@/lib/inventory';
+import { formatShortDate } from '@/lib/dates';
 import { docRootClass, docRootStyle } from '@/lib/docStyle';
 import { t } from '@/lib/i18n';
 
@@ -95,6 +96,25 @@ export default function RecipeDoc({ recipe, business, docStyle, rows, costPerMak
           <p>
             <span className="font-mono text-[6.5pt] uppercase tracking-wide text-black/60">{t('print.recipeCostPerMake')} </span>
             {money(costPerMake)}
+          </p>
+        ) : null}
+        {showMoney && recipe.cost_note_product_id ? (
+          <p>
+            <span className="font-mono text-[6.5pt] uppercase tracking-wide text-black/60">{t('recipes.costUpdatedTitle')} </span>
+            {recipe.cost_note_invoice_number
+              ? t('recipes.costUpdatedNote', {
+                  ingredient: recipe.cost_note_product_name || '',
+                  supplier: recipe.cost_note_supplier_name || '',
+                  invoice: recipe.cost_note_invoice_number,
+                  price: money(recipe.cost_note_price),
+                  date: recipe.cost_note_at ? formatShortDate(recipe.cost_note_at) : '',
+                })
+              : t('recipes.costUpdatedNotePlain', {
+                  ingredient: recipe.cost_note_product_name || '',
+                  supplier: recipe.cost_note_supplier_name || '',
+                  price: money(recipe.cost_note_price),
+                  date: recipe.cost_note_at ? formatShortDate(recipe.cost_note_at) : '',
+                })}
           </p>
         ) : null}
       </div>

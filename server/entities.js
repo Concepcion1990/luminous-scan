@@ -60,7 +60,9 @@ import {
   restoreDepletionsTx,
   activeRecipeForProduct,
   yieldQtyOf,
+  expandRecipeToProducts,
 } from './recipes.js';
+import { invoiceCostUpdates, recipesStandingOn, costNoteValues } from './recipeCostLinkCore.js';
 import { recordMovementTx } from './movements.js';
 import { computeInvoiceMatch, priceAlertCandidates, creditStanding } from './restaurantOps.js';
 import { correctiveActionError, cleanSafetyLog } from './foodSafetyCore.js';
@@ -194,7 +196,7 @@ const DEFS = {
   Recipe: {
     table: 'recipes',
     json: ['lines'],
-    numeric: ['yield_qty', 'q_factor_pct'],
+    numeric: ['yield_qty', 'q_factor_pct', 'cost_note_price'],
     bool: [],
     required: ['name'],
     planGate: 'restaurant',
@@ -1272,6 +1274,77 @@ async function insertPriceAlertsForInvoice(pool, invoiceRow, user) {
   }
 }
 
+/**
+ * The costs-updated note (plan Part 7, item 390): one
+ * ingredient's cost just moved to an invoice price — stamp
+ * every recipe standing on it (directly, or through a
+ * sub-recipe) with the note naming that price and the
+ * invoice it came from (migration 068's columns). The recipe
+ * read shows the note to money holders only, and drops it
+ * if the ingredient later leaves the recipe — the change is
+ * never silent, and the note never outlives its truth.
+ */
+async function stampRecipeCostNotes(pool, businessId, update, invoice) {
+  const { rows: recipeRows } = await pool.query('SELECT * FROM recipes WHERE business_id = $1', [businessId]);
+  const standing = recipesStandingOn(recipeRows, update.product_id);
+  if (!standing.length) return;
+  const note = costNoteValues(update, invoice);
+  for (const recipe of standing) {
+    await pool.query(
+      `UPDATE recipes
+         SET cost_note_product_id = $1, cost_note_product_name = $2, cost_note_price = $3,
+             cost_note_invoice_id = $4, cost_note_invoice_number = $5,
+             cost_note_supplier_name = $6, cost_note_at = NOW(), updated_at = NOW()
+       WHERE id = $7 AND business_id = $8`,
+      [
+        note.cost_note_product_id,
+        note.cost_note_product_name,
+        note.cost_note_price,
+        note.cost_note_invoice_id,
+        note.cost_note_invoice_number,
+        note.cost_note_supplier_name,
+        recipe.id,
+        businessId,
+      ],
+    );
+  }
+}
+
+/**
+ * Approving a supplier invoice (item 390): the invoice's
+ * status landing on 'accepted' makes each billed price that
+ * differs from a product's current cost THE current cost,
+ * resolves that invoice's open price alert for the product
+ * (approval is the alert's answer, given wholesale), and
+ * stamps the costs-updated note on every recipe standing on
+ * the ingredient. Recipe costs themselves need no write —
+ * they are computed at read time from product costs, so the
+ * updated cost re-costs every recipe the moment it is read.
+ * Runs BEFORE the price-alert scan on the same save, so an
+ * accepted invoice opens no alerts for prices it has already
+ * made current. A draft invoice changes nothing here.
+ */
+async function applyAcceptedInvoiceCosts(pool, invoiceRow) {
+  if (!invoiceRow || invoiceRow.status !== 'accepted') return;
+  const businessId = invoiceRow.business_id;
+  const { rows: productRows } = await pool.query('SELECT * FROM products WHERE business_id = $1', [businessId]);
+  const productsById = new Map(productRows.map((row) => [row.id, row]));
+  const updates = invoiceCostUpdates(invoiceRow, productsById);
+  for (const update of updates) {
+    await pool.query('UPDATE products SET cost = $1, updated_at = NOW() WHERE id = $2 AND business_id = $3', [
+      update.new_cost,
+      update.product_id,
+      businessId,
+    ]);
+    await pool.query(
+      `UPDATE vendor_price_alerts SET status = 'accepted', updated_at = NOW()
+       WHERE business_id = $1 AND invoice_id = $2 AND product_id = $3 AND status = 'open'`,
+      [businessId, invoiceRow.id, update.product_id],
+    );
+    await stampRecipeCostNotes(pool, businessId, update, invoiceRow);
+  }
+}
+
 /** The location a restaurant stock event lands on: the row's
  *  named location, else the business's first location (the
  *  default-location heal means a business always has one). */
@@ -1518,6 +1591,16 @@ async function shapeRecipeMoney(pool, access, name, rows) {
       delete row.true_cost;
       delete row.cost_per_make;
       delete row.food_cost_pct;
+      // The costs-updated note names an invoice PRICE (item
+      // 390): it is money, so it follows the money rule — for
+      // anyone without the money view the note never exists.
+      delete row.cost_note_product_id;
+      delete row.cost_note_product_name;
+      delete row.cost_note_price;
+      delete row.cost_note_invoice_id;
+      delete row.cost_note_invoice_number;
+      delete row.cost_note_supplier_name;
+      delete row.cost_note_at;
     }
     return rows;
   }
@@ -1539,6 +1622,23 @@ async function shapeRecipeMoney(pool, access, name, rows) {
     row.true_cost = round2(recipeCostPerUnit(recipesById, productsById, recipe));
     const price = Number(productsById.get(row.product_id)?.price) || 0;
     row.food_cost_pct = price > 0 ? Math.round((row.true_cost / price) * 1000) / 10 : null;
+    // The costs-updated note (item 390) stands only while the
+    // ingredient it names still stands in the recipe: a recipe
+    // edited to drop that ingredient drops the note on the
+    // same read, so the note can never describe a cost the
+    // plate no longer carries.
+    if (row.cost_note_product_id) {
+      const standing = expandRecipeToProducts(recipesById, recipe).has(row.cost_note_product_id);
+      if (!standing) {
+        row.cost_note_product_id = '';
+        row.cost_note_product_name = '';
+        row.cost_note_price = null;
+        row.cost_note_invoice_id = '';
+        row.cost_note_invoice_number = '';
+        row.cost_note_supplier_name = '';
+        row.cost_note_at = null;
+      }
+    }
   }
   return rows;
 }
@@ -1994,6 +2094,18 @@ async function guardCreate(pool, def, name, access, values) {
     // to the restaurant corner.
     delete values.cause_movement_id;
   }
+  if (name === 'Recipe') {
+    // The costs-updated note is the server's alone (item
+    // 390): it is written by invoice approval and the
+    // price-alert answer, never taken from the client.
+    delete values.cost_note_product_id;
+    delete values.cost_note_product_name;
+    delete values.cost_note_price;
+    delete values.cost_note_invoice_id;
+    delete values.cost_note_invoice_number;
+    delete values.cost_note_supplier_name;
+    delete values.cost_note_at;
+  }
   if (name === 'Return') {
     // Returns approval gate (owner ruling, Nov 19, 2026): a
     // return is BORN waiting. Only the owner, or a member the
@@ -2182,6 +2294,15 @@ async function guardUpdate(pool, def, name, access, row, patch) {
     );
   }
   if (name === 'Recipe') {
+    // The costs-updated note is the server's alone (item
+    // 390) — an edit round-tripping the row loses the fields.
+    delete patch.cost_note_product_id;
+    delete patch.cost_note_product_name;
+    delete patch.cost_note_price;
+    delete patch.cost_note_invoice_id;
+    delete patch.cost_note_invoice_number;
+    delete patch.cost_note_supplier_name;
+    delete patch.cost_note_at;
     await validateRecipe(pool, access.business, { ...row, ...patch }, row.id);
   }
   if (name === 'Par') {
@@ -2601,6 +2722,9 @@ export async function createEntity(pool, user, name, values) {
     await shapeTrailActors(pool, access, name, [createdRow]);
   }
   if (name === 'SupplierInvoice') {
+    // An invoice born accepted applies its prices at once
+    // (item 390), before the alert scan weighs what is left.
+    await applyAcceptedInvoiceCosts(pool, createdRow);
     await insertPriceAlertsForInvoice(pool, createdRow, user);
     await shapeInvoiceMatch(pool, access, name, [createdRow]);
     await shapeInvoiceCredits(pool, access, name, [createdRow]);
@@ -2753,6 +2877,24 @@ export async function updateEntity(pool, user, name, id, patch) {
       'UPDATE products SET cost = $1, updated_at = NOW() WHERE id = $2 AND business_id = $3',
       [result.new_cost, result.product_id, result.business_id],
     );
+    // The alert's answer moves a cost by hand (item 390):
+    // the recipes standing on it gain the same costs-updated
+    // note invoice approval leaves, naming the alert's own
+    // invoice — this door is never silent either.
+    const alertInvoice = result.invoice_id
+      ? (
+          await pool.query('SELECT * FROM supplier_invoices WHERE id = $1 AND business_id = $2', [
+            result.invoice_id,
+            result.business_id,
+          ])
+        ).rows[0]
+      : null;
+    await stampRecipeCostNotes(
+      pool,
+      result.business_id,
+      { product_id: result.product_id, product_name: result.product_name, new_cost: result.new_cost },
+      alertInvoice || { id: result.invoice_id || '', invoice_number: '', supplier_name: result.supplier_name || '' },
+    );
   }
   if (name === 'EightySixItem' && result.active === false && !result.cleared_at) {
     // Clearing the board stamps who cleared it and when —
@@ -2771,6 +2913,11 @@ export async function updateEntity(pool, user, name, id, patch) {
     }
   }
   if (name === 'SupplierInvoice') {
+    // Approving the invoice (its status landing on
+    // 'accepted') applies its prices to the ingredients and
+    // re-costs their recipes (item 390) — before the alert
+    // scan weighs what is left.
+    await applyAcceptedInvoiceCosts(pool, result);
     await insertPriceAlertsForInvoice(pool, result, user);
     await shapeInvoiceMatch(pool, access, name, [result]);
     await shapeInvoiceCredits(pool, access, name, [result]);
