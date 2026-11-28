@@ -91,6 +91,14 @@ export default function RestaurantShelf({ shelfId }) {
 
       {isLocations ? (
         <div className="space-y-3">
+          {/* Plan release 380: the all-locations rollup door
+              (with the cross-location push beside it on its
+              page) — the Locations shelf's first feature. */}
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {visibleDoors(shelf, record?.bar_counting_enabled === true).map((door) => (
+              <DoorCard key={`${door.to}-${door.titleKey}`} door={door} />
+            ))}
+          </div>
           <p className="max-w-xl text-sm text-muted-foreground">{t('restaurant.locations.intro')}</p>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {businesses.map((business) => (

@@ -199,15 +199,19 @@ export const SHELVES = [
 ];
 
 /** The seventh shelf: only for owners with 2+ businesses.
- *  Its features (the all-locations rollup, commissary mode)
- *  land in later releases; today the shelf page lists the
- *  owner's businesses, each opening its own corner. */
+ *  Its first feature is the all-locations rollup (plan
+ *  release 380) with the cross-location push beside it;
+ *  commissary mode lands in a later release. The shelf
+ *  page also lists the owner's businesses, each opening
+ *  its own corner. */
 export const LOCATIONS_SHELF = {
   id: 'locations',
   route: '/restaurant/locations',
   labelKey: 'restaurant.shelf.locations',
   icon: MapPin,
-  doors: [],
+  doors: [
+    door('/restaurant/locations-rollup', 'nav.locationsRollup', 'restaurant.doorLocationsRollup', MapPin),
+  ],
 };
 
 /** The shelves this owner sees, in order. The Locations
@@ -224,7 +228,7 @@ export function shelfById(id) {
  *  never a cross-link) — the feature pages' breadcrumbs read
  *  this, so the way back is stated once, here. */
 export function homeShelfForRoute(route) {
-  for (const shelf of SHELVES) {
+  for (const shelf of [...SHELVES, LOCATIONS_SHELF]) {
     if (shelf.doors.some((d) => d.to === route && !d.crossLink)) return shelf;
   }
   return null;
@@ -241,7 +245,7 @@ export function visibleDoors(shelf, barEnabled) {
 
 /** Every feature door in the corner, primary listings only. */
 export function featureDoors() {
-  return SHELVES.flatMap((shelf) => shelf.doors.filter((d) => !d.crossLink));
+  return [...SHELVES, LOCATIONS_SHELF].flatMap((shelf) => shelf.doors.filter((d) => !d.crossLink));
 }
 
 const sameLocalDay = (a, b) =>

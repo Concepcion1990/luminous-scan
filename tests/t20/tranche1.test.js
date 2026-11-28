@@ -784,6 +784,13 @@ const JV_COGNATE_KEYS = new Set([
   'ops.credits.colInvoice', 'ops.credits.invoiceLabel',
 ]);
 const PCM_COGNATE_KEYS = new Set([
+  // Locations-rollup build (plan release 380, Nov 26, 2026): the Pidgin short-label register for
+  // this build — short labels carried in their plain form, as in earlier builds — verified.
+  'plansLib.businessIncludes.locationsRollup', 'locationsRollup.colLocation',
+  'locationsRollup.colFoodCost', 'locationsRollup.colStockValue', 'locationsRollup.docTitle',
+  'locationsRollup.pushRecipeLabel', 'locationsRollup.pushPricesLabel',
+  'locationsRollup.targetsLabel', 'locationsRollup.pushPricesButton',
+  'locationsRollup.noTargets',
   // Bar counting build (plan release 379, Nov 26, 2026): "Keg" is the genuine word for a beer
   // keg in this language — a loanword spelled the same — verified.
   'barCounting.kindKeg',
