@@ -272,6 +272,11 @@ function publicBusiness(row) {
     // for each kind of sale, judged by the Scan page's license
     // scan. A row missing one reads with the shipped default —
     // 21 alcohol, 21 tobacco, 18 other age-restricted goods.
+    // Bar counting (migration 067, plan release 379): the
+    // owner's switch for the Restaurant Corner's bar
+    // section — off by default, so the corner's shelf can
+    // hide the door until the owner turns it on.
+    bar_counting_enabled: row.bar_counting_enabled === true,
     age_alcohol: Number.isInteger(row.age_alcohol) ? row.age_alcohol : 21,
     age_tobacco: Number.isInteger(row.age_tobacco) ? row.age_tobacco : 21,
     age_other: Number.isInteger(row.age_other) ? row.age_other : 18,

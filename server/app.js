@@ -61,6 +61,7 @@ import { createCateringRouter } from './cateringRoutes.js';
 import { createReservationsRouter } from './reservationsRoutes.js';
 import { createStandingOrdersRouter } from './standingOrdersRoutes.js';
 import { createProductionOrderRouter } from './productionOrderRoutes.js';
+import { createBarCountingRouter } from './barCountingRoutes.js';
 import { createProfilePhotoRouter } from './profilePhotoRoutes.js';
 import { createXstoreMessageRouter } from './xstoreMessageRoutes.js';
 import { createCompRouter } from './compRoutes.js';
@@ -385,6 +386,11 @@ export function createApp() {
   // DRAFT purchase orders, needed minus on-hand, in
   // order-guide shape — Business-only, drafts only.
   app.use('/api', createProductionOrderRouter({ getPool }));
+  // Bar counting (server/barCountingRoutes.js): partial
+  // bottles and kegs in tenths, by storage area, saved as
+  // ordinary count sessions — Business-only, and hidden
+  // until the owner turns it on for the business.
+  app.use('/api', createBarCountingRouter({ getPool }));
   // Profile photos + the owner's display name
   // (server/profilePhotoRoutes.js): owner-approved team photos
   // and the name that replaces "Owner".

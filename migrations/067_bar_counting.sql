@@ -1,0 +1,24 @@
+-- 067_bar_counting.sql — BAR COUNTING (Nov 26, 2026;
+-- plan release 379, Gap 10, the no-hardware version).
+--
+-- The ONLY new storage is the owner's switch:
+-- bar_counting_enabled on the business, OFF by default.
+-- The bar section of the Restaurant Corner stays hidden
+-- until an owner turns it on for the business (the plan's
+-- anti-clutter rule 3) — a business without a bar never
+-- sees it.
+--
+-- The counts themselves need NO new table: a bar count is
+-- an ordinary count session (count_sessions, migration
+-- 003) whose lines carry the partial-bottle arithmetic —
+-- full units plus the open bottle's tenths — in the lines
+-- JSON the count machinery already holds. Saving a bar
+-- count lands it in Counts, where review and apply set
+-- the shelf exactly like any other count, and the
+-- differences are the actual side of the theoretical-vs-
+-- actual variance (release 361). No side silo.
+--
+-- The Bluetooth-scale version needs hardware partnerships
+-- and is out of scope — nothing here builds toward it.
+
+ALTER TABLE businesses ADD COLUMN IF NOT EXISTS bar_counting_enabled BOOLEAN NOT NULL DEFAULT FALSE;
