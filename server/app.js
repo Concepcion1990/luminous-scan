@@ -65,6 +65,7 @@ import { createBarCountingRouter } from './barCountingRoutes.js';
 import { createLocationsRollupRouter } from './locationsRollupRoutes.js';
 import { createShiftSwapsRouter } from './shiftSwapsRoutes.js';
 import { createLotTraceRouter } from './lotTraceRoutes.js';
+import { createSpillLogRouter } from './spillLogRoutes.js';
 import { createProfilePhotoRouter } from './profilePhotoRoutes.js';
 import { createXstoreMessageRouter } from './xstoreMessageRoutes.js';
 import { createCompRouter } from './compRoutes.js';
@@ -379,6 +380,12 @@ export function createApp() {
   // pull that locks the batch and flows to the waste log,
   // and the traceability log — Business-only, per-business.
   app.use('/api', createLotTraceRouter({ getPool }));
+  // Spill & breakage log (server/spillLogRoutes.js): the
+  // bar family's loss log — one write-off movement and a
+  // costed waste row per entry, owner-only pour cost,
+  // under the bar counting owner switch — Business-only,
+  // per-business (plan Part 7, item 392A).
+  app.use('/api', createSpillLogRouter({ getPool }));
   // Catering & private events, the simple version
   // (server/cateringRoutes.js): the event book, the Studio
   // event sheet and the pull into prep — Business-only,
