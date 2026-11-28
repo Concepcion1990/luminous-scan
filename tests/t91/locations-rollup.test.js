@@ -5,7 +5,7 @@
 //
 // Pinned here:
 //   - 43 new keys exist in all 52 locales, never fall back
-//     to the raw key, and the keyset is uniform at 6759
+//     to the raw key, and the keyset is uniform at 6770
 //     (6716 + 43 rollup); placeholders survive translation.
 //   - The registry gains exactly the two rollup messages
 //     (the owner-only refusal and the cleaner refusal),
@@ -70,10 +70,10 @@ const NEW_KEYS = [
   'training.lessons.owner-locations-rollup.step4', 'training.lessons.owner-locations-rollup.step5',
 ];
 
-test('the keyset is uniform at 6759 keys in all 52 locales', () => {
+test('the keyset is uniform at 6770 keys in all 52 locales', () => {
   const codes = Object.keys(LOCALES);
   assert.equal(codes.length, 52);
-  for (const code of codes) assert.equal(Object.keys(LOCALES[code]).length, 6759, code);
+  for (const code of codes) assert.equal(Object.keys(LOCALES[code]).length, 6770, code);
 });
 
 test('all 43 rollup keys exist and never fall back to the key in any locale', () => {
@@ -132,7 +132,7 @@ test('plan presentation: the rollup line is Business-only in Plans, Welcome and 
 });
 
 test('the catalogs agree at 133 lessons and the rollup lesson rides the RESTAURANT heading', () => {
-  assert.equal(CLIENT_LESSONS.length, 133);
+  assert.equal(CLIENT_LESSONS.length, 134);
   assert.deepEqual(CLIENT_LESSONS, SERVER_LESSONS);
   const lesson = CLIENT_LESSONS.find((l) => l.id === 'owner-locations-rollup');
   assert.ok(lesson, 'rollup lesson exists');
@@ -143,7 +143,7 @@ test('the catalogs agree at 133 lessons and the rollup lesson rides the RESTAURA
   assert.equal(lesson.steps, 5);
   assert.equal(LOCALES.en['training.lessons.owner-locations-rollup.title'], 'All locations on one page');
   assert.equal(CLIENT_LESSONS.filter((l) => l.heading === 'general').length, 114);
-  assert.equal(CLIENT_LESSONS.filter((l) => l.heading === 'restaurant').length, 19);
+  assert.equal(CLIENT_LESSONS.filter((l) => l.heading === 'restaurant').length, 20);
 });
 
 test('matchProduct: SKU first, then name, both exact apart from case and space', () => {

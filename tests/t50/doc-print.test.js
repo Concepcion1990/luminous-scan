@@ -133,8 +133,8 @@ test('wiring: DocHeader stays semantic and every family member uses it', () => {
 });
 
 test('keyset: no new strings in 353 (5130 ×52)', () => {
-  assert.equal(Object.keys(LOCALES.en).length, 6759);
+  assert.equal(Object.keys(LOCALES.en).length, 6770);
   for (const [code, strings] of Object.entries(LOCALES)) {
-    assert.equal(Object.keys(strings).length, 6759, code);
+    assert.equal(Object.keys(strings).length, 6770, code);
   }
 });
