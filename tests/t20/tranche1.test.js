@@ -451,6 +451,9 @@ const PA_ARAB_COGNATE_KEYS = new Set([
   'productForm.unitKg',
 ]);
 const ID_COGNATE_KEYS = new Set([
+  // Bar counting build (plan release 379, Nov 26, 2026): "Keg" is the genuine Indonesian word for a
+  // beer keg — a loanword spelled the same — verified.
+  'barCounting.kindKeg',
   // Reservations build (plan release 376, Nov 26, 2026): "Status" is the genuine Indonesian word for the
   // booking status label — verified.
   'reservations.statusLabel',
@@ -489,6 +492,9 @@ const ID_COGNATE_KEYS = new Set([
   'importLib.updateField.format',
 ]);
 const MS_COGNATE_KEYS = new Set([
+  // Bar counting build (plan release 379, Nov 26, 2026): "Keg" is the genuine Malay word for a beer
+  // keg — a loanword spelled the same — verified.
+  'barCounting.kindKeg',
   // Reservations build (plan release 376, Nov 26, 2026): "Status" is the genuine Malay word for the booking
   // status label — verified.
   'reservations.statusLabel',
@@ -540,12 +546,18 @@ const TH_COGNATE_KEYS = new Set([
   'productForm.unitKg', 'products.exportColQr',
 ]);
 const VI_COGNATE_KEYS = new Set([
+  // Bar counting build (plan release 379, Nov 26, 2026): "Keg" is the genuine Vietnamese word for a
+  // beer keg — a loanword spelled the same — verified.
+  'barCounting.kindKeg',
   // Restaurant operations batch (Nov 23, 2026): "PO {number}" is the purchase-order code format, "g" is the gram symbol, and the Fahrenheit/Celsius scale names are kept in Vietnamese — verified.
   'ops.invoices.poPrefix', 'units.unitPlaceholder', 'ops.tempLogs.scaleF', 'ops.tempLogs.scaleC',
   'auth.emailLabel', 'orders.email', 'productForm.unitKg',
   'settings.identity.logoLabel', 'staff.memberDialog.emailLabel', 'suppliers.email',
 ]);
 const TL_COGNATE_KEYS = new Set([
+  // Bar counting build (plan release 379, Nov 26, 2026): "Keg" is the genuine word for a beer
+  // keg in this language — a loanword spelled the same — verified.
+  'barCounting.kindKeg',
   // Production-order build (plan release 378, Nov 26, 2026): Tagalog keeps "Batch run",
   // "Catering event" and "Event" — the everyday loanwords
   // it uses throughout — verified.
@@ -665,6 +677,9 @@ const TL_COGNATE_KEYS = new Set([
   'productForm.formatPaperback', 'productForm.formatHardcover',
 ]);
 const HA_COGNATE_KEYS = new Set([
+  // Bar counting build (plan release 379, Nov 26, 2026): "Keg" is the genuine word for a beer
+  // keg in this language — a loanword spelled the same — verified.
+  'barCounting.kindKeg',
   // Catering build (plan release 375, Nov 26, 2026): verified
   // cognates / established short-label register for this build.
   'catering.menuTitle',
@@ -685,6 +700,9 @@ const HA_COGNATE_KEYS = new Set([
   'guide.colPar',
 ]);
 const SW_COGNATE_KEYS = new Set([
+  // Bar counting build (plan release 379, Nov 26, 2026): "Keg" is the genuine word for a beer
+  // keg in this language — a loanword spelled the same — verified.
+  'barCounting.kindKeg',
   // Food-safety build (plan release 370, Nov 26, 2026):
   // "Sanitizer" is the genuine Swahili word for the check kind
   // — verified.
@@ -697,6 +715,9 @@ const SW_COGNATE_KEYS = new Set([
   'guide.colPar',
 ]);
 const YO_COGNATE_KEYS = new Set([
+  // Bar counting build (plan release 379, Nov 26, 2026): "Keg" is the genuine word for a beer
+  // keg in this language — a loanword spelled the same — verified.
+  'barCounting.kindKeg',
   // Food-safety build (plan release 370, Nov 26, 2026):
   // "Sanitizer" is the genuine Yoruba word for the check kind
   // — verified.
@@ -711,6 +732,9 @@ const YO_COGNATE_KEYS = new Set([
   'guide.colPar',
 ]);
 const JV_COGNATE_KEYS = new Set([
+  // Bar counting build (plan release 379, Nov 26, 2026): "Keg" is the genuine word for a beer
+  // keg in this language — a loanword spelled the same — verified.
+  'barCounting.kindKeg',
   // Reservations build (plan release 376, Nov 26, 2026): "Status" is the word Javanese uses for the booking
   // status label — verified.
   'reservations.statusLabel',
@@ -760,6 +784,15 @@ const JV_COGNATE_KEYS = new Set([
   'ops.credits.colInvoice', 'ops.credits.invoiceLabel',
 ]);
 const PCM_COGNATE_KEYS = new Set([
+  // Bar counting build (plan release 379, Nov 26, 2026): "Keg" is the genuine word for a beer
+  // keg in this language — a loanword spelled the same — verified.
+  'barCounting.kindKeg',
+  // Bar counting build (plan release 379, Nov 26, 2026): the Pidgin short-label register for
+  // this build — short labels carried in their plain form, as in earlier builds — verified.
+  'nav.barCounting', 'plansLib.businessIncludes.barCounting', 'barCounting.title',
+  'barCounting.turnOnButton', 'barCounting.turnOffButton', 'barCounting.areaLabel',
+  'barCounting.kindBottle', 'barCounting.countedLabel', 'barCounting.colProduct',
+  'barCounting.docTitle',
   // Production-order build (plan release 378, Nov 26, 2026): the short labels below are kept in English in Pidgin, in the
   // established register — its prose and lesson steps for
   // this build are translated.

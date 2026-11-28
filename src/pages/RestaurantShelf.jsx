@@ -1,10 +1,11 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Check } from 'lucide-react';
+import { ArrowLeft, Check, Wine } from 'lucide-react';
 import DoorCard from '@/components/restaurant/DoorCard';
 import { Button } from '@/components/ui/button';
 import { useBusiness } from '@/hooks/useBusiness';
-import { RESTAURANT_HOME, shelfById } from '@/lib/restaurantShelves';
+import { toggleBarCounting } from '@/lib/barCounting';
+import { RESTAURANT_HOME, shelfById, visibleDoors } from '@/lib/restaurantShelves';
 import { t } from '@/lib/i18n';
 
 /**
@@ -27,8 +28,23 @@ import { t } from '@/lib/i18n';
  */
 export default function RestaurantShelf({ shelfId }) {
   const shelf = shelfById(shelfId);
-  const { businesses, activeId, switchTo, isLoading } = useBusiness();
+  const { businesses, activeId, record, user, refresh, switchTo, isLoading } = useBusiness();
   const navigate = useNavigate();
+  const [barBusy, setBarBusy] = useState(false);
+  // Bar counting (release 379): the door stays hidden until
+  // the owner turns it on — this shelf row is the owner's
+  // switch while it is off, shown to the owner only.
+  const barOffOwnerRow = shelf?.id === 'stock'
+    && record?.bar_counting_enabled !== true
+    && user?.id
+    && record?.owner_id === user.id;
+  const turnBarOn = async () => {
+    setBarBusy(true);
+    try {
+      await toggleBarCounting(activeId, true);
+      await refresh();
+    } catch { /* the bar page names failures; the shelf stays quiet */ } finally { setBarBusy(false); }
+  };
 
   const isLocations = shelf?.id === 'locations';
   // Only once the workspace read has settled: while it is
@@ -96,10 +112,21 @@ export default function RestaurantShelf({ shelfId }) {
           </div>
         </div>
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {shelf.doors.map((door) => (
-            <DoorCard key={`${door.to}-${door.titleKey}`} door={door} />
-          ))}
+        <div className="space-y-3">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {visibleDoors(shelf, record?.bar_counting_enabled === true).map((door) => (
+              <DoorCard key={`${door.to}-${door.titleKey}`} door={door} />
+            ))}
+          </div>
+          {barOffOwnerRow ? (
+            <div className="flex flex-wrap items-center gap-3 rounded-xl border border-dashed border-border px-4 py-3">
+              <Wine className="h-4 w-4 text-muted-foreground" />
+              <p className="flex-1 text-sm text-muted-foreground">{t('barCounting.offBody')}</p>
+              <Button size="sm" variant="outline" onClick={turnBarOn} disabled={barBusy}>
+                {t('barCounting.turnOnButton')}
+              </Button>
+            </div>
+          ) : null}
         </div>
       )}
     </div>

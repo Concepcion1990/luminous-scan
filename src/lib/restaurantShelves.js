@@ -26,6 +26,7 @@ import {
   TrendingUp,
   Users,
   UtensilsCrossed,
+  Wine,
   Wrench,
   Wheat,
 } from 'lucide-react';
@@ -95,6 +96,12 @@ export const SHELVES = [
       door('/restaurant/order-guide', 'nav.orderGuide', 'restaurant.doorOrderGuide', ClipboardList),
       door('/restaurant/standing-orders', 'nav.standingOrders', 'restaurant.doorStandingOrders', Repeat),
       door('/restaurant/production-order', 'nav.productionOrder', 'restaurant.doorProductionOrder', ClipboardList),
+      // Plan release 379: bar counting — partial bottles and
+      // kegs in tenths, by storage area. Anti-clutter rule 3:
+      // the door carries barOnly and stays hidden until the
+      // owner turns bar counting on for the business
+      // (businesses.bar_counting_enabled, migration 067).
+      door('/restaurant/bar-counting', 'nav.barCounting', 'restaurant.doorBarCounting', Wine, { barOnly: true }),
       door('/restaurant/transfers', 'nav.transfers', 'restaurant.doorTransfers', ArrowRightLeft),
       // Release 378: stock counts are a general feature (both
       // plans) whose home is the shared Counts page — the
@@ -221,6 +228,15 @@ export function homeShelfForRoute(route) {
     if (shelf.doors.some((d) => d.to === route && !d.crossLink)) return shelf;
   }
   return null;
+}
+
+/** The doors of a shelf the business actually sees: a
+ *  barOnly door (bar counting, release 379) exists only
+ *  once the owner has turned bar counting on for the
+ *  business — anti-clutter rule 3. Every other door is
+ *  always the shelf's own. */
+export function visibleDoors(shelf, barEnabled) {
+  return (shelf?.doors || []).filter((d) => !d.barOnly || barEnabled === true);
 }
 
 /** Every feature door in the corner, primary listings only. */

@@ -6,7 +6,7 @@ import { useBusiness } from '@/hooks/useBusiness';
 import { scoped } from '@/lib/scoped';
 import { fetchChecklistToday } from '@/lib/checklists';
 import { fetchReservationsToday } from '@/lib/reservations';
-import { shelvesFor, summarizeToday } from '@/lib/restaurantShelves';
+import { shelvesFor, summarizeToday, visibleDoors } from '@/lib/restaurantShelves';
 import { t } from '@/lib/i18n';
 
 /**
@@ -26,7 +26,7 @@ import { t } from '@/lib/i18n';
  * first door, content and behavior unchanged.
  */
 export default function Restaurant() {
-  const { activeId, businesses } = useBusiness();
+  const { activeId, businesses, record } = useBusiness();
   const [rows, setRows] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -95,9 +95,9 @@ export default function Restaurant() {
                   </span>
                   <span className="font-medium">{t(shelf.labelKey)}</span>
                 </Link>
-                {shelf.doors.length ? (
+                {visibleDoors(shelf, record?.bar_counting_enabled === true).length ? (
                   <div className="mt-3 flex flex-wrap gap-1.5">
-                    {shelf.doors.map((door) => (
+                    {visibleDoors(shelf, record?.bar_counting_enabled === true).map((door) => (
                       <Link
                         key={`${door.to}-${door.titleKey}`}
                         to={door.to}
