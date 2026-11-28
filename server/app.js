@@ -62,6 +62,7 @@ import { createReservationsRouter } from './reservationsRoutes.js';
 import { createStandingOrdersRouter } from './standingOrdersRoutes.js';
 import { createProductionOrderRouter } from './productionOrderRoutes.js';
 import { createBarCountingRouter } from './barCountingRoutes.js';
+import { createLocationsRollupRouter } from './locationsRollupRoutes.js';
 import { createProfilePhotoRouter } from './profilePhotoRoutes.js';
 import { createXstoreMessageRouter } from './xstoreMessageRoutes.js';
 import { createCompRouter } from './compRoutes.js';
@@ -391,6 +392,12 @@ export function createApp() {
   // ordinary count sessions — Business-only, and hidden
   // until the owner turns it on for the business.
   app.use('/api', createBarCountingRouter({ getPool }));
+  // All-locations rollup + cross-location push
+  // (server/locationsRollupRoutes.js): the multi-business
+  // owner's one page, and the door that copies a recipe or
+  // the price set to their other locations — Business-only,
+  // owner-only.
+  app.use('/api', createLocationsRollupRouter({ getPool }));
   // Profile photos + the owner's display name
   // (server/profilePhotoRoutes.js): owner-approved team photos
   // and the name that replaces "Owner".

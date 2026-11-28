@@ -52,6 +52,7 @@ import RestaurantReservations from '@/pages/RestaurantReservations';
 import RestaurantStandingOrders from '@/pages/RestaurantStandingOrders';
 import RestaurantProductionOrder from '@/pages/RestaurantProductionOrder';
 import RestaurantBarCounting from '@/pages/RestaurantBarCounting';
+import RestaurantLocationsRollup from '@/pages/RestaurantLocationsRollup';
 import GuestMenuPublic from '@/pages/GuestMenuPublic';
 import RestaurantEightySix from '@/pages/RestaurantEightySix';
 import RestaurantTransfers from '@/pages/RestaurantTransfers';
@@ -408,6 +409,14 @@ const AuthenticatedApp = () => {
             element={
               <PlanRedirect feature="restaurant">
                 <RestaurantBarCounting />
+              </PlanRedirect>
+            }
+          />
+          <Route
+            path="/restaurant/locations-rollup"
+            element={
+              <PlanRedirect feature="restaurant">
+                <RestaurantLocationsRollup />
               </PlanRedirect>
             }
           />

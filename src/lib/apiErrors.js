@@ -164,6 +164,8 @@ export const API_ERROR_MESSAGE_KEYS = {
   "Only the owner, a manager, or a person with the counting permission can save a bar count.": "apiErrors.barCountingCountForbidden",
   "Check the bar count and try again.": "apiErrors.barCountingInvalid",
   "Bar counting is not turned on for this business.": "apiErrors.barCountingOff",
+  "Only the owner can use the all-locations rollup.": "apiErrors.locationsRollupForbidden",
+  "Check the copy request and try again.": "apiErrors.locationsRollupInvalid",
   "A text needs a number and a message.": "apiErrors.smsInvalid",
   "The texting service did not accept the message.": "apiErrors.smsFailed",
   "Only the owner can set the labor watch numbers.": "apiErrors.laborOwner",
