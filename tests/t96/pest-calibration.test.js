@@ -3,12 +3,12 @@
 // Business-only, Restaurant Corner, Food Safety shelf —
 // the 370 family. Pinned here:
 //   - 36 new keys exist in all 52 locales, never fall back
-//     to the raw key, and the keyset is uniform at 6976
+//     to the raw key, and the keyset is uniform at 7012
 //     (6940 + 36 G-B keys); the toast placeholders survive.
 //   - The plan presentation carries the pest/calibration
 //     line on the Business lists only (Plans + Welcome +
 //     the matrix ✗/✓) — invisible on Essentials.
-//   - The training catalogs agree at 138 lessons; the
+//   - The training catalogs agree at 139 lessons; the
 //     sibling food-safety lesson rides the staff track
 //     under the RESTAURANT heading with 5 steps and the
 //     restaurant feature gate (restaurant heading 22 → 23).
@@ -86,10 +86,10 @@ const NEW_KEYS = [
   'apiErrors.pestCal.invalid',
 ];
 
-test('the keyset is uniform at 6976 keys in all 52 locales', () => {
+test('the keyset is uniform at 7012 keys in all 52 locales', () => {
   const codes = Object.keys(LOCALES);
   assert.equal(codes.length, 52);
-  for (const code of codes) assert.equal(Object.keys(LOCALES[code]).length, 6976, code);
+  for (const code of codes) assert.equal(Object.keys(LOCALES[code]).length, 7012, code);
 });
 
 test('all 36 G-B keys exist and never fall back to the key in any locale', () => {
@@ -141,8 +141,8 @@ test('plan presentation: the pest/calibration line is Business-only on Plans, We
   assert.ok(row && row.essentials === false && row.business === true, 'matrix row is Business-only');
 });
 
-test('the catalogs agree at 138 lessons and the G-B lesson rides the RESTAURANT heading', () => {
-  assert.equal(CLIENT_LESSONS.length, 138);
+test('the catalogs agree at 139 lessons and the G-B lesson rides the RESTAURANT heading', () => {
+  assert.equal(CLIENT_LESSONS.length, 139);
   assert.deepEqual(CLIENT_LESSONS, SERVER_LESSONS);
   const lesson = CLIENT_LESSONS.find((l) => l.id === 'staff-pest-calibration');
   assert.ok(lesson, 'G-B lesson exists');
@@ -152,7 +152,7 @@ test('the catalogs agree at 138 lessons and the G-B lesson rides the RESTAURANT 
   assert.equal(lesson.feature, 'restaurant', 'the lesson is feature-gated like the corner');
   assert.equal(lesson.steps, 5);
   assert.equal(LOCALES.en['training.lessons.staff-pest-calibration.title'], 'Pest control & thermometer calibration');
-  assert.equal(CLIENT_LESSONS.filter((l) => l.heading === 'general').length, 115);
+  assert.equal(CLIENT_LESSONS.filter((l) => l.heading === 'general').length, 116);
   assert.equal(CLIENT_LESSONS.filter((l) => l.heading === 'restaurant').length, 23);
 });
 

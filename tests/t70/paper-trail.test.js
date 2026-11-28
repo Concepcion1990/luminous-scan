@@ -580,7 +580,7 @@ const NEW_KEYS = [
 test('i18n gate: 63 new keys in all 52 locales, keyset 6506, plan lines carry the new features', () => {
   assert.equal(NEW_KEYS.length, 63);
   for (const [code, locale] of Object.entries(LOCALES)) {
-    assert.equal(Object.keys(locale).length, 6976, `${code} keyset`);
+    assert.equal(Object.keys(locale).length, 7012, `${code} keyset`);
     for (const key of NEW_KEYS) {
       assert.ok(typeof locale[key] === 'string' && locale[key].length > 0, `${code} carries ${key}`);
     }
@@ -611,7 +611,7 @@ test('i18n gate: 63 new keys in all 52 locales, keyset 6506, plan lines carry th
 });
 
 test('training: 117 lessons, catalogs agree, the log book lesson and the invoices step 5 ride along', () => {
-  assert.equal(clientCatalog.length, 138); // 125 since the tip-pooling build (plan release 373, Nov 26, 2026) added 1 (owner-tip-pooling, Business-only, restaurant heading); 124 since the equipment build (plan release 372, Nov 26, 2026) added 1 (staff-equipment, both plans, general heading); 123 since the kitchen-menu build (plan release 371, Nov 26, 2026) added 1 (staff-kitchen-menu, Business-only, restaurant heading); 122 since the food-safety build (plan release 370, Nov 26, 2026) added staff-food-safety; 121 since the checklists build added staff-checklists; 117 at this build The reservations build (plan release 376, Nov 26, 2026) added 1 more (owner-reservations, riding the restaurant feature), for 130. The standing-orders build (plan release 377, Nov 26, 2026) added 1 more (owner-standing-orders, riding the restaurant feature), for 130.
+  assert.equal(clientCatalog.length, 139); // 125 since the tip-pooling build (plan release 373, Nov 26, 2026) added 1 (owner-tip-pooling, Business-only, restaurant heading); 124 since the equipment build (plan release 372, Nov 26, 2026) added 1 (staff-equipment, both plans, general heading); 123 since the kitchen-menu build (plan release 371, Nov 26, 2026) added 1 (staff-kitchen-menu, Business-only, restaurant heading); 122 since the food-safety build (plan release 370, Nov 26, 2026) added staff-food-safety; 121 since the checklists build added staff-checklists; 117 at this build The reservations build (plan release 376, Nov 26, 2026) added 1 more (owner-reservations, riding the restaurant feature), for 130. The standing-orders build (plan release 377, Nov 26, 2026) added 1 more (owner-standing-orders, riding the restaurant feature), for 130.
   assert.deepEqual(
     serverCatalog.map((l) => l.id),
     clientCatalog.map((l) => l.id),

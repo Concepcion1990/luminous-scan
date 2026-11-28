@@ -60,7 +60,7 @@ test('the keyset stands at 6506 in all 52 locales — zero new keys', () => {
   const codes = Object.keys(LOCALES);
   assert.equal(codes.length, 52);
   for (const code of codes) {
-    assert.equal(Object.keys(LOCALES[code]).length, 6976, `${code} keyset`);
+    assert.equal(Object.keys(LOCALES[code]).length, 7012, `${code} keyset`);
   }
 });
 

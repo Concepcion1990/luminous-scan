@@ -11,7 +11,7 @@
 //
 // Pinned here:
 //   - 11 new keys exist in all 52 locales, never fall back
-//     to the raw key, and the keyset is uniform at 6976
+//     to the raw key, and the keyset is uniform at 7012
 //     (6759 + 11 link); placeholders survive translation.
 //   - The plan presentation carries the link line in
 //     Business and only Business (Plans, Welcome, matrix).
@@ -59,10 +59,10 @@ const NEW_KEYS = [
   'training.lessons.owner-recipe-cost-link.step5',
 ];
 
-test('the keyset is uniform at 6976 keys in all 52 locales', () => {
+test('the keyset is uniform at 7012 keys in all 52 locales', () => {
   const codes = Object.keys(LOCALES);
   assert.equal(codes.length, 52);
-  for (const code of codes) assert.equal(Object.keys(LOCALES[code]).length, 6976, code);
+  for (const code of codes) assert.equal(Object.keys(LOCALES[code]).length, 7012, code);
 });
 
 test('all 11 link keys exist and never fall back to the key in any locale', () => {
@@ -111,7 +111,7 @@ test('plan presentation: the link line is Business-only in Plans, Welcome and th
 });
 
 test('the catalogs agree at 135 lessons and the link lesson rides the RESTAURANT heading', () => {
-  assert.equal(CLIENT_LESSONS.length, 138);
+  assert.equal(CLIENT_LESSONS.length, 139);
   assert.deepEqual(CLIENT_LESSONS, SERVER_LESSONS);
   const lesson = CLIENT_LESSONS.find((l) => l.id === 'owner-recipe-cost-link');
   assert.ok(lesson, 'link lesson exists');
@@ -121,7 +121,7 @@ test('the catalogs agree at 135 lessons and the link lesson rides the RESTAURANT
   assert.equal(lesson.feature, 'restaurant');
   assert.equal(lesson.steps, 5);
   assert.equal(LOCALES.en['training.lessons.owner-recipe-cost-link.title'], 'Recipe costs follow invoice prices');
-  assert.equal(CLIENT_LESSONS.filter((l) => l.heading === 'general').length, 115);
+  assert.equal(CLIENT_LESSONS.filter((l) => l.heading === 'general').length, 116);
   assert.equal(CLIENT_LESSONS.filter((l) => l.heading === 'restaurant').length, 23);
 });
 

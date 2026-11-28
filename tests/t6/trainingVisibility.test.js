@@ -198,11 +198,14 @@ test('plan-visible counts: Business whole, Essentials without the Business subje
   // 2026) adds ONE owner lesson: owner-spill-log (feature
   // restaurant — the spill log is Business-only): owner 61
   // on Business; Essentials unchanged.
-  assert.equal(count('owner', true), 61);
+  // The petty-cash build (plan Part 7, addition G-A, Nov 26,
+  // 2026) adds ONE owner lesson: owner-petty-cash (general,
+  // both plans): owner 62 on Business and 30 on Essentials.
+  assert.equal(count('owner', true), 62);
   assert.equal(count('manager', true), 26);
   assert.equal(count('staff', true), 50);
   // Essentials: 21 owner subjects hidden, owner-import in their place.
-  assert.equal(count('owner', false), 29); // +1 confidentiality lesson (Nov 19, 2026); +1 eBay storefront lesson (release 362, both plans); +1 own-training lesson (the training build, both plans); +1 barcode-pool lesson (the barcode-pool build, both plans)
+  assert.equal(count('owner', false), 30); // +1 confidentiality lesson (Nov 19, 2026); +1 eBay storefront lesson (release 362, both plans); +1 own-training lesson (the training build, both plans); +1 barcode-pool lesson (the barcode-pool build, both plans); +1 petty-cash lesson (addition G-A, both plans)
   assert.equal(count('manager', false), 14);
   assert.equal(count('staff', false), 39);
   // Payroll / workforce / direct-deposit lessons stay on Essentials.

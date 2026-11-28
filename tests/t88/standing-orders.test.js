@@ -4,7 +4,7 @@
 //
 // Pinned here:
 //   - 53 new keys exist in all 52 locales, never fall back
-//     to the raw key, and the keyset is uniform at 6976
+//     to the raw key, and the keyset is uniform at 7012
 //     (6583 + 53); placeholders survive translation.
 //   - The registry gains exactly the two standing-order
 //     messages (the write-door refusal + the cleaner
@@ -68,10 +68,10 @@ const NEW_KEYS = [
   'training.lessons.owner-standing-orders.step4', 'training.lessons.owner-standing-orders.step5',
 ];
 
-test('the keyset is uniform at 6976 keys in all 52 locales', () => {
+test('the keyset is uniform at 7012 keys in all 52 locales', () => {
   const codes = Object.keys(LOCALES);
   assert.equal(codes.length, 52);
-  for (const code of codes) assert.equal(Object.keys(LOCALES[code]).length, 6976, code);
+  for (const code of codes) assert.equal(Object.keys(LOCALES[code]).length, 7012, code);
 });
 
 test('all 53 standing-order keys exist and never fall back to the key in any locale', () => {
@@ -126,7 +126,7 @@ test('plan presentation: the standing-orders line is Business-only in Plans, Wel
 });
 
 test('the catalogs agree at 130 lessons and the standing-orders lesson rides the RESTAURANT heading', () => {
-  assert.equal(CLIENT_LESSONS.length, 138);
+  assert.equal(CLIENT_LESSONS.length, 139);
   assert.deepEqual(CLIENT_LESSONS, SERVER_LESSONS);
   const lesson = CLIENT_LESSONS.find((l) => l.id === 'owner-standing-orders');
   assert.ok(lesson, 'standing-orders lesson exists');
@@ -136,7 +136,7 @@ test('the catalogs agree at 130 lessons and the standing-orders lesson rides the
   assert.equal(lesson.feature, 'restaurant');
   assert.equal(lesson.steps, 5);
   assert.equal(LOCALES.en['training.lessons.owner-standing-orders.title'], 'Standing orders and comparing supplier prices');
-  assert.equal(CLIENT_LESSONS.filter((l) => l.heading === 'general').length, 115);
+  assert.equal(CLIENT_LESSONS.filter((l) => l.heading === 'general').length, 116);
   assert.equal(CLIENT_LESSONS.filter((l) => l.heading === 'restaurant').length, 23);
 });
 
