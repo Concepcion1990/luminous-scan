@@ -90,9 +90,9 @@ test('keyset stands at 6506 in all 52 locales, uniform', () => {
   const codes = Object.keys(LOCALES);
   assert.equal(codes.length, 52);
   const enKeys = Object.keys(LOCALES.en).sort();
-  assert.equal(enKeys.length, 6716);
+  assert.equal(enKeys.length, 6759);
   for (const code of codes) {
-    assert.equal(Object.keys(LOCALES[code]).length, 6716, `${code} keyset`);
+    assert.equal(Object.keys(LOCALES[code]).length, 6759, `${code} keyset`);
     assert.deepEqual(Object.keys(LOCALES[code]).sort(), enKeys, `${code} keyset differs from en`);
   }
 });
@@ -144,8 +144,8 @@ test('plan presentation: the barcode-pool line rides Essentials on Plans + Welco
 /* ------------------------------------------------- the lesson */
 
 test('catalogs stood at 120 at this build (125 since the tip-pooling build (plan release 373, Nov 26, 2026) added 1 (owner-tip-pooling, Business-only, restaurant heading); 124 since the equipment build (plan release 372, Nov 26, 2026) added 1 (staff-equipment, both plans, general heading); 125 since the tip-pooling build (plan release 373, Nov 26, 2026) added 1 (owner-tip-pooling, Business-only, restaurant heading); 124 since the equipment build (plan release 372, Nov 26, 2026) added 1 (staff-equipment, both plans, general heading); 123 since the kitchen-menu build (plan release 371, Nov 26, 2026) added 1 (staff-kitchen-menu, Business-only, restaurant heading); 122 since the food-safety build), client and server JSON-identical', () => {
-  assert.equal(CLIENT_LESSONS.length, 132);
-  assert.equal(SERVER_LESSONS.length, 132);
+  assert.equal(CLIENT_LESSONS.length, 133);
+  assert.equal(SERVER_LESSONS.length, 133);
   assert.equal(JSON.stringify(CLIENT_LESSONS), JSON.stringify(SERVER_LESSONS), 'the two catalogs agree exactly');
 });
 

@@ -126,6 +126,10 @@ test('every signed-in app screen appears in the nav (menu audit)', () => {
     // hidden one until the owner turns it on — never a menu
     // door.
     '/restaurant/bar-counting',
+    // Plan release 380 (Nov 26, 2026): the locations-rollup
+    // page is a Locations shelf door in the corner, like
+    // every feature above — never a menu door.
+    '/restaurant/locations-rollup',
   ]);
   const appScreens = routePaths.filter((p) => !publicRoutes.has(p));
   assert.ok(appScreens.length >= 30, `audit covers the full screen list (saw ${appScreens.length})`);

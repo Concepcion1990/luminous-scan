@@ -44,6 +44,7 @@ const BUSINESS_ONLY = {
   'owner-standing-orders': 'restaurant',
   'owner-production-order': 'restaurant',
   'owner-bar-counting': 'restaurant',
+  'owner-locations-rollup': 'restaurant',
   'mgr-restaurant-invoices': 'restaurant', 'mgr-restaurant-reports': 'restaurant',
   'staff-food-safety': 'restaurant',
   'staff-kitchen-menu': 'restaurant',
@@ -172,7 +173,11 @@ test('plan-visible counts: Business whole, Essentials without the Business subje
   // adds ONE owner lesson: owner-bar-counting (feature
   // restaurant — bar counting is Business-only): owner 56 on
   // Business; Essentials unchanged.
-  assert.equal(count('owner', true), 56);
+  // The locations-rollup build (plan release 380, Nov 26,
+  // 2026) adds ONE owner lesson: owner-locations-rollup
+  // (feature restaurant — the rollup is Business-only):
+  // owner 57 on Business; Essentials unchanged.
+  assert.equal(count('owner', true), 57);
   assert.equal(count('manager', true), 26);
   assert.equal(count('staff', true), 49);
   // Essentials: 21 owner subjects hidden, owner-import in their place.
