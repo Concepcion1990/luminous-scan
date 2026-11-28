@@ -85,6 +85,7 @@ const FEATURE_HOME = {
   '/restaurant/ledger': 'money',
   '/restaurant/temp-logs': 'safety',
   '/restaurant/safety-logs': 'safety',
+  '/restaurant/pest-calibration': 'safety',
   '/restaurant/inspection': 'safety',
   '/restaurant/certificates': 'safety',
   '/restaurant/mock-inspection': 'safety',

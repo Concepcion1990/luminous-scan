@@ -48,6 +48,7 @@ const BUSINESS_ONLY = {
   'owner-recipe-cost-link': 'restaurant',
   'owner-lot-traceability': 'restaurant',
   'owner-spill-log': 'restaurant',
+  'staff-pest-calibration': 'restaurant',
   'mgr-restaurant-invoices': 'restaurant', 'mgr-restaurant-reports': 'restaurant',
   'staff-food-safety': 'restaurant',
   'staff-kitchen-menu': 'restaurant',
@@ -199,7 +200,7 @@ test('plan-visible counts: Business whole, Essentials without the Business subje
   // on Business; Essentials unchanged.
   assert.equal(count('owner', true), 61);
   assert.equal(count('manager', true), 26);
-  assert.equal(count('staff', true), 49);
+  assert.equal(count('staff', true), 50);
   // Essentials: 21 owner subjects hidden, owner-import in their place.
   assert.equal(count('owner', false), 29); // +1 confidentiality lesson (Nov 19, 2026); +1 eBay storefront lesson (release 362, both plans); +1 own-training lesson (the training build, both plans); +1 barcode-pool lesson (the barcode-pool build, both plans)
   assert.equal(count('manager', false), 14);
